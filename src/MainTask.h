@@ -1,23 +1,11 @@
-#include "lib/MiniTask.h"
-#include "SensorsTask.h"
-#include "RegulatorTask.h"
-
 extern MqttTask* tMqtt;
+extern SensorsTask* tSensors;
 
-class MainTask : public CustomTask {
+class MainTask : public Task {
 public:
-  MainTask(bool enabled = false, unsigned long interval = 0) : CustomTask(enabled, interval) {}
+  MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
-  //HttpServerTask* tHttpServer;
-  SensorsTask* tSensors;
-  RegulatorTask* tRegulator;
-
-  void setup() {
-    //tHttpServer = new HttpServerTask(false);
-    tSensors = new SensorsTask(false, DS18B20_INTERVAL);
-    tRegulator = new RegulatorTask(true, 10000);
-  }
 
   void loop() {
     static unsigned long lastHeapInfo = 0;
@@ -46,12 +34,6 @@ protected:
       tSensors->disable();
     }
 
-    //tHttpServer->loopWrapper();
-    //yield();
-    tSensors->loopWrapper();
-    yield();
-    tRegulator->loopWrapper();
-
 #ifdef USE_TELNET
     yield();
 
@@ -76,8 +58,4 @@ protected:
       }
     }
   }
-
-  /*char[] getUptime() {
-    uint64_t =  esp_timer_get_time();
-  }*/
 };

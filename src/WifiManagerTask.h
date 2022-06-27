@@ -13,9 +13,9 @@ WiFiManagerParameter *wmMqttUser;
 WiFiManagerParameter *wmMqttPassword;
 WiFiManagerParameter *wmMqttPrefix;
 
-class WifiManagerTask : public CustomTask {
+class WifiManagerTask : public Task {
 public:
-  WifiManagerTask(bool enabled = false, unsigned long interval = 0) : CustomTask(enabled, interval) {}
+  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   void setup() {

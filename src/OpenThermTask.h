@@ -2,9 +2,9 @@
 
 CustomOpenTherm ot(OPENTHERM_IN_PIN, OPENTHERM_OUT_PIN);
 
-class OpenThermTask : public CustomTask {
+class OpenThermTask : public Task {
 public:
-  OpenThermTask(bool enabled = false, unsigned long interval = 0) : CustomTask(enabled, interval) {}
+  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   void setup() {

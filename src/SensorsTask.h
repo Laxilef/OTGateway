@@ -2,9 +2,9 @@
 
 MicroDS18B20<DS18B20_PIN> outdoorSensor;
 
-class SensorsTask : public MiniTask {
+class SensorsTask : public LeanTask {
 public:
-  SensorsTask(bool enabled = false, unsigned long interval = 0) : MiniTask(enabled, interval) {}
+  SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
   void setup() {}

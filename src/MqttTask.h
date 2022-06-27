@@ -8,9 +8,9 @@ PubSubClient client(espClient);
 HomeAssistantHelper haHelper;
 
 
-class MqttTask : public CustomTask {
+class MqttTask : public Task {
 public:
-  MqttTask(bool enabled = false, unsigned long interval = 0) : CustomTask(enabled, interval) {}
+  MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   unsigned long lastReconnectAttempt = 0;

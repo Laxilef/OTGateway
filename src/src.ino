@@ -3,21 +3,27 @@
 #include <TelnetStream.h>
 #include <EEManager.h>
 #include <Scheduler.h>
+#include <Task.h>
+#include <LeanTask.h>
 #include "Settings.h"
 
 EEManager eeSettings(settings, 30000);
 
-#include "lib/CustomTask.h"
 #include "WifiManagerTask.h"
 #include "MqttTask.h"
 #include "OpenThermTask.h"
+#include "SensorsTask.h"
+#include "RegulatorTask.h"
 #include "MainTask.h"
 
 // Tasks
 WifiManagerTask* tWm;
 MqttTask* tMqtt;
 OpenThermTask* tOt;
+SensorsTask* tSensors;
+RegulatorTask* tRegulator;
 MainTask* tMain;
+
 
 void setup() {
 #ifdef USE_TELNET
@@ -48,6 +54,12 @@ void setup() {
 
   tOt = new OpenThermTask(true);
   Scheduler.start(tOt);
+
+  tSensors = new SensorsTask(false, DS18B20_INTERVAL);
+  Scheduler.start(tSensors);
+
+  tRegulator = new RegulatorTask(true, 10000);
+  Scheduler.start(tRegulator);
 
   tMain = new MainTask(true);
   Scheduler.start(tMain);

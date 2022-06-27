@@ -1,6 +1,6 @@
-#define OT_GATEWAY_VERSION          "1.0.4"
+#define OT_GATEWAY_VERSION          "1.0.5"
 #define AP_SSID                     "OpenTherm Gateway"
-//#define USE_TELNET
+#define USE_TELNET
 
 #define EMERGENCY_TRESHOLD          10
 #define MQTT_RECONNECT_INTERVAL     5000

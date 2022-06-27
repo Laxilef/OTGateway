@@ -6,9 +6,9 @@ Equitherm etRegulator;
 GyverPID pidRegulator(0, 0, 0, 10000);
 PIDtuner pidTuner;
 
-class RegulatorTask : public MiniTask {
+class RegulatorTask : public LeanTask {
 public:
-  RegulatorTask(bool enabled = false, unsigned long interval = 0) : MiniTask(enabled, interval) {}
+  RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
   bool tunerInit = false;
