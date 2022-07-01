@@ -1,3 +1,4 @@
+#pragma once
 extern PubSubClient client;
 
 class HomeAssistantHelper {

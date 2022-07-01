@@ -1,3 +1,5 @@
+#pragma once
+#include <Arduino.h>
 #include <OpenTherm.h>
 
 extern SchedulerClass Scheduler;
@@ -19,7 +21,6 @@ public:
       Scheduler.yield();
     }
 
-    //unsigned long response = OpenTherm::sendRequest(request);
     unsigned long _response;
     if (!sendRequestAync(request)) {
       _response = 0;
