@@ -53,8 +53,11 @@ The OTGateway device will be automatically added to homeassistant if MQTT server
 ## HomeAsssistant settings
 @todo
 
-## About ratios
+## About modes
 ### Equitherm
+Weather-compensated temperature control maintains a comfortable set temperature in the house. The algorithm requires temperature sensors in the house and outside.<br> Instead of an outdoor sensor, you can use the weather forecast and automation for HA.
+
+#### Ratios:
 ***N*** - heating curve coefficient. The coefficient is selected individually, depending on the insulation of the room, the heated area, etc.<br>
 Range: 0.3...10, default: 0.67, step 0.01
 
