@@ -51,23 +51,29 @@ After connecting to your wifi network, you can go to the setup page at the addre
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.
 
 ## HomeAsssistant settings
+@todo
 
 ## About ratios
 ### Equitherm
-*N* - heating curve coefficient. The coefficient is selected individually, depending on the insulation of the room, the heated area, etc.
+***N*** - heating curve coefficient. The coefficient is selected individually, depending on the insulation of the room, the heated area, etc.<br>
 Range: 0.3...10, default: 0.67, step 0.01
-*K* - сorrection for desired room temperature.
+
+
+***K** - сorrection for desired room temperature.<br>
 Range: 0...10, default: 1, step 0.01
-*T* - thermostat correction.
+
+
+***T*** - thermostat correction.<br>
 Range: 0...10, default: 5, step 0.01
 
-1. The first thing you need to do is to fit the curve. If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.
+#### Instructions for fit coefficients:
+1. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
 Please note that passive heating (sun) will affect the house temperature during curve fitting. This process is not fast and will take you 1-2 days.
-Important. During curve fitting, the temperature must be kept stable as the outside temperature changes. The temperature does not have to be equal to the set one.
+Important. During curve fitting, the temperature must be kept stable as the outside temperature changes. The temperature does not have to be equal to the set one.<br>
 For example. You fit curve 0.67; set temperature 23; the temperature in the house is 20 degrees while the outside temperature is -10 degrees and -5 degrees. This is good.
-2. After fitting the curve, you must select the K factor. It influences the boiler temperature correction to maintain the set temperature.
+2. After fitting the curve, you must select the ***K*** coefficient. It influences the boiler temperature correction to maintain the set temperature.
 For example. Set temperature: 23 degrees; temperature in the house: 20 degrees. Try setting it to 5 and see how the temperature in the house changes after stabilization. Select the value so that the temperature in the house is close to the set.
-3. Now you can choose the T coefficient. Simply put, it affects the sharpness of the temperature change. If you want fast heating, then set a high value (5-10), but then the room may overheat. If you want smooth heating, set 1-3. Choose the optimal value for yourself.
+3. Now you can choose the ***T*** coefficient. Simply put, it affects the sharpness of the temperature change. If you want fast heating, then set a high value (6-10), but then the room may overheat. If you want smooth heating, set 1-5. Choose the optimal value for yourself.
 
 Read more about the algorithm [here](https://wdn.su/blog/1154).
 
