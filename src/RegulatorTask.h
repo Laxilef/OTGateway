@@ -13,6 +13,7 @@ public:
 protected:
   bool tunerInit = false;
   byte tunerState = 0;
+  byte tunerRegulator = 0;
   float prevHeatingTarget = 0;
   float prevEtResult = 0;
   float prevPidResult = 0;
@@ -24,8 +25,19 @@ protected:
 
     if (vars.states.emergency) {
       newTemp = getEmergencyModeTemp();
+
     } else {
-      newTemp = getNormalModeTemp();
+      if ( vars.tuning.enable || tunerInit ) {
+        newTemp = getTuningModeTemp();
+
+        if ( newTemp == 0 ) {
+          vars.tuning.enable = false;
+        }
+      }
+      
+      if ( !vars.tuning.enable ) {
+        newTemp = getNormalModeTemp();
+      }
     }
 
     // Ограничиваем, если до этого не ограничило
@@ -40,175 +52,194 @@ protected:
 
 
   byte getEmergencyModeTemp() {
-    byte newTemp = vars.parameters.heatingSetpoint;
+    float newTemp = 0;
 
     // if use equitherm
     if (settings.emergency.useEquitherm && settings.outdoorTempSource != 1) {
-      etRegulator.Kn = settings.equitherm.n_factor;
-      etRegulator.Kk = settings.equitherm.k_factor;
-      etRegulator.Kt = 0;
-      etRegulator.indoorTemp = 0;
-      etRegulator.outdoorTemp = vars.temperatures.outdoor;
+      float etResult = getEquithermTemp();
 
-      etRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
-      etRegulator.targetTemp = settings.emergency.target;
-
-      float etResult = etRegulator.getResult();
-      if (fabs(prevEtResult - etResult) + 0.0001 >= 1) {
+      if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
         prevEtResult = etResult;
-        newTemp = round(etResult);
+        newTemp += etResult;
 
-        INFO_F("New emergency equitherm result: %u (%f) \n", newTemp, etResult);
+        INFO_F("[REGULATOR][EQUITHERM] New emergency result: %u (%f) \n", (byte) round(etResult), etResult);
+
+      } else {
+        newTemp += prevEtResult;
       }
 
     } else {
       // default temp, manual mode
-      newTemp = round(settings.emergency.target);
+      newTemp = settings.emergency.target;
     }
 
-    return newTemp;
+    return round(newTemp);
   }
 
   byte getNormalModeTemp() {
-    bool updateIntegral = false;
-    byte newTemp = vars.parameters.heatingSetpoint;
+    float newTemp = 0;
 
     if (fabs(prevHeatingTarget - settings.heating.target) > 0.0001) {
       prevHeatingTarget = settings.heating.target;
-      updateIntegral = true;
 
-      INFO_F("New heating target: %f \n", settings.heating.target);
+      INFO_F("[REGULATOR] New target: %f \n", settings.heating.target);
     }
 
     // if use equitherm
     if (settings.equitherm.enable) {
-      if (vars.tuning.enable && vars.tuning.regulator == 0) {
-        if (settings.pid.enable) {
-          settings.pid.enable = false;
-        }
+      float etResult = getEquithermTemp();
 
-        etRegulator.Kn = tuneEquithermN(etRegulator.Kn, vars.temperatures.indoor, settings.heating.target, 300, 1800, 0.01, 1);
-      } else {
-        etRegulator.Kn = settings.equitherm.n_factor;
-      }
-
-      if (settings.pid.enable) {
-        etRegulator.Kt = 0;
-        etRegulator.indoorTemp = round(vars.temperatures.indoor);
-        etRegulator.outdoorTemp = round(vars.temperatures.outdoor);
-      } else {
-        etRegulator.Kt = settings.equitherm.t_factor;
-        etRegulator.indoorTemp = vars.temperatures.indoor;
-        etRegulator.outdoorTemp = vars.temperatures.outdoor;
-      }
-
-      etRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
-      etRegulator.Kk = settings.equitherm.k_factor;
-      etRegulator.targetTemp = settings.heating.target;
-
-      float etResult = etRegulator.getResult();
-      if (fabs(prevEtResult - etResult) + 0.0001 >= 1) {
+      if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
         prevEtResult = etResult;
-        updateIntegral = true;
-        newTemp = round(etResult);
+        newTemp += etResult;
 
-        INFO_F("New equitherm result: %u (%f) \n", newTemp, etResult);
+        INFO_F("[REGULATOR][EQUITHERM] New result: %u (%f) \n", (byte) round(etResult), etResult);
 
       } else {
-        updateIntegral = false;
+        newTemp += prevEtResult;
       }
     }
 
     // if use pid
-    if (settings.pid.enable && tunerInit && (!vars.tuning.enable || vars.tuning.regulator != 1)) {
-      pidTuner.reset();
-      tunerState = 0;
-      tunerInit = false;
-      INFO(F("Tuning stopped"));
+    if (settings.pid.enable) {
+      float pidResult = getPidTemp();
 
-    } else if (settings.pid.enable && vars.tuning.enable && vars.tuning.regulator == 1) {
-      if (tunerInit && pidTuner.getState() == 3) {
-        INFO(F("Tuning finished"));
-        pidTuner.debugText(&INFO_STREAM);
+      if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
+        prevPidResult = pidResult;
+        newTemp += pidResult;
 
-        if (pidTuner.getAccuracy() < 90) {
-          WARN(F("Tuning bad result, restart..."));
-
-        } else {
-          settings.pid.p_factor = pidTuner.getPID_p();
-          settings.pid.i_factor = pidTuner.getPID_i();
-          settings.pid.d_factor = pidTuner.getPID_d();
-          vars.tuning.enable = false;
-        }
-
-        pidTuner.reset();
-        tunerState = 0;
-        tunerInit = false;
+        INFO_F("[REGULATOR][PID] New result: %u (%f) \n", (byte) round(pidResult), pidResult);
 
       } else {
-        if (!tunerInit) {
-          INFO(F("Tuning start"));
-
-          float step;
-          if (vars.temperatures.indoor - vars.temperatures.outdoor > 10) {
-            step = ceil(vars.parameters.heatingSetpoint / vars.temperatures.indoor * 2);
-          } else {
-            step = 5.0f;
-          }
-
-          float startTemp = newTemp + step;
-          if (startTemp >= vars.parameters.heatingMaxTemp) {
-            startTemp = vars.parameters.heatingMaxTemp - 10;
-          }
-
-          INFO_F("Tuning started. Start temp: %f, step: %f \n", startTemp, step);
-          pidTuner.setParameters(NORMAL, startTemp, step, 20 * 60 * 1000, 0.15, 60 * 1000, 10000);
-          tunerInit = true;
-        }
-
-        pidTuner.setInput(vars.temperatures.indoor);
-        pidTuner.compute();
-
-        if (tunerState > 0 && pidTuner.getState() != tunerState) {
-          INFO(F("Tuning log:"));
-          pidTuner.debugText(&INFO_STREAM);
-          tunerState = pidTuner.getState();
-        }
-
-        newTemp = round(pidTuner.getOutput());
-      }
-    }
-
-    if (settings.pid.enable && (!vars.tuning.enable || vars.tuning.enable && vars.tuning.regulator != 1)) {
-      if (updateIntegral) {
-        pidRegulator.integral = settings.heating.target;
-      }
-
-      pidRegulator.Kp = settings.pid.p_factor;
-      pidRegulator.Ki = settings.pid.i_factor;
-      pidRegulator.Kd = settings.pid.d_factor;
-
-      pidRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
-      pidRegulator.input = vars.temperatures.indoor;
-      pidRegulator.setpoint = settings.heating.target;
-
-      float pidResult = pidRegulator.getResultTimer();
-      if (abs(prevPidResult - pidResult) >= 0.5) {
-        prevPidResult = pidResult;
-        newTemp = round(pidResult);
-
-        INFO_F("New PID result: %u (%f) \n", newTemp, pidResult);
+        newTemp += prevPidResult;
       }
     }
 
     // default temp, manual mode
     if (!settings.equitherm.enable && !settings.pid.enable) {
-      newTemp = round(settings.heating.target);
+      newTemp = settings.heating.target;
     }
 
-    return newTemp;
+    return round(newTemp);
   }
 
+  byte getTuningModeTemp() {
+    if ( tunerInit && (!vars.tuning.enable || vars.tuning.regulator != tunerRegulator) ) {
+      if ( tunerRegulator == 0 ) {
+        pidTuner.reset();
+      }
+
+      tunerInit = false;
+      tunerRegulator = 0;
+      tunerState = 0;
+      INFO(F("[REGULATOR][TUNING] Stopped"));
+    }
+
+    if ( !vars.tuning.enable ) {
+      return 0;
+    }
+
+
+    if ( vars.tuning.regulator == 0 ) {
+      // @TODO дописать
+      INFO(F("[REGULATOR][TUNING][EQUITHERM] Not implemented"));
+      return 0;
+
+    } else if ( vars.tuning.regulator == 1 ) {
+      // PID tuner
+      float defaultTemp = settings.equitherm.enable ? getEquithermTemp() : settings.heating.target;
+
+      if (tunerInit && pidTuner.getState() == 3) {
+        INFO(F("[REGULATOR][TUNING][PID] Finished"));
+        pidTuner.debugText(&INFO_STREAM);
+
+        pidTuner.reset();
+        tunerInit = false;
+        tunerRegulator = 0;
+        tunerState = 0;
+
+        if (pidTuner.getAccuracy() < 90) {
+          WARN(F("[REGULATOR][TUNING][PID] Bad result, try again..."));
+
+        } else {
+          settings.pid.p_factor = pidTuner.getPID_p();
+          settings.pid.i_factor = pidTuner.getPID_i();
+          settings.pid.d_factor = pidTuner.getPID_d();
+
+          return 0;
+        }
+      }
+
+      if (!tunerInit) {
+        INFO(F("[REGULATOR][TUNING][PID] Start..."));
+
+        float step;
+        if (vars.temperatures.indoor - vars.temperatures.outdoor > 10) {
+          step = ceil(vars.parameters.heatingSetpoint / vars.temperatures.indoor * 2);
+        } else {
+          step = 5.0f;
+        }
+
+        float startTemp = step;
+        INFO_F("[REGULATOR][TUNING][PID] Started. Start value: %f, step: %f \n", startTemp, step);
+        pidTuner.setParameters(NORMAL, startTemp, step, 20 * 60 * 1000, 0.15, 60 * 1000, 10000);
+        tunerInit = true;
+        tunerRegulator = 1;
+      }
+
+      pidTuner.setInput(vars.temperatures.indoor);
+      pidTuner.compute();
+
+      if (tunerState > 0 && pidTuner.getState() != tunerState) {
+        INFO(F("[REGULATOR][TUNING][PID] Log:"));
+        pidTuner.debugText(&INFO_STREAM);
+        tunerState = pidTuner.getState();
+      }
+
+      return round(defaultTemp + pidTuner.getOutput());
+
+    } else {
+      return 0;
+    }
+  }
+
+  float getEquithermTemp() {
+    if ( vars.states.emergency ) {
+      etRegulator.Kt = 0;
+      etRegulator.indoorTemp = 0;
+      etRegulator.outdoorTemp = vars.temperatures.outdoor;
+
+    } else if (settings.pid.enable) {
+      etRegulator.Kt = 0;
+      etRegulator.indoorTemp = round(vars.temperatures.indoor);
+      etRegulator.outdoorTemp = round(vars.temperatures.outdoor);
+
+    } else {
+      etRegulator.Kt = settings.equitherm.t_factor;
+      etRegulator.indoorTemp = vars.temperatures.indoor;
+      etRegulator.outdoorTemp = vars.temperatures.outdoor;
+    }
+
+    etRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+    etRegulator.Kn = settings.equitherm.n_factor;
+    // etRegulator.Kn = tuneEquithermN(etRegulator.Kn, vars.temperatures.indoor, settings.heating.target, 300, 1800, 0.01, 1);
+    etRegulator.Kk = settings.equitherm.k_factor;
+    etRegulator.targetTemp = vars.states.emergency ? settings.emergency.target : settings.heating.target;
+
+    return etRegulator.getResult();
+  }
+
+  float getPidTemp() {
+    pidRegulator.Kp = settings.pid.p_factor;
+    pidRegulator.Ki = settings.pid.i_factor;
+    pidRegulator.Kd = settings.pid.d_factor;
+
+    pidRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+    pidRegulator.input = vars.temperatures.indoor;
+    pidRegulator.setpoint = settings.heating.target;
+
+    return pidRegulator.getResultTimer();
+  }
 
   float tuneEquithermN(float ratio, float currentTemp, float setTemp, unsigned int dirtyInterval = 60, unsigned int accurateInterval = 1800, float accurateStep = 0.01, float accurateStepAfter = 1) {
     static uint32_t _prevIteration = millis();

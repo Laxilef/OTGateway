@@ -447,7 +447,7 @@ public:
     doc["command_topic"] = _prefix + "/settings/set";
     doc["command_template"] = "{\"pid\": {\"p_factor\" : {{ value }}}}";
     doc["min"] = 0.001;
-    doc["max"] = 3;
+    doc["max"] = 10;
     doc["step"] = 0.001;
 
     client.beginPublish((F("homeassistant/number/") + _prefix + "/pid_p_factor/config").c_str(), measureJson(doc), true);
@@ -478,7 +478,7 @@ public:
     doc["command_topic"] = _prefix + "/settings/set";
     doc["command_template"] = "{\"pid\": {\"i_factor\" : {{ value }}}}";
     doc["min"] = 0;
-    doc["max"] = 3;
+    doc["max"] = 10;
     doc["step"] = 0.001;
 
     client.beginPublish((F("homeassistant/number/") + _prefix + "/pid_i_factor/config").c_str(), measureJson(doc), true);
@@ -509,7 +509,7 @@ public:
     doc["command_topic"] = _prefix + "/settings/set";
     doc["command_template"] = "{\"pid\": {\"d_factor\" : {{ value }}}}";
     doc["min"] = 0;
-    doc["max"] = 3;
+    doc["max"] = 10;
     doc["step"] = 0.001;
 
     client.beginPublish((F("homeassistant/number/") + _prefix + "/pid_d_factor/config").c_str(), measureJson(doc), true);
@@ -617,6 +617,8 @@ public:
 
   bool publishNumberEquithermFactorT(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
+    doc["availability"]["topic"] = _prefix + F("/settings");
+    doc["availability"]["value_template"] = F("{{ iif(value_json.pid.enable, 'offline', 'online') }}");
     doc["device"]["identifiers"][0] = _prefix;
     doc["device"]["sw_version"] = _deviceVersion;
     doc["device"]["manufacturer"] = _deviceManufacturer;

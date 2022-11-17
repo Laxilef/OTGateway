@@ -218,6 +218,10 @@ protected:
     }
 
     if (!doc["restart"].isNull() && doc["restart"].is<bool>() && doc["restart"]) {
+      DEBUG("Received restart message...");
+      Scheduler.delay(10000);
+      DEBUG("Restart...");
+      
       eeSettings.updateNow();
       ESP.restart();
     }

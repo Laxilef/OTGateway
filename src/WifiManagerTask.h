@@ -19,7 +19,7 @@ public:
 
 protected:
   void setup() {
-    WiFi.mode(WIFI_STA);
+    //WiFi.mode(WIFI_STA);
     wm.setDebugOutput(settings.debug);
 
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
@@ -28,7 +28,6 @@ protected:
     wmMqttServer = new WiFiManagerParameter("mqtt_server", "MQTT server", settings.mqtt.server, 80);
     wm.addParameter(wmMqttServer);
 
-    //char mqttPort[6];
     sprintf(buffer, "%d", settings.mqtt.port);
     wmMqttPort = new WiFiManagerParameter("mqtt_port", "MQTT port", buffer, 6);
     wm.addParameter(wmMqttPort);
@@ -42,6 +41,9 @@ protected:
     wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "MQTT prefix", settings.mqtt.prefix, 32);
     wm.addParameter(wmMqttPrefix);
 
+    //wm.setCleanConnect(true);
+    wm.setRestorePersistent(false);
+
     wm.setHostname(settings.hostname);
     wm.setWiFiAutoReconnect(true);
     wm.setConfigPortalBlocking(false);
@@ -49,16 +51,24 @@ protected:
     wm.setConfigPortalTimeout(300);
     wm.setDisableConfigPortal(false);
 
-    if (wm.autoConnect(AP_SSID)) {
-      INFO_F("Wifi connected. IP: %s, RSSI: %d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
-      wm.startWebPortal();
-
-    } else {
-      INFO(F("Failed to connect to WIFI, start the configuration portal..."));
-    }
+    wm.autoConnect(AP_SSID);
   }
 
   void loop() {
+    if (connected && WiFi.status() != WL_CONNECTED) {
+      connected = false;
+      INFO("[wifi] Disconnected");
+
+    } else if (!connected && WiFi.status() == WL_CONNECTED) {
+      connected = true;
+
+      INFO_F("[wifi] Connected. IP address: %s, RSSI: %d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+    }
+
+    if (WiFi.status() == WL_CONNECTED && !wm.getWebPortalActive() && !wm.getConfigPortalActive()) {
+      wm.startWebPortal();
+    }
+
     wm.process();
   }
 
@@ -74,4 +84,6 @@ protected:
     eeSettings.updateNow();
     INFO(F("Settings saved"));
   }
+
+  bool connected = false;
 };

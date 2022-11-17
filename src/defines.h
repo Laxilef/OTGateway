@@ -1,4 +1,4 @@
-#define OT_GATEWAY_VERSION          "1.0.5"
+#define OT_GATEWAY_VERSION          "1.0.7"
 #define AP_SSID                     "OpenTherm Gateway"
 #define USE_TELNET
 
@@ -11,7 +11,8 @@
 #define OPENTHERM_OFFLINE_TRESHOLD  10
 
 #define DS18B20_PIN                 2
-#define DS18B20_INTERVAL            1000
+#define DS18B20_INTERVAL            5000
+#define OUTDOOR_SENSOR_FILTER_K     0.15
 #define DS_CHECK_CRC                true
 #define DS_CRC_USE_TABLE            true
 
