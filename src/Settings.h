@@ -41,7 +41,7 @@ struct Settings {
     bool enable = false;
     float n_factor = 0.67f;
     float k_factor = 1.0f;
-    float t_factor = 0.0f;
+    float t_factor = 5.0f;
   } equitherm;
 
 } settings;
