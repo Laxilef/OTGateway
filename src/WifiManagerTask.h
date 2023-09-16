@@ -67,8 +67,6 @@ protected:
   }
 
   void loop() {
-    static unsigned short prevCounterLiters = 0;
-
     /*if (WiFi.status() != WL_CONNECTED && !wm.getWebPortalActive() && !wm.getConfigPortalActive()) {
       wm.autoConnect(AP_SSID);
     }*/
