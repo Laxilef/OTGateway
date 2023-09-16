@@ -1,4 +1,3 @@
-#pragma once
 #include <Arduino.h>
 
 #if defined(EQUITHERM_INTEGER)
@@ -11,6 +10,13 @@ typedef float datatype;
 
 class Equitherm {
 public:
+  datatype targetTemp = 0;
+  datatype indoorTemp = 0;
+  datatype outdoorTemp = 0;
+  float Kn = 0.0;
+  float Kk = 0.0;
+  float Kt = 0.0;
+
   Equitherm() {}
 
   // kn, kk, kt
@@ -26,19 +32,15 @@ public:
     _maxOut = max_output;
   }
 
-  datatype targetTemp = 0;
-  datatype indoorTemp = 0;
-  datatype outdoorTemp = 0;
-  float Kn = 0.0;
-  float Kk = 0.0;
-  float Kt = 0.0;
-
   // возвращает новое значение при вызове
   datatype getResult() {
     datatype output = getResultN() + getResultK() + getResultT();
     output = constrain(output, _minOut, _maxOut);		// ограничиваем выход
     return output;
   }
+
+private:
+  int _minOut = 20, _maxOut = 90;
 
   // температура контура отопления в зависимости от наружной температуры
   datatype getResultN() {
@@ -56,9 +58,6 @@ public:
 
   // Расчет поправки (ошибки) термостата
   datatype getResultT() {
-    return (targetTemp - indoorTemp) * Kt;
+    return constrain((targetTemp - indoorTemp), -2, 2) * Kt;
   }
-
-private:
-  int _minOut = 20, _maxOut = 90;
 };

@@ -1,13 +1,12 @@
-#define OT_GATEWAY_VERSION          "1.0.7"
+#define OT_GATEWAY_VERSION          "1.2.1"
 #define AP_SSID                     "OpenTherm Gateway"
+#define AP_PASSWORD                 "otgateway123456"
 #define USE_TELNET
 
-#define EMERGENCY_TRESHOLD          10
+#define EMERGENCY_TIME_TRESHOLD     120000
 #define MQTT_RECONNECT_INTERVAL     5000
 #define MQTT_KEEPALIVE              30
 
-#define OPENTHERM_IN_PIN            4
-#define OPENTHERM_OUT_PIN           5
 #define OPENTHERM_OFFLINE_TRESHOLD  10
 
 #define DS18B20_PIN                 2
@@ -15,6 +14,9 @@
 #define OUTDOOR_SENSOR_FILTER_K     0.15
 #define DS_CHECK_CRC                true
 #define DS_CRC_USE_TABLE            true
+
+#define LED_STATUS_PIN              13
+#define LED_OT_RX_PIN               15
 
 #define CONFIG_URL                  "http://%s/"
 

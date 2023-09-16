@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "defines.h"
 #include <ArduinoJson.h>
 #include <TelnetStream.h>
@@ -52,7 +53,7 @@ void setup() {
   tMqtt = new MqttTask(false);
   Scheduler.start(tMqtt);
 
-  tOt = new OpenThermTask(true);
+  tOt = new OpenThermTask(false);
   Scheduler.start(tOt);
 
   tSensors = new SensorsTask(false, DS18B20_INTERVAL);

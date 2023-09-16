@@ -8,15 +8,17 @@ PubSubClient client(espClient);
 HomeAssistantHelper haHelper;
 
 
-class MqttTask : public Task {
+class MqttTask: public Task {
 public:
-  MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+  MqttTask(bool _enabled = false, unsigned long _interval = 0): Task(_enabled, _interval) {}
 
 protected:
   unsigned long lastReconnectAttempt = 0;
-  unsigned short int reconnectAttempts = 0;
+  unsigned long firstFailConnect = 0;
 
   void setup() {
+    DEBUG("[MQTT] Started");
+
     client.setServer(settings.mqtt.server, settings.mqtt.port);
     client.setCallback(__callback);
     haHelper.setPrefix(settings.mqtt.prefix);
@@ -38,15 +40,21 @@ protected:
         publishHaEntities();
         publishNonStaticHaEntities(true);
 
-        reconnectAttempts = 0;
+        firstFailConnect = 0;
         lastReconnectAttempt = 0;
 
       } else {
         INFO("Failed to connect to MQTT server\n");
 
-        if (!vars.states.emergency && ++reconnectAttempts >= EMERGENCY_TRESHOLD) {
-          vars.states.emergency = true;
-          INFO("Emergency mode enabled");
+        if (settings.emergency.enable && !vars.states.emergency) {
+          if (firstFailConnect == 0) {
+            firstFailConnect = millis();
+          }
+          
+          if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
+            vars.states.emergency = true;
+            INFO("Emergency mode enabled");
+          }
         }
 
         forceARP();
@@ -114,6 +122,11 @@ protected:
     // heating
     if (!doc["heating"]["enable"].isNull() && doc["heating"]["enable"].is<bool>()) {
       settings.heating.enable = doc["heating"]["enable"].as<bool>();
+      flag = true;
+    }
+
+    if (!doc["heating"]["turbo"].isNull() && doc["heating"]["turbo"].is<bool>()) {
+      settings.heating.turbo = doc["heating"]["turbo"].as<bool>();
       flag = true;
     }
 
@@ -221,7 +234,7 @@ protected:
       DEBUG("Received restart message...");
       Scheduler.delay(10000);
       DEBUG("Restart...");
-      
+
       eeSettings.updateNow();
       ESP.restart();
     }
@@ -272,6 +285,7 @@ protected:
 
     // heating
     haHelper.publishSwitchHeating(false);
+    haHelper.publishSwitchHeatingTurbo();
     //haHelper.publishNumberHeatingTarget(false);
     haHelper.publishNumberHeatingHysteresis();
     haHelper.publishSensorHeatingSetpoint(false);
@@ -305,6 +319,7 @@ protected:
     haHelper.publishBinSensorFault();
     haHelper.publishBinSensorDiagnostic();
     haHelper.publishSensorFaultCode();
+    haHelper.publishSensorRssi();
 
     // sensors
     haHelper.publishSensorModulation(false);
@@ -383,6 +398,7 @@ protected:
     doc["emergency"]["useEquitherm"] = settings.emergency.useEquitherm;
 
     doc["heating"]["enable"] = settings.heating.enable;
+    doc["heating"]["turbo"] = settings.heating.turbo;
     doc["heating"]["target"] = settings.heating.target;
     doc["heating"]["hysteresis"] = settings.heating.hysteresis;
 
@@ -420,6 +436,7 @@ protected:
     doc["states"]["fault"] = vars.states.fault;
     doc["states"]["diagnostic"] = vars.states.diagnostic;
     doc["states"]["faultCode"] = vars.states.faultCode;
+    doc["states"]["rssi"] = vars.states.rssi;
 
     doc["sensors"]["modulation"] = vars.sensors.modulation;
     doc["sensors"]["pressure"] = vars.sensors.pressure;
@@ -454,7 +471,7 @@ protected:
 
     if (settings.debug) {
       DEBUG_F("MQTT received message\n\r        Topic: %s\n\r        Data: ", topic);
-      for (int i = 0; i < length; i++) {
+      for (unsigned int i = 0; i < length; i++) {
         DEBUG_STREAM.print((char)payload[i]);
       }
       DEBUG_STREAM.print("\n");

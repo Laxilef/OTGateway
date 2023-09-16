@@ -1,4 +1,4 @@
-#include "lib/Equitherm.h"
+#include <Equitherm.h>
 #include <GyverPID.h>
 #include <PIDtuner.h>
 
@@ -6,9 +6,9 @@ Equitherm etRegulator;
 GyverPID pidRegulator(0, 0, 0, 10000);
 PIDtuner pidTuner;
 
-class RegulatorTask : public LeanTask {
+class RegulatorTask: public LeanTask {
 public:
-  RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
+  RegulatorTask(bool _enabled = false, unsigned long _interval = 0): LeanTask(_enabled, _interval) {}
 
 protected:
   bool tunerInit = false;
@@ -21,21 +21,39 @@ protected:
 
   void setup() {}
   void loop() {
-    byte newTemp;
+    byte newTemp = vars.parameters.heatingSetpoint;
 
     if (vars.states.emergency) {
+      if (settings.heating.turbo) {
+        settings.heating.turbo = false;
+
+        INFO("[REGULATOR] Turbo mode auto disabled");
+      }
+
       newTemp = getEmergencyModeTemp();
 
     } else {
-      if ( vars.tuning.enable || tunerInit ) {
+      if (vars.tuning.enable || tunerInit) {
+        if (settings.heating.turbo) {
+          settings.heating.turbo = false;
+
+          INFO("[REGULATOR] Turbo mode auto disabled");
+        }
+
         newTemp = getTuningModeTemp();
 
-        if ( newTemp == 0 ) {
+        if (newTemp == 0) {
           vars.tuning.enable = false;
         }
       }
-      
-      if ( !vars.tuning.enable ) {
+
+      if (!vars.tuning.enable) {
+        if (settings.heating.turbo && (fabs(settings.heating.target - vars.temperatures.indoor) < 1 || (settings.equitherm.enable && settings.pid.enable))) {
+          settings.heating.turbo = false;
+
+          INFO("[REGULATOR] Turbo mode auto disabled");
+        }
+
         newTemp = getNormalModeTemp();
       }
     }
@@ -56,13 +74,13 @@ protected:
 
     // if use equitherm
     if (settings.emergency.useEquitherm && settings.outdoorTempSource != 1) {
-      float etResult = getEquithermTemp();
+      float etResult = getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
 
       if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
         prevEtResult = etResult;
         newTemp += etResult;
 
-        INFO_F("[REGULATOR][EQUITHERM] New emergency result: %u (%f) \n", (byte) round(etResult), etResult);
+        INFO_F("[REGULATOR][EQUITHERM] New emergency result: %u (%f) \n", (int)round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -81,19 +99,23 @@ protected:
 
     if (fabs(prevHeatingTarget - settings.heating.target) > 0.0001) {
       prevHeatingTarget = settings.heating.target;
-
       INFO_F("[REGULATOR] New target: %f \n", settings.heating.target);
+
+      if (settings.equitherm.enable && settings.pid.enable) {
+        pidRegulator.integral = 0;
+        INFO_F("[REGULATOR][PID] Integral sum has been reset");
+      }
     }
 
     // if use equitherm
     if (settings.equitherm.enable) {
-      float etResult = getEquithermTemp();
+      float etResult = getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
 
       if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
         prevEtResult = etResult;
         newTemp += etResult;
 
-        INFO_F("[REGULATOR][EQUITHERM] New result: %u (%f) \n", (byte) round(etResult), etResult);
+        INFO_F("[REGULATOR][EQUITHERM] New result: %u (%f) \n", (int)round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -102,13 +124,16 @@ protected:
 
     // if use pid
     if (settings.pid.enable) {
-      float pidResult = getPidTemp();
+      float pidResult = getPidTemp(
+        settings.equitherm.enable ? -30 : vars.parameters.heatingMinTemp,
+        settings.equitherm.enable ? 30 : vars.parameters.heatingMaxTemp
+      );
 
       if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
         prevPidResult = pidResult;
         newTemp += pidResult;
 
-        INFO_F("[REGULATOR][PID] New result: %u (%f) \n", (byte) round(pidResult), pidResult);
+        INFO_F("[REGULATOR][PID] New result: %u (%f) \n", (int)round(pidResult), pidResult);
 
       } else {
         newTemp += prevPidResult;
@@ -124,8 +149,8 @@ protected:
   }
 
   byte getTuningModeTemp() {
-    if ( tunerInit && (!vars.tuning.enable || vars.tuning.regulator != tunerRegulator) ) {
-      if ( tunerRegulator == 0 ) {
+    if (tunerInit && (!vars.tuning.enable || vars.tuning.regulator != tunerRegulator)) {
+      if (tunerRegulator == 0) {
         pidTuner.reset();
       }
 
@@ -135,19 +160,21 @@ protected:
       INFO(F("[REGULATOR][TUNING] Stopped"));
     }
 
-    if ( !vars.tuning.enable ) {
+    if (!vars.tuning.enable) {
       return 0;
     }
 
 
-    if ( vars.tuning.regulator == 0 ) {
+    if (vars.tuning.regulator == 0) {
       // @TODO дописать
       INFO(F("[REGULATOR][TUNING][EQUITHERM] Not implemented"));
       return 0;
 
-    } else if ( vars.tuning.regulator == 1 ) {
+    } else if (vars.tuning.regulator == 1) {
       // PID tuner
-      float defaultTemp = settings.equitherm.enable ? getEquithermTemp() : settings.heating.target;
+      float defaultTemp = settings.equitherm.enable
+        ? getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp)
+        : settings.heating.target;
 
       if (tunerInit && pidTuner.getState() == 3) {
         INFO(F("[REGULATOR][TUNING][PID] Finished"));
@@ -203,8 +230,8 @@ protected:
     }
   }
 
-  float getEquithermTemp() {
-    if ( vars.states.emergency ) {
+  float getEquithermTemp(int minTemp, int maxTemp) {
+    if (vars.states.emergency) {
       etRegulator.Kt = 0;
       etRegulator.indoorTemp = 0;
       etRegulator.outdoorTemp = vars.temperatures.outdoor;
@@ -215,12 +242,16 @@ protected:
       etRegulator.outdoorTemp = round(vars.temperatures.outdoor);
 
     } else {
-      etRegulator.Kt = settings.equitherm.t_factor;
+      if (settings.heating.turbo) {
+        etRegulator.Kt = 10;
+      } else {
+        etRegulator.Kt = settings.equitherm.t_factor;
+      }
       etRegulator.indoorTemp = vars.temperatures.indoor;
       etRegulator.outdoorTemp = vars.temperatures.outdoor;
     }
 
-    etRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+    etRegulator.setLimits(minTemp, maxTemp);
     etRegulator.Kn = settings.equitherm.n_factor;
     // etRegulator.Kn = tuneEquithermN(etRegulator.Kn, vars.temperatures.indoor, settings.heating.target, 300, 1800, 0.01, 1);
     etRegulator.Kk = settings.equitherm.k_factor;
@@ -229,12 +260,12 @@ protected:
     return etRegulator.getResult();
   }
 
-  float getPidTemp() {
+  float getPidTemp(int minTemp, int maxTemp) {
     pidRegulator.Kp = settings.pid.p_factor;
     pidRegulator.Ki = settings.pid.i_factor;
     pidRegulator.Kd = settings.pid.d_factor;
 
-    pidRegulator.setLimits(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+    pidRegulator.setLimits(minTemp, maxTemp);
     pidRegulator.input = vars.temperatures.indoor;
     pidRegulator.setpoint = settings.heating.target;
 

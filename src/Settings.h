@@ -5,6 +5,12 @@ struct Settings {
   char hostname[80] = "opentherm";
 
   struct {
+    byte inPin = 5;
+    byte outPin = 4;
+    unsigned int memberIdCode = 4;
+  } opentherm;
+
+  struct {
     char server[80];
     int port = 1883;
     char user[32];
@@ -21,6 +27,7 @@ struct Settings {
 
   struct {
     bool enable = true;
+    bool turbo = false;
     float target = 40.0f;
     float hysteresis = 0.5f;
   } heating;
@@ -39,9 +46,9 @@ struct Settings {
 
   struct {
     bool enable = false;
-    float n_factor = 0.67f;
-    float k_factor = 1.0f;
-    float t_factor = 5.0f;
+    float n_factor = 0.7f;
+    float k_factor = 3.0f;
+    float t_factor = 2.0f;
   } equitherm;
 
 } settings;
@@ -61,6 +68,7 @@ struct Variables {
     bool fault = false;
     bool diagnostic = false;
     byte faultCode = 0;
+    int8_t rssi = 0;
   } states;
 
   struct {

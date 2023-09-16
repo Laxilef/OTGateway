@@ -2,9 +2,9 @@
 
 MicroDS18B20<DS18B20_PIN> outdoorSensor;
 
-class SensorsTask : public LeanTask {
+class SensorsTask: public LeanTask {
 public:
-  SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
+  SensorsTask(bool _enabled = false, unsigned long _interval = 0): LeanTask(_enabled, _interval) {}
 
 protected:
   float filteredOutdoorTemp = 0;
@@ -16,9 +16,9 @@ protected:
     if (outdoorSensor.online()) {
       if (outdoorSensor.readTemp()) {
         float rawTemp = outdoorSensor.getTemp();
-        INFO_F("[SENSORS][DS18B20] Raw temp: %f \n", rawTemp);
+        DEBUG_F("[SENSORS][DS18B20] Raw temp: %f \n", rawTemp);
 
-        if ( emptyOutdoorTemp ) {
+        if (emptyOutdoorTemp) {
           filteredOutdoorTemp = rawTemp;
           emptyOutdoorTemp = false;
 
@@ -27,8 +27,8 @@ protected:
         }
 
         filteredOutdoorTemp = floor(filteredOutdoorTemp * 100) / 100;
-        
-        if ( fabs(vars.temperatures.outdoor - filteredOutdoorTemp) > 0.099 ) {
+
+        if (fabs(vars.temperatures.outdoor - filteredOutdoorTemp) > 0.099) {
           vars.temperatures.outdoor = filteredOutdoorTemp;
           INFO_F("[SENSORS][DS18B20] New temp: %f \n", filteredOutdoorTemp);
         }
