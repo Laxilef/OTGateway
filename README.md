@@ -8,6 +8,8 @@
    - Equithermic curves - adjusts the temperature based on indoor and outdoor temperatures
 - Hysteresis setting (for accurate maintenance of room temperature)
 - Ability to connect an external sensor to monitor outdoor temperature (DS18B20)
+- Emergency mode. If the Wi-Fi connection is lost or the gateway cannot connect to the MQTT server, the mode will turn on. This mode will automatically maintain the set temperature and prevent your home from freezing. In this mode it is also possible to use equithermal curves (weather-compensated control).
+- Automatic error reset (not with all boilers)
 - Diagnostics:
   - The process of heating the coolant for heating: works / does not work
   - The process of heating water for hot water: working / not working
@@ -23,7 +25,20 @@
 - Auto tuning of PID and Equitherm parameters *(in development)*
 - [Home Assistant](https://www.home-assistant.io/) integration via MQTT. The ability to create any automation for the boiler!
 
-## Compatible Open Therm Adapters
+## Tested on
+- Baxi eco nova
+- Baxi Ampera
+
+## PCB
+<img src="/assets/pcb.svg" width="40%" /> <img src="/assets/pcb_3d.png" width="40%" />
+
+Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules. The 220V > 5V power supply is already on the board, so additional power supplies are not needed.
+To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.
+- [Sheet](/assets/sheet.pdf)
+- [BOM](/assets/BOM.xlsx)
+- [Gerber](/assets/gerber.zip)
+
+## Another compatible Open Therm Adapters
 - [Ihor Melnyk OpenTherm Adapter](http://ihormelnyk.com/opentherm_adapter)
 - [OpenTherm master shield for Wemos/Lolin](https://www.tindie.com/products/thehognl/opentherm-master-shield-for-wemoslolin/)
 - And others. It's just that the adapter must implement [the schema](http://ihormelnyk.com/Content/Pages/opentherm_adapter/opentherm_adapter_schematic_o.png)
@@ -46,6 +61,8 @@
 2. Open configuration page in browser: 192.168.4.1
 3. Set up a connection to your wifi network
 4. Set up a connection to your MQTT server
+5. Set up a OT RX pin & OT TX pin
+5.1. if necessary, set the master member ID
 
 After connecting to your wifi network, you can go to the setup page at the address that esp8266 received.
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.
@@ -59,15 +76,15 @@ Weather-compensated temperature control maintains a comfortable set temperature 
 
 #### Ratios:
 ***N*** - heating curve coefficient. The coefficient is selected individually, depending on the insulation of the room, the heated area, etc.<br>
-Range: 0.3...10, default: 0.67, step 0.01
+Range: 0.3...10, default: 0.7, step 0.01
 
 
 ***K** - сorrection for desired room temperature.<br>
-Range: 0...10, default: 1, step 0.01
+Range: 0...10, default: 3, step 0.01
 
 
 ***T*** - thermostat correction.<br>
-Range: 0...10, default: 5, step 0.01
+Range: 0...10, default: 2, step 0.01
 
 #### Instructions for fit coefficients:
 1. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>

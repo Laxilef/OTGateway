@@ -7,7 +7,7 @@ struct Settings {
   struct {
     byte inPin = 5;
     byte outPin = 4;
-    unsigned int memberIdCode = 4;
+    unsigned int memberIdCode = 0;
   } opentherm;
 
   struct {

@@ -1,2 +1,17 @@
-OTGATEWAY BOILER CONTROL GATEWAY
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="oddeven">
+        <g transform="translate(440, 145)">
+            
+            <text font-family="Helvetica Nue,Helvetica,Arial,sans-serif" font-size="25" font-weight="300" letter-spacing="1" text-anchor="end" fill="#444444">
+                <tspan x="-12" y="12">OPENTHERM GATEWAY</tspan>
+            </text>
 
+            <line x1="0" y1="-12" x2="0" y2="18" stroke-width="1" stroke="#e1e1e1"/>
+
+            <text font-family="Helvetica Nue,Helvetica,Arial,sans-serif" font-size="15" font-weight="300" fill="#7e7e7e">
+                <tspan x="12" y="10">SMART CONTROLLER FOR BOILERS</tspan>
+            </text>
+            
+        </g>
+    </g>
+</svg>
