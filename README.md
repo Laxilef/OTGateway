@@ -25,14 +25,17 @@
 - Auto tuning of PID and Equitherm parameters *(in development)*
 - [Home Assistant](https://www.home-assistant.io/) integration via MQTT. The ability to create any automation for the boiler!
 
+![logo](/assets/ha.png)
+
 ## Tested on
 - Baxi eco nova
 - Baxi Ampera
 
 ## PCB
-<img src="/assets/pcb.svg" width="40%" /> <img src="/assets/pcb_3d.png" width="40%" />
+<img src="/assets/pcb.svg" width="30%" /> <img src="/assets/pcb_3d.png" width="35%" />
 
-Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules. The 220V > 5V power supply is already on the board, so additional power supplies are not needed.
+Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
+The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
 To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.
 - [Sheet](/assets/sheet.pdf)
 - [BOM](/assets/BOM.xlsx)
@@ -45,14 +48,15 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 
 # Quick Start
 ## Dependencies
-- [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
-- [TelnetStream](https://github.com/jandrassy/TelnetStream)
-- [EEManager](https://github.com/GyverLibs/EEManager)
 - [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler)
 - [NTPClient](https://github.com/arduino-libraries/NTPClient)
+- [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+- [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
 - [PubSubClient](https://github.com/knolleary/pubsubclient)
-- [GyverFilters](https://github.com/GyverLibs/GyverFilters)
-- [MultiMap](https://github.com/RobTillaart/MultiMap)
+- [TelnetStream](https://github.com/jandrassy/TelnetStream)
+- [EEManager](https://github.com/GyverLibs/EEManager)
+- [GyverPID](https://github.com/GyverLibs/GyverPID)
+- [microDS18B20](https://github.com/GyverLibs/microDS18B20)
 - [WiFiManager](https://github.com/tzapu/WiFiManager)
 
 
