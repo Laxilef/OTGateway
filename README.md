@@ -32,7 +32,7 @@
 - Baxi Ampera
 
 ## PCB
-<img src="/assets/pcb.svg" width="30%" /> <img src="/assets/pcb_3d.png" width="35%" />
+<img src="/assets/pcb.svg" width="30%" /> <img src="/assets/pcb_3d.png" width="35%" /> <img src="/assets/after_assembly.png" width="30%" />
 
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
