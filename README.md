@@ -28,15 +28,19 @@
 ![logo](/assets/ha.png)
 
 ## Tested on
-- Baxi eco nova
-- Baxi Ampera
+| Boiler | Master Member ID |
+| --- | --- |
+| BAXI ECO Nova | default or 4 |
+| BAXI Ampera | 1028 |
 
 ## PCB
-<img src="/assets/pcb.svg" width="30%" /> <img src="/assets/pcb_3d.png" width="35%" /> <img src="/assets/after_assembly.png" width="30%" />
+<img src="/assets/pcb.svg" width="25%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="37%" />
 
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
-To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.
+To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.<br>
+**Important!** On this board opentherm IN pin = 5, OUT pin = 4
+
 - [Sheet](/assets/sheet.pdf)
 - [BOM](/assets/BOM.xlsx)
 - [Gerber](/assets/gerber.zip)
@@ -65,8 +69,8 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 2. Open configuration page in browser: 192.168.4.1
 3. Set up a connection to your wifi network
 4. Set up a connection to your MQTT server
-5. Set up a OT RX pin & OT TX pin
-5.1. if necessary, set the master member ID
+5. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. Typically used **IN** = 4, **OUT** = 5
+5.1. if necessary, set the master member ID.
 
 After connecting to your wifi network, you can go to the setup page at the address that esp8266 received.
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.
