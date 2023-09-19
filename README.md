@@ -71,6 +71,7 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 4. Set up a connection to your MQTT server
 5. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. Typically used **IN** = 4, **OUT** = 5
 6. if necessary, set the master member ID.
+7. Restart module (required after changing OT pins!)
 
 After connecting to your wifi network, you can go to the setup page at the address that esp8266 received.
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.
@@ -155,7 +156,7 @@ Weather-compensated temperature control maintains a comfortable set temperature 
 Range: 0.3...10, default: 0.7, step 0.01
 
 
-***K** - сorrection for desired room temperature.<br>
+***K*** - сorrection for desired room temperature.<br>
 Range: 0...10, default: 3, step 0.01
 
 
@@ -163,7 +164,7 @@ Range: 0...10, default: 3, step 0.01
 Range: 0...10, default: 2, step 0.01
 
 #### Instructions for fit coefficients:
-**Tip.** To select coefficients, I created a [table in Excel](/assets/equitherm_calc.xlsx) in which you can enter temperature parameters inside and outside the house and select coefficients. On the graph you can see the temperature that the boiler will set.
+**Tip.** I created a [table in Excel](/assets/equitherm_calc.xlsx) in which you can enter temperature parameters inside and outside the house and select coefficients. On the graph you can see the temperature that the boiler will set.
 
 1. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
 Please note that passive heating (sun) will affect the house temperature during curve fitting. This process is not fast and will take you 1-2 days.
