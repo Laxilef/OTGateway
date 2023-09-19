@@ -65,7 +65,7 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 
 
 ## Settings
-1. Connect to *OpenTherm Gateway* hotspot
+1. Connect to *OpenTherm Gateway* hotspot, password: otgateway123456
 2. Open configuration page in browser: 192.168.4.1
 3. Set up a connection to your wifi network
 4. Set up a connection to your MQTT server
