@@ -70,13 +70,81 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 3. Set up a connection to your wifi network
 4. Set up a connection to your MQTT server
 5. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. Typically used **IN** = 4, **OUT** = 5
-5.1. if necessary, set the master member ID.
+6. if necessary, set the master member ID.
 
 After connecting to your wifi network, you can go to the setup page at the address that esp8266 received.
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.
 
 ## HomeAsssistant settings
-@todo
+By default, the "Equitherm" and "PID" modes are disabled. In this case, the boiler will simply maintain the temperature you set.
+To use "Equitherm" or "PID" modes, the controller needs to know the temperature inside and outside the house.<br><br>
+The temperature inside the house can be set using simple automation:
+<details>
+
+  **sensor.livingroom_temperature** - temperature sensor inside the house.<br>
+  **number.opentherm_indoor_temp** - an entity that stores the temperature value inside the house. The default does not need to be changed.
+
+  ```yaml
+    alias: Set boiler indoor temp
+    description: ""
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.livingroom_temperature
+      - platform: time_pattern
+        seconds: /30
+    condition: []
+    action:
+      - if:
+          - condition: template
+            value_template: "{{ has_value('number.opentherm_indoor_temp') and (states('sensor.livingroom_temperature')|float(0) - states('number.opentherm_indoor_temp')|float(0)) | abs | round(2) >= 0.01 }}"
+        then:
+          - service: number.set_value
+            data:
+              value: "{{ states('sensor.livingroom_temperature')|float(0)|round(2) }}"
+            target:
+              entity_id: number.opentherm_indoor_temp
+    mode: single
+  ```
+</details>
+
+If your boiler does not support the installation of an outdoor temperature sensor or does not provide this value via the opentherm protocol, then you can use an external DS18B20 sensor or use automation.
+<details>
+  <summary>Simple automation</summary>
+
+  **weather.home** - (weather entity)[https://www.home-assistant.io/integrations/weather/]. It is important that the address of your home is entered correctly in the Home Assistant settings.<br>
+  **number.opentherm_outdoor_temp** - an entity that stores the temperature value outside the house. The default does not need to be changed.
+
+  ```yaml
+    alias: Set boiler outdoor temp
+    description: ""
+    trigger:
+      - platform: state
+        entity_id:
+          - weather.home
+        attribute: temperature
+        for:
+          hours: 0
+          minutes: 1
+          seconds: 0
+      - platform: time_pattern
+        seconds: /30
+    condition: []
+    action:
+      - if:
+          - condition: template
+            value_template: "{{ has_value('weather.home') and (state_attr('weather.home', 'temperature')|float(0) - states('number.opentherm_outdoor_temp')|float(0)) | abs | round(2) >= 0.1 }}"
+        then:
+          - service: number.set_value
+            data:
+              value: "{{ state_attr('weather.home', 'temperature')|float(0)|round(2) }}"
+            target:
+              entity_id: number.opentherm_outdoor_temp
+    mode: single
+  ```
+</details>
+After these settings, you can enable the "Equitherm" and/or "PID" modes and configure them as described below.
+
 
 ## About modes
 ### Equitherm
@@ -95,6 +163,8 @@ Range: 0...10, default: 3, step 0.01
 Range: 0...10, default: 2, step 0.01
 
 #### Instructions for fit coefficients:
+**Tip.** To select coefficients, I created a [table in Excel](/assets/equitherm calc.xlsx) in which you can enter temperature parameters inside and outside the house and select coefficients. On the graph you can see the temperature that the boiler will set.
+
 1. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
 Please note that passive heating (sun) will affect the house temperature during curve fitting. This process is not fast and will take you 1-2 days.
 Important. During curve fitting, the temperature must be kept stable as the outside temperature changes. The temperature does not have to be equal to the set one.<br>
