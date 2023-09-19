@@ -28,10 +28,11 @@
 ![logo](/assets/ha.png)
 
 ## Tested on
-| Boiler | Master Member ID |
+| Boiler | Master Member ID | Notes |
 | --- | --- |
-| BAXI ECO Nova | default or 4 |
-| BAXI Ampera | 1028 |
+| BAXI ECO Nova | default or 4 | Pressure sensor not supported, modulation level not stable |
+| BAXI Ampera | 1028 | Pressure sensor not supported, only heating (DHW not tested) |
+| [Remeha Calenta Ace 40C](https://github.com/Laxilef/OTGateway/issues/1#issuecomment-1726081554) | default | - |
 
 ## PCB
 <img src="/assets/pcb.svg" width="25%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="37%" />
