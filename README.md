@@ -112,7 +112,7 @@ If your boiler does not support the installation of an outdoor temperature senso
 <details>
   <summary>Simple automation</summary>
 
-  **weather.home** - (weather entity)[https://www.home-assistant.io/integrations/weather/]. It is important that the address of your home is entered correctly in the Home Assistant settings.<br>
+  **weather.home** - [weather entity](https://www.home-assistant.io/integrations/weather/). It is important that the address of your home is entered correctly in the Home Assistant settings.<br>
   **number.opentherm_outdoor_temp** - an entity that stores the temperature value outside the house. The default does not need to be changed.
 
   ```yaml
@@ -163,7 +163,7 @@ Range: 0...10, default: 3, step 0.01
 Range: 0...10, default: 2, step 0.01
 
 #### Instructions for fit coefficients:
-**Tip.** To select coefficients, I created a [table in Excel](/assets/equitherm calc.xlsx) in which you can enter temperature parameters inside and outside the house and select coefficients. On the graph you can see the temperature that the boiler will set.
+**Tip.** To select coefficients, I created a [table in Excel](/assets/equitherm_calc.xlsx) in which you can enter temperature parameters inside and outside the house and select coefficients. On the graph you can see the temperature that the boiler will set.
 
 1. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
 Please note that passive heating (sun) will affect the house temperature during curve fitting. This process is not fast and will take you 1-2 days.
