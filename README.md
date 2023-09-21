@@ -30,7 +30,7 @@
 ## Tested on
 | Boiler | Master Member ID | Notes |
 | --- | --- | --- |
-| BAXI ECO Nova | default or 4 | Pressure sensor not supported, modulation level not stable |
+| BAXI ECO Nova | default | Pressure sensor not supported, modulation level not stable |
 | BAXI Ampera | 1028 | Pressure sensor not supported, only heating (DHW not tested) |
 | [Remeha Calenta Ace 40C](https://github.com/Laxilef/OTGateway/issues/1#issuecomment-1726081554) | default | - |
 
@@ -39,7 +39,10 @@
 
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
-To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.<br>
+To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.<br><br>
+Some components can be replaced with similar ones (for example use a fuse with terminal contacts). Some SMD components (for example optocouplers) can be replaced with similar SOT components.<br>Most of the components can be purchased inexpensively on Aliexpress, the rest in your local stores.<br><br>
+The outdoor temperature sensor must be connected to the **TEMP1** connector, the indoor temperature sensor must be connected to the **TEMP2** connector. The power supply for the sensors must be connected to the **3.3V** connector, GND to **GND**.<br>
+**The opentherm connection polarity does not matter.**
 <!-- **Important!** On this board opentherm IN pin = 5, OUT pin = 4 -->
 
 - [Schematic](/assets/Schematic.pdf)
@@ -50,6 +53,15 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 - [Ihor Melnyk OpenTherm Adapter](http://ihormelnyk.com/opentherm_adapter)
 - [OpenTherm master shield for Wemos/Lolin](https://www.tindie.com/products/thehognl/opentherm-master-shield-for-wemoslolin/)
 - And others. It's just that the adapter must implement [the schema](http://ihormelnyk.com/Content/Pages/opentherm_adapter/opentherm_adapter_schematic_o.png)
+
+## Compatible Temperature Sensors
+* DS18B20
+* DS1822
+* DS1820
+* MAX31820
+* MAX31850
+
+[See more](https://github.com/milesburton/Arduino-Temperature-Control-Library#usage)
 
 # Quick Start
 ## Dependencies
@@ -69,10 +81,11 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 1. Connect to *OpenTherm Gateway* hotspot, password: otgateway123456
 2. Open configuration page in browser: 192.168.4.1
 3. Set up a connection to your wifi network
-4. Set up a connection to your MQTT server
-5. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. Typically used **IN** = 4, **OUT** = 5
-6. if necessary, set the master member ID.
-7. Restart module (required after changing OT pins!)
+4. Set up a connection to your MQTT server: ip, port, user, password
+5. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. No change for my board. Typically used **IN** = 4, **OUT** = 5
+6. Set up a **Outdoor sensor pin** & **Indoor sensor pin**. No change for my board.
+7. if necessary, set up a the master member ID ([see more](#tested-on))
+8. Restart module (required after changing OT pins!)
 
 After connecting to your wifi network, you can go to the setup page at the address that esp8266 received.
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.

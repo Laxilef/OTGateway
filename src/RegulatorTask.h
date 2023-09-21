@@ -129,7 +129,7 @@ protected:
         settings.equitherm.enable ? settings.pid.maxTemp : settings.pid.maxTemp
       );
 
-      if (1 || fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
+      if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
         prevPidResult = pidResult;
         newTemp += pidResult;
 
