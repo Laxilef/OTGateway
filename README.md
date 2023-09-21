@@ -172,8 +172,7 @@ Range: 0...10, default: 2, step 0.01
 2. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
 Please note that passive heating (sun) will affect the house temperature during curve fitting. This process is not fast and will take you 1-2 days.
 Important. During curve fitting, the temperature must be kept stable as the outside temperature changes.<br>
-At this stage, it is important for you to stabilize the indoor temperature at exactly 20 (+- 0.5) degrees.
-<br>
+At this stage, it is important for you to stabilize the indoor temperature at exactly 20 (+- 0.5) degrees.<br>
 For example. You fit curve 0.67; set temperature 20; the temperature in the house is 20.1 degrees while the outside temperature is -10 degrees and -5 degrees. This is good.
 3. After fitting the curve, you must select the ***K*** coefficient. It influences the boiler temperature correction to maintain the set temperature.
 For example. Set temperature: 23 degrees; temperature in the house: 20 degrees. Try setting it to 2 and see how the temperature in the house changes after stabilization. Select the value so that the temperature in the house is close to the set.
