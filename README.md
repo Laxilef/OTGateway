@@ -40,9 +40,9 @@
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
 To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.<br>
-**Important!** On this board opentherm IN pin = 5, OUT pin = 4
+<!-- **Important!** On this board opentherm IN pin = 5, OUT pin = 4 -->
 
-- [Sheet](/assets/sheet.pdf)
+- [Schematic](/assets/Schematic.pdf)
 - [BOM](/assets/BOM.xlsx)
 - [Gerber](/assets/gerber.zip)
 
