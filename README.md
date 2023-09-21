@@ -39,8 +39,8 @@
 
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
-To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower.<br><br>
-Some components can be replaced with similar ones (for example use a fuse with terminal contacts). Some SMD components (for example optocouplers) can be replaced with similar SOT components.<br>Most of the components can be purchased inexpensively on Aliexpress, the rest in your local stores.<br><br>
+To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower. The boards are inexpensively ($2/5pcs) manufactured at JLCPCB.<br><br>
+Some components can be replaced with similar ones (for example use a fuse and led with legs). Some SMD components (for example optocouplers) can be replaced with similar SOT components.<br>Most of the components can be purchased inexpensively on Aliexpress, the rest in your local stores.<br><br>
 The outdoor temperature sensor must be connected to the **TEMP1** connector, the indoor temperature sensor must be connected to the **TEMP2** connector. The power supply for the sensors must be connected to the **3.3V** connector, GND to **GND**.<br>
 **The opentherm connection polarity does not matter.**
 <!-- **Important!** On this board opentherm IN pin = 5, OUT pin = 4 -->
@@ -51,6 +51,7 @@ The outdoor temperature sensor must be connected to the **TEMP1** connector, the
 
 ## Another compatible Open Therm Adapters
 - [Ihor Melnyk OpenTherm Adapter](http://ihormelnyk.com/opentherm_adapter)
+- [DIYLESS Master OpenTherm Shield](https://diyless.com/product/master-opentherm-shield)
 - [OpenTherm master shield for Wemos/Lolin](https://www.tindie.com/products/thehognl/opentherm-master-shield-for-wemoslolin/)
 - And others. It's just that the adapter must implement [the schema](http://ihormelnyk.com/Content/Pages/opentherm_adapter/opentherm_adapter_schematic_o.png)
 
