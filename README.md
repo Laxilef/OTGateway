@@ -7,12 +7,12 @@
    - PID
    - Equithermic curves - adjusts the temperature based on indoor and outdoor temperatures
 - Hysteresis setting (for accurate maintenance of room temperature)
-- Ability to connect an external sensor to monitor outdoor temperature (DS18B20)
+- Ability to connect an external sensors to monitor outdoor and indoor temperature ([compatible sensors](#compatible-temperature-sensors))
 - Emergency mode. If the Wi-Fi connection is lost or the gateway cannot connect to the MQTT server, the mode will turn on. This mode will automatically maintain the set temperature and prevent your home from freezing. In this mode it is also possible to use equithermal curves (weather-compensated control).
 - Automatic error reset (not with all boilers)
 - Diagnostics:
-  - The process of heating the coolant for heating: works / does not work
-  - The process of heating water for hot water: working / not working
+  - The process of heating the coolant for heating: works/does not work
+  - The process of heating water for hot water: working/not working
   - Display of boiler errors
   - Burner status: on/off
   - Burner modulation level in percent
@@ -35,11 +35,11 @@
 | [Remeha Calenta Ace 40C](https://github.com/Laxilef/OTGateway/issues/1#issuecomment-1726081554) | default | - |
 
 ## PCB
-<img src="/assets/pcb.svg" width="25%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="37%" />
+<img src="/assets/pcb.svg" width="27%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="40%" />
 
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
-To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower. The boards are inexpensively ($2/5pcs) manufactured at JLCPCB (Remove Order Number = Specify a location).<br><br>
+To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower. The boards are inexpensively (5pcs for $2) manufactured at JLCPCB (Remove Order Number = Specify a location).<br><br>
 Some components can be replaced with similar ones (for example use a fuse and led with legs). Some SMD components (for example optocouplers) can be replaced with similar SOT components.<br>Most of the components can be purchased inexpensively on Aliexpress, the rest in your local stores.<br><br>
 The outdoor temperature sensor must be connected to the **TEMP1** connector, the indoor temperature sensor must be connected to the **TEMP2** connector. The power supply for the sensors must be connected to the **3.3V** connector, GND to **GND**.<br>
 **The opentherm connection polarity does not matter.**
@@ -49,7 +49,7 @@ The outdoor temperature sensor must be connected to the **TEMP1** connector, the
 - [BOM](/assets/BOM.xlsx)
 - [Gerber](/assets/gerber.zip)
 
-## Another compatible Open Therm Adapters
+## Another compatible OpenTherm Adapters
 - [Ihor Melnyk OpenTherm Adapter](http://ihormelnyk.com/opentherm_adapter)
 - [DIYLESS Master OpenTherm Shield](https://diyless.com/product/master-opentherm-shield)
 - [OpenTherm master shield for Wemos/Lolin](https://www.tindie.com/products/thehognl/opentherm-master-shield-for-wemoslolin/)
@@ -65,30 +65,17 @@ The outdoor temperature sensor must be connected to the **TEMP1** connector, the
 [See more](https://github.com/milesburton/Arduino-Temperature-Control-Library#usage)
 
 # Quick Start
-## Dependencies
-- [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler)
-- [NTPClient](https://github.com/arduino-libraries/NTPClient)
-- [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
-- [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
-- [PubSubClient](https://github.com/knolleary/pubsubclient)
-- [TelnetStream](https://github.com/jandrassy/TelnetStream)
-- [EEManager](https://github.com/GyverLibs/EEManager)
-- [GyverPID](https://github.com/GyverLibs/GyverPID)
-- [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library)
-- [WiFiManager](https://github.com/tzapu/WiFiManager)
+1. Download the latest firmware from the [releases page](https://github.com/Laxilef/OTGateway/releases) (or compile yourself) and flash your ESP8266 board using the [ESP Flash Download Tool](https://www.espressif.com/en/support/download/other-tools) or other software.
+2. Connect to *OpenTherm Gateway* hotspot, password: otgateway123456
+3. Open configuration page in browser: 192.168.4.1
+4. Set up a connection to your wifi network
+5. Set up a connection to your MQTT server: ip, port, user, password
+6. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. No change for my board. Typically used **IN** = 4, **OUT** = 5
+7. Set up a **Outdoor sensor pin** & **Indoor sensor pin**. No change for my board.
+8. if necessary, set up a the master member ID ([see more](#tested-on))
+9. Restart module (required after changing OT pins and/or sensors pins!)
 
-
-## Settings
-1. Connect to *OpenTherm Gateway* hotspot, password: otgateway123456
-2. Open configuration page in browser: 192.168.4.1
-3. Set up a connection to your wifi network
-4. Set up a connection to your MQTT server: ip, port, user, password
-5. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. No change for my board. Typically used **IN** = 4, **OUT** = 5
-6. Set up a **Outdoor sensor pin** & **Indoor sensor pin**. No change for my board.
-7. if necessary, set up a the master member ID ([see more](#tested-on))
-8. Restart module (required after changing OT pins!)
-
-After connecting to your wifi network, you can go to the setup page at the address that esp8266 received.
+After connecting to your wifi network, you can go to the setup page at the address that ESP8266 received.
 The OTGateway device will be automatically added to homeassistant if MQTT server ip, login and password are correct.
 
 ## HomeAsssistant settings
@@ -124,7 +111,7 @@ The temperature inside the house can be set using simple automation:
   ```
 </details>
 
-If your boiler does not support the installation of an outdoor temperature sensor or does not provide this value via the opentherm protocol, then you can use an external DS18B20 sensor or use automation.
+If your boiler does not support the installation of an outdoor temperature sensor or does not provide this value via the opentherm protocol, then you can use an external sensor or use automation.
 <details>
   <summary>Simple automation</summary>
 
@@ -181,13 +168,17 @@ Range: 0...10, default: 2, step 0.01
 #### Instructions for fit coefficients:
 **Tip.** I created a [table in Excel](/assets/equitherm_calc.xlsx) in which you can enter temperature parameters inside and outside the house and select coefficients. On the graph you can see the temperature that the boiler will set.
 
-1. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
+1. Set the ***K*** and ***T*** coefficients to 0.
+2. The first thing you need to do is to fit the curve (***N*** coefficient). If your home has low heat loss, then start with 0.5. Otherwise start at 0.7. When the temperature inside the house stops changing, increase or decrease the coefficient value in increments of 0.1 to select the optimal curve.<br>
 Please note that passive heating (sun) will affect the house temperature during curve fitting. This process is not fast and will take you 1-2 days.
-Important. During curve fitting, the temperature must be kept stable as the outside temperature changes. The temperature does not have to be equal to the set one.<br>
-For example. You fit curve 0.67; set temperature 23; the temperature in the house is 20 degrees while the outside temperature is -10 degrees and -5 degrees. This is good.
-2. After fitting the curve, you must select the ***K*** coefficient. It influences the boiler temperature correction to maintain the set temperature.
-For example. Set temperature: 23 degrees; temperature in the house: 20 degrees. Try setting it to 5 and see how the temperature in the house changes after stabilization. Select the value so that the temperature in the house is close to the set.
-3. Now you can choose the ***T*** coefficient. Simply put, it affects the sharpness of the temperature change. If you want fast heating, then set a high value (6-10), but then the room may overheat. If you want smooth heating, set 1-5. Choose the optimal value for yourself.
+Important. During curve fitting, the temperature must be kept stable as the outside temperature changes.<br>
+At this stage, it is important for you to stabilize the indoor temperature at exactly 20 (+- 0.5) degrees.
+<br>
+For example. You fit curve 0.67; set temperature 20; the temperature in the house is 20.1 degrees while the outside temperature is -10 degrees and -5 degrees. This is good.
+3. After fitting the curve, you must select the ***K*** coefficient. It influences the boiler temperature correction to maintain the set temperature.
+For example. Set temperature: 23 degrees; temperature in the house: 20 degrees. Try setting it to 2 and see how the temperature in the house changes after stabilization. Select the value so that the temperature in the house is close to the set.
+4. Now you can choose the ***T*** coefficient. Simply put, it affects the sharpness of the temperature change. If you want fast heating, then set a high value (6-10), but then the room may overheat. If you want smooth heating, set 1-5. Choose the optimal value for yourself.
+5. Check to see if it works correctly at different set temperatures over several days.
 
 Read more about the algorithm [here](https://wdn.su/blog/1154).
 
@@ -200,6 +191,18 @@ In Google you can find instructions for tuning the PID controller.
 ### Use Equitherm mode + PID mode
 @todo
 
+## Dependencies
+- [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler)
+- [NTPClient](https://github.com/arduino-libraries/NTPClient)
+- [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+- [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
+- [PubSubClient](https://github.com/knolleary/pubsubclient)
+- [TelnetStream](https://github.com/jandrassy/TelnetStream)
+- [EEManager](https://github.com/GyverLibs/EEManager)
+- [GyverPID](https://github.com/GyverLibs/GyverPID)
+- [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library)
+- [WiFiManager](https://github.com/tzapu/WiFiManager)
+
 ## Debug
 To display DEBUG messages you must enable debug in settings (switch is disabled by default).
-You can connect via Telnet to read messages. IP: esp8266 ip, port: 23
+You can connect via Telnet to read messages. IP: ESP8266 ip, port: 23
