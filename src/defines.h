@@ -1,4 +1,4 @@
-#define OT_GATEWAY_VERSION          "1.2.1"
+#define OT_GATEWAY_VERSION          "1.3.0"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
 #define USE_TELNET
@@ -9,9 +9,8 @@
 
 #define OPENTHERM_OFFLINE_TRESHOLD  10
 
-#define DS18B20_PIN                 2
-#define DS18B20_INTERVAL            5000
-#define OUTDOOR_SENSOR_FILTER_K     0.15
+#define EXT_SENSORS_INTERVAL        5000
+#define EXT_SENSORS_FILTER_K        0.15
 #define DS_CHECK_CRC                true
 #define DS_CRC_USE_TABLE            true
 
@@ -19,6 +18,7 @@
 #define LED_OT_RX_PIN               15
 
 #define CONFIG_URL                  "http://%s/"
+#define SETTINGS_VALID_VALUE        "stvalid" // only 8 chars!
 
 
 #ifdef USE_TELNET

@@ -61,7 +61,7 @@ To save money, 2 levels are ordered as one board. After manufacturing, the board
 - [TelnetStream](https://github.com/jandrassy/TelnetStream)
 - [EEManager](https://github.com/GyverLibs/EEManager)
 - [GyverPID](https://github.com/GyverLibs/GyverPID)
-- [microDS18B20](https://github.com/GyverLibs/microDS18B20)
+- [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library)
 - [WiFiManager](https://github.com/tzapu/WiFiManager)
 
 

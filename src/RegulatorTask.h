@@ -3,7 +3,7 @@
 #include <PIDtuner.h>
 
 Equitherm etRegulator;
-GyverPID pidRegulator(0, 0, 0, 10000);
+GyverPID pidRegulator(0, 0, 0);
 PIDtuner pidTuner;
 
 class RegulatorTask: public LeanTask {
@@ -73,7 +73,7 @@ protected:
     float newTemp = 0;
 
     // if use equitherm
-    if (settings.emergency.useEquitherm && settings.outdoorTempSource != 1) {
+    if (settings.emergency.useEquitherm && settings.sensors.outdoor.type != 1) {
       float etResult = getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
 
       if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
@@ -123,21 +123,24 @@ protected:
     }
 
     // if use pid
-    if (settings.pid.enable) {
+    if (settings.pid.enable && vars.states.heating) {
       float pidResult = getPidTemp(
-        settings.equitherm.enable ? -30 : vars.parameters.heatingMinTemp,
-        settings.equitherm.enable ? 30 : vars.parameters.heatingMaxTemp
+        settings.equitherm.enable ? (settings.pid.maxTemp * -1) : settings.pid.minTemp,
+        settings.equitherm.enable ? settings.pid.maxTemp : settings.pid.maxTemp
       );
 
-      if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
+      if (1 || fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
         prevPidResult = pidResult;
         newTemp += pidResult;
 
-        INFO_F("[REGULATOR][PID] New result: %u (%f) \n", (int)round(pidResult), pidResult);
+        INFO_F("[REGULATOR][PID] New result: %d (%f) \n", (int)round(pidResult), pidResult);
 
       } else {
         newTemp += prevPidResult;
       }
+
+    } else if ( settings.pid.enable && !vars.states.heating && prevPidResult != 0 ) {
+      newTemp += prevPidResult;
     }
 
     // default temp, manual mode
@@ -145,7 +148,9 @@ protected:
       newTemp = settings.heating.target;
     }
 
-    return round(newTemp);
+    newTemp = round(newTemp);
+    newTemp = constrain(newTemp, 0, 100);
+    return newTemp;
   }
 
   byte getTuningModeTemp() {
@@ -269,7 +274,7 @@ protected:
     pidRegulator.input = vars.temperatures.indoor;
     pidRegulator.setpoint = settings.heating.target;
 
-    return pidRegulator.getResultTimer();
+    return pidRegulator.getResultNow();
   }
 
   float tuneEquithermN(float ratio, float currentTemp, float setTemp, unsigned int dirtyInterval = 60, unsigned int accurateInterval = 1800, float accurateStep = 0.01, float accurateStepAfter = 1) {

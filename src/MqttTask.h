@@ -19,7 +19,6 @@ protected:
   void setup() {
     DEBUG("[MQTT] Started");
 
-    client.setServer(settings.mqtt.server, settings.mqtt.port);
     client.setCallback(__callback);
     haHelper.setPrefix(settings.mqtt.prefix);
     haHelper.setDeviceVersion(OT_GATEWAY_VERSION);
@@ -32,6 +31,7 @@ protected:
     if (!client.connected() && millis() - lastReconnectAttempt >= MQTT_RECONNECT_INTERVAL) {
       INFO_F("Mqtt not connected, state: %i, connecting to server %s...\n", client.state(), settings.mqtt.server);
 
+      client.setServer(settings.mqtt.server, settings.mqtt.port);
       if (client.connect(settings.hostname, settings.mqtt.user, settings.mqtt.password)) {
         INFO("Connected to MQTT server");
 
@@ -93,15 +93,6 @@ protected:
       flag = true;
     }
 
-    if (!doc["outdoorTempSource"].isNull() && doc["outdoorTempSource"].is<int>() && doc["outdoorTempSource"] >= 0 && doc["outdoorTempSource"] <= 2) {
-      settings.outdoorTempSource = doc["outdoorTempSource"];
-      flag = true;
-    }
-
-    if (!doc["mqtt"]["interval"].isNull() && doc["mqtt"]["interval"].is<int>() && doc["mqtt"]["interval"] >= 1000 && doc["mqtt"]["interval"] <= 120000) {
-      settings.mqtt.interval = doc["mqtt"]["interval"].as<unsigned int>();
-      flag = true;
-    }
 
     // emergency
     if (!doc["emergency"]["enable"].isNull() && doc["emergency"]["enable"].is<bool>()) {
@@ -109,15 +100,18 @@ protected:
       flag = true;
     }
 
-    if (!doc["emergency"]["target"].isNull() && (doc["emergency"]["target"].is<float>() || doc["emergency"]["target"].is<int>())) {
-      settings.emergency.target = round(doc["emergency"]["target"].as<float>() * 10) / 10;
-      flag = true;
+    if (!doc["emergency"]["target"].isNull() && doc["emergency"]["target"].is<float>()) {
+      if ( doc["emergency"]["target"].as<float>() > 0 && doc["emergency"]["target"].as<float>() < 100 ) {
+        settings.emergency.target = round(doc["emergency"]["target"].as<float>() * 10) / 10;
+        flag = true;
+      }
     }
 
     if (!doc["emergency"]["useEquitherm"].isNull() && doc["emergency"]["useEquitherm"].is<bool>()) {
       settings.emergency.useEquitherm = doc["emergency"]["useEquitherm"].as<bool>();
       flag = true;
     }
+
 
     // heating
     if (!doc["heating"]["enable"].isNull() && doc["heating"]["enable"].is<bool>()) {
@@ -130,15 +124,36 @@ protected:
       flag = true;
     }
 
-    if (!doc["heating"]["target"].isNull() && (doc["heating"]["target"].is<float>() || doc["heating"]["target"].is<int>())) {
-      settings.heating.target = round(doc["heating"]["target"].as<float>() * 10) / 10;
-      flag = true;
+    if (!doc["heating"]["target"].isNull() && doc["heating"]["target"].is<float>()) {
+      if ( doc["heating"]["target"].as<float>() > 0 && doc["heating"]["target"].as<float>() < 100 ) {
+        settings.heating.target = round(doc["heating"]["target"].as<float>() * 10) / 10;
+        flag = true;
+      }
     }
 
-    if (!doc["heating"]["hysteresis"].isNull() && (doc["heating"]["hysteresis"].is<float>() || doc["heating"]["hysteresis"].is<int>())) {
-      settings.heating.hysteresis = round(doc["heating"]["hysteresis"].as<float>() * 10) / 10;
-      flag = true;
+    if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<float>()) {
+      if ( doc["heating"]["hysteresis"].as<float>() > 0 && doc["heating"]["hysteresis"].as<float>() <= 5 ) {
+        settings.heating.hysteresis = round(doc["heating"]["hysteresis"].as<float>() * 10) / 10;
+        flag = true;
+      }
     }
+
+    if (!doc["heating"]["maxTemp"].isNull() && doc["heating"]["maxTemp"].is<unsigned char>()) {
+      if ( doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100 && doc["heating"]["maxTemp"].as<unsigned char>() > settings.heating.minTemp ) {
+        settings.heating.maxTemp = doc["heating"]["maxTemp"].as<unsigned char>();
+        vars.parameters.heatingMaxTemp = settings.heating.maxTemp;
+        flag = true;
+      }
+    }
+
+    if (!doc["heating"]["minTemp"].isNull() && doc["heating"]["minTemp"].is<unsigned char>()) {
+      if ( doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100 && doc["heating"]["minTemp"].as<unsigned char>() < settings.heating.maxTemp ) {
+        settings.heating.minTemp = doc["heating"]["minTemp"].as<unsigned char>();
+        vars.parameters.heatingMinTemp = settings.heating.minTemp;
+        flag = true;
+      }
+    }
+
 
     // dhw
     if (!doc["dhw"]["enable"].isNull() && doc["dhw"]["enable"].is<bool>()) {
@@ -146,10 +161,29 @@ protected:
       flag = true;
     }
 
-    if (!doc["dhw"]["target"].isNull() && doc["dhw"]["target"].is<int>()) {
-      settings.dhw.target = doc["dhw"]["target"].as<int>();
-      flag = true;
+    if (!doc["dhw"]["target"].isNull() && doc["dhw"]["target"].is<unsigned char>()) {
+      if ( doc["dhw"]["target"].as<unsigned char>() >= 0 && doc["dhw"]["target"].as<unsigned char>() < 100 ) {
+        settings.dhw.target = doc["dhw"]["target"].as<unsigned char>();
+        flag = true;
+      }
     }
+
+    if (!doc["dhw"]["maxTemp"].isNull() && doc["dhw"]["maxTemp"].is<unsigned char>()) {
+      if ( doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100 && doc["dhw"]["maxTemp"].as<unsigned char>() > settings.dhw.minTemp ) {
+        settings.dhw.maxTemp = doc["dhw"]["maxTemp"].as<unsigned char>();
+        vars.parameters.dhwMaxTemp = settings.dhw.maxTemp;
+        flag = true;
+      }
+    }
+
+    if (!doc["dhw"]["minTemp"].isNull() && doc["dhw"]["minTemp"].is<unsigned char>()) {
+      if ( doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100 && doc["dhw"]["minTemp"].as<unsigned char>() < settings.dhw.maxTemp ) {
+        settings.dhw.minTemp = doc["dhw"]["minTemp"].as<unsigned char>();
+        vars.parameters.dhwMinTemp = settings.dhw.minTemp;
+        flag = true;
+      }
+    }
+
 
     // pid
     if (!doc["pid"]["enable"].isNull() && doc["pid"]["enable"].is<bool>()) {
@@ -157,19 +191,39 @@ protected:
       flag = true;
     }
 
-    if (!doc["pid"]["p_factor"].isNull() && (doc["pid"]["p_factor"].is<float>() || doc["pid"]["p_factor"].is<int>())) {
-      settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 1000) / 1000;
-      flag = true;
+    if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<float>()) {
+      if ( doc["pid"]["p_factor"].as<float>() >= 0 && doc["pid"]["p_factor"].as<float>() <= 20 ) {
+        settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
     }
 
-    if (!doc["pid"]["i_factor"].isNull() && (doc["pid"]["i_factor"].is<float>() || doc["pid"]["i_factor"].is<int>())) {
-      settings.pid.i_factor = round(doc["pid"]["i_factor"].as<float>() * 1000) / 1000;
-      flag = true;
+    if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<float>()) {
+      if ( doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 20 ) {
+        settings.pid.i_factor = round(doc["pid"]["i_factor"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
     }
 
-    if (!doc["pid"]["d_factor"].isNull() && (doc["pid"]["d_factor"].is<float>() || doc["pid"]["d_factor"].is<int>())) {
-      settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 1000) / 1000;
-      flag = true;
+    if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<float>()) {
+      if ( doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 20 ) {
+        settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
+    }
+
+    if (!doc["pid"]["maxTemp"].isNull() && doc["pid"]["maxTemp"].is<unsigned char>()) {
+      if ( doc["pid"]["maxTemp"].as<unsigned char>() > 0 && doc["pid"]["maxTemp"].as<unsigned char>() <= 100 && doc["pid"]["maxTemp"].as<unsigned char>() > settings.pid.minTemp ) {
+        settings.pid.maxTemp = doc["pid"]["maxTemp"].as<unsigned char>();
+        flag = true;
+      }
+    }
+
+    if (!doc["pid"]["minTemp"].isNull() && doc["pid"]["minTemp"].is<unsigned char>()) {
+      if ( doc["pid"]["minTemp"].as<unsigned char>() >= 0 && doc["pid"]["minTemp"].as<unsigned char>() < 100 && doc["pid"]["minTemp"].as<unsigned char>() < settings.pid.maxTemp ) {
+        settings.pid.minTemp = doc["pid"]["minTemp"].as<unsigned char>();
+        flag = true;
+      }
     }
 
     // equitherm
@@ -178,20 +232,57 @@ protected:
       flag = true;
     }
 
-    if (!doc["equitherm"]["n_factor"].isNull() && (doc["equitherm"]["n_factor"].is<float>() || doc["equitherm"]["n_factor"].is<int>())) {
-      settings.equitherm.n_factor = round(doc["equitherm"]["n_factor"].as<float>() * 1000) / 1000;
-      flag = true;
+    if (!doc["equitherm"]["n_factor"].isNull() && doc["equitherm"]["n_factor"].is<float>()) {
+      if ( doc["equitherm"]["n_factor"].as<float>() >= 0 && doc["equitherm"]["n_factor"].as<float>() <= 20 ) {
+        settings.equitherm.n_factor = round(doc["equitherm"]["n_factor"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
     }
 
-    if (!doc["equitherm"]["k_factor"].isNull() && (doc["equitherm"]["k_factor"].is<float>() || doc["equitherm"]["k_factor"].is<int>())) {
-      settings.equitherm.k_factor = round(doc["equitherm"]["k_factor"].as<float>() * 1000) / 1000;
-      flag = true;
+    if (!doc["equitherm"]["k_factor"].isNull() && doc["equitherm"]["k_factor"].is<float>()) {
+      if ( doc["equitherm"]["k_factor"].as<float>() >= 0 && doc["equitherm"]["k_factor"].as<float>() <= 20 ) {
+        settings.equitherm.k_factor = round(doc["equitherm"]["k_factor"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
     }
 
-    if (!doc["equitherm"]["t_factor"].isNull() && (doc["equitherm"]["t_factor"].is<float>() || doc["equitherm"]["t_factor"].is<int>())) {
-      settings.equitherm.t_factor = round(doc["equitherm"]["t_factor"].as<float>() * 1000) / 1000;
-      flag = true;
+    if (!doc["equitherm"]["t_factor"].isNull() && doc["equitherm"]["t_factor"].is<float>()) {
+      if ( doc["equitherm"]["t_factor"].as<float>() >= 0 && doc["equitherm"]["t_factor"].as<float>() <= 20 ) {
+        settings.equitherm.t_factor = round(doc["equitherm"]["t_factor"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
     }
+
+
+    // sensors
+    if (!doc["sensors"]["outdoor"]["type"].isNull() && doc["sensors"]["outdoor"]["type"].is<unsigned char>()) {
+      if ( doc["sensors"]["outdoor"]["type"].as<unsigned char>() >= 0 && doc["sensors"]["outdoor"]["type"].as<unsigned char>() <= 2 ) {
+        settings.sensors.outdoor.type = doc["sensors"]["outdoor"]["type"].as<unsigned char>();
+        flag = true;
+      }
+    }
+
+    if (!doc["sensors"]["outdoor"]["offset"].isNull() && doc["sensors"]["outdoor"]["offset"].is<float>()) {
+      if ( doc["sensors"]["outdoor"]["offset"].as<float>() >= -10 && doc["sensors"]["outdoor"]["offset"].as<float>() <= 10 ) {
+        settings.sensors.outdoor.offset = round(doc["sensors"]["outdoor"]["offset"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
+    }
+
+    if (!doc["sensors"]["indoor"]["type"].isNull() && doc["sensors"]["indoor"]["type"].is<unsigned char>()) {
+      if ( doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 2 ) {
+        settings.sensors.indoor.type = doc["sensors"]["indoor"]["type"].as<unsigned char>();
+        flag = true;
+      }
+    }
+
+    if (!doc["sensors"]["indoor"]["offset"].isNull() && doc["sensors"]["indoor"]["offset"].is<float>()) {
+      if ( doc["sensors"]["indoor"]["offset"].as<float>() >= -10 && doc["sensors"]["indoor"]["offset"].as<float>() <= 10 ) {
+        settings.sensors.indoor.offset = round(doc["sensors"]["indoor"]["offset"].as<float>() * 1000) / 1000;
+        flag = true;
+      }
+    }
+
 
     if (flag) {
       eeSettings.update();
@@ -215,27 +306,33 @@ protected:
       flag = true;
     }
 
-    if (!doc["tuning"]["regulator"].isNull() && doc["tuning"]["regulator"].is<int>() && doc["tuning"]["regulator"] >= 0 && doc["tuning"]["regulator"] <= 1) {
-      vars.tuning.regulator = doc["tuning"]["regulator"];
-      flag = true;
+    if (!doc["tuning"]["regulator"].isNull() && doc["tuning"]["regulator"].is<unsigned char>()) {
+      if (doc["tuning"]["regulator"].as<unsigned char>() >= 0 && doc["tuning"]["regulator"].as<unsigned char>() <= 1) {
+        vars.tuning.regulator = doc["tuning"]["regulator"].as<unsigned char>();
+        flag = true;
+      }
     }
 
-    if (!doc["temperatures"]["indoor"].isNull() && (doc["temperatures"]["indoor"].is<float>() || doc["temperatures"]["indoor"].is<int>())) {
-      vars.temperatures.indoor = round(doc["temperatures"]["indoor"].as<float>() * 100) / 100;
-      flag = true;
+    if (!doc["temperatures"]["indoor"].isNull() && doc["temperatures"]["indoor"].is<float>()) {
+      if ( settings.sensors.indoor.type == 1 && doc["temperatures"]["indoor"].as<float>() > -100 && doc["temperatures"]["indoor"].as<float>() < 100 ) {
+        vars.temperatures.indoor = round(doc["temperatures"]["indoor"].as<float>() * 100) / 100;
+        flag = true;
+      }
     }
 
-    if (!doc["temperatures"]["outdoor"].isNull() && (doc["temperatures"]["outdoor"].is<float>() || doc["temperatures"]["outdoor"].is<int>()) && settings.outdoorTempSource == 1) {
-      vars.temperatures.outdoor = round(doc["temperatures"]["outdoor"].as<float>() * 100) / 100;
-      flag = true;
+    if (!doc["temperatures"]["outdoor"].isNull() && doc["temperatures"]["outdoor"].is<float>()) {
+      if ( settings.sensors.outdoor.type == 1 && doc["temperatures"]["outdoor"].as<float>() > -100 && doc["temperatures"]["outdoor"].as<float>() < 100 ) {
+        vars.temperatures.outdoor = round(doc["temperatures"]["outdoor"].as<float>() * 100) / 100;
+        flag = true;
+      }
     }
 
-    if (!doc["restart"].isNull() && doc["restart"].is<bool>() && doc["restart"]) {
+    if (!doc["restart"].isNull() && doc["restart"].is<bool>() && doc["restart"].as<bool>()) {
       DEBUG("Received restart message...");
+      eeSettings.updateNow();
       Scheduler.delay(10000);
       DEBUG("Restart...");
 
-      eeSettings.updateNow();
       ESP.restart();
     }
 
@@ -275,7 +372,10 @@ protected:
 
   static void publishHaEntities() {
     // main
-    haHelper.publishSelectOutdoorTempSource();
+    haHelper.publishSelectOutdoorSensorType();
+    haHelper.publishSelectIndoorSensorType();
+    haHelper.publishNumberOutdoorSensorOffset(false);
+    haHelper.publishNumberIndoorSensorOffset(false);
     haHelper.publishSwitchDebug(false);
 
     // emergency
@@ -289,16 +389,26 @@ protected:
     //haHelper.publishNumberHeatingTarget(false);
     haHelper.publishNumberHeatingHysteresis();
     haHelper.publishSensorHeatingSetpoint(false);
+    haHelper.publishSensorCurrentHeatingMinTemp(false);
+    haHelper.publishSensorCurrentHeatingMaxTemp(false);
+    haHelper.publishNumberHeatingMinTemp(false);
+    haHelper.publishNumberHeatingMaxTemp(false);
 
     // dhw
     haHelper.publishSwitchDHW(false);
     //haHelper.publishNumberDHWTarget(false);
+    haHelper.publishSensorCurrentDHWMinTemp(false);
+    haHelper.publishSensorCurrentDHWMaxTemp(false);
+    haHelper.publishNumberDHWMinTemp(false);
+    haHelper.publishNumberDHWMaxTemp(false);
 
     // pid
     haHelper.publishSwitchPID();
     haHelper.publishNumberPIDFactorP();
     haHelper.publishNumberPIDFactorI();
     haHelper.publishNumberPIDFactorD();
+    haHelper.publishNumberPIDMinTemp(false);
+    haHelper.publishNumberPIDMaxTemp(false);
 
     // equitherm
     haHelper.publishSwitchEquitherm();
@@ -319,7 +429,7 @@ protected:
     haHelper.publishBinSensorFault();
     haHelper.publishBinSensorDiagnostic();
     haHelper.publishSensorFaultCode();
-    haHelper.publishSensorRssi();
+    haHelper.publishSensorRssi(false);
 
     // sensors
     haHelper.publishSensorModulation(false);
@@ -333,18 +443,15 @@ protected:
   }
 
   static bool publishNonStaticHaEntities(bool force = false) {
-    static byte _heatingMinTemp;
-    static byte _heatingMaxTemp;
-    static byte _dhwMinTemp;
-    static byte _dhwMaxTemp;
-    static bool _editableOutdoorTemp;
+    static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp;
+    static bool _editableOutdoorTemp, _editableIndoorTemp;
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
     byte heatingMinTemp = isStupidMode ? vars.parameters.heatingMinTemp : 10;
     byte heatingMaxTemp = isStupidMode ? vars.parameters.heatingMaxTemp : 30;
-    bool editableOutdoorTemp = settings.outdoorTempSource == 1;
-
+    bool editableOutdoorTemp = settings.sensors.outdoor.type == 1;
+    bool editableIndoorTemp = settings.sensors.indoor.type == 1;
 
     if (force || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
       if (settings.heating.target < heatingMinTemp || settings.heating.target > heatingMaxTemp) {
@@ -384,6 +491,20 @@ protected:
       published = true;
     }
 
+    if (force || _editableIndoorTemp != editableIndoorTemp) {
+      _editableIndoorTemp = editableIndoorTemp;
+
+      if (editableIndoorTemp) {
+        haHelper.deleteSensorIndoorTemp();
+        haHelper.publishNumberIndoorTemp();
+      } else {
+        haHelper.deleteNumberIndoorTemp();
+        haHelper.publishSensorIndoorTemp();
+      }
+
+      published = true;
+    }
+
     return published;
   }
 
@@ -391,7 +512,6 @@ protected:
     StaticJsonDocument<2048> doc;
 
     doc["debug"] = settings.debug;
-    doc["outdoorTempSource"] = settings.outdoorTempSource;
 
     doc["emergency"]["enable"] = settings.emergency.enable;
     doc["emergency"]["target"] = settings.emergency.target;
@@ -401,19 +521,31 @@ protected:
     doc["heating"]["turbo"] = settings.heating.turbo;
     doc["heating"]["target"] = settings.heating.target;
     doc["heating"]["hysteresis"] = settings.heating.hysteresis;
+    doc["heating"]["minTemp"] = settings.heating.minTemp;
+    doc["heating"]["maxTemp"] = settings.heating.maxTemp;
 
     doc["dhw"]["enable"] = settings.dhw.enable;
     doc["dhw"]["target"] = settings.dhw.target;
+    doc["dhw"]["minTemp"] = settings.dhw.minTemp;
+    doc["dhw"]["maxTemp"] = settings.dhw.maxTemp;
 
     doc["pid"]["enable"] = settings.pid.enable;
     doc["pid"]["p_factor"] = settings.pid.p_factor;
     doc["pid"]["i_factor"] = settings.pid.i_factor;
     doc["pid"]["d_factor"] = settings.pid.d_factor;
+    doc["pid"]["minTemp"] = settings.pid.minTemp;
+    doc["pid"]["maxTemp"] = settings.pid.maxTemp;
 
     doc["equitherm"]["enable"] = settings.equitherm.enable;
     doc["equitherm"]["n_factor"] = settings.equitherm.n_factor;
     doc["equitherm"]["k_factor"] = settings.equitherm.k_factor;
     doc["equitherm"]["t_factor"] = settings.equitherm.t_factor;
+
+    doc["sensors"]["outdoor"]["type"] = settings.sensors.outdoor.type;
+    doc["sensors"]["outdoor"]["offset"] = settings.sensors.outdoor.offset;
+    
+    doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
+    doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 
     client.beginPublish(topic, measureJson(doc), false);
     //BufferingPrint bufferedClient(client, 32);

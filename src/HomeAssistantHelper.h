@@ -27,10 +27,10 @@ public:
     _deviceConfigUrl = value;
   }
 
-  bool publishSelectOutdoorTempSource(bool enabledByDefault = true) {
+  bool publishSelectOutdoorSensorType(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[F("command_topic")] = _prefix + F("/settings/set");
-    doc[F("command_template")] = F("{\"outdoorTempSource\": {% if value == 'Boiler' %}0{% elif value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}");
+    doc[F("command_template")] = F("{\"sensors\": {\"outdoor\": {\"type\": {% if value == 'Boiler' %}0{% elif value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}}}");
     doc[F("device")][F("identifiers")][0] = _prefix;
     doc[F("device")][F("sw_version")] = _deviceVersion;
     doc[F("device")][F("manufacturer")] = _deviceManufacturer;
@@ -40,23 +40,122 @@ public:
       doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
     }
     doc[F("enabled_by_default")] = enabledByDefault;
-    doc[F("unique_id")] = _prefix + F("_outdoorTempSource");
-    doc[F("object_id")] = _prefix + F("_outdoorTempSource");
+    doc[F("unique_id")] = _prefix + F("_outdoor_sensor_type");
+    doc[F("object_id")] = _prefix + F("_outdoor_sensor_type");
     doc[F("entity_category")] = F("config");
     doc[F("name")] = F("Outdoor temperature source");
     doc[F("state_topic")] = _prefix + F("/settings");
-    doc[F("value_template")] = F("{% if value_json.outdoorTempSource == 0 %}Boiler{% elif value_json.outdoorTempSource == 1 %}Manual{% elif value_json.outdoorTempSource == 2 %}External{% endif %}");
+    doc[F("value_template")] = F("{% if value_json.sensors.outdoor.type == 0 %}Boiler{% elif value_json.sensors.outdoor.type == 1 %}Manual{% elif value_json.sensors.outdoor.type == 2 %}External{% endif %}");
     doc[F("options")][0] = F("Boiler");
     doc[F("options")][1] = F("Manual");
     doc[F("options")][2] = F("External");
 
-    client.beginPublish((F("homeassistant/select/") + _prefix + F("/outdoorTempSource/config")).c_str(), measureJson(doc), true);
+    client.beginPublish((F("homeassistant/select/") + _prefix + F("/outdoor_sensor_type/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
     //serializeJson(doc, bufferedClient);
     //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
+
+  bool publishSelectIndoorSensorType(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"sensors\": {\"indoor\": {\"type\": {% if value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}}}");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_indoor_sensor_type");
+    doc[F("object_id")] = _prefix + F("_indoor_sensor_type");
+    doc[F("entity_category")] = F("config");
+    doc[F("name")] = F("Indoor temperature source");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{% if value_json.sensors.indoor.type == 1 %}Manual{% elif value_json.sensors.indoor.type == 2 %}External{% endif %}");
+    doc[F("options")][0] = F("Manual");
+    doc[F("options")][1] = F("External");
+
+    client.beginPublish((F("homeassistant/select/") + _prefix + F("/indoor_sensor_type/config")).c_str(), measureJson(doc), true);
+    //BufferingPrint bufferedClient(client, 32);
+    //serializeJson(doc, bufferedClient);
+    //bufferedClient.flush();
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishNumberOutdoorSensorOffset(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][F("topic")] = _prefix + F("/settings");
+    doc[F("availability")][F("value_template")] = F("{{ iif(value_json.sensors.outdoor.type != 1, 'online', 'offline') }}");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_outdoor_sensor_offset");
+    doc[F("object_id")] = _prefix + F("_outdoor_sensor_offset");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Outdoor sensor offset");
+    doc[F("icon")] = F("mdi:altimeter");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.sensors.outdoor.offset|float(0)|round(2) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"sensors\": {\"outdoor\" : {\"offset\" : {{ value }}}}}");
+    doc[F("min")] = -10;
+    doc[F("max")] = 10;
+    doc[F("step")] = 0.1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/outdoor_sensor_offset/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishNumberIndoorSensorOffset(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][F("topic")] = _prefix + F("/settings");
+    doc[F("availability")][F("value_template")] = F("{{ iif(value_json.sensors.indoor.type != 1, 'online', 'offline') }}");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_indoor_sensor_offset");
+    doc[F("object_id")] = _prefix + F("_indoor_sensor_offset");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Indoor sensor offset");
+    doc[F("icon")] = F("mdi:altimeter");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.sensors.indoor.offset|float(0)|round(2) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"sensors\": {\"indoor\" : {\"offset\" : {{ value }}}}}");
+    doc[F("min")] = -10;
+    doc[F("max")] = 10;
+    doc[F("step")] = 0.1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/indoor_sensor_offset/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
 
   bool publishSwitchDebug(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
@@ -148,6 +247,7 @@ public:
     doc[F("min")] = 5;
     doc[F("max")] = 50;
     doc[F("step")] = 0.5;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/emergency_target/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -160,7 +260,7 @@ public:
   bool publishSwitchEmergencyUseEquitherm(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[F("availability")][F("topic")] = _prefix + F("/settings");
-    doc[F("availability")][F("value_template")] = F("{{ iif(value_json.outdoorTempSource != 1, 'online', 'offline') }}");
+    doc[F("availability")][F("value_template")] = F("{{ iif(value_json.sensors.outdoor.type != 1, 'online', 'offline') }}");
     doc[F("device")][F("identifiers")][0] = _prefix;
     doc[F("device")][F("sw_version")] = _deviceVersion;
     doc[F("device")][F("manufacturer")] = _deviceManufacturer;
@@ -282,8 +382,9 @@ public:
     doc[F("command_topic")] = _prefix + F("/settings/set");
     doc[F("command_template")] = F("{\"heating\": {\"target\" : {{ value }}}}");
     doc[F("min")] = minTemp;
-    doc[F("max")] = maxTemp;
+    doc[F("max")] = maxTemp <= minTemp ? maxTemp : maxTemp;
     doc[F("step")] = 0.5;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/heating_target/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -318,6 +419,7 @@ public:
     doc[F("min")] = 0;
     doc[F("max")] = 5;
     doc[F("step")] = 0.1;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/heating_hysteresis/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -354,6 +456,126 @@ public:
     //BufferingPrint bufferedClient(client, 32);
     //serializeJson(doc, bufferedClient);
     //bufferedClient.flush();
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishSensorCurrentHeatingMinTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][F("topic")] = _prefix + F("/status");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_current_heating_min_temp");
+    doc[F("object_id")] = _prefix + F("_current_heating_min_temp");
+    doc[F("entity_category")] = F("diagnostic");
+    doc[F("device_class")] = F("temperature");
+    doc[F("state_class")] = F("measurement");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Current heating min temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-down");
+    doc[F("state_topic")] = _prefix + F("/state");
+    doc[F("value_template")] = F("{{ value_json.parameters.heatingMinTemp|int(0) }}");
+
+    client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/current_heating_min_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishSensorCurrentHeatingMaxTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][F("topic")] = _prefix + F("/status");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_current_heating_max_temp");
+    doc[F("object_id")] = _prefix + F("_current_heating_max_temp");
+    doc[F("entity_category")] = F("diagnostic");
+    doc[F("device_class")] = F("temperature");
+    doc[F("state_class")] = F("measurement");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Current heating max temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-up");
+    doc[F("state_topic")] = _prefix + F("/state");
+    doc[F("value_template")] = F("{{ value_json.parameters.heatingMaxTemp|int(0) }}");
+
+    client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/current_heating_max_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishNumberHeatingMinTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_heating_min_temp");
+    doc[F("object_id")] = _prefix + F("_heating_min_temp");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Heating min temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-down");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.heating.minTemp|float(0)|round(1) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"heating\": {\"minTemp\" : {{ value }}}}");
+    doc[F("min")] = 0;
+    doc[F("max")] = 99;
+    doc[F("step")] = 1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/heating_min_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+  
+  bool publishNumberHeatingMaxTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_heating_max_temp");
+    doc[F("object_id")] = _prefix + F("_heating_max_temp");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Heating max temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-up");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.heating.maxTemp|float(0)|round(1) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"heating\": {\"maxTemp\" : {{ value }}}}");
+    doc[F("min")] = 1;
+    doc[F("max")] = 100;
+    doc[F("step")] = 1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/heating_max_temp/config")).c_str(), measureJson(doc), true);
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -416,13 +638,134 @@ public:
     doc[F("command_topic")] = _prefix + F("/settings/set");
     doc[F("command_template")] = F("{\"dhw\": {\"target\" : {{ value|int(0) }}}}");
     doc[F("min")] = minTemp;
-    doc[F("max")] = maxTemp;
+    doc[F("max")] = maxTemp <= minTemp ? maxTemp : maxTemp;
     doc[F("step")] = 1;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/dhw_target/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
     //serializeJson(doc, bufferedClient);
     //bufferedClient.flush();
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishSensorCurrentDHWMinTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][F("topic")] = _prefix + F("/status");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_current_dhw_min_temp");
+    doc[F("object_id")] = _prefix + F("_current_dhw_min_temp");
+    doc[F("entity_category")] = F("diagnostic");
+    doc[F("device_class")] = F("temperature");
+    doc[F("state_class")] = F("measurement");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Current DHW min temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-down");
+    doc[F("state_topic")] = _prefix + F("/state");
+    doc[F("value_template")] = F("{{ value_json.parameters.dhwMinTemp|int(0) }}");
+
+    client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/current_dhw_min_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishSensorCurrentDHWMaxTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][F("topic")] = _prefix + F("/status");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_current_dhw_max_temp");
+    doc[F("object_id")] = _prefix + F("_current_dhw_max_temp");
+    doc[F("entity_category")] = F("diagnostic");
+    doc[F("device_class")] = F("temperature");
+    doc[F("state_class")] = F("measurement");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Current DHW max temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-up");
+    doc[F("state_topic")] = _prefix + F("/state");
+    doc[F("value_template")] = F("{{ value_json.parameters.dhwMaxTemp|int(0) }}");
+
+    client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/current_dhw_max_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishNumberDHWMinTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_dhw_min_temp");
+    doc[F("object_id")] = _prefix + F("_dhw_min_temp");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("DHW min temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-down");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.dhw.minTemp|float(0)|round(1) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"dhw\": {\"minTemp\" : {{ value }}}}");
+    doc[F("min")] = 0;
+    doc[F("max")] = 99;
+    doc[F("step")] = 1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/dhw_min_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+  
+  bool publishNumberDHWMaxTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_dhw_max_temp");
+    doc[F("object_id")] = _prefix + F("_dhw_max_temp");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("DHW max temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-up");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.dhw.maxTemp|float(0)|round(1) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"dhw\": {\"maxTemp\" : {{ value }}}}");
+    doc[F("min")] = 1;
+    doc[F("max")] = 100;
+    doc[F("step")] = 1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/dhw_max_temp/config")).c_str(), measureJson(doc), true);
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -482,6 +825,7 @@ public:
     doc[F("min")] = 0.001;
     doc[F("max")] = 10;
     doc[F("step")] = 0.001;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_p_factor/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -513,6 +857,7 @@ public:
     doc[F("min")] = 0;
     doc[F("max")] = 10;
     doc[F("step")] = 0.001;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_i_factor/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -544,11 +889,76 @@ public:
     doc[F("min")] = 0;
     doc[F("max")] = 10;
     doc[F("step")] = 0.001;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_d_factor/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
     //serializeJson(doc, bufferedClient);
     //bufferedClient.flush();
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishNumberPIDMinTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_pid_min_temp");
+    doc[F("object_id")] = _prefix + F("_pid_min_temp");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("PID min temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-down");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.pid.minTemp|float(0)|round(1) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"pid\": {\"minTemp\" : {{ value }}}}");
+    doc[F("min")] = 0;
+    doc[F("max")] = 99;
+    doc[F("step")] = 1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_min_temp/config")).c_str(), measureJson(doc), true);
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+  
+  bool publishNumberPIDMaxTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_pid_max_temp");
+    doc[F("object_id")] = _prefix + F("_pid_max_temp");
+    doc[F("entity_category")] = F("config");
+    doc[F("device_class")] = F("temperature");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("PID max temp");
+    doc[F("icon")] = F("mdi:thermometer-chevron-up");
+    doc[F("state_topic")] = _prefix + F("/settings");
+    doc[F("value_template")] = F("{{ value_json.pid.maxTemp|float(0)|round(1) }}");
+    doc[F("command_topic")] = _prefix + F("/settings/set");
+    doc[F("command_template")] = F("{\"pid\": {\"maxTemp\" : {{ value }}}}");
+    doc[F("min")] = 1;
+    doc[F("max")] = 100;
+    doc[F("step")] = 1;
+    doc[F("mode")] = "box";
+
+    client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_max_temp/config")).c_str(), measureJson(doc), true);
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -608,6 +1018,7 @@ public:
     doc[F("min")] = 0.001;
     doc[F("max")] = 5;
     doc[F("step")] = 0.001;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/equitherm_n_factor/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -639,6 +1050,7 @@ public:
     doc[F("min")] = 0;
     doc[F("max")] = 10;
     doc[F("step")] = 0.01;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/equitherm_k_factor/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -672,6 +1084,7 @@ public:
     doc[F("min")] = 0;
     doc[F("max")] = 10;
     doc[F("step")] = 0.01;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/equitherm_t_factor/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -979,7 +1392,7 @@ public:
     return client.endPublish();
   }
 
-  bool publishSensorRssi(bool enabledByDefault = false) {
+  bool publishSensorRssi(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc["device"]["identifiers"][0] = _prefix;
     doc["device"]["sw_version"] = _deviceVersion;
@@ -1076,7 +1489,6 @@ public:
 
   bool publishNumberIndoorTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
-    //doc[F("availability")][F("topic")] = _prefix + F("/status");
     doc[F("device")][F("identifiers")][0] = _prefix;
     doc[F("device")][F("sw_version")] = _deviceVersion;
     doc[F("device")][F("manufacturer")] = _deviceManufacturer;
@@ -1097,10 +1509,44 @@ public:
     doc[F("value_template")] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
     doc[F("command_topic")] = _prefix + F("/state/set");
     doc[F("command_template")] = F("{\"temperatures\": {\"indoor\":{{ value }}}}");
-    doc[F("min")] = -70;
-    doc[F("max")] = 50;
+    doc[F("min")] = -99;
+    doc[F("max")] = 99;
+    doc[F("step")] = 0.01;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/indoor_temp/config")).c_str(), measureJson(doc), true);
+    //BufferingPrint bufferedClient(client, 32);
+    //serializeJson(doc, bufferedClient);
+    //bufferedClient.flush();
+    serializeJson(doc, client);
+    return client.endPublish();
+  }
+
+  bool publishSensorIndoorTemp(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[F("availability")][0][F("topic")] = _prefix + F("/status");
+    doc[F("availability_mode")] = F("any");
+    doc[F("device")][F("identifiers")][0] = _prefix;
+    doc[F("device")][F("sw_version")] = _deviceVersion;
+    doc[F("device")][F("manufacturer")] = _deviceManufacturer;
+    doc[F("device")][F("model")] = _deviceModel;
+    doc[F("device")][F("name")] = _deviceName;
+    if (_deviceConfigUrl) {
+      doc[F("device")][F("configuration_url")] = _deviceConfigUrl;
+    }
+    doc[F("enabled_by_default")] = enabledByDefault;
+    doc[F("unique_id")] = _prefix + F("_indoor_temp");
+    doc[F("object_id")] = _prefix + F("_indoor_temp");
+    doc[F("entity_category")] = F("diagnostic");
+    doc[F("device_class")] = F("temperature");
+    doc[F("state_class")] = F("measurement");
+    doc[F("unit_of_measurement")] = F("°C");
+    doc[F("name")] = F("Indoor temperature");
+    doc[F("icon")] = F("mdi:home-thermometer");
+    doc[F("state_topic")] = _prefix + F("/state");
+    doc[F("value_template")] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
+
+    client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/indoor_temp/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
     //serializeJson(doc, bufferedClient);
     //bufferedClient.flush();
@@ -1130,8 +1576,10 @@ public:
     doc[F("value_template")] = F("{{ value_json.temperatures.outdoor|float(0)|round(1) }}");
     doc[F("command_topic")] = _prefix + F("/state/set");
     doc[F("command_template")] = F("{\"temperatures\": {\"outdoor\":{{ value }}}}");
-    doc[F("min")] = -70;
-    doc[F("max")] = 50;
+    doc[F("min")] = -99;
+    doc[F("max")] = 99;
+    doc[F("step")] = 0.01;
+    doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/outdoor_temp/config")).c_str(), measureJson(doc), true);
     //BufferingPrint bufferedClient(client, 32);
@@ -1144,8 +1592,6 @@ public:
   bool publishSensorOutdoorTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[F("availability")][0][F("topic")] = _prefix + F("/status");
-    doc[F("availability")][1][F("topic")] = _prefix + F("/settings");
-    doc[F("availability")][1][F("value_template")] = F("{{ iif(value_json.outdoorTempSource == 2, 'online', 'offline') }}");
     doc[F("availability_mode")] = F("any");
     doc[F("device")][F("identifiers")][0] = _prefix;
     doc[F("device")][F("sw_version")] = _deviceVersion;
@@ -1351,6 +1797,14 @@ public:
 
   bool deleteSensorOutdoorTemp() {
     return client.publish((F("homeassistant/sensor/") + _prefix + F("/outdoor_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteNumberIndoorTemp() {
+    return client.publish((F("homeassistant/number/") + _prefix + F("/indoor_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteSensorIndoorTemp() {
+    return client.publish((F("homeassistant/sensor/") + _prefix + F("/indoor_temp/config")).c_str(), NULL, true);
   }
 
 private:

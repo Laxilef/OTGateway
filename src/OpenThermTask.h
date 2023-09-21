@@ -9,6 +9,11 @@ public:
 
 protected:
   void setup() {
+    vars.parameters.heatingMinTemp = settings.heating.minTemp;
+    vars.parameters.heatingMaxTemp = settings.heating.maxTemp;
+    vars.parameters.dhwMinTemp = settings.dhw.minTemp;
+    vars.parameters.dhwMaxTemp = settings.dhw.maxTemp;
+
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
     ot->begin(handleInterrupt, responseCallback);
@@ -63,7 +68,7 @@ protected:
       updateMinMaxDhwTemp();
       updateMinMaxHeatingTemp();
 
-      if (settings.outdoorTempSource == 0) {
+      if (settings.sensors.outdoor.type == 0) {
         updateOutsideTemp();
       }
       if (vars.states.fault) {
@@ -83,6 +88,7 @@ protected:
     if ( settings.dhw.enable || settings.heating.enable || heatingEnable ) {
       updateModulationLevel();
     }
+    yield();
 
     if ( settings.dhw.enable ) {
       updateDHWTemp();
@@ -95,7 +101,6 @@ protected:
     } else {
       vars.temperatures.heating = 0;
     }
-    
     yield();
 
     //
@@ -306,8 +311,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.dhwMinTemp = minTemp;
-      vars.parameters.dhwMaxTemp = maxTemp;
+      vars.parameters.dhwMinTemp = minTemp < settings.dhw.minTemp ? settings.dhw.minTemp : minTemp;
+      vars.parameters.dhwMaxTemp = maxTemp > settings.dhw.maxTemp ? settings.dhw.maxTemp : maxTemp;
 
       return true;
     }
@@ -325,8 +330,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.heatingMinTemp = minTemp;
-      vars.parameters.heatingMaxTemp = maxTemp;
+      vars.parameters.heatingMinTemp = minTemp < settings.heating.minTemp ? settings.heating.minTemp : minTemp;
+      vars.parameters.heatingMaxTemp = maxTemp > settings.heating.maxTemp ? settings.heating.maxTemp : maxTemp;
 
       return true;
     }
@@ -340,7 +345,7 @@ protected:
       return false;
     }
 
-    vars.temperatures.outdoor = ot->getFloat(response);
+    vars.temperatures.outdoor = ot->getFloat(response) + settings.sensors.outdoor.offset;
     return true;
   }
 

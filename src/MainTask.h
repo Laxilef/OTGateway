@@ -13,7 +13,6 @@ protected:
 
   void setup() {
     pinMode(LED_STATUS_PIN, OUTPUT);
-    //pinMode(LED_OT_RX_PIN, OUTPUT);
   }
 
   void loop() {
@@ -47,12 +46,6 @@ protected:
           INFO("Emergency mode enabled");
         }
       }
-    }
-
-    if (!tSensors->isEnabled() && settings.outdoorTempSource == 2) {
-      tSensors->enable();
-    } else if (tSensors->isEnabled() && settings.outdoorTempSource != 2) {
-      tSensors->disable();
     }
 
     if (!tOt->isEnabled() && settings.opentherm.inPin > 0 && settings.opentherm.outPin > 0 && settings.opentherm.inPin != settings.opentherm.outPin) {

@@ -1,12 +1,10 @@
 struct Settings {
   bool debug = false;
-  // 0 - boiler, 1 - manual, 2 - ds18b20
-  byte outdoorTempSource = 0;
   char hostname[80] = "opentherm";
 
   struct {
-    byte inPin = 5;
-    byte outPin = 4;
+    byte inPin = 4;
+    byte outPin = 5;
     unsigned int memberIdCode = 0;
   } opentherm;
 
@@ -30,11 +28,15 @@ struct Settings {
     bool turbo = false;
     float target = 40.0f;
     float hysteresis = 0.5f;
+    byte minTemp = 20.0f;
+    byte maxTemp = 90.0f;
   } heating;
 
   struct {
     bool enable = true;
     byte target = 40;
+    byte minTemp = 30.0f;
+    byte maxTemp = 60.0f;
   } dhw;
 
   struct {
@@ -42,6 +44,8 @@ struct Settings {
     float p_factor = 3;
     float i_factor = 0.2f;
     float d_factor = 0;
+    byte minTemp = 0.0f;
+    byte maxTemp = 90.0f;
   } pid;
 
   struct {
@@ -51,6 +55,23 @@ struct Settings {
     float t_factor = 2.0f;
   } equitherm;
 
+  struct {
+    struct {
+      // 0 - boiler, 1 - manual, 2 - ds18b20
+      byte type = 0;
+      byte pin = 12;
+      float offset = 0.0f;
+    } outdoor;
+
+    struct {
+      // 1 - manual, 2 - ds18b20
+      byte type = 1;
+      byte pin = 14;
+      float offset = 0.0f;
+    } indoor;
+  } sensors;
+
+  char validationValue[8] = SETTINGS_VALID_VALUE;
 } settings;
 
 struct Variables {
@@ -84,11 +105,11 @@ struct Variables {
   } temperatures;
 
   struct {
-    byte heatingMinTemp = 20;
-    byte heatingMaxTemp = 90;
+    byte heatingMinTemp = 0;
+    byte heatingMaxTemp = 0;
     byte heatingSetpoint = 0.0f;
-    byte dhwMinTemp = 30;
-    byte dhwMaxTemp = 60;
+    byte dhwMinTemp = 0;
+    byte dhwMaxTemp = 0;
     uint8_t slaveMemberIdCode;
     uint8_t slaveType;
     uint8_t slaveVersion;

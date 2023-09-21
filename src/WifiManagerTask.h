@@ -3,14 +3,17 @@
 // Wifimanager
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
-WiFiManagerParameter* wmOtInPin;
-WiFiManagerParameter* wmOtOutPin;
-WiFiManagerParameter* wmOtMemberIdCode;
 WiFiManagerParameter* wmMqttServer;
 WiFiManagerParameter* wmMqttPort;
 WiFiManagerParameter* wmMqttUser;
 WiFiManagerParameter* wmMqttPassword;
 WiFiManagerParameter* wmMqttPrefix;
+WiFiManagerParameter* wmMqttPublishInterval;
+WiFiManagerParameter* wmOtInPin;
+WiFiManagerParameter* wmOtOutPin;
+WiFiManagerParameter* wmOtMemberIdCode;
+WiFiManagerParameter* wmOutdoorSensorPin;
+WiFiManagerParameter* wmIndoorSensorPin;
 
 class WifiManagerTask: public Task {
 public:
@@ -23,18 +26,6 @@ protected:
 
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
     wm.addParameter(wmHostname);
-
-    sprintf(buffer, "%d", settings.opentherm.inPin);
-    wmOtInPin = new WiFiManagerParameter("ot_in_pin", "Opentherm pin IN", buffer, 1);
-    wm.addParameter(wmOtInPin);
-
-    sprintf(buffer, "%d", settings.opentherm.outPin);
-    wmOtOutPin = new WiFiManagerParameter("ot_out_pin", "Opentherm pin OUT", buffer, 1);
-    wm.addParameter(wmOtOutPin);
-
-    sprintf(buffer, "%d", settings.opentherm.memberIdCode);
-    wmOtMemberIdCode = new WiFiManagerParameter("ot_member_id_code", "Opentherm member id code", buffer, 5);
-    wm.addParameter(wmOtMemberIdCode);
 
     wmMqttServer = new WiFiManagerParameter("mqtt_server", "MQTT server", settings.mqtt.server, 80);
     wm.addParameter(wmMqttServer);
@@ -51,6 +42,30 @@ protected:
 
     wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "MQTT prefix", settings.mqtt.prefix, 32);
     wm.addParameter(wmMqttPrefix);
+
+    sprintf(buffer, "%d", settings.mqtt.interval);
+    wmMqttPublishInterval = new WiFiManagerParameter("mqtt_publish_interval", "MQTT publish interval", buffer, 5);
+    wm.addParameter(wmMqttPublishInterval);
+
+    sprintf(buffer, "%d", settings.opentherm.inPin);
+    wmOtInPin = new WiFiManagerParameter("ot_in_pin", "Opentherm pin IN", buffer, 2);
+    wm.addParameter(wmOtInPin);
+
+    sprintf(buffer, "%d", settings.opentherm.outPin);
+    wmOtOutPin = new WiFiManagerParameter("ot_out_pin", "Opentherm pin OUT", buffer, 2);
+    wm.addParameter(wmOtOutPin);
+
+    sprintf(buffer, "%d", settings.opentherm.memberIdCode);
+    wmOtMemberIdCode = new WiFiManagerParameter("ot_member_id_code", "Opentherm member id", buffer, 5);
+    wm.addParameter(wmOtMemberIdCode);
+
+    sprintf(buffer, "%d", settings.sensors.outdoor.pin);
+    wmOutdoorSensorPin = new WiFiManagerParameter("outdoor_sensor_pin", "Outdoor sensor pin", buffer, 2);
+    wm.addParameter(wmOutdoorSensorPin);
+
+    sprintf(buffer, "%d", settings.sensors.indoor.pin);
+    wmIndoorSensorPin = new WiFiManagerParameter("indoor_sensor_pin", "Indoor sensor pin", buffer, 2);
+    wm.addParameter(wmIndoorSensorPin);
 
     //wm.setCleanConnect(true);
     wm.setRestorePersistent(false);
@@ -94,32 +109,43 @@ protected:
 
   void static saveParamsCallback() {
     strcpy(settings.hostname, wmHostname->getValue());
-    settings.opentherm.inPin = atoi(wmOtInPin->getValue());
-    settings.opentherm.outPin = atoi(wmOtOutPin->getValue());
-    settings.opentherm.memberIdCode = atoi(wmOtMemberIdCode->getValue());
     strcpy(settings.mqtt.server, wmMqttServer->getValue());
     settings.mqtt.port = atoi(wmMqttPort->getValue());
     strcpy(settings.mqtt.user, wmMqttUser->getValue());
     strcpy(settings.mqtt.password, wmMqttPassword->getValue());
     strcpy(settings.mqtt.prefix, wmMqttPrefix->getValue());
+    settings.mqtt.interval = atoi(wmMqttPublishInterval->getValue());
+    settings.opentherm.inPin = atoi(wmOtInPin->getValue());
+    settings.opentherm.outPin = atoi(wmOtOutPin->getValue());
+    settings.opentherm.memberIdCode = atoi(wmOtMemberIdCode->getValue());
+    settings.sensors.outdoor.pin = atoi(wmOutdoorSensorPin->getValue());
+    settings.sensors.indoor.pin = atoi(wmIndoorSensorPin->getValue());
 
     INFO_F(
       "New settings:\r\n"
       "  Hostname: %s\r\n"
-      "  OT in pin: %d"
-      "  OT out pin: %d"
-      "  OT member id code: %d"
       "  Mqtt server: %s:%d\r\n"
       "  Mqtt user: %s\r\n"
-      "  Mqtt pass: %s\r\n",
+      "  Mqtt pass: %s\r\n"
+      "  Mqtt prefix: %s\r\n"
+      "  Mqtt publish interval: %d\r\n"
+      "  OT in pin: %d\r\n"
+      "  OT out pin: %d\r\n"
+      "  OT member id code: %d\r\n"
+      "  Outdoor sensor pin: %d\r\n"
+      "  Indoor sensor pin: %d\r\n",
       settings.hostname,
-      settings.opentherm.inPin,
-      settings.opentherm.outPin,
-      settings.opentherm.memberIdCode,
       settings.mqtt.server,
       settings.mqtt.port,
       settings.mqtt.user,
-      settings.mqtt.password
+      settings.mqtt.password,
+      settings.mqtt.prefix,
+      settings.mqtt.interval,
+      settings.opentherm.inPin,
+      settings.opentherm.outPin,
+      settings.opentherm.memberIdCode,
+      settings.sensors.outdoor.pin,
+      settings.sensors.indoor.pin
     );
     eeSettings.updateNow();
     INFO(F("Settings saved"));

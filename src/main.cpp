@@ -29,7 +29,7 @@ MainTask* tMain;
 void setup() {
 #ifdef USE_TELNET
   TelnetStream.begin();
-  delay(5000);
+  delay(1000);
 #else
   Serial.begin(115200);
   Serial.println("\n\n");
@@ -39,6 +39,13 @@ void setup() {
   uint8_t eeSettingsResult = eeSettings.begin(0, 's');
   if (eeSettingsResult == 0) {
     INFO("Settings loaded");
+
+    if ( strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0 ) {
+      INFO("Settings not valid, reset and restart...");
+      eeSettings.reset();
+      delay(1000);
+      ESP.restart();
+    }
 
   } else if (eeSettingsResult == 1) {
     INFO("Settings NOT loaded, first start");
@@ -56,7 +63,7 @@ void setup() {
   tOt = new OpenThermTask(false);
   Scheduler.start(tOt);
 
-  tSensors = new SensorsTask(false, DS18B20_INTERVAL);
+  tSensors = new SensorsTask(true, EXT_SENSORS_INTERVAL);
   Scheduler.start(tSensors);
 
   tRegulator = new RegulatorTask(true, 10000);
