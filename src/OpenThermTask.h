@@ -36,25 +36,30 @@ protected:
       WARN("Slave member id failed");
     }
 
-    bool heatingEnable = (vars.states.emergency || settings.heating.enable) && pump && isReady();
+    bool _heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
     localResponse = ot->setBoilerStatus(
-      heatingEnable,
-      settings.dhw.enable,
+      _heatingEnabled,
+      settings.opentherm.dhwPresent && settings.dhw.enable,
       false, false, true, false, false
     );
+    
     if (!ot->isValidResponse(localResponse)) {
       WARN_F("Invalid response after setBoilerStatus: %s\r\n", ot->statusToString(ot->getLastResponseStatus()));
       return;
     }
 
-    INFO_F("Heating enabled: %d\r\n", heatingEnable);
-    setMaxModulationLevel(heatingEnable ? 100 : 0);
+    if ( heatingEnabled != _heatingEnabled ) {
+      heatingEnabled = _heatingEnabled;
+      INFO_F("Heating enabled: %s\r\n", heatingEnabled ? "on\0" : "off\0");
+    }
 
     vars.states.heating = ot->isCentralHeatingActive(localResponse);
-    vars.states.dhw = ot->isHotWaterActive(localResponse);
+    vars.states.dhw = settings.opentherm.dhwPresent ? ot->isHotWaterActive(localResponse) : false;
     vars.states.flame = ot->isFlameOn(localResponse);
     vars.states.fault = ot->isFault(localResponse);
     vars.states.diagnostic = ot->isDiagnostic(localResponse);
+
+    setMaxModulationLevel(heatingEnabled ? 100 : 0);
     yield();
 
     // Команды чтения данных котла
@@ -65,7 +70,9 @@ protected:
       DEBUG_F("Master type: %u, version: %u\r\n", vars.parameters.masterType, vars.parameters.masterVersion);
       DEBUG_F("Slave type: %u, version: %u\r\n", vars.parameters.slaveType, vars.parameters.slaveVersion);
 
-      updateMinMaxDhwTemp();
+      if ( settings.opentherm.dhwPresent ) {
+        updateMinMaxDhwTemp();
+      }
       updateMinMaxHeatingTemp();
 
       if (settings.sensors.outdoor.type == 0) {
@@ -85,28 +92,28 @@ protected:
     }
 
     updatePressure();
-    if ( settings.dhw.enable || settings.heating.enable || heatingEnable ) {
+    if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled ) {
       updateModulationLevel();
     }
     yield();
 
-    if ( settings.dhw.enable ) {
+    if ( settings.opentherm.dhwPresent && settings.dhw.enable ) {
       updateDHWTemp();
     } else {
       vars.temperatures.dhw = 0;
     }
 
-    if ( settings.heating.enable || heatingEnable ) {
+    //if ( settings.heating.enable || heatingEnabled ) {
       updateHeatingTemp();
-    } else {
-      vars.temperatures.heating = 0;
-    }
+    //} else {
+    //  vars.temperatures.heating = 0;
+    //}
     yield();
 
     //
     // Температура ГВС
     byte newDHWTemp = settings.dhw.target;
-    if (settings.dhw.enable && newDHWTemp != currentDHWTemp) {
+    if (settings.opentherm.dhwPresent && settings.dhw.enable && newDHWTemp != currentDHWTemp) {
       if (newDHWTemp < vars.parameters.dhwMinTemp || newDHWTemp > vars.parameters.dhwMaxTemp) {
         newDHWTemp = constrain(newDHWTemp, vars.parameters.dhwMinTemp, vars.parameters.dhwMaxTemp);
       }
@@ -124,7 +131,7 @@ protected:
 
     //
     // Температура отопления
-    if (heatingEnable && fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001) {
+    if (heatingEnabled && fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001) {
       INFO_F("Setting heating temp = %u \n", vars.parameters.heatingSetpoint);
 
       // Записываем заданную температуру
@@ -194,6 +201,7 @@ protected:
 
 protected:
   bool pump = true;
+  bool heatingEnabled = false;
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long startupTime = millis();
 
@@ -224,22 +232,22 @@ protected:
     //=======================================================================================
 
     unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SConfigSMemberIDcode, 0)); // 0xFFFF
-    /*uint8_t flags = (response & 0xFFFF) >> 8;
-    DEBUG_F(
-      "MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n",
-      flags & 0x01,
-      flags & 0x02,
-      flags & 0x04,
-      flags & 0x08,
-      flags & 0x10,
-      flags & 0x20,
-      flags & 0x40,
-      flags & 0x80,
-      response & 0xFF
-    );*/
-
     if (ot->isValidResponse(response)) {
       vars.parameters.slaveMemberIdCode = response & 0xFF;
+
+      /*uint8_t flags = (response & 0xFFFF) >> 8;
+      DEBUG_F(
+        "MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n",
+        flags & 0x01,
+        flags & 0x02,
+        flags & 0x04,
+        flags & 0x08,
+        flags & 0x10,
+        flags & 0x20,
+        flags & 0x40,
+        flags & 0x80,
+        response & 0xFF
+      );*/
 
     } else if ( settings.opentherm.memberIdCode <= 0 ) {
       return false;

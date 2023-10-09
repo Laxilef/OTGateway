@@ -1,23 +1,28 @@
 #include <WiFiManager.h>
+#include <WiFiManagerParameters.h>
 
 // Wifimanager
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
 WiFiManagerParameter* wmMqttServer;
-WiFiManagerParameter* wmMqttPort;
+IntParameter* wmMqttPort;
 WiFiManagerParameter* wmMqttUser;
 WiFiManagerParameter* wmMqttPassword;
 WiFiManagerParameter* wmMqttPrefix;
-WiFiManagerParameter* wmMqttPublishInterval;
-WiFiManagerParameter* wmOtInPin;
-WiFiManagerParameter* wmOtOutPin;
-WiFiManagerParameter* wmOtMemberIdCode;
-WiFiManagerParameter* wmOutdoorSensorPin;
-WiFiManagerParameter* wmIndoorSensorPin;
+IntParameter* wmMqttPublishInterval;
+IntParameter* wmOtInPin;
+IntParameter* wmOtOutPin;
+IntParameter* wmOtMemberIdCode;
+CheckboxParameter* wmOtDHWPresent;
+IntParameter* wmOutdoorSensorPin;
+IntParameter* wmIndoorSensorPin;
 
-class WifiManagerTask: public Task {
+SeparatorParameter* wmSep1;
+SeparatorParameter* wmSep2;
+
+class WifiManagerTask : public Task {
 public:
-  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0): Task(_enabled, _interval) {}
+  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   void setup() {
@@ -30,41 +35,43 @@ protected:
     wmMqttServer = new WiFiManagerParameter("mqtt_server", "MQTT server", settings.mqtt.server, 80);
     wm.addParameter(wmMqttServer);
 
-    sprintf(buffer, "%d", settings.mqtt.port);
-    wmMqttPort = new WiFiManagerParameter("mqtt_port", "MQTT port", buffer, 6);
+    wmMqttPort = new IntParameter("mqtt_port", "MQTT port", settings.mqtt.port, 6);
     wm.addParameter(wmMqttPort);
 
     wmMqttUser = new WiFiManagerParameter("mqtt_user", "MQTT username", settings.mqtt.user, 32);
     wm.addParameter(wmMqttUser);
 
-    wmMqttPassword = new WiFiManagerParameter("mqtt_password", "MQTT password", settings.mqtt.password, 32);
+    wmMqttPassword = new WiFiManagerParameter("mqtt_password", "MQTT password", settings.mqtt.password, 32, "type=\"password\"");
     wm.addParameter(wmMqttPassword);
 
     wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "MQTT prefix", settings.mqtt.prefix, 32);
     wm.addParameter(wmMqttPrefix);
 
-    sprintf(buffer, "%d", settings.mqtt.interval);
-    wmMqttPublishInterval = new WiFiManagerParameter("mqtt_publish_interval", "MQTT publish interval", buffer, 5);
+    wmMqttPublishInterval = new IntParameter("mqtt_publish_interval", "MQTT publish interval", settings.mqtt.interval, 5);
     wm.addParameter(wmMqttPublishInterval);
 
-    sprintf(buffer, "%d", settings.opentherm.inPin);
-    wmOtInPin = new WiFiManagerParameter("ot_in_pin", "Opentherm pin IN", buffer, 2);
+    wmSep1 = new SeparatorParameter();
+    wm.addParameter(wmSep1);
+
+    wmOtInPin = new IntParameter("ot_in_pin", "Opentherm pin IN", settings.opentherm.inPin, 2);
     wm.addParameter(wmOtInPin);
 
-    sprintf(buffer, "%d", settings.opentherm.outPin);
-    wmOtOutPin = new WiFiManagerParameter("ot_out_pin", "Opentherm pin OUT", buffer, 2);
+    wmOtOutPin = new IntParameter("ot_out_pin", "Opentherm pin OUT", settings.opentherm.outPin, 2);
     wm.addParameter(wmOtOutPin);
 
-    sprintf(buffer, "%d", settings.opentherm.memberIdCode);
-    wmOtMemberIdCode = new WiFiManagerParameter("ot_member_id_code", "Opentherm member id", buffer, 5);
+    wmOtMemberIdCode = new IntParameter("ot_member_id_code", "Opentherm member id", settings.opentherm.memberIdCode, 5);
     wm.addParameter(wmOtMemberIdCode);
 
-    sprintf(buffer, "%d", settings.sensors.outdoor.pin);
-    wmOutdoorSensorPin = new WiFiManagerParameter("outdoor_sensor_pin", "Outdoor sensor pin", buffer, 2);
+    wmOtDHWPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
+    wm.addParameter(wmOtDHWPresent);
+
+    wmSep2 = new SeparatorParameter();
+    wm.addParameter(wmSep2);
+
+    wmOutdoorSensorPin = new IntParameter("outdoor_sensor_pin", "Outdoor sensor pin", settings.sensors.outdoor.pin, 2);
     wm.addParameter(wmOutdoorSensorPin);
 
-    sprintf(buffer, "%d", settings.sensors.indoor.pin);
-    wmIndoorSensorPin = new WiFiManagerParameter("indoor_sensor_pin", "Indoor sensor pin", buffer, 2);
+    wmIndoorSensorPin = new IntParameter("indoor_sensor_pin", "Indoor sensor pin", settings.sensors.indoor.pin, 2);
     wm.addParameter(wmIndoorSensorPin);
 
     //wm.setCleanConnect(true);
@@ -110,16 +117,17 @@ protected:
   void static saveParamsCallback() {
     strcpy(settings.hostname, wmHostname->getValue());
     strcpy(settings.mqtt.server, wmMqttServer->getValue());
-    settings.mqtt.port = atoi(wmMqttPort->getValue());
+    settings.mqtt.port = wmMqttPort->getValue();
     strcpy(settings.mqtt.user, wmMqttUser->getValue());
     strcpy(settings.mqtt.password, wmMqttPassword->getValue());
     strcpy(settings.mqtt.prefix, wmMqttPrefix->getValue());
-    settings.mqtt.interval = atoi(wmMqttPublishInterval->getValue());
-    settings.opentherm.inPin = atoi(wmOtInPin->getValue());
-    settings.opentherm.outPin = atoi(wmOtOutPin->getValue());
-    settings.opentherm.memberIdCode = atoi(wmOtMemberIdCode->getValue());
-    settings.sensors.outdoor.pin = atoi(wmOutdoorSensorPin->getValue());
-    settings.sensors.indoor.pin = atoi(wmIndoorSensorPin->getValue());
+    settings.mqtt.interval = wmMqttPublishInterval->getValue();
+    settings.opentherm.inPin = wmOtInPin->getValue();
+    settings.opentherm.outPin = wmOtOutPin->getValue();
+    settings.opentherm.memberIdCode = wmOtMemberIdCode->getValue();
+    settings.opentherm.dhwPresent = wmOtDHWPresent->getCheckboxValue();
+    settings.sensors.outdoor.pin = wmOutdoorSensorPin->getValue();
+    settings.sensors.indoor.pin = wmIndoorSensorPin->getValue();
 
     INFO_F(
       "New settings:\r\n"
@@ -132,6 +140,7 @@ protected:
       "  OT in pin: %d\r\n"
       "  OT out pin: %d\r\n"
       "  OT member id code: %d\r\n"
+      "  OT DHW present: %d\r\n"
       "  Outdoor sensor pin: %d\r\n"
       "  Indoor sensor pin: %d\r\n",
       settings.hostname,
@@ -144,6 +153,7 @@ protected:
       settings.opentherm.inPin,
       settings.opentherm.outPin,
       settings.opentherm.memberIdCode,
+      settings.opentherm.dhwPresent,
       settings.sensors.outdoor.pin,
       settings.sensors.indoor.pin
     );

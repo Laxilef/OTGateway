@@ -1807,6 +1807,42 @@ public:
     return client.publish((F("homeassistant/sensor/") + _prefix + F("/indoor_temp/config")).c_str(), NULL, true);
   }
 
+  bool deleteSwitchDHW() {
+    return client.publish((F("homeassistant/switch/") + _prefix + F("/dhw/config")).c_str(), NULL, true);
+  }
+
+  bool deleteSensorCurrentDHWMinTemp() {
+    return client.publish((F("homeassistant/sensor/") + _prefix + F("/current_dhw_min_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteSensorCurrentDHWMaxTemp() {
+    return client.publish((F("homeassistant/sensor/") + _prefix + F("/current_dhw_max_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteNumberDHWMinTemp() {
+    return client.publish((F("homeassistant/number/") + _prefix + F("/dhw_min_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteNumberDHWMaxTemp() {
+    return client.publish((F("homeassistant/number/") + _prefix + F("/dhw_max_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteBinSensorDHW() {
+    return client.publish((F("homeassistant/binary_sensor/") + _prefix + F("/dhw/config")).c_str(), NULL, true);
+  }
+
+  bool deleteSensorDHWTemp() {
+    return client.publish((F("homeassistant/sensor/") + _prefix + F("/dhw_temp/config")).c_str(), NULL, true);
+  }
+
+  bool deleteNumberDHWTarget() {
+    return client.publish((F("homeassistant/number/") + _prefix + F("/dhw_target/config")).c_str(), NULL, true);
+  }
+
+  bool deleteClimateDHW() {
+    return client.publish((F("homeassistant/climate/") + _prefix + F("_dhw/config")).c_str(), NULL, true);
+  }
+
 private:
   String _prefix = "opentherm";
   String _deviceVersion = "1.0";

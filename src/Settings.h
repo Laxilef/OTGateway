@@ -6,6 +6,7 @@ struct Settings {
     byte inPin = 4;
     byte outPin = 5;
     unsigned int memberIdCode = 0;
+    bool dhwPresent = true;
   } opentherm;
 
   struct {

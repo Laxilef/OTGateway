@@ -394,14 +394,6 @@ protected:
     haHelper.publishNumberHeatingMinTemp(false);
     haHelper.publishNumberHeatingMaxTemp(false);
 
-    // dhw
-    haHelper.publishSwitchDHW(false);
-    //haHelper.publishNumberDHWTarget(false);
-    haHelper.publishSensorCurrentDHWMinTemp(false);
-    haHelper.publishSensorCurrentDHWMaxTemp(false);
-    haHelper.publishNumberDHWMinTemp(false);
-    haHelper.publishNumberDHWMaxTemp(false);
-
     // pid
     haHelper.publishSwitchPID();
     haHelper.publishNumberPIDFactorP();
@@ -424,7 +416,6 @@ protected:
     haHelper.publishBinSensorStatus();
     haHelper.publishBinSensorOtStatus();
     haHelper.publishBinSensorHeating();
-    haHelper.publishBinSensorDHW();
     haHelper.publishBinSensorFlame();
     haHelper.publishBinSensorFault();
     haHelper.publishBinSensorDiagnostic();
@@ -439,12 +430,11 @@ protected:
     haHelper.publishNumberIndoorTemp();
     //haHelper.publishNumberOutdoorTemp();
     haHelper.publishSensorHeatingTemp();
-    haHelper.publishSensorDHWTemp();
   }
 
   static bool publishNonStaticHaEntities(bool force = false) {
     static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp;
-    static bool _editableOutdoorTemp, _editableIndoorTemp;
+    static bool _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent;
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
@@ -452,6 +442,33 @@ protected:
     byte heatingMaxTemp = isStupidMode ? vars.parameters.heatingMaxTemp : 30;
     bool editableOutdoorTemp = settings.sensors.outdoor.type == 1;
     bool editableIndoorTemp = settings.sensors.indoor.type == 1;
+
+    if (force || _dhwPresent != settings.opentherm.dhwPresent) {
+      _dhwPresent = settings.opentherm.dhwPresent;
+
+      if (_dhwPresent) {
+        haHelper.publishSwitchDHW(false);
+        haHelper.publishSensorCurrentDHWMinTemp(false);
+        haHelper.publishSensorCurrentDHWMaxTemp(false);
+        haHelper.publishNumberDHWMinTemp(false);
+        haHelper.publishNumberDHWMaxTemp(false);
+        haHelper.publishBinSensorDHW();
+        haHelper.publishSensorDHWTemp();
+
+      } else {
+        haHelper.deleteSwitchDHW();
+        haHelper.deleteSensorCurrentDHWMinTemp();
+        haHelper.deleteSensorCurrentDHWMaxTemp();
+        haHelper.deleteNumberDHWMinTemp();
+        haHelper.deleteNumberDHWMaxTemp();
+        haHelper.deleteBinSensorDHW();
+        haHelper.deleteSensorDHWTemp();
+        haHelper.deleteNumberDHWTarget();
+        haHelper.deleteClimateDHW();
+      }
+
+      published = true;
+    }
 
     if (force || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
       if (settings.heating.target < heatingMinTemp || settings.heating.target > heatingMaxTemp) {
@@ -467,7 +484,7 @@ protected:
       published = true;
     }
 
-    if (force || _dhwMinTemp != vars.parameters.dhwMinTemp || _dhwMaxTemp != vars.parameters.dhwMaxTemp) {
+    if (_dhwPresent && (force || _dhwMinTemp != vars.parameters.dhwMinTemp || _dhwMaxTemp != vars.parameters.dhwMaxTemp)) {
       _dhwMinTemp = vars.parameters.dhwMinTemp;
       _dhwMaxTemp = vars.parameters.dhwMaxTemp;
 
