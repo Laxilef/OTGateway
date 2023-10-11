@@ -1,4 +1,4 @@
-#define OT_GATEWAY_VERSION          "1.3.0"
+#define OT_GATEWAY_VERSION          "1.3.1"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
 #define USE_TELNET

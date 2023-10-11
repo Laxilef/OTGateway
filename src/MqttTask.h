@@ -595,6 +595,7 @@ protected:
     doc["temperatures"]["heating"] = vars.temperatures.heating;
     doc["temperatures"]["dhw"] = vars.temperatures.dhw;
 
+    doc["parameters"]["heatingEnabled"] = vars.parameters.heatingEnabled;
     doc["parameters"]["heatingMinTemp"] = vars.parameters.heatingMinTemp;
     doc["parameters"]["heatingMaxTemp"] = vars.parameters.heatingMaxTemp;
     doc["parameters"]["heatingSetpoint"] = vars.parameters.heatingSetpoint;

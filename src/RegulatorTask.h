@@ -123,7 +123,7 @@ protected:
     }
 
     // if use pid
-    if (settings.pid.enable && vars.states.heating) {
+    if (settings.pid.enable && vars.parameters.heatingEnabled) {
       float pidResult = getPidTemp(
         settings.equitherm.enable ? (settings.pid.maxTemp * -1) : settings.pid.minTemp,
         settings.equitherm.enable ? settings.pid.maxTemp : settings.pid.maxTemp
@@ -139,7 +139,7 @@ protected:
         newTemp += prevPidResult;
       }
 
-    } else if ( settings.pid.enable && !vars.states.heating && prevPidResult != 0 ) {
+    } else if ( settings.pid.enable && !vars.parameters.heatingEnabled && prevPidResult != 0 ) {
       newTemp += prevPidResult;
     }
 

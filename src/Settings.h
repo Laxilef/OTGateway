@@ -106,6 +106,7 @@ struct Variables {
   } temperatures;
 
   struct {
+    bool heatingEnabled = false;
     byte heatingMinTemp = 0;
     byte heatingMaxTemp = 0;
     byte heatingSetpoint = 0.0f;

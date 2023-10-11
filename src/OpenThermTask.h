@@ -36,9 +36,9 @@ protected:
       WARN("Slave member id failed");
     }
 
-    bool _heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
+    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
     localResponse = ot->setBoilerStatus(
-      _heatingEnabled,
+      heatingEnabled,
       settings.opentherm.dhwPresent && settings.dhw.enable,
       false, false, true, false, false
     );
@@ -48,8 +48,8 @@ protected:
       return;
     }
 
-    if ( heatingEnabled != _heatingEnabled ) {
-      heatingEnabled = _heatingEnabled;
+    if ( vars.parameters.heatingEnabled != heatingEnabled ) {
+      vars.parameters.heatingEnabled = heatingEnabled;
       INFO_F("Heating enabled: %s\r\n", heatingEnabled ? "on\0" : "off\0");
     }
 
@@ -201,7 +201,6 @@ protected:
 
 protected:
   bool pump = true;
-  bool heatingEnabled = false;
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long startupTime = millis();
 
