@@ -132,7 +132,7 @@ protected:
     }
 
     if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<float>()) {
-      if ( doc["heating"]["hysteresis"].as<float>() > 0 && doc["heating"]["hysteresis"].as<float>() <= 5 ) {
+      if ( doc["heating"]["hysteresis"].as<float>() >= 0 && doc["heating"]["hysteresis"].as<float>() <= 5 ) {
         settings.heating.hysteresis = round(doc["heating"]["hysteresis"].as<float>() * 10) / 10;
         flag = true;
       }
