@@ -94,7 +94,7 @@ protected:
     updatePressure();
     if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled ) {
       updateModulationLevel();
-      
+
     } else {
       vars.sensors.modulation = 0;
     }
@@ -116,7 +116,7 @@ protected:
     //
     // Температура ГВС
     byte newDHWTemp = settings.dhw.target;
-    if (settings.opentherm.dhwPresent && settings.dhw.enable && newDHWTemp != currentDHWTemp) {
+    if (settings.opentherm.dhwPresent && settings.dhw.enable && (needSetDhwTemp() || newDHWTemp != currentDHWTemp)) {
       if (newDHWTemp < vars.parameters.dhwMinTemp || newDHWTemp > vars.parameters.dhwMaxTemp) {
         newDHWTemp = constrain(newDHWTemp, vars.parameters.dhwMinTemp, vars.parameters.dhwMaxTemp);
       }
@@ -126,6 +126,7 @@ protected:
       // Записываем заданную температуру ГВС
       if (ot->setDHWSetpoint(newDHWTemp)) {
         currentDHWTemp = newDHWTemp;
+        dhwSetTempTime = millis();
 
       } else {
         WARN("Failed set DHW temp");
@@ -134,12 +135,13 @@ protected:
 
     //
     // Температура отопления
-    if (heatingEnabled && fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001) {
+    if (heatingEnabled && (needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
       INFO_F("Setting heating temp = %u \n", vars.parameters.heatingSetpoint);
 
       // Записываем заданную температуру
       if (ot->setBoilerTemperature(vars.parameters.heatingSetpoint)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
+        heatingSetTempTime = millis();
 
       } else {
         WARN("Failed set heating temp");
@@ -203,13 +205,27 @@ protected:
   }
 
 protected:
+  unsigned short readyTime = 60000;
+  unsigned short dhwSetTempInterval = 60000;
+  unsigned short heatingSetTempInterval = 60000;
+
   bool pump = true;
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long startupTime = millis();
+  unsigned long dhwSetTempTime = 0;
+  unsigned long heatingSetTempTime = 0;
 
 
   bool isReady() {
-    return millis() - startupTime > 60000;
+    return millis() - startupTime > readyTime;
+  }
+
+  bool needSetDhwTemp() {
+    return millis() - dhwSetTempTime > dhwSetTempInterval;
+  }
+
+  bool needSetHeatingTemp() {
+    return millis() - heatingSetTempTime > heatingSetTempInterval;
   }
 
   void static printRequestDetail(OpenThermMessageID id, OpenThermResponseStatus status, unsigned long request, unsigned long response, byte attempt) {
