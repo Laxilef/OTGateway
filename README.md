@@ -33,6 +33,9 @@
 | BAXI ECO Nova | default | Pressure sensor not supported, modulation level not stable |
 | BAXI Ampera | 1028 | Pressure sensor not supported, only heating (DHW not tested) |
 | [Remeha Calenta Ace 40C](https://github.com/Laxilef/OTGateway/issues/1#issuecomment-1726081554) | default | - |
+| [Baxi Nuvola DUO-TEC HT 16](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1751061488) | default | - |
+| [AEG GBA124](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765857609) | default | Pressure sensor not supported |
+| [Ferroli DOMIcompact C 24 (board MF08FA)](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765310058) | 211 | Pressure sensor not supported |
 
 ## PCB
 <img src="/assets/pcb.svg" width="27%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="40%" />

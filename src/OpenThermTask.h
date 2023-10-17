@@ -94,6 +94,9 @@ protected:
     updatePressure();
     if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled ) {
       updateModulationLevel();
+      
+    } else {
+      vars.sensors.modulation = 0;
     }
     yield();
 
