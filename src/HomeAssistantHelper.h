@@ -382,7 +382,7 @@ public:
     doc[F("command_topic")] = _prefix + F("/settings/set");
     doc[F("command_template")] = F("{\"heating\": {\"target\" : {{ value }}}}");
     doc[F("min")] = minTemp;
-    doc[F("max")] = maxTemp <= minTemp ? maxTemp : maxTemp;
+    doc[F("max")] = maxTemp;
     doc[F("step")] = 0.5;
     doc[F("mode")] = "box";
 

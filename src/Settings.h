@@ -107,11 +107,11 @@ struct Variables {
 
   struct {
     bool heatingEnabled = false;
-    byte heatingMinTemp = 0;
-    byte heatingMaxTemp = 0;
+    byte heatingMinTemp = 20;
+    byte heatingMaxTemp = 90;
     byte heatingSetpoint = 0.0f;
-    byte dhwMinTemp = 0;
-    byte dhwMaxTemp = 0;
+    byte dhwMinTemp = 30;
+    byte dhwMaxTemp = 60;
     uint8_t slaveMemberIdCode;
     uint8_t slaveType;
     uint8_t slaveVersion;
