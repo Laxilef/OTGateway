@@ -51,9 +51,6 @@ public:
     doc[F("options")][2] = F("External");
 
     client.beginPublish((F("homeassistant/select/") + _prefix + F("/outdoor_sensor_type/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -81,9 +78,6 @@ public:
     doc[F("options")][1] = F("External");
 
     client.beginPublish((F("homeassistant/select/") + _prefix + F("/indoor_sensor_type/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -182,9 +176,6 @@ public:
     doc[F("payload_off")] = F("{\"debug\": false}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/debug/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -215,9 +206,6 @@ public:
     doc[F("payload_off")] = F("{\"emergency\": {\"enable\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/emergency/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -250,9 +238,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/emergency_target/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -284,9 +269,6 @@ public:
     doc[F("payload_off")] = F("{\"emergency\": {\"useEquitherm\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/emergency_use_equitherm/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -318,9 +300,6 @@ public:
     doc[F("payload_off")] = F("{\"heating\": {\"enable\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/heating/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -351,9 +330,6 @@ public:
     doc[F("payload_off")] = F("{\"heating\": {\"turbo\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/heating_turbo/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -387,9 +363,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/heating_target/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -422,9 +395,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/heating_hysteresis/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -453,9 +423,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.parameters.heatingSetpoint|int(0) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/heating_setpoint/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -607,9 +574,6 @@ public:
     doc[F("payload_off")] = F("{\"dhw\": {\"enable\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/dhw/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -643,9 +607,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/dhw_target/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -796,9 +757,6 @@ public:
     doc[F("payload_off")] = F("{\"pid\": {\"enable\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/pid/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -828,9 +786,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_p_factor/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -860,9 +815,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_i_factor/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -892,9 +844,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/pid_d_factor/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -989,9 +938,6 @@ public:
     doc[F("payload_off")] = F("{\"equitherm\": {\"enable\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/equitherm/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1021,9 +967,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/equitherm_n_factor/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1053,9 +996,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/equitherm_k_factor/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1087,9 +1027,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/equitherm_t_factor/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1120,9 +1057,6 @@ public:
     doc[F("payload_off")] = F("{\"tuning\": {\"enable\" : false}}");
 
     client.beginPublish((F("homeassistant/switch/") + _prefix + F("/tuning/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1152,9 +1086,6 @@ public:
     doc[F("options")][1] = F("PID");
 
     client.beginPublish((F("homeassistant/select/") + _prefix + F("/tuning_regulator/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1182,9 +1113,6 @@ public:
     doc[F("expire_after")] = 60;
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/status/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1210,9 +1138,6 @@ public:
     doc[F("value_template")] = F("{{ iif(value_json.states.otStatus, 'OFF', 'ON') }}");
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/ot_status/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1239,9 +1164,6 @@ public:
     doc[F("value_template")] = F("{{ iif(value_json.states.heating, 'ON', 'OFF') }}");
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/heating/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1268,9 +1190,6 @@ public:
     doc[F("value_template")] = F("{{ iif(value_json.states.dhw, 'ON', 'OFF') }}");
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/dhw/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1297,9 +1216,6 @@ public:
     doc[F("value_template")] = F("{{ iif(value_json.states.flame, 'ON', 'OFF') }}");
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/flame/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1327,9 +1243,6 @@ public:
     doc[F("value_template")] = F("{{ iif(value_json.states.fault, 'ON', 'OFF') }}");
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/fault/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1356,9 +1269,6 @@ public:
     doc[F("value_template")] = F("{{ iif(value_json.states.diagnostic, 'ON', 'OFF') }}");
 
     client.beginPublish((F("homeassistant/binary_sensor/") + _prefix + F("/diagnostic/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1385,9 +1295,6 @@ public:
     doc[F("value_template")] = F("{{ \"E%02d\"|format(value_json.states.faultCode) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/fault_code/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1416,9 +1323,6 @@ public:
     doc["value_template"] = "{{ value_json.states.rssi|float(0)|round(1) }}";
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + "/rssi/config").c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1448,9 +1352,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.sensors.modulation|float(0)|round(0) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/modulation/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1479,9 +1380,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.sensors.pressure|float(0)|round(2) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/pressure/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1515,9 +1413,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/indoor_temp/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1547,9 +1442,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/indoor_temp/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1582,9 +1474,6 @@ public:
     doc[F("mode")] = "box";
 
     client.beginPublish((F("homeassistant/number/") + _prefix + F("/outdoor_temp/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1614,9 +1503,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.temperatures.outdoor|float(0)|round(1) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/outdoor_temp/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1645,9 +1531,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.temperatures.heating|float(0)|round(2) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/heating_temp/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1676,9 +1559,6 @@ public:
     doc[F("value_template")] = F("{{ value_json.temperatures.dhw|float(0)|round(2) }}");
 
     client.beginPublish((F("homeassistant/sensor/") + _prefix + F("/dhw_temp/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1734,9 +1614,6 @@ public:
     doc[F("temp_step")] = 0.5;
 
     client.beginPublish((F("homeassistant/climate/") + _prefix + F("_heating/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -1783,9 +1660,6 @@ public:
     doc[F("max_temp")] = maxTemp;
 
     client.beginPublish((F("homeassistant/climate/") + _prefix + F("_dhw/config")).c_str(), measureJson(doc), true);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
