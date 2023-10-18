@@ -6,9 +6,9 @@ Equitherm etRegulator;
 GyverPID pidRegulator(0, 0, 0);
 PIDtuner pidTuner;
 
-class RegulatorTask: public LeanTask {
+class RegulatorTask : public LeanTask {
 public:
-  RegulatorTask(bool _enabled = false, unsigned long _interval = 0): LeanTask(_enabled, _interval) {}
+  RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
   bool tunerInit = false;
@@ -139,7 +139,7 @@ protected:
         newTemp += prevPidResult;
       }
 
-    } else if ( settings.pid.enable && !vars.parameters.heatingEnabled && prevPidResult != 0 ) {
+    } else if (settings.pid.enable && !vars.parameters.heatingEnabled && prevPidResult != 0) {
       newTemp += prevPidResult;
     }
 

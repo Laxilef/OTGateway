@@ -3,9 +3,9 @@
 
 CustomOpenTherm* ot;
 
-class OpenThermTask: public Task {
+class OpenThermTask : public Task {
 public:
-  OpenThermTask(bool _enabled = false, unsigned long _interval = 0): Task(_enabled, _interval) {}
+  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   void setup() {
@@ -28,7 +28,7 @@ protected:
     static byte currentHeatingTemp, currentDHWTemp = 0;
     unsigned long localResponse;
 
-    if ( setMasterMemberIdCode() ) {
+    if (setMasterMemberIdCode()) {
       DEBUG_F("Slave member id code: %u\r\n", vars.parameters.slaveMemberIdCode);
       DEBUG_F("Master member id code: %u\r\n", settings.opentherm.memberIdCode > 0 ? settings.opentherm.memberIdCode : vars.parameters.slaveMemberIdCode);
 
@@ -42,13 +42,13 @@ protected:
       settings.opentherm.dhwPresent && settings.dhw.enable,
       false, false, true, false, false
     );
-    
+
     if (!ot->isValidResponse(localResponse)) {
       WARN_F("Invalid response after setBoilerStatus: %s\r\n", ot->statusToString(ot->getLastResponseStatus()));
       return;
     }
 
-    if ( vars.parameters.heatingEnabled != heatingEnabled ) {
+    if (vars.parameters.heatingEnabled != heatingEnabled) {
       vars.parameters.heatingEnabled = heatingEnabled;
       INFO_F("Heating enabled: %s\r\n", heatingEnabled ? "on\0" : "off\0");
     }
@@ -70,7 +70,7 @@ protected:
       DEBUG_F("Master type: %u, version: %u\r\n", vars.parameters.masterType, vars.parameters.masterVersion);
       DEBUG_F("Slave type: %u, version: %u\r\n", vars.parameters.slaveType, vars.parameters.slaveVersion);
 
-      if ( settings.opentherm.dhwPresent ) {
+      if (settings.opentherm.dhwPresent) {
         updateMinMaxDhwTemp();
       }
       updateMinMaxHeatingTemp();
@@ -83,7 +83,7 @@ protected:
         ot->sendBoilerReset();
       }
 
-      if ( vars.states.diagnostic ) {
+      if (vars.states.diagnostic) {
         ot->sendServiceReset();
       }
 
@@ -92,7 +92,7 @@ protected:
     }
 
     updatePressure();
-    if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled ) {
+    if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled) {
       updateModulationLevel();
 
     } else {
@@ -100,17 +100,13 @@ protected:
     }
     yield();
 
-    if ( settings.opentherm.dhwPresent ) {
+    if (settings.opentherm.dhwPresent) {
       updateDHWTemp();
     } else {
       vars.temperatures.dhw = 0;
     }
 
-    //if ( settings.heating.enable || heatingEnabled ) {
-      updateHeatingTemp();
-    //} else {
-    //  vars.temperatures.heating = 0;
-    //}
+    updateHeatingTemp();
     yield();
 
     //
@@ -158,7 +154,7 @@ protected:
       } else if (!pump && vars.temperatures.indoor - settings.heating.target - 0.0001 <= -(halfHyst)) {
         pump = true;
       }
-      
+
     } else if (!pump) {
       pump = true;
     }
@@ -267,16 +263,16 @@ protected:
         response & 0xFF
       );*/
 
-    } else if ( settings.opentherm.memberIdCode <= 0 ) {
+    } else if (settings.opentherm.memberIdCode <= 0) {
       return false;
     }
-    
+
     response = ot->sendRequest(ot->buildRequest(
       OpenThermRequestType::WRITE,
       OpenThermMessageID::MConfigMMemberIDcode,
       settings.opentherm.memberIdCode > 0 ? settings.opentherm.memberIdCode : vars.parameters.slaveMemberIdCode
     ));
-    
+
     return ot->isValidResponse(response);
   }
 

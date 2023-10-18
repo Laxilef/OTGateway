@@ -92,7 +92,7 @@ public:
     const byte valueLB = response & 0xFF;
     const byte valueHB = (response >> 8) & 0xFF;
 
-    float value = (int8_t) valueHB;
+    float value = (int8_t)valueHB;
     return value + (float)valueLB / 256.0;
   }
 

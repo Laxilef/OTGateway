@@ -1,9 +1,9 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-class SensorsTask: public LeanTask {
+class SensorsTask : public LeanTask {
 public:
-  SensorsTask(bool _enabled = false, unsigned long _interval = 0): LeanTask(_enabled, _interval) {}
+  SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
   OneWire* oneWireOutdoorSensor;
@@ -24,17 +24,17 @@ protected:
 
   void setup() {}
   void loop() {
-    if ( settings.sensors.outdoor.type == 2 ) {
+    if (settings.sensors.outdoor.type == 2) {
       outdoorTemperatureSensor();
     }
 
-    if ( settings.sensors.indoor.type == 2 ) {
+    if (settings.sensors.indoor.type == 2) {
       indoorTemperatureSensor();
     }
   }
 
   void outdoorTemperatureSensor() {
-    if ( !initOutdoorSensor ) {
+    if (!initOutdoorSensor) {
       oneWireOutdoorSensor = new OneWire(settings.sensors.outdoor.pin);
       outdoorSensor = new DallasTemperature(oneWireOutdoorSensor);
       outdoorSensor->begin();
@@ -46,12 +46,12 @@ protected:
     }
 
     unsigned long estimateConversionTime = millis() - startConversionTime;
-    if ( estimateConversionTime < outdoorSensor->millisToWaitForConversion() ) {
+    if (estimateConversionTime < outdoorSensor->millisToWaitForConversion()) {
       return;
     }
 
     bool completed = outdoorSensor->isConversionComplete();
-    if ( !completed && estimateConversionTime >= 1000 ) {
+    if (!completed && estimateConversionTime >= 1000) {
       // fail, retry
       outdoorSensor->requestTemperatures();
       startConversionTime = millis();
@@ -59,7 +59,7 @@ protected:
       ERROR("[SENSORS][OUTDOOR] Could not read temperature data (no response)");
     }
 
-    if ( !completed ) {
+    if (!completed) {
       return;
     }
 
@@ -91,7 +91,7 @@ protected:
   }
 
   void indoorTemperatureSensor() {
-    if ( !initIndoorSensor ) {
+    if (!initIndoorSensor) {
       oneWireIndoorSensor = new OneWire(settings.sensors.indoor.pin);
       indoorSensor = new DallasTemperature(oneWireIndoorSensor);
       indoorSensor->begin();
@@ -103,12 +103,12 @@ protected:
     }
 
     unsigned long estimateConversionTime = millis() - startConversionTime;
-    if ( estimateConversionTime < indoorSensor->millisToWaitForConversion() ) {
+    if (estimateConversionTime < indoorSensor->millisToWaitForConversion()) {
       return;
     }
 
     bool completed = indoorSensor->isConversionComplete();
-    if ( !completed && estimateConversionTime >= 1000 ) {
+    if (!completed && estimateConversionTime >= 1000) {
       // fail, retry
       indoorSensor->requestTemperatures();
       startConversionTime = millis();
@@ -116,7 +116,7 @@ protected:
       ERROR("[SENSORS][INDOOR] Could not read temperature data (no response)");
     }
 
-    if ( !completed ) {
+    if (!completed) {
       return;
     }
 

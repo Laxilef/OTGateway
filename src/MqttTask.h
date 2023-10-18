@@ -8,9 +8,9 @@ PubSubClient client(espClient);
 HomeAssistantHelper haHelper;
 
 
-class MqttTask: public Task {
+class MqttTask : public Task {
 public:
-  MqttTask(bool _enabled = false, unsigned long _interval = 0): Task(_enabled, _interval) {}
+  MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   unsigned long lastReconnectAttempt = 0;
@@ -50,7 +50,7 @@ protected:
           if (firstFailConnect == 0) {
             firstFailConnect = millis();
           }
-          
+
           if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
             vars.states.emergency = true;
             INFO("Emergency mode enabled");
@@ -101,7 +101,7 @@ protected:
     }
 
     if (!doc["emergency"]["target"].isNull() && doc["emergency"]["target"].is<float>()) {
-      if ( doc["emergency"]["target"].as<float>() > 0 && doc["emergency"]["target"].as<float>() < 100 ) {
+      if (doc["emergency"]["target"].as<float>() > 0 && doc["emergency"]["target"].as<float>() < 100) {
         settings.emergency.target = round(doc["emergency"]["target"].as<float>() * 10) / 10;
         flag = true;
       }
@@ -125,21 +125,21 @@ protected:
     }
 
     if (!doc["heating"]["target"].isNull() && doc["heating"]["target"].is<float>()) {
-      if ( doc["heating"]["target"].as<float>() > 0 && doc["heating"]["target"].as<float>() < 100 ) {
+      if (doc["heating"]["target"].as<float>() > 0 && doc["heating"]["target"].as<float>() < 100) {
         settings.heating.target = round(doc["heating"]["target"].as<float>() * 10) / 10;
         flag = true;
       }
     }
 
     if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<float>()) {
-      if ( doc["heating"]["hysteresis"].as<float>() >= 0 && doc["heating"]["hysteresis"].as<float>() <= 5 ) {
+      if (doc["heating"]["hysteresis"].as<float>() >= 0 && doc["heating"]["hysteresis"].as<float>() <= 5) {
         settings.heating.hysteresis = round(doc["heating"]["hysteresis"].as<float>() * 10) / 10;
         flag = true;
       }
     }
 
     if (!doc["heating"]["maxTemp"].isNull() && doc["heating"]["maxTemp"].is<unsigned char>()) {
-      if ( doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100 && doc["heating"]["maxTemp"].as<unsigned char>() > settings.heating.minTemp ) {
+      if (doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100 && doc["heating"]["maxTemp"].as<unsigned char>() > settings.heating.minTemp) {
         settings.heating.maxTemp = doc["heating"]["maxTemp"].as<unsigned char>();
         vars.parameters.heatingMaxTemp = settings.heating.maxTemp;
         flag = true;
@@ -147,7 +147,7 @@ protected:
     }
 
     if (!doc["heating"]["minTemp"].isNull() && doc["heating"]["minTemp"].is<unsigned char>()) {
-      if ( doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100 && doc["heating"]["minTemp"].as<unsigned char>() < settings.heating.maxTemp ) {
+      if (doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100 && doc["heating"]["minTemp"].as<unsigned char>() < settings.heating.maxTemp) {
         settings.heating.minTemp = doc["heating"]["minTemp"].as<unsigned char>();
         vars.parameters.heatingMinTemp = settings.heating.minTemp;
         flag = true;
@@ -162,14 +162,14 @@ protected:
     }
 
     if (!doc["dhw"]["target"].isNull() && doc["dhw"]["target"].is<unsigned char>()) {
-      if ( doc["dhw"]["target"].as<unsigned char>() >= 0 && doc["dhw"]["target"].as<unsigned char>() < 100 ) {
+      if (doc["dhw"]["target"].as<unsigned char>() >= 0 && doc["dhw"]["target"].as<unsigned char>() < 100) {
         settings.dhw.target = doc["dhw"]["target"].as<unsigned char>();
         flag = true;
       }
     }
 
     if (!doc["dhw"]["maxTemp"].isNull() && doc["dhw"]["maxTemp"].is<unsigned char>()) {
-      if ( doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100 && doc["dhw"]["maxTemp"].as<unsigned char>() > settings.dhw.minTemp ) {
+      if (doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100 && doc["dhw"]["maxTemp"].as<unsigned char>() > settings.dhw.minTemp) {
         settings.dhw.maxTemp = doc["dhw"]["maxTemp"].as<unsigned char>();
         vars.parameters.dhwMaxTemp = settings.dhw.maxTemp;
         flag = true;
@@ -177,7 +177,7 @@ protected:
     }
 
     if (!doc["dhw"]["minTemp"].isNull() && doc["dhw"]["minTemp"].is<unsigned char>()) {
-      if ( doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100 && doc["dhw"]["minTemp"].as<unsigned char>() < settings.dhw.maxTemp ) {
+      if (doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100 && doc["dhw"]["minTemp"].as<unsigned char>() < settings.dhw.maxTemp) {
         settings.dhw.minTemp = doc["dhw"]["minTemp"].as<unsigned char>();
         vars.parameters.dhwMinTemp = settings.dhw.minTemp;
         flag = true;
@@ -192,35 +192,35 @@ protected:
     }
 
     if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<float>()) {
-      if ( doc["pid"]["p_factor"].as<float>() >= 0 && doc["pid"]["p_factor"].as<float>() <= 20 ) {
+      if (doc["pid"]["p_factor"].as<float>() >= 0 && doc["pid"]["p_factor"].as<float>() <= 20) {
         settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<float>()) {
-      if ( doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 20 ) {
+      if (doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 20) {
         settings.pid.i_factor = round(doc["pid"]["i_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<float>()) {
-      if ( doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 20 ) {
+      if (doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 20) {
         settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["pid"]["maxTemp"].isNull() && doc["pid"]["maxTemp"].is<unsigned char>()) {
-      if ( doc["pid"]["maxTemp"].as<unsigned char>() > 0 && doc["pid"]["maxTemp"].as<unsigned char>() <= 100 && doc["pid"]["maxTemp"].as<unsigned char>() > settings.pid.minTemp ) {
+      if (doc["pid"]["maxTemp"].as<unsigned char>() > 0 && doc["pid"]["maxTemp"].as<unsigned char>() <= 100 && doc["pid"]["maxTemp"].as<unsigned char>() > settings.pid.minTemp) {
         settings.pid.maxTemp = doc["pid"]["maxTemp"].as<unsigned char>();
         flag = true;
       }
     }
 
     if (!doc["pid"]["minTemp"].isNull() && doc["pid"]["minTemp"].is<unsigned char>()) {
-      if ( doc["pid"]["minTemp"].as<unsigned char>() >= 0 && doc["pid"]["minTemp"].as<unsigned char>() < 100 && doc["pid"]["minTemp"].as<unsigned char>() < settings.pid.maxTemp ) {
+      if (doc["pid"]["minTemp"].as<unsigned char>() >= 0 && doc["pid"]["minTemp"].as<unsigned char>() < 100 && doc["pid"]["minTemp"].as<unsigned char>() < settings.pid.maxTemp) {
         settings.pid.minTemp = doc["pid"]["minTemp"].as<unsigned char>();
         flag = true;
       }
@@ -233,21 +233,21 @@ protected:
     }
 
     if (!doc["equitherm"]["n_factor"].isNull() && doc["equitherm"]["n_factor"].is<float>()) {
-      if ( doc["equitherm"]["n_factor"].as<float>() >= 0 && doc["equitherm"]["n_factor"].as<float>() <= 20 ) {
+      if (doc["equitherm"]["n_factor"].as<float>() >= 0 && doc["equitherm"]["n_factor"].as<float>() <= 20) {
         settings.equitherm.n_factor = round(doc["equitherm"]["n_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["equitherm"]["k_factor"].isNull() && doc["equitherm"]["k_factor"].is<float>()) {
-      if ( doc["equitherm"]["k_factor"].as<float>() >= 0 && doc["equitherm"]["k_factor"].as<float>() <= 20 ) {
+      if (doc["equitherm"]["k_factor"].as<float>() >= 0 && doc["equitherm"]["k_factor"].as<float>() <= 20) {
         settings.equitherm.k_factor = round(doc["equitherm"]["k_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["equitherm"]["t_factor"].isNull() && doc["equitherm"]["t_factor"].is<float>()) {
-      if ( doc["equitherm"]["t_factor"].as<float>() >= 0 && doc["equitherm"]["t_factor"].as<float>() <= 20 ) {
+      if (doc["equitherm"]["t_factor"].as<float>() >= 0 && doc["equitherm"]["t_factor"].as<float>() <= 20) {
         settings.equitherm.t_factor = round(doc["equitherm"]["t_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
@@ -256,28 +256,28 @@ protected:
 
     // sensors
     if (!doc["sensors"]["outdoor"]["type"].isNull() && doc["sensors"]["outdoor"]["type"].is<unsigned char>()) {
-      if ( doc["sensors"]["outdoor"]["type"].as<unsigned char>() >= 0 && doc["sensors"]["outdoor"]["type"].as<unsigned char>() <= 2 ) {
+      if (doc["sensors"]["outdoor"]["type"].as<unsigned char>() >= 0 && doc["sensors"]["outdoor"]["type"].as<unsigned char>() <= 2) {
         settings.sensors.outdoor.type = doc["sensors"]["outdoor"]["type"].as<unsigned char>();
         flag = true;
       }
     }
 
     if (!doc["sensors"]["outdoor"]["offset"].isNull() && doc["sensors"]["outdoor"]["offset"].is<float>()) {
-      if ( doc["sensors"]["outdoor"]["offset"].as<float>() >= -10 && doc["sensors"]["outdoor"]["offset"].as<float>() <= 10 ) {
+      if (doc["sensors"]["outdoor"]["offset"].as<float>() >= -10 && doc["sensors"]["outdoor"]["offset"].as<float>() <= 10) {
         settings.sensors.outdoor.offset = round(doc["sensors"]["outdoor"]["offset"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["sensors"]["indoor"]["type"].isNull() && doc["sensors"]["indoor"]["type"].is<unsigned char>()) {
-      if ( doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 2 ) {
+      if (doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 2) {
         settings.sensors.indoor.type = doc["sensors"]["indoor"]["type"].as<unsigned char>();
         flag = true;
       }
     }
 
     if (!doc["sensors"]["indoor"]["offset"].isNull() && doc["sensors"]["indoor"]["offset"].is<float>()) {
-      if ( doc["sensors"]["indoor"]["offset"].as<float>() >= -10 && doc["sensors"]["indoor"]["offset"].as<float>() <= 10 ) {
+      if (doc["sensors"]["indoor"]["offset"].as<float>() >= -10 && doc["sensors"]["indoor"]["offset"].as<float>() <= 10) {
         settings.sensors.indoor.offset = round(doc["sensors"]["indoor"]["offset"].as<float>() * 1000) / 1000;
         flag = true;
       }
@@ -314,14 +314,14 @@ protected:
     }
 
     if (!doc["temperatures"]["indoor"].isNull() && doc["temperatures"]["indoor"].is<float>()) {
-      if ( settings.sensors.indoor.type == 1 && doc["temperatures"]["indoor"].as<float>() > -100 && doc["temperatures"]["indoor"].as<float>() < 100 ) {
+      if (settings.sensors.indoor.type == 1 && doc["temperatures"]["indoor"].as<float>() > -100 && doc["temperatures"]["indoor"].as<float>() < 100) {
         vars.temperatures.indoor = round(doc["temperatures"]["indoor"].as<float>() * 100) / 100;
         flag = true;
       }
     }
 
     if (!doc["temperatures"]["outdoor"].isNull() && doc["temperatures"]["outdoor"].is<float>()) {
-      if ( settings.sensors.outdoor.type == 1 && doc["temperatures"]["outdoor"].as<float>() > -100 && doc["temperatures"]["outdoor"].as<float>() < 100 ) {
+      if (settings.sensors.outdoor.type == 1 && doc["temperatures"]["outdoor"].as<float>() > -100 && doc["temperatures"]["outdoor"].as<float>() < 100) {
         vars.temperatures.outdoor = round(doc["temperatures"]["outdoor"].as<float>() * 100) / 100;
         flag = true;
       }
@@ -560,7 +560,7 @@ protected:
 
     doc["sensors"]["outdoor"]["type"] = settings.sensors.outdoor.type;
     doc["sensors"]["outdoor"]["offset"] = settings.sensors.outdoor.offset;
-    
+
     doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
     doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 

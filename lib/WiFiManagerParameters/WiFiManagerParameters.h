@@ -15,7 +15,7 @@ public:
   const char* noChecked = "type=\"checkbox\"";
   const char* trueVal = "T";
 
-  CheckboxParameter(const char* id, const char* label, bool value): WiFiManagerParameter("") {
+  CheckboxParameter(const char* id, const char* label, bool value) : WiFiManagerParameter("") {
     init(id, label, value ? trueVal : "0", 1, "", WFM_LABEL_AFTER);
   }
 
@@ -34,5 +34,5 @@ public:
 
 class SeparatorParameter : public WiFiManagerParameter {
 public:
-  SeparatorParameter(): WiFiManagerParameter("<hr>") {}
+  SeparatorParameter() : WiFiManagerParameter("<hr>") {}
 };

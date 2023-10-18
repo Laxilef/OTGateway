@@ -2,9 +2,9 @@ extern MqttTask* tMqtt;
 extern SensorsTask* tSensors;
 extern OpenThermTask* tOt;
 
-class MainTask: public Task {
+class MainTask : public Task {
 public:
-  MainTask(bool _enabled = false, unsigned long _interval = 0): Task(_enabled, _interval) {}
+  MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
   unsigned long lastHeapInfo = 0;
@@ -25,7 +25,7 @@ protected:
         tMqtt->enable();
       }
 
-      if ( firstFailConnect != 0 ) {
+      if (firstFailConnect != 0) {
         firstFailConnect = 0;
       }
 
@@ -40,7 +40,7 @@ protected:
         if (firstFailConnect == 0) {
           firstFailConnect = millis();
         }
-        
+
         if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
           INFO("Emergency mode enabled");

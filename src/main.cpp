@@ -40,7 +40,7 @@ void setup() {
   if (eeSettingsResult == 0) {
     INFO("Settings loaded");
 
-    if ( strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0 ) {
+    if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
       INFO("Settings not valid, reset and restart...");
       eeSettings.reset();
       delay(1000);
