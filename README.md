@@ -35,7 +35,7 @@
 | [Remeha Calenta Ace 40C](https://github.com/Laxilef/OTGateway/issues/1#issuecomment-1726081554) | default | - |
 | [Baxi Nuvola DUO-TEC HT 16](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1751061488) | default | - |
 | [AEG GBA124](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765857609) | default | Pressure sensor not supported |
-| [Ferroli DOMIcompact C 24](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765310058)<br><small>Board: board MF08FA</small> | 211 | Pressure sensor not supported |
+| [Ferroli DOMIcompact C 24](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765310058)<br><sub>Board: MF08FA</sub> | 211 | Pressure sensor not supported |
 | [Thermet Ecocondens Silver 35kW)](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1767026384) | default | Pressure sensor not supported |
 
 ## PCB
