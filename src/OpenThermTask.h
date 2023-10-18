@@ -100,7 +100,7 @@ protected:
     }
     yield();
 
-    if ( settings.opentherm.dhwPresent && settings.dhw.enable ) {
+    if ( settings.opentherm.dhwPresent ) {
       updateDHWTemp();
     } else {
       vars.temperatures.dhw = 0;
