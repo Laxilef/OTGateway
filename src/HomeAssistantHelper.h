@@ -1565,7 +1565,7 @@ public:
 
 
   bool publishClimateHeating(byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
-    StaticJsonDocument<2048> doc;
+    StaticJsonDocument<2560> doc;
     doc[F("availability")][F("topic")] = _prefix + F("/status");
     doc[F("device")][F("identifiers")][0] = _prefix;
     doc[F("device")][F("sw_version")] = _deviceVersion;
@@ -1619,7 +1619,7 @@ public:
   }
 
   bool publishClimateDHW(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    StaticJsonDocument<2560> doc;
     doc[F("availability")][F("topic")] = _prefix + F("/status");
     doc[F("device")][F("identifiers")][0] = _prefix;
     doc[F("device")][F("sw_version")] = _deviceVersion;
