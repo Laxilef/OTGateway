@@ -11,8 +11,6 @@
 
 #define EXT_SENSORS_INTERVAL        5000
 #define EXT_SENSORS_FILTER_K        0.15
-#define DS_CHECK_CRC                true
-#define DS_CRC_USE_TABLE            true
 
 #define LED_STATUS_PIN              13
 #define LED_OT_RX_PIN               15
