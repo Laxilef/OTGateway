@@ -37,6 +37,8 @@
 | [AEG GBA124](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765857609) | default | Pressure sensor not supported |
 | [Ferroli DOMIcompact C 24](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765310058)<br><sub>Board: MF08FA</sub> | 211 | Pressure sensor not supported |
 | [Thermet Ecocondens Silver 35kW)](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1767026384) | default | Pressure sensor not supported |
+| [BAXI LUNA-3)](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1794187178) | default | - |
+
 
 ## PCB
 <img src="/assets/pcb.svg" width="27%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="40%" />
@@ -159,7 +161,7 @@ Weather-compensated temperature control maintains a comfortable set temperature 
 
 #### Ratios:
 ***N*** - heating curve coefficient. The coefficient is selected individually, depending on the insulation of the room, the heated area, etc.<br>
-Range: 0.3...10, default: 0.7, step 0.01
+Range: 0.001...10, default: 0.7, step 0.001
 
 
 ***K*** - сorrection for desired room temperature.<br>
