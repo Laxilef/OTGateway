@@ -1,11 +1,11 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 #include <netif/etharp.h>
-#include "HomeAssistantHelper.h"
+#include "HaHelper.h"
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-HomeAssistantHelper haHelper;
+HaHelper haHelper(client);
 
 
 class MqttTask : public Task {
@@ -22,6 +22,8 @@ protected:
     client.setCallback(__callback);
     haHelper.setPrefix(settings.mqtt.prefix);
     haHelper.setDeviceVersion(OT_GATEWAY_VERSION);
+    haHelper.setDeviceModel("Opentherm Gateway");
+    haHelper.setDeviceName("Opentherm Gateway");
 
     sprintf(buffer, CONFIG_URL, WiFi.localIP().toString().c_str());
     haHelper.setDeviceConfigUrl(buffer);
@@ -192,21 +194,21 @@ protected:
     }
 
     if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<float>()) {
-      if (doc["pid"]["p_factor"].as<float>() >= 0 && doc["pid"]["p_factor"].as<float>() <= 20) {
+      if (doc["pid"]["p_factor"].as<float>() > 0 && doc["pid"]["p_factor"].as<float>() <= 10) {
         settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<float>()) {
-      if (doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 20) {
+      if (doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 10) {
         settings.pid.i_factor = round(doc["pid"]["i_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<float>()) {
-      if (doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 20) {
+      if (doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 10) {
         settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
@@ -233,21 +235,21 @@ protected:
     }
 
     if (!doc["equitherm"]["n_factor"].isNull() && doc["equitherm"]["n_factor"].is<float>()) {
-      if (doc["equitherm"]["n_factor"].as<float>() >= 0 && doc["equitherm"]["n_factor"].as<float>() <= 20) {
+      if (doc["equitherm"]["n_factor"].as<float>() > 0 && doc["equitherm"]["n_factor"].as<float>() <= 10) {
         settings.equitherm.n_factor = round(doc["equitherm"]["n_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["equitherm"]["k_factor"].isNull() && doc["equitherm"]["k_factor"].is<float>()) {
-      if (doc["equitherm"]["k_factor"].as<float>() >= 0 && doc["equitherm"]["k_factor"].as<float>() <= 20) {
+      if (doc["equitherm"]["k_factor"].as<float>() >= 0 && doc["equitherm"]["k_factor"].as<float>() <= 10) {
         settings.equitherm.k_factor = round(doc["equitherm"]["k_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["equitherm"]["t_factor"].isNull() && doc["equitherm"]["t_factor"].is<float>()) {
-      if (doc["equitherm"]["t_factor"].as<float>() >= 0 && doc["equitherm"]["t_factor"].as<float>() <= 20) {
+      if (doc["equitherm"]["t_factor"].as<float>() >= 0 && doc["equitherm"]["t_factor"].as<float>() <= 10) {
         settings.equitherm.t_factor = round(doc["equitherm"]["t_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
@@ -330,7 +332,6 @@ protected:
     if (!doc["restart"].isNull() && doc["restart"].is<bool>() && doc["restart"].as<bool>()) {
       DEBUG("Received restart message...");
       eeSettings.updateNow();
-      Scheduler.delay(10000);
       DEBUG("Restart...");
 
       ESP.restart();
