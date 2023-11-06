@@ -3,6 +3,9 @@ import os
 Import("env")
 
 def post_build(source, target, env):
+    if os.path.exists(os.path.join(env["PROJECT_DIR"], "build")) == False:
+        return
+    
     src = target[0].get_abspath()
     dest = os.path.join(env["PROJECT_DIR"], "build", "firmware_%s_%s.bin" % (env.GetProjectOption("board"), env.GetProjectOption("version")))
 
