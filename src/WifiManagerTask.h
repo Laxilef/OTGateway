@@ -127,7 +127,7 @@ protected:
     }
 
     #if defined(ESP8266)
-    if ( connected && millis() - lastArpGratuitous > 60000 ) {
+    if (connected && millis() - lastArpGratuitous > 60000) {
       arpGratuitous();
       lastArpGratuitous = millis();
     }
@@ -137,19 +137,100 @@ protected:
   }
 
   static void saveParamsCallback() {
-    strcpy(settings.hostname, wmHostname->getValue());
-    strcpy(settings.mqtt.server, wmMqttServer->getValue());
-    settings.mqtt.port = wmMqttPort->getValue();
-    strcpy(settings.mqtt.user, wmMqttUser->getValue());
-    strcpy(settings.mqtt.password, wmMqttPassword->getValue());
-    strcpy(settings.mqtt.prefix, wmMqttPrefix->getValue());
-    settings.mqtt.interval = wmMqttPublishInterval->getValue();
-    settings.opentherm.inPin = wmOtInPin->getValue();
-    settings.opentherm.outPin = wmOtOutPin->getValue();
-    settings.opentherm.memberIdCode = wmOtMemberIdCode->getValue();
-    settings.opentherm.dhwPresent = wmOtDHWPresent->getCheckboxValue();
-    settings.sensors.outdoor.pin = wmOutdoorSensorPin->getValue();
-    settings.sensors.indoor.pin = wmIndoorSensorPin->getValue();
+    bool changed = false;
+    bool needRestart = false;
+
+    if (strcmp(wmHostname->getValue(), settings.hostname) != 0) {
+      changed = true;
+      needRestart = true;
+
+      strcpy(settings.hostname, wmHostname->getValue());
+    }
+
+    if (strcmp(wmMqttServer->getValue(), settings.mqtt.server) != 0) {
+      changed = true;
+
+      strcpy(settings.mqtt.server, wmMqttServer->getValue());
+    }
+
+    if (wmMqttPort->getValue() != settings.mqtt.port) {
+      changed = true;
+
+      settings.mqtt.port = wmMqttPort->getValue();
+    }
+
+    if (strcmp(wmMqttUser->getValue(), settings.mqtt.user) != 0) {
+      changed = true;
+
+      strcpy(settings.mqtt.user, wmMqttUser->getValue());
+    }
+
+    if (strcmp(wmMqttPassword->getValue(), settings.mqtt.password) != 0) {
+      changed = true;
+
+      strcpy(settings.mqtt.password, wmMqttPassword->getValue());
+    }
+
+    if (strcmp(wmMqttPrefix->getValue(), settings.mqtt.prefix) != 0) {
+      changed = true;
+
+      strcpy(settings.mqtt.prefix, wmMqttPrefix->getValue());
+    }
+
+    if (wmMqttPublishInterval->getValue() != settings.mqtt.interval) {
+      changed = true;
+
+      settings.mqtt.interval = wmMqttPublishInterval->getValue();
+    }
+
+    if (wmOtInPin->getValue() != settings.opentherm.inPin) {
+      changed = true;
+      needRestart = true;
+
+      settings.opentherm.inPin = wmOtInPin->getValue();
+    }
+
+    if (wmOtOutPin->getValue() != settings.opentherm.outPin) {
+      changed = true;
+      needRestart = true;
+
+      settings.opentherm.outPin = wmOtOutPin->getValue();
+    }
+
+    if (wmOtMemberIdCode->getValue() != settings.opentherm.memberIdCode) {
+      changed = true;
+
+      settings.opentherm.memberIdCode = wmOtMemberIdCode->getValue();
+    }
+
+    if (wmOtDHWPresent->getCheckboxValue() != settings.opentherm.dhwPresent) {
+      changed = true;
+
+      settings.opentherm.dhwPresent = wmOtDHWPresent->getCheckboxValue();
+    }
+
+    if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
+      changed = true;
+      needRestart = true;
+
+      settings.sensors.outdoor.pin = wmOutdoorSensorPin->getValue();
+    }
+
+    if (wmIndoorSensorPin->getValue() != settings.sensors.indoor.pin) {
+      changed = true;
+      needRestart = true;
+
+      settings.sensors.indoor.pin = wmIndoorSensorPin->getValue();
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    if (needRestart) {
+      vars.parameters.restartAfterTime = 5000;
+      vars.parameters.restartSignalTime = millis();
+    }
 
     INFO_F(
       "New settings:\r\n"
@@ -179,6 +260,7 @@ protected:
       settings.sensors.outdoor.pin,
       settings.sensors.indoor.pin
     );
+
     eeSettings.updateNow();
     INFO(F("Settings saved"));
   }

@@ -106,6 +106,8 @@ struct Variables {
   } temperatures;
 
   struct {
+    unsigned long restartSignalTime = 0;
+    unsigned int restartAfterTime = 0;
     bool heatingEnabled = false;
     byte heatingMinTemp = 20;
     byte heatingMaxTemp = 90;

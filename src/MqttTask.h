@@ -323,11 +323,8 @@ protected:
     }
 
     if (!doc["restart"].isNull() && doc["restart"].is<bool>() && doc["restart"].as<bool>()) {
-      DEBUG("Received restart message...");
-      eeSettings.updateNow();
-      DEBUG("Restart...");
-
-      ESP.restart();
+      vars.parameters.restartAfterTime = 5000;
+      vars.parameters.restartSignalTime = millis();
     }
 
     if (flag) {

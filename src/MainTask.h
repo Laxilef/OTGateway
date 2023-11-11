@@ -23,6 +23,17 @@ protected:
       INFO("Settings updated (EEPROM)");
     }
 
+    if (vars.parameters.restartAfterTime > 0 && millis() - vars.parameters.restartSignalTime > vars.parameters.restartAfterTime) {
+      vars.parameters.restartAfterTime = 0;
+      
+      INFO("Received restart message...");
+      eeSettings.updateNow();
+      INFO("Restart...");
+      delay(1000);
+
+      ESP.restart();
+    }
+
     if (WiFi.status() == WL_CONNECTED) {
       if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
         tMqtt->enable();
