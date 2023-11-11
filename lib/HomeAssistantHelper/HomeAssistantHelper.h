@@ -8,38 +8,48 @@ public:
   {
   }
 
-  void setPrefix(String value) {
-    _prefix = value;
+  void setDevicePrefix(String value) {
+    devicePrefix = value;
   }
 
   void setDeviceVersion(String value) {
-    _deviceVersion = value;
+    deviceVersion = value;
   }
 
   void setDeviceManufacturer(String value) {
-    _deviceManufacturer = value;
+    deviceManufacturer = value;
   }
 
   void setDeviceModel(String value) {
-    _deviceModel = value;
+    deviceModel = value;
   }
 
   void setDeviceName(String value) {
-    _deviceName = value;
+    deviceName = value;
   }
 
   void setDeviceConfigUrl(String value) {
-    _deviceConfigUrl = value;
+    deviceConfigUrl = value;
   }
 
   bool publish(const char* topic, JsonDocument& doc) {
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_IDENTIFIERS)][0] = _prefix;
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_SW_VERSION)] = _deviceVersion;
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_MANUFACTURER)] = _deviceManufacturer;
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_MODEL)] = _deviceModel;
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_NAME)] = _deviceName;
-    if (_deviceConfigUrl) {
-      doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = _deviceConfigUrl;
+    doc[FPSTR(HA_DEVICE)][FPSTR(HA_IDENTIFIERS)][0] = devicePrefix;
+    doc[FPSTR(HA_DEVICE)][FPSTR(HA_SW_VERSION)] = deviceVersion;
+
+    if (deviceManufacturer) {
+      doc[FPSTR(HA_DEVICE)][FPSTR(HA_MANUFACTURER)] = deviceManufacturer;
+    }
+    
+    if (deviceModel) {
+      doc[FPSTR(HA_DEVICE)][FPSTR(HA_MODEL)] = deviceModel;
+    }
+
+    if (deviceName) {
+      doc[FPSTR(HA_DEVICE)][FPSTR(HA_NAME)] = deviceName;
+    }
+    
+    if (deviceConfigUrl) {
+      doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = deviceConfigUrl;
     }
 
     client->beginPublish(topic, measureJson(doc), true);
@@ -52,10 +62,12 @@ public:
   }
 
   String getTopic(const char* category, const char* name, const char* nameSeparator = "/") {
-    String topic = "homeassistant/";
+    String topic = "";
+    topic.concat(prefix);
+    topic.concat("/");
     topic.concat(category);
     topic.concat("/");
-    topic.concat(_prefix);
+    topic.concat(devicePrefix);
     topic.concat(nameSeparator);
     topic.concat(name);
     topic.concat("/config");
@@ -64,10 +76,11 @@ public:
 
 protected:
   PubSubClient* client;
-  String _prefix = "";
-  String _deviceVersion = "1.0";
-  String _deviceManufacturer = "Community";
-  String _deviceModel = "";
-  String _deviceName = "";
-  String _deviceConfigUrl = "";
+  String prefix = "homeassistant";
+  String devicePrefix = "";
+  String deviceVersion = "1.0";
+  String deviceManufacturer = "Community";
+  String deviceModel = "";
+  String deviceName = "";
+  String deviceConfigUrl = "";
 };
