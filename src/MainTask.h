@@ -7,9 +7,12 @@ public:
   MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
+  const char* taskName = "Main task";
+  const int taskCore = 2;
+
   unsigned long lastHeapInfo = 0;
   unsigned long firstFailConnect = 0;
-  unsigned short minFreeHeapSize = 65535;
+  unsigned int minFreeHeapSize = RAM_SIZE;
 
   void setup() {
     pinMode(LED_STATUS_PIN, OUTPUT);
@@ -21,7 +24,7 @@ protected:
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      if (!tMqtt->isEnabled()) {
+      if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
         tMqtt->enable();
       }
 
@@ -65,15 +68,16 @@ protected:
 #endif
 
     if (settings.debug) {
-      unsigned short freeHeapSize = ESP.getFreeHeap();
-      unsigned short minFreeHeapSizeDiff = 0;
+      unsigned int freeHeapSize = ESP.getFreeHeap();
+      unsigned int minFreeHeapSizeDiff = 0;
 
       if (freeHeapSize < minFreeHeapSize) {
         minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;
         minFreeHeapSize = freeHeapSize;
       }
+      
       if (millis() - lastHeapInfo > 10000 || minFreeHeapSizeDiff > 0) {
-        DEBUG_F("Free heap size: %hu bytes, min: %hu bytes (diff: %hu bytes)\n", freeHeapSize, minFreeHeapSize, minFreeHeapSizeDiff);
+        DEBUG_F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)\n", freeHeapSize, RAM_SIZE, minFreeHeapSize, minFreeHeapSizeDiff);
         lastHeapInfo = millis();
       }
     }

@@ -1,5 +1,7 @@
+#define WM_MDNS
 #include <WiFiManager.h>
 #include <WiFiManagerParameters.h>
+#include <netif/etharp.h>
 
 // Wifimanager
 WiFiManager wm;
@@ -25,8 +27,12 @@ public:
   WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
+  const char* taskName = "WifiManager";
+  const int taskCore = 1;
+  bool connected = false;
+  unsigned long lastArpGratuitous = 0;
+
   void setup() {
-    //WiFi.mode(WIFI_STA);
     wm.setDebugOutput(settings.debug);
 
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
@@ -95,6 +101,11 @@ protected:
 
     if (connected && WiFi.status() != WL_CONNECTED) {
       connected = false;
+
+      #ifdef USE_TELNET
+      TelnetStream.stop();
+      #endif
+
       INFO("[wifi] Disconnected");
 
     } else if (!connected && WiFi.status() == WL_CONNECTED) {
@@ -104,6 +115,10 @@ protected:
         wm.stopConfigPortal();
       }
 
+      #ifdef USE_TELNET
+      TelnetStream.begin();
+      #endif
+
       INFO_F("[wifi] Connected. IP address: %s, RSSI: %d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
@@ -111,10 +126,17 @@ protected:
       wm.startWebPortal();
     }
 
+    #if defined(ESP8266)
+    if ( connected && millis() - lastArpGratuitous > 60000 ) {
+      arpGratuitous();
+      lastArpGratuitous = millis();
+    }
+    #endif
+
     wm.process();
   }
 
-  void static saveParamsCallback() {
+  static void saveParamsCallback() {
     strcpy(settings.hostname, wmHostname->getValue());
     strcpy(settings.mqtt.server, wmMqttServer->getValue());
     settings.mqtt.port = wmMqttPort->getValue();
@@ -161,5 +183,11 @@ protected:
     INFO(F("Settings saved"));
   }
 
-  bool connected = false;
+  static void arpGratuitous() {
+    struct netif* netif = netif_list;
+    while (netif) {
+      etharp_gratuitous(netif);
+      netif = netif->next;
+    }
+  }
 };

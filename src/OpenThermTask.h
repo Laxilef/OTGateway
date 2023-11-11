@@ -7,7 +7,14 @@ class OpenThermTask : public Task {
 public:
   OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
+  void static IRAM_ATTR handleInterrupt() {
+    ot->handleInterrupt();
+  }
+
 protected:
+  const char* taskName = "OpenTherm task";
+  const int taskCore = 2;
+
   void setup() {
     vars.parameters.heatingMinTemp = settings.heating.minTemp;
     vars.parameters.heatingMaxTemp = settings.heating.maxTemp;
@@ -16,8 +23,12 @@ protected:
 
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
-    ot->begin(handleInterrupt, responseCallback);
-    ot->setHandleSendRequestCallback(sendRequestCallback);
+    ot->setHandleSendRequestCallback(this->sendRequestCallback);
+    ot->begin(OpenThermTask::handleInterrupt, this->responseCallback);
+
+    ot->setYieldCallback([](void* self) {
+      static_cast<OpenThermTask*>(self)->yield();
+    }, this);
 
 #ifdef LED_OT_RX_PIN
     pinMode(LED_OT_RX_PIN, OUTPUT);
@@ -158,10 +169,6 @@ protected:
     } else if (!pump) {
       pump = true;
     }
-  }
-
-  void static IRAM_ATTR handleInterrupt() {
-    ot->handleInterrupt();
   }
 
   void static sendRequestCallback(unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {

@@ -1,4 +1,4 @@
-#define OT_GATEWAY_VERSION          "1.3.2"
+#define OT_GATEWAY_VERSION          "1.3.3"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
 #define USE_TELNET
@@ -17,6 +17,26 @@
 
 #define CONFIG_URL                  "http://%s/"
 #define SETTINGS_VALID_VALUE        "stvalid" // only 8 chars!
+
+#if defined(ESP8266)
+  #define RAM_SIZE 81920
+  #define OT_IN_PIN_DEFAULT 4
+  #define OT_OUT_PIN_DEFAULT 5
+  #define SENSOR_OUTDOOR_PIN_DEFAULT 12
+  #define SENSOR_INDOOR_PIN_DEFAULT 14
+#elif defined(ESP32)
+  #define RAM_SIZE 327680
+  #define OT_IN_PIN_DEFAULT 17
+  #define OT_OUT_PIN_DEFAULT 21
+  #define SENSOR_OUTDOOR_PIN_DEFAULT 2
+  #define SENSOR_INDOOR_PIN_DEFAULT 4
+#else
+  #define RAM_SIZE 999999
+  #define OT_IN_PIN_DEFAULT 0
+  #define OT_OUT_PIN_DEFAULT 0
+  #define SENSOR_OUTDOOR_PIN_DEFAULT 0
+  #define SENSOR_INDOOR_PIN_DEFAULT 0
+#endif
 
 
 #ifdef USE_TELNET

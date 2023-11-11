@@ -6,6 +6,9 @@ public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
+  const char* taskName = "Sensors task";
+  const int taskCore = 2;
+
   OneWire* oneWireOutdoorSensor;
   OneWire* oneWireIndoorSensor;
 

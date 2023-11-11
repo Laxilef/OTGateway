@@ -3,8 +3,8 @@ struct Settings {
   char hostname[80] = "opentherm";
 
   struct {
-    byte inPin = 4;
-    byte outPin = 5;
+    byte inPin = OT_IN_PIN_DEFAULT;
+    byte outPin = OT_OUT_PIN_DEFAULT;
     unsigned int memberIdCode = 0;
     bool dhwPresent = true;
   } opentherm;
@@ -60,14 +60,14 @@ struct Settings {
     struct {
       // 0 - boiler, 1 - manual, 2 - ds18b20
       byte type = 0;
-      byte pin = 12;
+      byte pin = SENSOR_OUTDOOR_PIN_DEFAULT;
       float offset = 0.0f;
     } outdoor;
 
     struct {
       // 1 - manual, 2 - ds18b20
       byte type = 1;
-      byte pin = 14;
+      byte pin = SENSOR_INDOOR_PIN_DEFAULT;
       float offset = 0.0f;
     } indoor;
   } sensors;

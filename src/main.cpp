@@ -3,12 +3,21 @@
 #include <ArduinoJson.h>
 #include <TelnetStream.h>
 #include <EEManager.h>
-#include <Scheduler.h>
-#include <Task.h>
-#include <LeanTask.h>
 #include "Settings.h"
 
 EEManager eeSettings(settings, 30000);
+
+#if defined(ESP32)
+  #include <ESP32Scheduler.h>
+  #include <Task.h>
+  #include <LeanTask.h>
+#elif defined(ESP8266)
+  #include <Scheduler.h>
+  #include <Task.h>
+  #include <LeanTask.h>
+#elif
+  #error Wrong board. Supported boards: esp8266, esp32
+#endif
 
 #include "WifiManagerTask.h"
 #include "MqttTask.h"
@@ -27,13 +36,10 @@ MainTask* tMain;
 
 
 void setup() {
-#ifdef USE_TELNET
-  TelnetStream.begin();
-  delay(1000);
-#else
-  Serial.begin(115200);
-  Serial.println("\n\n");
-#endif
+  #ifndef USE_TELNET
+    Serial.begin(115200);
+    Serial.println("\n\n");
+  #endif
 
   EEPROM.begin(eeSettings.blockSize());
   uint8_t eeSettingsResult = eeSettings.begin(0, 's');
@@ -69,7 +75,7 @@ void setup() {
   tRegulator = new RegulatorTask(true, 10000);
   Scheduler.start(tRegulator);
 
-  tMain = new MainTask(true);
+  tMain = new MainTask(true, 50);
   Scheduler.start(tMain);
 
   Scheduler.begin();

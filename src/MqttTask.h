@@ -1,6 +1,5 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
-#include <netif/etharp.h>
 #include "HaHelper.h"
 
 WiFiClient espClient;
@@ -13,6 +12,9 @@ public:
   MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
+  const char* taskName = "Mqtt task";
+  const int taskCore = 1;
+
   unsigned long lastReconnectAttempt = 0;
   unsigned long firstFailConnect = 0;
 
@@ -20,7 +22,7 @@ protected:
     DEBUG("[MQTT] Started");
 
     client.setCallback(__callback);
-    haHelper.setPrefix(settings.mqtt.prefix);
+    haHelper.setDevicePrefix(settings.mqtt.prefix);
     haHelper.setDeviceVersion(OT_GATEWAY_VERSION);
     haHelper.setDeviceModel("Opentherm Gateway");
     haHelper.setDeviceName("Opentherm Gateway");
@@ -59,7 +61,6 @@ protected:
           }
         }
 
-        forceARP();
         lastReconnectAttempt = millis();
       }
     }
@@ -78,14 +79,6 @@ protected:
     }
   }
 
-
-  static void forceARP() {
-    struct netif* netif = netif_list;
-    while (netif) {
-      etharp_gratuitous(netif);
-      netif = netif->next;
-    }
-  }
 
   static bool updateSettings(JsonDocument& doc) {
     bool flag = false;
@@ -359,8 +352,7 @@ protected:
       } else {
         client.publish(getTopicPath("status").c_str(), vars.states.otStatus ? "online" : "offline");
       }
-
-      forceARP();
+      
       prevPubVars = millis();
     }
 
