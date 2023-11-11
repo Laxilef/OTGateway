@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <OpenTherm.h>
 
-extern SchedulerClass Scheduler;
-
 class CustomOpenTherm : public OpenTherm {
 private:
   unsigned long send_ts = millis();
   void(*handleSendRequestCallback)(unsigned long, unsigned long, OpenThermResponseStatus status, byte attempt);
+  void(*yieldCallback)(void*);
+  void* yieldArg;
 
 public:
   CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
@@ -14,10 +14,25 @@ public:
     this->handleSendRequestCallback = handleSendRequestCallback;
   }
 
+  void setYieldCallback(void(*yieldCallback)(void*)) {
+    this->yieldCallback = yieldCallback;
+    this->yieldArg = nullptr;
+  }
+
+  void setYieldCallback(void(*yieldCallback)(void*), void* arg) {
+    this->yieldCallback = yieldCallback;
+    this->yieldArg = arg;
+  }
+
   unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
     _attempt++;
     while (send_ts > 0 && millis() - send_ts < 200) {
-      Scheduler.yield();
+      if (yieldCallback != NULL) {
+        yieldCallback(yieldArg);
+
+      } else {
+        ::yield();
+      }
     }
 
     unsigned long _response;
@@ -25,19 +40,26 @@ public:
       _response = 0;
     } else {
       while (!isReady()) {
-        Scheduler.yield();
+        if (yieldCallback != NULL) {
+          yieldCallback(yieldArg);
+
+        } else {
+          ::yield();
+        }
+
         process();
       }
 
       _response = getLastResponse();
     }
 
+    OpenThermResponseStatus _responseStatus = getLastResponseStatus();
     if (handleSendRequestCallback != NULL) {
-      handleSendRequestCallback(request, _response, getLastResponseStatus(), _attempt);
+      handleSendRequestCallback(request, _response, _responseStatus, _attempt);
     }
 
     send_ts = millis();
-    if (getLastResponseStatus() == OpenThermResponseStatus::SUCCESS || _attempt >= attempts) {
+    if (_responseStatus == OpenThermResponseStatus::SUCCESS || _responseStatus == OpenThermResponseStatus::INVALID || _attempt >= attempts) {
       return _response;
     } else {
       return sendRequest(request, attempts, _attempt);
