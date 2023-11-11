@@ -12,32 +12,38 @@
 #define EXT_SENSORS_INTERVAL        5000
 #define EXT_SENSORS_FILTER_K        0.15
 
-#define LED_STATUS_PIN              13
-#define LED_OT_RX_PIN               15
-
 #define CONFIG_URL                  "http://%s/"
 #define SETTINGS_VALID_VALUE        "stvalid" // only 8 chars!
 
-#if defined(ESP8266)
-  #define RAM_SIZE 81920
-  #define OT_IN_PIN_DEFAULT 4
-  #define OT_OUT_PIN_DEFAULT 5
-  #define SENSOR_OUTDOOR_PIN_DEFAULT 12
-  #define SENSOR_INDOOR_PIN_DEFAULT 14
-#elif defined(ESP32)
-  #define RAM_SIZE 327680
-  #define OT_IN_PIN_DEFAULT 17
-  #define OT_OUT_PIN_DEFAULT 21
-  #define SENSOR_OUTDOOR_PIN_DEFAULT 2
-  #define SENSOR_INDOOR_PIN_DEFAULT 4
-#else
+
+
+#ifndef RAM_SIZE
   #define RAM_SIZE 999999
+#endif
+
+#ifndef OT_IN_PIN_DEFAULT
   #define OT_IN_PIN_DEFAULT 0
+#endif
+
+#ifndef OT_OUT_PIN_DEFAULT
   #define OT_OUT_PIN_DEFAULT 0
+#endif
+
+#ifndef SENSOR_OUTDOOR_PIN_DEFAULT
   #define SENSOR_OUTDOOR_PIN_DEFAULT 0
+#endif
+
+#ifndef SENSOR_INDOOR_PIN_DEFAULT
   #define SENSOR_INDOOR_PIN_DEFAULT 0
 #endif
 
+#ifndef LED_STATUS_PIN
+  #define LED_STATUS_PIN 0
+#endif
+
+#ifndef LED_OT_RX_PIN
+  #define LED_OT_RX_PIN 0
+#endif
 
 #ifdef USE_TELNET
   #define INFO_STREAM TelnetStream
