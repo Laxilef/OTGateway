@@ -81,4 +81,8 @@ void setup() {
   Scheduler.begin();
 }
 
-void loop() {}
+void loop() {
+  #if defined(ESP32)
+  vTaskDelete(NULL);
+  #endif
+}

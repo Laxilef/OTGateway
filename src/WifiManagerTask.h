@@ -27,10 +27,16 @@ public:
   WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
-  const char* taskName = "WifiManager";
-  const int taskCore = 1;
   bool connected = false;
   unsigned long lastArpGratuitous = 0;
+
+  const char* getTaskName() {
+    return "WifiManager";
+  }
+  
+  int getTaskCore() {
+    return 0;
+  }
 
   void setup() {
     wm.setDebugOutput(settings.debug);

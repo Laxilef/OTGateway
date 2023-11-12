@@ -11,9 +11,6 @@ public:
   RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
-  const char* taskName = "Regulator task";
-  const int taskCore = 2;
-
   bool tunerInit = false;
   byte tunerState = 0;
   byte tunerRegulator = 0;
@@ -21,8 +18,14 @@ protected:
   float prevEtResult = 0;
   float prevPidResult = 0;
 
-
-  void setup() {}
+  const char* getTaskName() {
+    return "Regulator";
+  }
+  
+  int getTaskCore() {
+    return 1;
+  }
+  
   void loop() {
     byte newTemp = vars.parameters.heatingSetpoint;
 

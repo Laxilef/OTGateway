@@ -6,9 +6,6 @@ public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
-  const char* taskName = "Sensors task";
-  const int taskCore = 2;
-
   OneWire* oneWireOutdoorSensor;
   OneWire* oneWireIndoorSensor;
 
@@ -25,7 +22,10 @@ protected:
   bool emptyIndoorTemp = true;
 
 
-  void setup() {}
+  const char* getTaskName() {
+    return "Sensors";
+  }
+
   void loop() {
     if (settings.sensors.outdoor.type == 2) {
       outdoorTemperatureSensor();

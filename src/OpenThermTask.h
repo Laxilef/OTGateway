@@ -12,8 +12,13 @@ public:
   }
 
 protected:
-  const char* taskName = "OpenTherm task";
-  const int taskCore = 2;
+  const char* getTaskName() {
+    return "OpenTherm";
+  }
+  
+  int getTaskCore() {
+    return 1;
+  }
 
   void setup() {
     vars.parameters.heatingMinTemp = settings.heating.minTemp;
@@ -27,7 +32,7 @@ protected:
     ot->begin(OpenThermTask::handleInterrupt, this->responseCallback);
 
     ot->setYieldCallback([](void* self) {
-      static_cast<OpenThermTask*>(self)->yield();
+      static_cast<OpenThermTask*>(self)->delay(10);
     }, this);
 
 #ifdef LED_OT_RX_PIN

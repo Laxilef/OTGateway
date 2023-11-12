@@ -17,10 +17,6 @@
 
 
 
-#ifndef RAM_SIZE
-  #define RAM_SIZE 999999
-#endif
-
 #ifndef OT_IN_PIN_DEFAULT
   #define OT_IN_PIN_DEFAULT 0
 #endif

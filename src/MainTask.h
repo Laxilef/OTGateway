@@ -7,22 +7,37 @@ public:
   MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
-  const char* taskName = "Main task";
-  const int taskCore = 2;
-
   unsigned long lastHeapInfo = 0;
   unsigned long firstFailConnect = 0;
-  unsigned int minFreeHeapSize = RAM_SIZE;
+  unsigned int heapSize = 0;
+  unsigned int minFreeHeapSize = 0;
+
+  const char* getTaskName() {
+    return "Main";
+  }
+
+  int getTaskCore() {
+    return 1;
+  }
 
   void setup() {
     pinMode(LED_STATUS_PIN, OUTPUT);
+
+    #if defined(ESP32)
+    heapSize = ESP.getHeapSize();
+    #elif defined(ESP8266)
+    heapSize = 81920;
+    #elif
+    heapSize = 99999;
+    #endif
+    minFreeHeapSize = heapSize;
   }
 
   void loop() {
     if (eeSettings.tick()) {
       INFO("Settings updated (EEPROM)");
     }
-
+    
     if (vars.parameters.restartAfterTime > 0 && millis() - vars.parameters.restartSignalTime > vars.parameters.restartAfterTime) {
       vars.parameters.restartAfterTime = 0;
       
@@ -88,7 +103,7 @@ protected:
       }
       
       if (millis() - lastHeapInfo > 10000 || minFreeHeapSizeDiff > 0) {
-        DEBUG_F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)\n", freeHeapSize, RAM_SIZE, minFreeHeapSize, minFreeHeapSizeDiff);
+        DEBUG_F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)\n", freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
         lastHeapInfo = millis();
       }
     }

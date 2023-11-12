@@ -12,11 +12,16 @@ public:
   MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
-  const char* taskName = "Mqtt task";
-  const int taskCore = 1;
-
   unsigned long lastReconnectAttempt = 0;
   unsigned long firstFailConnect = 0;
+
+  const char* getTaskName() {
+    return "Mqtt";
+  }
+  
+  int getTaskCore() {
+    return 0;
+  }
 
   void setup() {
     DEBUG("[MQTT] Started");
