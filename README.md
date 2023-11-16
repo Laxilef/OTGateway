@@ -11,16 +11,16 @@
 - Emergency mode. If the Wi-Fi connection is lost or the gateway cannot connect to the MQTT server, the mode will turn on. This mode will automatically maintain the set temperature and prevent your home from freezing. In this mode it is also possible to use equithermal curves (weather-compensated control).
 - Automatic error reset (not with all boilers)
 - Diagnostics:
-  - The process of heating the coolant for heating: works/does not work
+  - The process of heating: works/does not work
   - The process of heating water for hot water: working/not working
   - Display of boiler errors
-  - Burner status: on/off
+  - Burner status (flame): on/off
   - Burner modulation level in percent
   - Pressure in the heating system
   - Gateway status (depending on errors and connection status)
   - Boiler connection status via OpenTherm interface
   - The current temperature of the heat carrier (usually the return heat carrier)
-  - Set coolant temperature (depending on the selected mode)
+  - Set heat carrier temperature (depending on the selected mode)
   - Current hot water temperature
 - Auto tuning of PID and Equitherm parameters *(in development)*
 - [Home Assistant](https://www.home-assistant.io/) integration via MQTT. The ability to create any automation for the boiler!
@@ -46,11 +46,21 @@
 Housing for installation on DIN rail - D2MG. Occupies only 2 DIN modules.<br>
 The 220V > 5V power supply is already on the board, so additional power supplies are not needed.<br>
 To save money, 2 levels are ordered as one board. After manufacturing, the boards need to be divided into 2 parts - upper and lower. The boards are inexpensively (5pcs for $2) manufactured at JLCPCB (Remove Order Number = Specify a location).<br><br>
-Some components can be replaced with similar ones (for example use a fuse and led with legs). Some SMD components (for example optocouplers) can be replaced with similar SOT components.<br>Most of the components can be purchased inexpensively on Aliexpress, the rest in your local stores.<br><br>
-The outdoor temperature sensor must be connected to the **TEMP1** connector, the indoor temperature sensor must be connected to the **TEMP2** connector. The power supply for the sensors must be connected to the **3.3V** connector, GND to **GND**.<br>
+Some components can be replaced with similar ones (for example use a fuse and led with legs). Some SMD components (for example optocouplers) can be replaced with similar SOT components.<br>Most of the components can be purchased inexpensively on Aliexpress, the rest in your local stores.
+
+#### Connection
+The outdoor temperature sensor must be connected to the **TEMP1** connector, the indoor temperature sensor must be connected to the **TEMP2** connector. The power supply for the sensors must be connected to the **3.3V** connector **(NOT 5V!)**, GND to **GND**.<br>
 **The opentherm connection polarity does not matter.**
 <!-- **Important!** On this board opentherm IN pin = 5, OUT pin = 4 -->
 
+#### Leds
+| LED | States |
+| --- | --- |
+| OT RX | Flashes when a response to the request is received from the boiler |
+| Status | Controller status.<br>On, not blinking - no errors;<br>2 flashes - no connection to Wifi;<br>3 flashes - no connection to boiler;<br>4 flashes - boiler is fault;<br>5 flashes - emergency mode (no connection to Wifi or to the MQTT server)<br>10 fast flashes - end of the list of errors |
+| Power | Always on when power is on |
+
+#### Files for production
 - [Schematic](/assets/Schematic.pdf)
 - [BOM](/assets/BOM.xlsx)
 - [Gerber](/assets/gerber.zip)
@@ -193,11 +203,12 @@ See [Wikipedia](https://en.wikipedia.org/wiki/PID_controller).
 
 In Google you can find instructions for tuning the PID controller.
 
-### Use Equitherm mode + PID mode
-@todo
+<!--### Use Equitherm mode + PID mode
+@todo-->
 
 ## Dependencies
-- [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler)
+- [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler) (for ESP8266)
+- [ESP32Scheduler](https://github.com/laxilef/ESP32Scheduler) (for ESP32)
 - [NTPClient](https://github.com/arduino-libraries/NTPClient)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
@@ -205,6 +216,7 @@ In Google you can find instructions for tuning the PID controller.
 - [TelnetStream](https://github.com/jandrassy/TelnetStream)
 - [EEManager](https://github.com/GyverLibs/EEManager)
 - [GyverPID](https://github.com/GyverLibs/GyverPID)
+- [GyverBlinker](https://github.com/GyverLibs/GyverBlinker)
 - [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library)
 - [WiFiManager](https://github.com/tzapu/WiFiManager)
 
