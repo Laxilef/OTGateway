@@ -132,7 +132,7 @@ protected:
       errors[errCount++] = 2;
     }
 
-    if (0 && !vars.states.otStatus) {
+    if (!vars.states.otStatus) {
       errors[errCount++] = 3;
     }
 
