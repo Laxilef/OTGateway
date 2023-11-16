@@ -52,6 +52,9 @@ public:
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = deviceConfigUrl;
     }
 
+    // Feeding the watchdog
+    yield();
+
     client->beginPublish(topic, measureJson(doc), true);
     serializeJson(doc, *client);
     return client->endPublish();
