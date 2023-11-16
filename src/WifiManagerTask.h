@@ -7,17 +7,17 @@
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
 WiFiManagerParameter* wmMqttServer;
-IntParameter* wmMqttPort;
+UnsignedIntParameter* wmMqttPort;
 WiFiManagerParameter* wmMqttUser;
 WiFiManagerParameter* wmMqttPassword;
 WiFiManagerParameter* wmMqttPrefix;
-IntParameter* wmMqttPublishInterval;
-IntParameter* wmOtInPin;
-IntParameter* wmOtOutPin;
-IntParameter* wmOtMemberIdCode;
+UnsignedIntParameter* wmMqttPublishInterval;
+UnsignedIntParameter* wmOtInPin;
+UnsignedIntParameter* wmOtOutPin;
+UnsignedIntParameter* wmOtMemberIdCode;
 CheckboxParameter* wmOtDHWPresent;
-IntParameter* wmOutdoorSensorPin;
-IntParameter* wmIndoorSensorPin;
+UnsignedIntParameter* wmOutdoorSensorPin;
+UnsignedIntParameter* wmIndoorSensorPin;
 
 SeparatorParameter* wmSep1;
 SeparatorParameter* wmSep2;
@@ -61,7 +61,7 @@ protected:
     wmMqttServer = new WiFiManagerParameter("mqtt_server", "MQTT server", settings.mqtt.server, 80);
     wm.addParameter(wmMqttServer);
 
-    wmMqttPort = new IntParameter("mqtt_port", "MQTT port", settings.mqtt.port, 6);
+    wmMqttPort = new UnsignedIntParameter("mqtt_port", "MQTT port", settings.mqtt.port, 6);
     wm.addParameter(wmMqttPort);
 
     wmMqttUser = new WiFiManagerParameter("mqtt_user", "MQTT username", settings.mqtt.user, 32);
@@ -73,19 +73,19 @@ protected:
     wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "MQTT prefix", settings.mqtt.prefix, 32);
     wm.addParameter(wmMqttPrefix);
 
-    wmMqttPublishInterval = new IntParameter("mqtt_publish_interval", "MQTT publish interval", settings.mqtt.interval, 5);
+    wmMqttPublishInterval = new UnsignedIntParameter("mqtt_publish_interval", "MQTT publish interval", settings.mqtt.interval, 5);
     wm.addParameter(wmMqttPublishInterval);
 
     wmSep1 = new SeparatorParameter();
     wm.addParameter(wmSep1);
 
-    wmOtInPin = new IntParameter("ot_in_pin", "Opentherm pin IN", settings.opentherm.inPin, 2);
+    wmOtInPin = new UnsignedIntParameter("ot_in_pin", "Opentherm pin IN", settings.opentherm.inPin, 2);
     wm.addParameter(wmOtInPin);
 
-    wmOtOutPin = new IntParameter("ot_out_pin", "Opentherm pin OUT", settings.opentherm.outPin, 2);
+    wmOtOutPin = new UnsignedIntParameter("ot_out_pin", "Opentherm pin OUT", settings.opentherm.outPin, 2);
     wm.addParameter(wmOtOutPin);
 
-    wmOtMemberIdCode = new IntParameter("ot_member_id_code", "Opentherm member id", settings.opentherm.memberIdCode, 5);
+    wmOtMemberIdCode = new UnsignedIntParameter("ot_member_id_code", "Opentherm member id", settings.opentherm.memberIdCode, 5);
     wm.addParameter(wmOtMemberIdCode);
 
     wmOtDHWPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
@@ -94,10 +94,10 @@ protected:
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
 
-    wmOutdoorSensorPin = new IntParameter("outdoor_sensor_pin", "Outdoor sensor pin", settings.sensors.outdoor.pin, 2);
+    wmOutdoorSensorPin = new UnsignedIntParameter("outdoor_sensor_pin", "Outdoor sensor pin", settings.sensors.outdoor.pin, 2);
     wm.addParameter(wmOutdoorSensorPin);
 
-    wmIndoorSensorPin = new IntParameter("indoor_sensor_pin", "Indoor sensor pin", settings.sensors.indoor.pin, 2);
+    wmIndoorSensorPin = new UnsignedIntParameter("indoor_sensor_pin", "Indoor sensor pin", settings.sensors.indoor.pin, 2);
     wm.addParameter(wmIndoorSensorPin);
 
     //wm.setCleanConnect(true);

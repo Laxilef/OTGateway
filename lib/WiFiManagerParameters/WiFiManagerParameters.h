@@ -9,6 +9,17 @@ public:
   }
 };
 
+class UnsignedIntParameter : public WiFiManagerParameter {
+public:
+  UnsignedIntParameter(const char* id, const char* label, unsigned int value, const uint8_t length = 10) : WiFiManagerParameter("") {
+    init(id, label, String(value).c_str(), length, "", WFM_LABEL_DEFAULT);
+  }
+
+  unsigned int getValue() {
+    return (unsigned int) atoi(WiFiManagerParameter::getValue());
+  }
+};
+
 class CheckboxParameter : public WiFiManagerParameter {
 public:
   const char* checked = "type=\"checkbox\" checked";
