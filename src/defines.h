@@ -33,14 +33,6 @@
   #define SENSOR_INDOOR_PIN_DEFAULT 0
 #endif
 
-#ifndef LED_STATUS_PIN
-  #define LED_STATUS_PIN 0
-#endif
-
-#ifndef LED_OT_RX_PIN
-  #define LED_OT_RX_PIN 0
-#endif
-
 #ifdef USE_TELNET
   #define INFO_STREAM TelnetStream
   #define WARN_STREAM TelnetStream

@@ -1,3 +1,5 @@
+#include <Blinker.h>
+
 extern MqttTask* tMqtt;
 extern SensorsTask* tSensors;
 extern OpenThermTask* tOt;
@@ -7,6 +9,7 @@ public:
   MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
+  Blinker* blinker = nullptr;
   unsigned long lastHeapInfo = 0;
   unsigned long firstFailConnect = 0;
   unsigned int heapSize = 0;
@@ -21,15 +24,18 @@ protected:
   }
 
   void setup() {
+#ifdef LED_STATUS_PIN
     pinMode(LED_STATUS_PIN, OUTPUT);
+    digitalWrite(LED_STATUS_PIN, false);
+#endif
 
-    #if defined(ESP32)
+#if defined(ESP32)
     heapSize = ESP.getHeapSize();
-    #elif defined(ESP8266)
+#elif defined(ESP8266)
     heapSize = 81920;
-    #elif
+#elif
     heapSize = 99999;
-    #endif
+#endif
     minFreeHeapSize = heapSize;
   }
 
@@ -37,10 +43,10 @@ protected:
     if (eeSettings.tick()) {
       INFO("Settings updated (EEPROM)");
     }
-    
+
     if (vars.parameters.restartAfterTime > 0 && millis() - vars.parameters.restartSignalTime > vars.parameters.restartAfterTime) {
       vars.parameters.restartAfterTime = 0;
-      
+
       INFO("Received restart message...");
       eeSettings.updateNow();
       INFO("Restart...");
@@ -81,7 +87,9 @@ protected:
       tOt->enable();
     }
 
-    ledStatus();
+#ifdef LED_STATUS_PIN
+    ledStatus(LED_STATUS_PIN);
+#endif
 
 #ifdef USE_TELNET
     yield();
@@ -101,7 +109,7 @@ protected:
         minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;
         minFreeHeapSize = freeHeapSize;
       }
-      
+
       if (millis() - lastHeapInfo > 10000 || minFreeHeapSizeDiff > 0) {
         DEBUG_F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)\n", freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
         lastHeapInfo = millis();
@@ -109,56 +117,65 @@ protected:
     }
   }
 
-  void ledStatus() {
-    static byte blinkLeft = 0;
+  void ledStatus(uint8_t ledPin) {
+    uint8_t errors[4];
+    uint8_t errCount = 0;
+    static uint8_t errPos = 0;
+    static unsigned long endBlinkTime = 0;
     static bool ledOn = false;
-    static unsigned long changeTime = 0;
 
-    byte errNo = 0;
-    if (!vars.states.otStatus) {
-      errNo = 1;
-    } else if (vars.states.fault) {
-      errNo = 2;
-    } else if (vars.states.emergency) {
-      errNo = 3;
+    if (this->blinker == nullptr) {
+      this->blinker = new Blinker(ledPin);
     }
 
-    if (errNo == 0) {
-      if (!ledOn) {
-        digitalWrite(LED_STATUS_PIN, true);
-        ledOn = true;
-      }
+    if (WiFi.status() != WL_CONNECTED) {
+      errors[errCount++] = 2;
+    }
 
-      if (blinkLeft > 0) {
-        blinkLeft = 0;
-      }
+    if (0 && !vars.states.otStatus) {
+      errors[errCount++] = 3;
+    }
 
-    } else {
-      if (blinkLeft == 0) {
-        if (ledOn) {
-          digitalWrite(LED_STATUS_PIN, false);
-          ledOn = false;
-          changeTime = millis();
-        }
+    if (vars.states.fault) {
+      errors[errCount++] = 4;
+    }
 
-        if (millis() - changeTime >= 3000) {
-          blinkLeft = errNo;
-        }
-      }
+    if (vars.states.emergency) {
+      errors[errCount++] = 5;
+    }
 
-      if (blinkLeft > 0 && millis() - changeTime >= 500) {
-        if (ledOn) {
-          digitalWrite(LED_STATUS_PIN, false);
-          ledOn = false;
-          blinkLeft--;
 
-        } else {
-          digitalWrite(LED_STATUS_PIN, true);
+    if (this->blinker->ready()) {
+      endBlinkTime = millis();
+    }
+
+    if (!this->blinker->running() && millis() - endBlinkTime >= 5000) {
+      if (errCount == 0) {
+        if (!ledOn) {
+          digitalWrite(ledPin, true);
           ledOn = true;
         }
 
-        changeTime = millis();
+        return;
+
+      } else if (ledOn) {
+        digitalWrite(ledPin, false);
+        ledOn = false;
+        endBlinkTime = millis();
+        return;
+      }
+
+      if (errPos >= errCount) {
+        errPos = 0;
+
+        // end of error list
+        this->blinker->blink(10, 50, 50);
+
+      } else {
+        this->blinker->blink(errors[errPos++], 300, 300);
       }
     }
+
+    this->blinker->tick();
   }
 };
