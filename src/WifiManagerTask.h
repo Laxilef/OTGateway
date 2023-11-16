@@ -43,6 +43,18 @@ protected:
     wm.setDebugOutput(settings.debug);
     //wm.setDebugOutput(settings.debug, WM_DEBUG_VERBOSE);
 
+    wm.setTitle("OpenTherm Gateway");
+    wm.setCustomMenuHTML(PSTR(
+      "<style>.wrap h1 {display: none;} .wrap h3 {display: none;} .nh {margin: 0 0 1em 0;} .nh .logo {font-size: 1.8em; margin: 0.5em; text-align: center;} .nh .links {text-align: center;}</style>"
+      "<div class=\"nh\">"
+      "<div class=\"logo\">OpenTherm Gateway</div>"
+      "<div class=\"links\"><a href=\"" OT_GATEWAY_REPO "\" target=\"_blank\">Repo</a> | <a href=\"" OT_GATEWAY_REPO "/issues\" target=\"_blank\">Issues</a> | <a href=\"" OT_GATEWAY_REPO "/releases\" target=\"_blank\">Releases</a> | <small>v" OT_GATEWAY_VERSION " (" __DATE__ ")</small></div>"
+      "</div>"
+    ));
+
+    std::vector<const char *> menu = {"custom", "wifi", "param", "sep", "info", "update", "restart"};
+    wm.setMenu(menu);
+
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
     wm.addParameter(wmHostname);
 

@@ -1,4 +1,5 @@
 #define OT_GATEWAY_VERSION          "1.3.3"
+#define OT_GATEWAY_REPO             "https://github.com/Laxilef/OTGateway"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
 #define USE_TELNET
@@ -55,4 +56,4 @@
 #define DEBUG(...) DEBUG_STREAM.print("\r[DEBUG] "); DEBUG_STREAM.println(__VA_ARGS__);
 #define DEBUG_F(...) DEBUG_STREAM.print("\r[DEBUG] "); DEBUG_STREAM.printf(__VA_ARGS__);
 
-char buffer[120];
+char buffer[255];
