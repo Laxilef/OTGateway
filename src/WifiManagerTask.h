@@ -3,7 +3,7 @@
 #include <WiFiManagerParameters.h>
 #include <netif/etharp.h>
 
-// Wifimanager
+
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
 WiFiManagerParameter* wmMqttServer;
@@ -21,6 +21,7 @@ IntParameter* wmIndoorSensorPin;
 
 SeparatorParameter* wmSep1;
 SeparatorParameter* wmSep2;
+
 
 class WifiManagerTask : public Task {
 public:
@@ -40,6 +41,7 @@ protected:
 
   void setup() {
     wm.setDebugOutput(settings.debug);
+    //wm.setDebugOutput(settings.debug, WM_DEBUG_VERBOSE);
 
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
     wm.addParameter(wmHostname);
@@ -94,19 +96,19 @@ protected:
     wm.setAPClientCheck(true);
     wm.setConfigPortalBlocking(false);
     wm.setSaveParamsCallback(saveParamsCallback);
-    wm.setConfigPortalTimeout(180);
-    //wm.setDisableConfigPortal(false);
+    wm.setConfigPortalTimeout(wm.getWiFiIsSaved() ? 180 : 0);
+    wm.setDisableConfigPortal(false);
 
     wm.autoConnect(AP_SSID, AP_PASSWORD);
   }
 
   void loop() {
-    /*if (WiFi.status() != WL_CONNECTED && !wm.getWebPortalActive() && !wm.getConfigPortalActive()) {
-      wm.autoConnect(AP_SSID);
-    }*/
-
     if (connected && WiFi.status() != WL_CONNECTED) {
       connected = false;
+
+      if (wm.getWebPortalActive()) {
+        wm.stopWebPortal();
+      }
 
       #ifdef USE_TELNET
       TelnetStream.stop();
@@ -117,8 +119,13 @@ protected:
     } else if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
 
+      wm.setConfigPortalTimeout(180);
       if (wm.getConfigPortalActive()) {
         wm.stopConfigPortal();
+      }
+
+      if (!wm.getWebPortalActive()) {
+        wm.startWebPortal();
       }
 
       #ifdef USE_TELNET
@@ -126,10 +133,6 @@ protected:
       #endif
 
       INFO_F("[wifi] Connected. IP address: %s, RSSI: %d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
-    }
-
-    if (WiFi.status() == WL_CONNECTED && !wm.getWebPortalActive() && !wm.getConfigPortalActive()) {
-      wm.startWebPortal();
     }
 
     #if defined(ESP8266)
