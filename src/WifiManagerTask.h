@@ -16,6 +16,9 @@ UnsignedIntParameter* wmOtInPin;
 UnsignedIntParameter* wmOtOutPin;
 UnsignedIntParameter* wmOtMemberIdCode;
 CheckboxParameter* wmOtDHWPresent;
+CheckboxParameter* wmOtSummerWinterMode;
+CheckboxParameter* wmOtHeatingCh2Enabled;
+CheckboxParameter* wmOtHeatingCh1ToCh2;
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
 
@@ -40,8 +43,11 @@ protected:
   }
 
   void setup() {
-    wm.setDebugOutput(settings.debug);
-    //wm.setDebugOutput(settings.debug, WM_DEBUG_VERBOSE);
+    #ifdef WOKWI
+      WiFi.begin("Wokwi-GUEST", "", 6);
+    #endif
+
+    wm.setDebugOutput(settings.debug, WM_DEBUG_MODE);
 
     wm.setTitle("OpenTherm Gateway");
     wm.setCustomMenuHTML(PSTR(
@@ -91,6 +97,15 @@ protected:
     wmOtDHWPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
     wm.addParameter(wmOtDHWPresent);
 
+    wmOtSummerWinterMode = new CheckboxParameter("ot_summer_winter_mode", "Opentherm summer/winter mode", settings.opentherm.summerWinterMode);
+    wm.addParameter(wmOtSummerWinterMode);
+
+    wmOtHeatingCh2Enabled = new CheckboxParameter("ot_heating_ch2_enabled", "Opentherm CH2 enabled", settings.opentherm.heatingCh2Enabled);
+    wm.addParameter(wmOtHeatingCh2Enabled);
+
+    wmOtHeatingCh1ToCh2 = new CheckboxParameter("ot_heating_ch1_to_ch2", "Opentherm heating CH1 to CH2", settings.opentherm.heatingCh1ToCh2);
+    wm.addParameter(wmOtHeatingCh1ToCh2);
+
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
 
@@ -122,8 +137,14 @@ protected:
         wm.stopWebPortal();
       }
 
-      #ifdef USE_TELNET
-      TelnetStream.stop();
+      wm.setCaptivePortalEnable(true);
+
+      if (!wm.getConfigPortalActive()) {
+        wm.startConfigPortal();
+      }
+
+      #if USE_TELNET
+        TelnetStream.stop();
       #endif
 
       INFO("[wifi] Disconnected");
@@ -136,12 +157,14 @@ protected:
         wm.stopConfigPortal();
       }
 
+      wm.setCaptivePortalEnable(false);
+
       if (!wm.getWebPortalActive()) {
         wm.startWebPortal();
       }
 
-      #ifdef USE_TELNET
-      TelnetStream.begin();
+      #if USE_TELNET
+        TelnetStream.begin();
       #endif
 
       INFO_F("[wifi] Connected. IP address: %s, RSSI: %d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
@@ -230,6 +253,24 @@ protected:
       settings.opentherm.dhwPresent = wmOtDHWPresent->getCheckboxValue();
     }
 
+    if (wmOtSummerWinterMode->getCheckboxValue() != settings.opentherm.summerWinterMode) {
+      changed = true;
+
+      settings.opentherm.summerWinterMode = wmOtSummerWinterMode->getCheckboxValue();
+    }
+
+    if (wmOtHeatingCh2Enabled->getCheckboxValue() != settings.opentherm.heatingCh2Enabled) {
+      changed = true;
+
+      settings.opentherm.heatingCh2Enabled = wmOtHeatingCh2Enabled->getCheckboxValue();
+    }
+
+    if (wmOtHeatingCh1ToCh2->getCheckboxValue() != settings.opentherm.heatingCh1ToCh2) {
+      changed = true;
+
+      settings.opentherm.heatingCh1ToCh2 = wmOtHeatingCh1ToCh2->getCheckboxValue();
+    }
+
     if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
       changed = true;
       needRestart = true;
@@ -265,6 +306,9 @@ protected:
       "  OT out pin: %d\r\n"
       "  OT member id code: %d\r\n"
       "  OT DHW present: %d\r\n"
+      "  OT summer/winter mode: %d\r\n"
+      "  OT heating ch2 enabled: %d\r\n"
+      "  OT heating ch1 to ch2: %d\r\n"
       "  Outdoor sensor pin: %d\r\n"
       "  Indoor sensor pin: %d\r\n",
       settings.hostname,
@@ -278,6 +322,9 @@ protected:
       settings.opentherm.outPin,
       settings.opentherm.memberIdCode,
       settings.opentherm.dhwPresent,
+      settings.opentherm.summerWinterMode,
+      settings.opentherm.heatingCh2Enabled,
+      settings.opentherm.heatingCh1ToCh2,
       settings.sensors.outdoor.pin,
       settings.sensors.indoor.pin
     );

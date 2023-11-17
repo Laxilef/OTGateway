@@ -38,6 +38,7 @@
 | [Ferroli DOMIcompact C 24](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765310058)<br><sub>Board: MF08FA</sub> | 211 | Pressure sensor not supported |
 | [Thermet Ecocondens Silver 35kW](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1767026384) | default | Pressure sensor not supported |
 | [BAXI LUNA-3](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1794187178) | default | - |
+| ITALTHERM TIME MAX 30F | default | Pressure sensor not supported<br>**Important:** on the "setup" page you need to set the checkbox "Opentherm summer/winter mode" |
 
 
 ## PCB

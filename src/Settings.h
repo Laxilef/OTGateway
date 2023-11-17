@@ -1,5 +1,5 @@
 struct Settings {
-  bool debug = false;
+  bool debug = DEBUG_BY_DEFAULT;
   char hostname[80] = "opentherm";
 
   struct {
@@ -7,6 +7,9 @@ struct Settings {
     byte outPin = OT_OUT_PIN_DEFAULT;
     unsigned int memberIdCode = 0;
     bool dhwPresent = true;
+    bool summerWinterMode = false;
+    bool heatingCh2Enabled = true;
+    bool heatingCh1ToCh2 = false;
   } opentherm;
 
   struct {

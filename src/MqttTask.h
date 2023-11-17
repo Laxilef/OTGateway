@@ -141,7 +141,6 @@ protected:
     if (!doc["heating"]["maxTemp"].isNull() && doc["heating"]["maxTemp"].is<unsigned char>()) {
       if (doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100 && doc["heating"]["maxTemp"].as<unsigned char>() > settings.heating.minTemp) {
         settings.heating.maxTemp = doc["heating"]["maxTemp"].as<unsigned char>();
-        vars.parameters.heatingMaxTemp = settings.heating.maxTemp;
         flag = true;
       }
     }
@@ -149,7 +148,6 @@ protected:
     if (!doc["heating"]["minTemp"].isNull() && doc["heating"]["minTemp"].is<unsigned char>()) {
       if (doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100 && doc["heating"]["minTemp"].as<unsigned char>() < settings.heating.maxTemp) {
         settings.heating.minTemp = doc["heating"]["minTemp"].as<unsigned char>();
-        vars.parameters.heatingMinTemp = settings.heating.minTemp;
         flag = true;
       }
     }
@@ -171,7 +169,6 @@ protected:
     if (!doc["dhw"]["maxTemp"].isNull() && doc["dhw"]["maxTemp"].is<unsigned char>()) {
       if (doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100 && doc["dhw"]["maxTemp"].as<unsigned char>() > settings.dhw.minTemp) {
         settings.dhw.maxTemp = doc["dhw"]["maxTemp"].as<unsigned char>();
-        vars.parameters.dhwMaxTemp = settings.dhw.maxTemp;
         flag = true;
       }
     }
@@ -179,7 +176,6 @@ protected:
     if (!doc["dhw"]["minTemp"].isNull() && doc["dhw"]["minTemp"].is<unsigned char>()) {
       if (doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100 && doc["dhw"]["minTemp"].as<unsigned char>() < settings.dhw.maxTemp) {
         settings.dhw.minTemp = doc["dhw"]["minTemp"].as<unsigned char>();
-        vars.parameters.dhwMinTemp = settings.dhw.minTemp;
         flag = true;
       }
     }
@@ -433,8 +429,8 @@ protected:
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
-    byte heatingMinTemp = isStupidMode ? vars.parameters.heatingMinTemp : 10;
-    byte heatingMaxTemp = isStupidMode ? vars.parameters.heatingMaxTemp : 30;
+    byte heatingMinTemp = isStupidMode ? settings.heating.minTemp : 10;
+    byte heatingMaxTemp = isStupidMode ? settings.heating.maxTemp : 30;
     bool editableOutdoorTemp = settings.sensors.outdoor.type == 1;
     bool editableIndoorTemp = settings.sensors.indoor.type == 1;
 
@@ -479,12 +475,12 @@ protected:
       published = true;
     }
 
-    if (_dhwPresent && (force || _dhwMinTemp != vars.parameters.dhwMinTemp || _dhwMaxTemp != vars.parameters.dhwMaxTemp)) {
-      _dhwMinTemp = vars.parameters.dhwMinTemp;
-      _dhwMaxTemp = vars.parameters.dhwMaxTemp;
+    if (_dhwPresent && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp)) {
+      _dhwMinTemp = settings.dhw.minTemp;
+      _dhwMaxTemp = settings.dhw.maxTemp;
 
-      haHelper.publishNumberDHWTarget(vars.parameters.dhwMinTemp, vars.parameters.dhwMaxTemp, false);
-      haHelper.publishClimateDHW(vars.parameters.dhwMinTemp, vars.parameters.dhwMaxTemp);
+      haHelper.publishNumberDHWTarget(settings.dhw.minTemp, settings.dhw.maxTemp, false);
+      haHelper.publishClimateDHW(settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
     }

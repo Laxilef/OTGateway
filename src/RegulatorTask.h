@@ -65,8 +65,8 @@ protected:
     }
 
     // Ограничиваем, если до этого не ограничило
-    if (newTemp < vars.parameters.heatingMinTemp || newTemp > vars.parameters.heatingMaxTemp) {
-      newTemp = constrain(newTemp, vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+    if (newTemp < settings.heating.minTemp || newTemp > settings.heating.maxTemp) {
+      newTemp = constrain(newTemp, settings.heating.minTemp, settings.heating.maxTemp);
     }
 
     if (abs(vars.parameters.heatingSetpoint - newTemp) + 0.0001 >= 1) {
@@ -80,7 +80,7 @@ protected:
 
     // if use equitherm
     if (settings.emergency.useEquitherm && settings.sensors.outdoor.type != 1) {
-      float etResult = getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+      float etResult = getEquithermTemp(settings.heating.minTemp, settings.heating.maxTemp);
 
       if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
         prevEtResult = etResult;
@@ -115,7 +115,7 @@ protected:
 
     // if use equitherm
     if (settings.equitherm.enable) {
-      float etResult = getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp);
+      float etResult = getEquithermTemp(settings.heating.minTemp, settings.heating.maxTemp);
 
       if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
         prevEtResult = etResult;
@@ -184,7 +184,7 @@ protected:
     } else if (vars.tuning.regulator == 1) {
       // PID tuner
       float defaultTemp = settings.equitherm.enable
-        ? getEquithermTemp(vars.parameters.heatingMinTemp, vars.parameters.heatingMaxTemp)
+        ? getEquithermTemp(settings.heating.minTemp, settings.heating.maxTemp)
         : settings.heating.target;
 
       if (tunerInit && pidTuner.getState() == 3) {

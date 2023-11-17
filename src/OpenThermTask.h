@@ -21,11 +21,6 @@ protected:
   }
 
   void setup() {
-    vars.parameters.heatingMinTemp = settings.heating.minTemp;
-    vars.parameters.heatingMaxTemp = settings.heating.maxTemp;
-    vars.parameters.dhwMinTemp = settings.dhw.minTemp;
-    vars.parameters.dhwMaxTemp = settings.dhw.maxTemp;
-
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
     ot->setHandleSendRequestCallback(this->sendRequestCallback);
@@ -35,9 +30,9 @@ protected:
       static_cast<OpenThermTask*>(self)->delay(10);
     }, this);
 
-#ifdef LED_OT_RX_PIN
-    pinMode(LED_OT_RX_PIN, OUTPUT);
-#endif
+    #ifdef LED_OT_RX_PIN
+      pinMode(LED_OT_RX_PIN, OUTPUT);
+    #endif
   }
 
   void loop() {
@@ -53,10 +48,19 @@ protected:
     }
 
     bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
+    bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
+    if (settings.opentherm.heatingCh1ToCh2) {
+      heatingCh2Enabled = heatingEnabled;
+    }
+
     localResponse = ot->setBoilerStatus(
       heatingEnabled,
       settings.opentherm.dhwPresent && settings.dhw.enable,
-      false, false, true, false, false
+      false,
+      false,
+      heatingCh2Enabled,
+      settings.opentherm.summerWinterMode,
+      false
     );
 
     if (!ot->isValidResponse(localResponse)) {
@@ -87,13 +91,34 @@ protected:
       DEBUG_F("Slave type: %u, version: %u\r\n", vars.parameters.slaveType, vars.parameters.slaveVersion);
 
       if (settings.opentherm.dhwPresent) {
-        updateMinMaxDhwTemp();
+        if (updateMinMaxDhwTemp()) {
+          if (settings.dhw.minTemp < vars.parameters.dhwMinTemp || settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
+            settings.dhw.minTemp = vars.parameters.dhwMinTemp;
+            settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
+          }
+
+        } else {
+          WARN("Failed get min/max DHW temp");
+        }
       }
-      updateMinMaxHeatingTemp();
+
+      if (updateMinMaxHeatingTemp()) {
+        if (settings.heating.minTemp < vars.parameters.heatingMinTemp || settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
+          settings.heating.minTemp = vars.parameters.heatingMinTemp;
+          settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+
+        } else {
+          WARN("Failed get min/max heating temp");
+        }
+      }
+
+      // force
+      setMaxHeatingTemp(settings.heating.maxTemp);
 
       if (settings.sensors.outdoor.type == 0) {
         updateOutsideTemp();
       }
+
       if (vars.states.fault) {
         updateFaultCode();
         ot->sendBoilerReset();
@@ -129,8 +154,8 @@ protected:
     // Температура ГВС
     byte newDHWTemp = settings.dhw.target;
     if (settings.opentherm.dhwPresent && settings.dhw.enable && (needSetDhwTemp() || newDHWTemp != currentDHWTemp)) {
-      if (newDHWTemp < vars.parameters.dhwMinTemp || newDHWTemp > vars.parameters.dhwMaxTemp) {
-        newDHWTemp = constrain(newDHWTemp, vars.parameters.dhwMinTemp, vars.parameters.dhwMaxTemp);
+      if (newDHWTemp < settings.dhw.minTemp || newDHWTemp > settings.dhw.maxTemp) {
+        newDHWTemp = constrain(newDHWTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
       }
 
       INFO_F("Set DHW temp = %u\r\n", newDHWTemp);
@@ -157,6 +182,12 @@ protected:
 
       } else {
         WARN("Failed set heating temp");
+      }
+
+      if (settings.opentherm.heatingCh1ToCh2) {
+        if (!ot->setBoilerTemperature2(vars.parameters.heatingSetpoint)) {
+          WARN("Failed set ch2 heating temp");
+        }
       }
     }
 
@@ -197,14 +228,14 @@ protected:
         vars.states.otStatus = true;
       }
 
-#ifdef LED_OT_RX_PIN
+      #ifdef LED_OT_RX_PIN
       {
         digitalWrite(LED_OT_RX_PIN, true);
         unsigned long ts = millis();
         while (millis() - ts < 2) {}
         digitalWrite(LED_OT_RX_PIN, false);
       }
-#endif
+      #endif
       break;
 
     default:
@@ -345,8 +376,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.dhwMinTemp = minTemp < settings.dhw.minTemp ? settings.dhw.minTemp : minTemp;
-      vars.parameters.dhwMaxTemp = maxTemp > settings.dhw.maxTemp ? settings.dhw.maxTemp : maxTemp;
+      vars.parameters.dhwMinTemp = minTemp;
+      vars.parameters.dhwMaxTemp = maxTemp;
 
       return true;
     }
@@ -364,13 +395,21 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.heatingMinTemp = minTemp < settings.heating.minTemp ? settings.heating.minTemp : minTemp;
-      vars.parameters.heatingMaxTemp = maxTemp > settings.heating.maxTemp ? settings.heating.maxTemp : maxTemp;
-
+      vars.parameters.heatingMinTemp = minTemp;
+      vars.parameters.heatingMaxTemp = maxTemp;
       return true;
     }
 
     return false;
+  }
+
+  bool setMaxHeatingTemp(byte value) {
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::MaxTSet, ot->temperatureToData(value)));
+    if (!ot->isValidResponse(response)) {
+      return false;
+    }
+
+    return true;
   }
 
   bool updateOutsideTemp() {
