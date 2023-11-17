@@ -36,7 +36,7 @@ MainTask* tMain;
 
 
 void setup() {
-  #ifndef USE_TELNET
+  #if USE_TELNET
     Serial.begin(115200);
     Serial.println("\n\n");
   #endif
@@ -83,6 +83,6 @@ void setup() {
 
 void loop() {
   #if defined(ESP32)
-  vTaskDelete(NULL);
+    vTaskDelete(NULL);
   #endif
 }

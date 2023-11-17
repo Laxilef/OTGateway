@@ -1,6 +1,6 @@
 #pragma once
 #ifndef PROGMEM
-#define PROGMEM 
+  #define PROGMEM 
 #endif
 
 const char HA_DEVICE[]              PROGMEM = "device";

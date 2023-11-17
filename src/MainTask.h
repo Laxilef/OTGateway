@@ -24,18 +24,18 @@ protected:
   }
 
   void setup() {
-#ifdef LED_STATUS_PIN
-    pinMode(LED_STATUS_PIN, OUTPUT);
-    digitalWrite(LED_STATUS_PIN, false);
-#endif
+    #ifdef LED_STATUS_PIN
+      pinMode(LED_STATUS_PIN, OUTPUT);
+      digitalWrite(LED_STATUS_PIN, false);
+    #endif
 
-#if defined(ESP32)
-    heapSize = ESP.getHeapSize();
-#elif defined(ESP8266)
-    heapSize = 81920;
-#elif
-    heapSize = 99999;
-#endif
+    #if defined(ESP32)
+      heapSize = ESP.getHeapSize();
+    #elif defined(ESP8266)
+      heapSize = 81920;
+    #elif
+      heapSize = 99999;
+    #endif
     minFreeHeapSize = heapSize;
   }
 
@@ -87,19 +87,19 @@ protected:
       tOt->enable();
     }
 
-#ifdef LED_STATUS_PIN
-    ledStatus(LED_STATUS_PIN);
-#endif
+    #ifdef LED_STATUS_PIN
+      ledStatus(LED_STATUS_PIN);
+    #endif
 
-#ifdef USE_TELNET
-    yield();
+    #if USE_TELNET
+      yield();
 
-    // anti memory leak
-    TelnetStream.flush();
-    while (TelnetStream.available() > 0) {
-      TelnetStream.read();
-    }
-#endif
+      // anti memory leak
+      TelnetStream.flush();
+      while (TelnetStream.available() > 0) {
+        TelnetStream.read();
+      }
+    #endif
 
     if (settings.debug) {
       unsigned int freeHeapSize = ESP.getFreeHeap();
