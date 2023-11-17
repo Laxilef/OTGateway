@@ -89,7 +89,7 @@ The outdoor temperature sensor must be connected to the **TEMP1** connector, the
 5. Set up a connection to your MQTT server: ip, port, user, password
 6. Set up a **Opentherm pin IN** & **Opentherm pin OUT**. No change for my board. Typically used **IN** = 4, **OUT** = 5
 7. Set up a **Outdoor sensor pin** & **Indoor sensor pin**. No change for my board.
-8. if necessary, set up a the master member ID ([see more](#tested-on))
+8. if necessary, set up a the Master Member ID ([see more](#tested-on))
 9. Restart module (required after changing OT pins and/or sensors pins!)
 
 After connecting to your wifi network, you can go to the setup page at the address that ESP8266 received.
@@ -164,6 +164,16 @@ If your boiler does not support the installation of an outdoor temperature senso
   ```
 </details>
 After these settings, you can enable the "Equitherm" and/or "PID" modes and configure them as described below.
+
+## Troubleshooting
+**Q:** Controller in monitor/readon mode (cannot set temperature, etc.)<br>
+**A:** Try changing the "Master Member ID", this is most likely the problem. If you don't know which identifier is valid for your boiler, you need to use brute force.
+
+**Q:** The boiler does not respond to setting the heating temperature.<br>
+**A:** Try checking the "Opentherm summer/winter mode", "Opentherm CH2 enabled", "Opentherm heating CH1 to CH2" checkboxes one by one and all together on the "setup" page. If this doesn't work, see above.
+
+**Q:** My boiler does not have a hot water heating function. How to turn it off?<br>
+**A:** Uncheck "Opentherm DHW present" on the "setup" page.
 
 
 ## About modes

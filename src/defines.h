@@ -1,4 +1,4 @@
-#define OT_GATEWAY_VERSION          "1.3.3"
+#define OT_GATEWAY_VERSION          "1.3.4"
 #define OT_GATEWAY_REPO             "https://github.com/Laxilef/OTGateway"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
