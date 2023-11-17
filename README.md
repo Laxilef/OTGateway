@@ -166,7 +166,7 @@ If your boiler does not support the installation of an outdoor temperature senso
 After these settings, you can enable the "Equitherm" and/or "PID" modes and configure them as described below.
 
 ## Troubleshooting
-**Q:** Controller in monitor/readon mode (cannot set temperature, etc.)<br>
+**Q:** Controller in monitor/readonly mode (cannot set temperature, etc.)<br>
 **A:** Try changing the "Master Member ID", this is most likely the problem. If you don't know which identifier is valid for your boiler, you need to use brute force.
 
 **Q:** The boiler does not respond to setting the heating temperature.<br>
