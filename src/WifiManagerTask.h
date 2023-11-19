@@ -47,8 +47,7 @@ protected:
       WiFi.begin("Wokwi-GUEST", "", 6);
     #endif
 
-    wm.setDebugOutput(settings.debug, WM_DEBUG_MODE);
-
+    wm.setDebugOutput(settings.debug, (wm_debuglevel_t) WM_DEBUG_MODE);
     wm.setTitle("OpenTherm Gateway");
     wm.setCustomMenuHTML(PSTR(
       "<style>.wrap h1 {display: none;} .wrap h3 {display: none;} .nh {margin: 0 0 1em 0;} .nh .logo {font-size: 1.8em; margin: 0.5em; text-align: center;} .nh .links {text-align: center;}</style>"
@@ -85,13 +84,13 @@ protected:
     wmSep1 = new SeparatorParameter();
     wm.addParameter(wmSep1);
 
-    wmOtInPin = new UnsignedIntParameter("ot_in_pin", "Opentherm pin IN", settings.opentherm.inPin, 2);
+    wmOtInPin = new UnsignedIntParameter("ot_in_pin", "Opentherm GPIO IN", settings.opentherm.inPin, 2);
     wm.addParameter(wmOtInPin);
 
-    wmOtOutPin = new UnsignedIntParameter("ot_out_pin", "Opentherm pin OUT", settings.opentherm.outPin, 2);
+    wmOtOutPin = new UnsignedIntParameter("ot_out_pin", "Opentherm GPIO OUT", settings.opentherm.outPin, 2);
     wm.addParameter(wmOtOutPin);
 
-    wmOtMemberIdCode = new UnsignedIntParameter("ot_member_id_code", "Opentherm member id", settings.opentherm.memberIdCode, 5);
+    wmOtMemberIdCode = new UnsignedIntParameter("ot_member_id_code", "Opentherm Master Member ID", settings.opentherm.memberIdCode, 5);
     wm.addParameter(wmOtMemberIdCode);
 
     wmOtDHWPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
@@ -109,10 +108,10 @@ protected:
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
 
-    wmOutdoorSensorPin = new UnsignedIntParameter("outdoor_sensor_pin", "Outdoor sensor pin", settings.sensors.outdoor.pin, 2);
+    wmOutdoorSensorPin = new UnsignedIntParameter("outdoor_sensor_pin", "Outdoor sensor GPIO", settings.sensors.outdoor.pin, 2);
     wm.addParameter(wmOutdoorSensorPin);
 
-    wmIndoorSensorPin = new UnsignedIntParameter("indoor_sensor_pin", "Indoor sensor pin", settings.sensors.indoor.pin, 2);
+    wmIndoorSensorPin = new UnsignedIntParameter("indoor_sensor_pin", "Indoor sensor GPIO", settings.sensors.indoor.pin, 2);
     wm.addParameter(wmIndoorSensorPin);
 
     //wm.setCleanConnect(true);
@@ -187,101 +186,85 @@ protected:
     if (strcmp(wmHostname->getValue(), settings.hostname) != 0) {
       changed = true;
       needRestart = true;
-
       strcpy(settings.hostname, wmHostname->getValue());
     }
 
     if (strcmp(wmMqttServer->getValue(), settings.mqtt.server) != 0) {
       changed = true;
-
       strcpy(settings.mqtt.server, wmMqttServer->getValue());
     }
 
     if (wmMqttPort->getValue() != settings.mqtt.port) {
       changed = true;
-
       settings.mqtt.port = wmMqttPort->getValue();
     }
 
     if (strcmp(wmMqttUser->getValue(), settings.mqtt.user) != 0) {
       changed = true;
-
       strcpy(settings.mqtt.user, wmMqttUser->getValue());
     }
 
     if (strcmp(wmMqttPassword->getValue(), settings.mqtt.password) != 0) {
       changed = true;
-
       strcpy(settings.mqtt.password, wmMqttPassword->getValue());
     }
 
     if (strcmp(wmMqttPrefix->getValue(), settings.mqtt.prefix) != 0) {
       changed = true;
-
       strcpy(settings.mqtt.prefix, wmMqttPrefix->getValue());
     }
 
     if (wmMqttPublishInterval->getValue() != settings.mqtt.interval) {
       changed = true;
-
       settings.mqtt.interval = wmMqttPublishInterval->getValue();
     }
 
     if (wmOtInPin->getValue() != settings.opentherm.inPin) {
       changed = true;
       needRestart = true;
-
       settings.opentherm.inPin = wmOtInPin->getValue();
     }
 
     if (wmOtOutPin->getValue() != settings.opentherm.outPin) {
       changed = true;
       needRestart = true;
-
       settings.opentherm.outPin = wmOtOutPin->getValue();
     }
 
     if (wmOtMemberIdCode->getValue() != settings.opentherm.memberIdCode) {
       changed = true;
-
       settings.opentherm.memberIdCode = wmOtMemberIdCode->getValue();
     }
 
     if (wmOtDHWPresent->getCheckboxValue() != settings.opentherm.dhwPresent) {
       changed = true;
-
       settings.opentherm.dhwPresent = wmOtDHWPresent->getCheckboxValue();
     }
 
     if (wmOtSummerWinterMode->getCheckboxValue() != settings.opentherm.summerWinterMode) {
       changed = true;
-
       settings.opentherm.summerWinterMode = wmOtSummerWinterMode->getCheckboxValue();
     }
 
     if (wmOtHeatingCh2Enabled->getCheckboxValue() != settings.opentherm.heatingCh2Enabled) {
       changed = true;
-
       settings.opentherm.heatingCh2Enabled = wmOtHeatingCh2Enabled->getCheckboxValue();
     }
 
     if (wmOtHeatingCh1ToCh2->getCheckboxValue() != settings.opentherm.heatingCh1ToCh2) {
       changed = true;
-
       settings.opentherm.heatingCh1ToCh2 = wmOtHeatingCh1ToCh2->getCheckboxValue();
     }
 
     if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
       changed = true;
       needRestart = true;
-
       settings.sensors.outdoor.pin = wmOutdoorSensorPin->getValue();
     }
 
     if (wmIndoorSensorPin->getValue() != settings.sensors.indoor.pin) {
       changed = true;
       needRestart = true;
-
       settings.sensors.indoor.pin = wmIndoorSensorPin->getValue();
     }
 

@@ -36,7 +36,7 @@ MainTask* tMain;
 
 
 void setup() {
-  #if USE_TELNET
+  #if !USE_TELNET
     Serial.begin(115200);
     Serial.println("\n\n");
   #endif
