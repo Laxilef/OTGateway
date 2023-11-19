@@ -7,6 +7,14 @@ public:
   int getValue() {
     return atoi(WiFiManagerParameter::getValue());
   }
+
+  void setValue(int value, int length) {
+    WiFiManagerParameter::setValue(String(value).c_str(), length);
+  }
+
+  void setValue(int value) {
+    setValue(value, getValueLength());
+  }
 };
 
 class UnsignedIntParameter : public WiFiManagerParameter {
@@ -18,6 +26,33 @@ public:
   unsigned int getValue() {
     return (unsigned int) atoi(WiFiManagerParameter::getValue());
   }
+
+  void setValue(unsigned int value, int length) {
+    WiFiManagerParameter::setValue(String(value).c_str(), length);
+  }
+
+  void setValue(unsigned int value) {
+    setValue(value, getValueLength());
+  }
+};
+
+class DoubleParameter : public WiFiManagerParameter {
+public:
+  DoubleParameter(const char* id, const char* label, double value, const uint8_t length = 10) : WiFiManagerParameter("") {
+    init(id, label, String(value, length - 1).c_str(), length, "", WFM_LABEL_DEFAULT);
+  }
+
+  double getValue() {
+    return atof(WiFiManagerParameter::getValue());
+  }
+
+  void setValue(double value, int length) {
+    WiFiManagerParameter::setValue(String(value, length - 1).c_str(), length);
+  }
+
+  void setValue(double value) {
+    setValue(value, getValueLength());
+  }
 };
 
 class CheckboxParameter : public WiFiManagerParameter {
@@ -27,11 +62,15 @@ public:
   const char* trueVal = "T";
 
   CheckboxParameter(const char* id, const char* label, bool value) : WiFiManagerParameter("") {
-    init(id, label, value ? trueVal : "0", 1, "", WFM_LABEL_AFTER);
+    init(id, label, String(value ? trueVal : "0").c_str(), 1, "", WFM_LABEL_AFTER);
   }
 
   const char* getValue() const override {
     return trueVal;
+  }
+
+  void setValue(bool value) {
+    WiFiManagerParameter::setValue(value ? trueVal : "0", 1);
   }
 
   const char* getCustomHTML() const override {
