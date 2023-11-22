@@ -629,17 +629,20 @@ protected:
     }
 
     if (settings.debug) {
-      String payloadStr;
-      payloadStr.reserve(length);
+      Log.strace("MQTT.MSG", "Topic: %s\r\n>  ", topic);
       for (unsigned int i = 0; i < length; i++) {
         if ( payload[i] == 10 ) {
-          payloadStr += "\r\n>  ";
+          Log.print("\r\n>  ");
+
         } else {
-          payloadStr += (char) payload[i];
+          Log.print((char) payload[i]);
         }
       }
-
-      Log.strace("MQTT.MSG", "Topic: %s\r\n>  %s\n\r\n", topic, payloadStr.c_str());
+      Log.print("\r\n\n");
+      
+      for (Stream* stream : Log.getStreams()) {
+        stream->flush();
+      }
     }
 
     StaticJsonDocument<2048> doc;
