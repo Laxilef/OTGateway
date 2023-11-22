@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <TelnetStream.h>
 #include <EEManager.h>
+#include <TinyLogger.h>
 #include "Settings.h"
 
 EEManager eeSettings(settings, 30000);
@@ -36,29 +37,37 @@ MainTask* tMain;
 
 
 void setup() {
-  #if !USE_TELNET
-    Serial.begin(115200);
-    Serial.println("\n\n");
+  #if USE_TELNET
+  TelnetStream.begin();
+  Log.begin(&TelnetStream, TinyLogger::Level::VERBOSE);
+  delay(1000);
+  #else
+  Serial.begin(115200);
+  Log.begin(&Serial, TinyLogger::Level::VERBOSE);
+  Serial.println("\n\n");
   #endif
+  //Log.setNtpClient(&timeClient);
 
   EEPROM.begin(eeSettings.blockSize());
   uint8_t eeSettingsResult = eeSettings.begin(0, 's');
   if (eeSettingsResult == 0) {
-    INFO("Settings loaded");
+    Log.sinfoln("MAIN", "Settings loaded");
 
     if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
-      INFO("Settings not valid, reset and restart...");
+      Log.swarningln("MAIN", "Settings not valid, reset and restart...");
       eeSettings.reset();
       delay(1000);
       ESP.restart();
     }
 
   } else if (eeSettingsResult == 1) {
-    INFO("Settings NOT loaded, first start");
+    Log.sinfoln("MAIN", "Settings NOT loaded, first start");
 
   } else if (eeSettingsResult == 2) {
-    INFO("Settings NOT loaded (error)");
+    Log.serrorln("MAIN", "Settings NOT loaded (error)");
   }
+
+  Log.setLevel(settings.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
 
   tWm = new WifiManagerTask(true);
   Scheduler.start(tWm);

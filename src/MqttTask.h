@@ -24,13 +24,13 @@ protected:
   }
 
   void setup() {
-    DEBUG("[MQTT] Started");
+    Log.sinfoln("MQTT", "Started");
 
     client.setCallback(__callback);
     haHelper.setDevicePrefix(settings.mqtt.prefix);
-    haHelper.setDeviceVersion(OT_GATEWAY_VERSION);
-    haHelper.setDeviceModel("Opentherm Gateway");
-    haHelper.setDeviceName("Opentherm Gateway");
+    haHelper.setDeviceVersion(PROJECT_VERSION);
+    haHelper.setDeviceModel(PROJECT_NAME);
+    haHelper.setDeviceName(PROJECT_NAME);
 
     sprintf(buffer, CONFIG_URL, WiFi.localIP().toString().c_str());
     haHelper.setDeviceConfigUrl(buffer);
@@ -38,11 +38,11 @@ protected:
 
   void loop() {
     if (!client.connected() && millis() - lastReconnectAttempt >= MQTT_RECONNECT_INTERVAL) {
-      INFO_F("Mqtt not connected, state: %i, connecting to server %s...\n", client.state(), settings.mqtt.server);
+      Log.sinfoln("MQTT", "Not connected, state: %i, connecting to server %s...", client.state(), settings.mqtt.server);
 
       client.setServer(settings.mqtt.server, settings.mqtt.port);
       if (client.connect(settings.hostname, settings.mqtt.user, settings.mqtt.password)) {
-        INFO("Connected to MQTT server");
+        Log.sinfoln("MQTT", "Connected");
 
         client.subscribe(getTopicPath("settings/set").c_str());
         client.subscribe(getTopicPath("state/set").c_str());
@@ -53,7 +53,7 @@ protected:
         lastReconnectAttempt = 0;
 
       } else {
-        INFO("Failed to connect to MQTT server\n");
+        Log.swarningln("MQTT", "Failed to connect to server");
 
         if (settings.emergency.enable && !vars.states.emergency) {
           if (firstFailConnect == 0) {
@@ -62,7 +62,7 @@ protected:
 
           if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
             vars.states.emergency = true;
-            INFO("Emergency mode enabled");
+            Log.sinfoln("MQTT", "Emergency mode enabled");
           }
         }
 
@@ -75,7 +75,7 @@ protected:
       if (vars.states.emergency) {
         vars.states.emergency = false;
 
-        INFO("Emergency mode disabled");
+        Log.sinfoln("MQTT", "Emergency mode disabled");
       }
 
       client.loop();
@@ -323,9 +323,16 @@ protected:
       }
     }
 
-    if (!doc["restart"].isNull() && doc["restart"].is<bool>() && doc["restart"].as<bool>()) {
-      vars.parameters.restartAfterTime = 5000;
-      vars.parameters.restartSignalTime = millis();
+    if (!doc["actions"]["restart"].isNull() && doc["actions"]["restart"].is<bool>() && doc["actions"]["restart"].as<bool>()) {
+      vars.actions.restart = true;
+    }
+
+    if (!doc["actions"]["faultReset"].isNull() && doc["actions"]["faultReset"].is<bool>() && doc["actions"]["faultReset"].as<bool>()) {
+      vars.actions.faultReset = true;
+    }
+
+    if (!doc["actions"]["diagnosticReset"].isNull() && doc["actions"]["diagnosticReset"].is<bool>() && doc["actions"]["diagnosticReset"].as<bool>()) {
+      vars.actions.diagnosticReset = true;
     }
 
     if (flag) {
@@ -412,6 +419,7 @@ protected:
     haHelper.publishBinSensorDiagnostic();
     haHelper.publishSensorFaultCode();
     haHelper.publishSensorRssi(false);
+    haHelper.publishSensorUptime(false);
 
     // sensors
     haHelper.publishSensorModulation(false);
@@ -421,6 +429,11 @@ protected:
     haHelper.publishNumberIndoorTemp();
     //haHelper.publishNumberOutdoorTemp();
     haHelper.publishSensorHeatingTemp();
+
+    // buttons
+    haHelper.publishButtonRestart(false);
+    haHelper.publishButtonFaultReset();
+    haHelper.publishButtonDiagnosticReset();
   }
 
   static bool publishNonStaticHaEntities(bool force = false) {
@@ -556,9 +569,6 @@ protected:
     doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 
     client.beginPublish(topic, measureJson(doc), false);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -577,6 +587,7 @@ protected:
     doc["states"]["diagnostic"] = vars.states.diagnostic;
     doc["states"]["faultCode"] = vars.states.faultCode;
     doc["states"]["rssi"] = vars.states.rssi;
+    doc["states"]["uptime"] = (unsigned long) (millis() / 1000);
 
     doc["sensors"]["modulation"] = vars.sensors.modulation;
     doc["sensors"]["pressure"] = vars.sensors.pressure;
@@ -594,9 +605,6 @@ protected:
     doc["parameters"]["dhwMaxTemp"] = vars.parameters.dhwMaxTemp;
 
     client.beginPublish(topic, measureJson(doc), false);
-    //BufferingPrint bufferedClient(client, 32);
-    //serializeJson(doc, bufferedClient);
-    //bufferedClient.flush();
     serializeJson(doc, client);
     return client.endPublish();
   }
@@ -611,11 +619,17 @@ protected:
     }
 
     if (settings.debug) {
-      DEBUG_F("MQTT received message\n\r        Topic: %s\n\r        Data: ", topic);
+      String payloadStr;
+      payloadStr.reserve(length);
       for (unsigned int i = 0; i < length; i++) {
-        DEBUG_STREAM.print((char)payload[i]);
+        if ( payload[i] == 10 ) {
+          payloadStr += "\r\n>  ";
+        } else {
+          payloadStr += (char) payload[i];
+        }
       }
-      DEBUG_STREAM.print("\n");
+
+      Log.strace("MQTT.MSG", "Topic: %s\r\n>  %s\n\r\n", topic, payloadStr.c_str());
     }
 
     StaticJsonDocument<2048> doc;

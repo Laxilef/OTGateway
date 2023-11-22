@@ -48,12 +48,12 @@ protected:
     #endif
 
     wm.setDebugOutput(settings.debug, (wm_debuglevel_t) WM_DEBUG_MODE);
-    wm.setTitle("OpenTherm Gateway");
+    wm.setTitle(PROJECT_NAME);
     wm.setCustomMenuHTML(PSTR(
       "<style>.wrap h1 {display: none;} .wrap h3 {display: none;} .nh {margin: 0 0 1em 0;} .nh .logo {font-size: 1.8em; margin: 0.5em; text-align: center;} .nh .links {text-align: center;}</style>"
       "<div class=\"nh\">"
-      "<div class=\"logo\">OpenTherm Gateway</div>"
-      "<div class=\"links\"><a href=\"" OT_GATEWAY_REPO "\" target=\"_blank\">Repo</a> | <a href=\"" OT_GATEWAY_REPO "/issues\" target=\"_blank\">Issues</a> | <a href=\"" OT_GATEWAY_REPO "/releases\" target=\"_blank\">Releases</a> | <small>v" OT_GATEWAY_VERSION " (" __DATE__ ")</small></div>"
+      "<div class=\"logo\">" PROJECT_NAME "</div>"
+      "<div class=\"links\"><a href=\"" PROJECT_REPO "\" target=\"_blank\">Repo</a> | <a href=\"" PROJECT_REPO "/issues\" target=\"_blank\">Issues</a> | <a href=\"" PROJECT_REPO "/releases\" target=\"_blank\">Releases</a> | <small>v" PROJECT_VERSION " (" __DATE__ ")</small></div>"
       "</div>"
     ));
 
@@ -146,7 +146,7 @@ protected:
         TelnetStream.stop();
       #endif
 
-      INFO("[wifi] Disconnected");
+      Log.sinfoln("WIFI", "Disconnected");
 
     } else if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
@@ -166,7 +166,7 @@ protected:
         TelnetStream.begin();
       #endif
 
-      INFO_F("[wifi] Connected. IP address: %s, RSSI: %d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+      Log.sinfoln("WIFI", "Connected. IP: %s, RSSI: %d", WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
     #if defined(ESP8266)
@@ -273,11 +273,11 @@ protected:
     }
 
     if (needRestart) {
-      vars.parameters.restartAfterTime = 5000;
-      vars.parameters.restartSignalTime = millis();
+      vars.actions.restart = true;
     }
 
-    INFO_F(
+    Log.sinfo(
+      "WIFI",
       "New settings:\r\n"
       "  Hostname: %s\r\n"
       "  Mqtt server: %s:%d\r\n"
@@ -313,7 +313,6 @@ protected:
     );
 
     eeSettings.updateNow();
-    INFO(F("Settings saved"));
   }
 
   static void arpGratuitous() {

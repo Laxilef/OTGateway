@@ -14,6 +14,7 @@ protected:
   unsigned long firstFailConnect = 0;
   unsigned int heapSize = 0;
   unsigned int minFreeHeapSize = 0;
+  unsigned long restartSignalTime = 0;
 
   const char* getTaskName() {
     return "Main";
@@ -41,21 +42,20 @@ protected:
 
   void loop() {
     if (eeSettings.tick()) {
-      INFO("Settings updated (EEPROM)");
+      Log.sinfoln("MAIN", "Settings updated (EEPROM)");
     }
 
-    if (vars.parameters.restartAfterTime > 0 && millis() - vars.parameters.restartSignalTime > vars.parameters.restartAfterTime) {
-      vars.parameters.restartAfterTime = 0;
-
-      INFO("Received restart message...");
+    if (vars.actions.restart) {
+      Log.sinfoln("MAIN", "Restart signal received. Restart after 10 sec.");
       eeSettings.updateNow();
-      INFO("Restart...");
-      delay(1000);
-
-      ESP.restart();
+      restartSignalTime = millis();
+      vars.actions.restart = false;
     }
 
     if (WiFi.status() == WL_CONNECTED) {
+      //timeClient.update();
+      vars.states.rssi = WiFi.RSSI();
+
       if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
         tMqtt->enable();
       }
@@ -64,7 +64,12 @@ protected:
         firstFailConnect = 0;
       }
 
-      vars.states.rssi = WiFi.RSSI();
+      if ( Log.getLevel() == TinyLogger::Level::VERBOSE && !settings.debug ) {
+        Log.setLevel(TinyLogger::Level::INFO);
+
+      } else if ( Log.getLevel() != TinyLogger::Level::VERBOSE && settings.debug ) {
+        Log.setLevel(TinyLogger::Level::VERBOSE);
+      }
 
     } else {
       if (tMqtt->isEnabled()) {
@@ -78,7 +83,7 @@ protected:
 
         if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
-          INFO("Emergency mode enabled");
+          Log.sinfoln("MAIN", "Emergency mode enabled");
         }
       }
     }
@@ -89,7 +94,9 @@ protected:
 
     #ifdef LED_STATUS_PIN
       ledStatus(LED_STATUS_PIN);
+      yield();
     #endif
+    heap();
 
     #if USE_TELNET
       yield();
@@ -101,19 +108,28 @@ protected:
       }
     #endif
 
-    if (settings.debug) {
-      unsigned int freeHeapSize = ESP.getFreeHeap();
-      unsigned int minFreeHeapSizeDiff = 0;
+    if (restartSignalTime > 0 && millis() - restartSignalTime > 10000) {
+      restartSignalTime = 0;
+      ESP.restart();
+    }
+  }
 
-      if (freeHeapSize < minFreeHeapSize) {
-        minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;
-        minFreeHeapSize = freeHeapSize;
-      }
+  void heap() {
+    if (!settings.debug) {
+      return;
+    }
 
-      if (millis() - lastHeapInfo > 10000 || minFreeHeapSizeDiff > 0) {
-        DEBUG_F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)\n", freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
-        lastHeapInfo = millis();
-      }
+    unsigned int freeHeapSize = ESP.getFreeHeap();
+    unsigned int minFreeHeapSizeDiff = 0;
+
+    if (freeHeapSize < minFreeHeapSize) {
+      minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;
+      minFreeHeapSize = freeHeapSize;
+    }
+
+    if (millis() - lastHeapInfo > 60000 || minFreeHeapSizeDiff > 0) {
+      Log.sverboseln("MAIN", "Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)", freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
+      lastHeapInfo = millis();
     }
   }
 

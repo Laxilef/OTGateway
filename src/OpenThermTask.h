@@ -40,11 +40,11 @@ protected:
     unsigned long localResponse;
 
     if (setMasterMemberIdCode()) {
-      DEBUG_F("Slave member id code: %u\r\n", vars.parameters.slaveMemberIdCode);
-      DEBUG_F("Master member id code: %u\r\n", settings.opentherm.memberIdCode > 0 ? settings.opentherm.memberIdCode : vars.parameters.slaveMemberIdCode);
+      Log.straceln("OT", "Slave member id code: %u", vars.parameters.slaveMemberIdCode);
+      Log.straceln("OT", "Master member id code: %u", settings.opentherm.memberIdCode > 0 ? settings.opentherm.memberIdCode : vars.parameters.slaveMemberIdCode);
 
     } else {
-      WARN("Slave member id failed");
+      Log.swarningln("OT", "Slave member id failed");
     }
 
     bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
@@ -64,13 +64,13 @@ protected:
     );
 
     if (!ot->isValidResponse(localResponse)) {
-      WARN_F("Invalid response after setBoilerStatus: %s\r\n", ot->statusToString(ot->getLastResponseStatus()));
+      Log.swarningln("OT", "Invalid response after setBoilerStatus: %s", ot->statusToString(ot->getLastResponseStatus()));
       return;
     }
 
     if (vars.parameters.heatingEnabled != heatingEnabled) {
       vars.parameters.heatingEnabled = heatingEnabled;
-      INFO_F("Heating enabled: %s\r\n", heatingEnabled ? "on\0" : "off\0");
+      Log.sinfoln("OT.HEATING", "%s", heatingEnabled ? "Enabled" : "Disabled");
     }
 
     vars.states.heating = ot->isCentralHeatingActive(localResponse);
@@ -87,29 +87,35 @@ protected:
       updateSlaveParameters();
       updateMasterParameters();
 
-      DEBUG_F("Master type: %u, version: %u\r\n", vars.parameters.masterType, vars.parameters.masterVersion);
-      DEBUG_F("Slave type: %u, version: %u\r\n", vars.parameters.slaveType, vars.parameters.slaveVersion);
+      Log.straceln("OT", "Master type: %u, version: %u", vars.parameters.masterType, vars.parameters.masterVersion);
+      Log.straceln("OT", "Slave type: %u, version: %u", vars.parameters.slaveType, vars.parameters.slaveVersion);
 
       if (settings.opentherm.dhwPresent) {
         if (updateMinMaxDhwTemp()) {
-          if (settings.dhw.minTemp < vars.parameters.dhwMinTemp || settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
+          if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
+          }
+
+          if (settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
             settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
           }
 
         } else {
-          WARN("Failed get min/max DHW temp");
+          Log.swarningln("OT.DHW", "Failed get min/max temp");
         }
       }
 
       if (updateMinMaxHeatingTemp()) {
-        if (settings.heating.minTemp < vars.parameters.heatingMinTemp || settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
+        if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
           settings.heating.minTemp = vars.parameters.heatingMinTemp;
-          settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
-
-        } else {
-          WARN("Failed get min/max heating temp");
         }
+
+        if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
+          settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+        }
+
+      } else {
+        Log.swarningln("OT.HEATING", "Failed get min/max temp");
       }
 
       // force
@@ -121,11 +127,6 @@ protected:
 
       if (vars.states.fault) {
         updateFaultCode();
-        ot->sendBoilerReset();
-      }
-
-      if (vars.states.diagnostic) {
-        ot->sendServiceReset();
       }
 
       prevUpdateNonEssentialVars = millis();
@@ -150,6 +151,36 @@ protected:
     updateHeatingTemp();
     yield();
 
+    // fault reset action
+    if (vars.actions.faultReset) {
+      if (vars.states.fault) {
+        if (ot->sendBoilerReset()) {
+          Log.sinfoln("OT", "Boiler fault reset successfully");
+
+        } else {
+          Log.serrorln("OT", "Boiler fault reset failed");
+        }
+      }
+
+      vars.actions.faultReset = false;
+      yield();
+    }
+
+    // diag reset action
+    if (vars.actions.diagnosticReset) {
+      if (vars.states.diagnostic) {
+        if (ot->sendServiceReset()) {
+          Log.sinfoln("OT", "Boiler diagnostic reset successfully");
+          
+        } else {
+          Log.serrorln("OT", "Boiler diagnostic reset failed");
+        }
+      }
+
+      vars.actions.diagnosticReset = false;
+      yield();
+    }
+
     //
     // Температура ГВС
     byte newDHWTemp = settings.dhw.target;
@@ -158,7 +189,7 @@ protected:
         newDHWTemp = constrain(newDHWTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
       }
 
-      INFO_F("Set DHW temp = %u\r\n", newDHWTemp);
+      Log.sinfoln("OT.DHW", "Set temp = %u", newDHWTemp);
 
       // Записываем заданную температуру ГВС
       if (ot->setDHWSetpoint(newDHWTemp)) {
@@ -166,14 +197,14 @@ protected:
         dhwSetTempTime = millis();
 
       } else {
-        WARN("Failed set DHW temp");
+        Log.swarningln("OT.DHW", "Failed set temp");
       }
     }
 
     //
     // Температура отопления
     if (heatingEnabled && (needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
-      INFO_F("Setting heating temp = %u \n", vars.parameters.heatingSetpoint);
+      Log.sinfoln("OT.HEATING", "Set temp = %u", vars.parameters.heatingSetpoint);
 
       // Записываем заданную температуру
       if (ot->setBoilerTemperature(vars.parameters.heatingSetpoint)) {
@@ -181,12 +212,12 @@ protected:
         heatingSetTempTime = millis();
 
       } else {
-        WARN("Failed set heating temp");
+        Log.swarningln("OT.HEATING", "Failed set temp");
       }
 
       if (settings.opentherm.heatingCh1ToCh2) {
         if (!ot->setBoilerTemperature2(vars.parameters.heatingSetpoint)) {
-          WARN("Failed set ch2 heating temp");
+          Log.swarningln("OT.HEATING", "Failed set ch2 temp");
         }
       }
     }
@@ -268,13 +299,7 @@ protected:
   }
 
   void static printRequestDetail(OpenThermMessageID id, OpenThermResponseStatus status, unsigned long request, unsigned long response, byte attempt) {
-    sprintf(buffer, "OT REQUEST ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s", id, request, response, attempt, ot->statusToString(status));
-    if (status != OpenThermResponseStatus::SUCCESS) {
-      //WARN(buffer);
-      DEBUG(buffer);
-    } else {
-      DEBUG(buffer);
-    }
+    Log.straceln("OT", "OT REQUEST ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s", id, request, response, attempt, ot->statusToString(status));
   }
 
   bool setMasterMemberIdCode() {
@@ -293,7 +318,8 @@ protected:
       vars.parameters.slaveMemberIdCode = response & 0xFF;
 
       /*uint8_t flags = (response & 0xFFFF) >> 8;
-      DEBUG_F(
+      Log.strace(
+        "OT",
         "MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n",
         flags & 0x01,
         flags & 0x02,
@@ -331,13 +357,11 @@ protected:
     if (!ot->isValidResponse(response)) {
       return false;
     }
-    // INFO_F("Opentherm version slave: %f\n", ot->getFloat(response));
 
     response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::WRITE_DATA, OpenThermMessageID::OpenThermVersionMaster, response));
     if (!ot->isValidResponse(response)) {
       return false;
     }
-    // INFO_F("Opentherm version master: %f\n", ot->getFloat(response));
 
     return true;
   }
