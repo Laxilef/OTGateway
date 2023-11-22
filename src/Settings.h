@@ -32,16 +32,16 @@ struct Settings {
     bool turbo = false;
     float target = 40.0f;
     float hysteresis = 0.5f;
-    byte minTemp = 20.0f;
-    byte maxTemp = 90.0f;
+    byte minTemp = DEFAULT_HEATING_MIN_TEMP;
+    byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
     byte maxModulation = 100;
   } heating;
 
   struct {
     bool enable = true;
     byte target = 40;
-    byte minTemp = 30.0f;
-    byte maxTemp = 60.0f;
+    byte minTemp = DEFAULT_DHW_MIN_TEMP;
+    byte maxTemp = DEFAULT_DHW_MAX_TEMP;
   } dhw;
 
   struct {
@@ -49,8 +49,8 @@ struct Settings {
     float p_factor = 3;
     float i_factor = 0.2f;
     float d_factor = 0;
-    byte minTemp = 0.0f;
-    byte maxTemp = 90.0f;
+    byte minTemp = 0;
+    byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
   } pid;
 
   struct {
@@ -111,11 +111,11 @@ struct Variables {
 
   struct {
     bool heatingEnabled = false;
-    byte heatingMinTemp = 20;
-    byte heatingMaxTemp = 90;
-    byte heatingSetpoint = 0.0f;
-    byte dhwMinTemp = 30;
-    byte dhwMaxTemp = 60;
+    byte heatingMinTemp = DEFAULT_HEATING_MIN_TEMP;
+    byte heatingMaxTemp = DEFAULT_HEATING_MAX_TEMP;
+    byte heatingSetpoint = 0;
+    byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
+    byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;
     uint8_t slaveMemberIdCode;
     uint8_t slaveType;
     uint8_t slaveVersion;

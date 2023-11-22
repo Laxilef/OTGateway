@@ -95,11 +95,13 @@ protected:
         if (updateMinMaxDhwTemp()) {
           if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
+            eeSettings.update();
             Log.snoticeln("OT.DHW", "Updated min temp: %d", settings.dhw.minTemp);
           }
 
           if (settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
             settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
+            eeSettings.update();
             Log.snoticeln("OT.DHW", "Updated max temp: %d", settings.dhw.maxTemp);
           }
 
@@ -110,6 +112,7 @@ protected:
         if (settings.dhw.minTemp >= settings.dhw.maxTemp) {
           settings.dhw.minTemp = 30;
           settings.dhw.maxTemp = 60;
+          eeSettings.update();
         }
       }
 
@@ -118,11 +121,13 @@ protected:
       if (updateMinMaxHeatingTemp()) {
         if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
           settings.heating.minTemp = vars.parameters.heatingMinTemp;
+          eeSettings.update();
           Log.snoticeln("OT.HEATING", "Updated min temp: %d", settings.heating.minTemp);
         }
 
         if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
           settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+          eeSettings.update();
           Log.snoticeln("OT.HEATING", "Updated max temp: %d", settings.heating.maxTemp);
         }
 
@@ -133,6 +138,7 @@ protected:
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
         settings.heating.minTemp = 20;
         settings.heating.maxTemp = 90;
+        eeSettings.update();
       }
 
       // force

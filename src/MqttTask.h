@@ -551,9 +551,9 @@ protected:
     doc["heating"]["turbo"] = settings.heating.turbo;
     doc["heating"]["target"] = settings.heating.target;
     doc["heating"]["hysteresis"] = settings.heating.hysteresis;
-    doc["heating"]["maxModulation"] = settings.heating.maxModulation;
     doc["heating"]["minTemp"] = settings.heating.minTemp;
     doc["heating"]["maxTemp"] = settings.heating.maxTemp;
+    doc["heating"]["maxModulation"] = settings.heating.maxModulation;
 
     doc["dhw"]["enable"] = settings.dhw.enable;
     doc["dhw"]["target"] = settings.dhw.target;
