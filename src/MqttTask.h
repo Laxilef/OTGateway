@@ -175,14 +175,14 @@ protected:
     }
 
     if (!doc["dhw"]["maxTemp"].isNull() && doc["dhw"]["maxTemp"].is<unsigned char>()) {
-      if (doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100 && doc["dhw"]["maxTemp"].as<unsigned char>() > settings.dhw.minTemp) {
+      if (doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100) {
         settings.dhw.maxTemp = doc["dhw"]["maxTemp"].as<unsigned char>();
         flag = true;
       }
     }
 
     if (!doc["dhw"]["minTemp"].isNull() && doc["dhw"]["minTemp"].is<unsigned char>()) {
-      if (doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100 && doc["dhw"]["minTemp"].as<unsigned char>() < settings.dhw.maxTemp) {
+      if (doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100) {
         settings.dhw.minTemp = doc["dhw"]["minTemp"].as<unsigned char>();
         flag = true;
       }
