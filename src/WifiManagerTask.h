@@ -19,6 +19,7 @@ CheckboxParameter* wmOtDHWPresent;
 CheckboxParameter* wmOtSummerWinterMode;
 CheckboxParameter* wmOtHeatingCh2Enabled;
 CheckboxParameter* wmOtHeatingCh1ToCh2;
+CheckboxParameter* wmOtDHWToCh2;
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
 
@@ -104,6 +105,9 @@ protected:
 
     wmOtHeatingCh1ToCh2 = new CheckboxParameter("ot_heating_ch1_to_ch2", "Opentherm heating CH1 to CH2", settings.opentherm.heatingCh1ToCh2);
     wm.addParameter(wmOtHeatingCh1ToCh2);
+
+    wmOtDHWToCh2 = new CheckboxParameter("ot_dhw_to_ch2", "Opentherm DHW to CH2", settings.opentherm.dhwToCh2);
+    wm.addParameter(wmOtDHWToCh2);
 
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
@@ -249,11 +253,46 @@ protected:
     if (wmOtHeatingCh2Enabled->getCheckboxValue() != settings.opentherm.heatingCh2Enabled) {
       changed = true;
       settings.opentherm.heatingCh2Enabled = wmOtHeatingCh2Enabled->getCheckboxValue();
+
+      if (settings.opentherm.heatingCh1ToCh2) {
+        settings.opentherm.heatingCh1ToCh2 = false;
+        wmOtHeatingCh1ToCh2->setValue(false);
+      }
+
+      if (settings.opentherm.dhwToCh2) {
+        settings.opentherm.dhwToCh2 = false;
+        wmOtDHWToCh2->setValue(false);
+      }
     }
 
     if (wmOtHeatingCh1ToCh2->getCheckboxValue() != settings.opentherm.heatingCh1ToCh2) {
       changed = true;
       settings.opentherm.heatingCh1ToCh2 = wmOtHeatingCh1ToCh2->getCheckboxValue();
+
+      if (settings.opentherm.heatingCh2Enabled) {
+        settings.opentherm.heatingCh2Enabled = false;
+        wmOtHeatingCh2Enabled->setValue(false);
+      }
+
+      if (settings.opentherm.dhwToCh2) {
+        settings.opentherm.dhwToCh2 = false;
+        wmOtDHWToCh2->setValue(false);
+      }
+    }
+
+    if (wmOtDHWToCh2->getCheckboxValue() != settings.opentherm.dhwToCh2) {
+      changed = true;
+      settings.opentherm.dhwToCh2 = wmOtDHWToCh2->getCheckboxValue();
+
+      if (settings.opentherm.heatingCh2Enabled) {
+        settings.opentherm.heatingCh2Enabled = false;
+        wmOtHeatingCh2Enabled->setValue(false);
+      }
+
+      if (settings.opentherm.heatingCh1ToCh2) {
+        settings.opentherm.heatingCh1ToCh2 = false;
+        wmOtHeatingCh1ToCh2->setValue(false);
+      }
     }
 
     if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
@@ -292,6 +331,7 @@ protected:
       "  OT summer/winter mode: %d\r\n"
       "  OT heating ch2 enabled: %d\r\n"
       "  OT heating ch1 to ch2: %d\r\n"
+      "  OT DHW to ch2: %d\r\n"
       "  Outdoor sensor pin: %d\r\n"
       "  Indoor sensor pin: %d\r\n",
       settings.hostname,
@@ -308,6 +348,7 @@ protected:
       settings.opentherm.summerWinterMode,
       settings.opentherm.heatingCh2Enabled,
       settings.opentherm.heatingCh1ToCh2,
+      settings.opentherm.dhwToCh2,
       settings.sensors.outdoor.pin,
       settings.sensors.indoor.pin
     );

@@ -57,6 +57,9 @@ protected:
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
       heatingCh2Enabled = heatingEnabled;
+      
+    } else if (settings.opentherm.dhwToCh2) {
+      heatingCh2Enabled = settings.opentherm.dhwPresent && settings.dhw.enable;
     }
 
     localResponse = ot->setBoilerStatus(
@@ -231,6 +234,12 @@ protected:
 
       } else {
         Log.swarningln("OT.DHW", "Failed set temp");
+      }
+
+      if (settings.opentherm.dhwToCh2) {
+        if (!ot->setHeatingCh2Temp(newDHWTemp)) {
+          Log.swarningln("OT.DHW", "Failed set ch2 temp");
+        }
       }
     }
 
