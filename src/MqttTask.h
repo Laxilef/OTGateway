@@ -394,12 +394,12 @@ protected:
     haHelper.publishSwitchHeatingTurbo();
     //haHelper.publishNumberHeatingTarget(false);
     haHelper.publishNumberHeatingHysteresis();
-    haHelper.publishNumberHeatingMaxModulation(false);
     haHelper.publishSensorHeatingSetpoint(false);
     haHelper.publishSensorCurrentHeatingMinTemp(false);
     haHelper.publishSensorCurrentHeatingMaxTemp(false);
     haHelper.publishNumberHeatingMinTemp(false);
     haHelper.publishNumberHeatingMaxTemp(false);
+    haHelper.publishNumberHeatingMaxModulation(false);
 
     // pid
     haHelper.publishSwitchPID();
