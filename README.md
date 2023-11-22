@@ -39,7 +39,7 @@
 | [Thermet Ecocondens Silver 35kW](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1767026384) | default | Pressure sensor not supported |
 | [BAXI LUNA-3](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1794187178) | default | - |
 | ITALTHERM TIME MAX 30F | default | Pressure sensor not supported<br>**Important:** on the "setup" page you need to set the checkbox "Opentherm summer/winter mode" |
-
+| [Viessmann Vitodens 0-50w](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1819870142) | default | - |
 
 ## PCB
 <img src="/assets/pcb.svg" width="27%" /> <img src="/assets/pcb_3d.png" width="30%" /> <img src="/assets/after_assembly.png" width="40%" />
