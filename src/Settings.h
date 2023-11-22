@@ -125,7 +125,7 @@ struct Variables {
 
   struct {
     bool restart = false;
-    bool faultReset = false;
-    bool diagnosticReset = false;
+    bool resetFault = false;
+    bool resetDiagnostic = false;
   } actions;
 } vars;

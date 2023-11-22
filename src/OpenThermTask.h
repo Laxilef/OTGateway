@@ -90,32 +90,49 @@ protected:
       Log.straceln("OT", "Master type: %u, version: %u", vars.parameters.masterType, vars.parameters.masterVersion);
       Log.straceln("OT", "Slave type: %u, version: %u", vars.parameters.slaveType, vars.parameters.slaveVersion);
 
+      // DHW min/max temp
       if (settings.opentherm.dhwPresent) {
         if (updateMinMaxDhwTemp()) {
           if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
+            Log.snoticeln("OT.DHW", "Updated min temp: %d", settings.dhw.minTemp);
           }
 
           if (settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
             settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
+            Log.snoticeln("OT.DHW", "Updated max temp: %d", settings.dhw.maxTemp);
           }
 
         } else {
           Log.swarningln("OT.DHW", "Failed get min/max temp");
         }
+
+        if (settings.dhw.minTemp >= settings.dhw.maxTemp) {
+          settings.dhw.minTemp = 30;
+          settings.dhw.maxTemp = 60;
+        }
       }
 
+
+      // Heating min/max temp
       if (updateMinMaxHeatingTemp()) {
         if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
           settings.heating.minTemp = vars.parameters.heatingMinTemp;
+          Log.snoticeln("OT.HEATING", "Updated min temp: %d", settings.heating.minTemp);
         }
 
         if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
           settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+          Log.snoticeln("OT.HEATING", "Updated max temp: %d", settings.heating.maxTemp);
         }
 
       } else {
         Log.swarningln("OT.HEATING", "Failed get min/max temp");
+      }
+
+      if (settings.heating.minTemp >= settings.heating.maxTemp) {
+        settings.heating.minTemp = 20;
+        settings.heating.maxTemp = 90;
       }
 
       // force
@@ -152,7 +169,7 @@ protected:
     yield();
 
     // fault reset action
-    if (vars.actions.faultReset) {
+    if (vars.actions.resetFault) {
       if (vars.states.fault) {
         if (ot->sendBoilerReset()) {
           Log.sinfoln("OT", "Boiler fault reset successfully");
@@ -162,12 +179,12 @@ protected:
         }
       }
 
-      vars.actions.faultReset = false;
+      vars.actions.resetFault = false;
       yield();
     }
 
     // diag reset action
-    if (vars.actions.diagnosticReset) {
+    if (vars.actions.resetDiagnostic) {
       if (vars.states.diagnostic) {
         if (ot->sendServiceReset()) {
           Log.sinfoln("OT", "Boiler diagnostic reset successfully");
@@ -177,7 +194,7 @@ protected:
         }
       }
 
-      vars.actions.diagnosticReset = false;
+      vars.actions.resetDiagnostic = false;
       yield();
     }
 

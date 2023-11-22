@@ -147,14 +147,14 @@ protected:
     }
 
     if (!doc["heating"]["maxTemp"].isNull() && doc["heating"]["maxTemp"].is<unsigned char>()) {
-      if (doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100 && doc["heating"]["maxTemp"].as<unsigned char>() > settings.heating.minTemp) {
+      if (doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100) {
         settings.heating.maxTemp = doc["heating"]["maxTemp"].as<unsigned char>();
         flag = true;
       }
     }
 
     if (!doc["heating"]["minTemp"].isNull() && doc["heating"]["minTemp"].is<unsigned char>()) {
-      if (doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100 && doc["heating"]["minTemp"].as<unsigned char>() < settings.heating.maxTemp) {
+      if (doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100) {
         settings.heating.minTemp = doc["heating"]["minTemp"].as<unsigned char>();
         flag = true;
       }
@@ -335,12 +335,12 @@ protected:
       vars.actions.restart = true;
     }
 
-    if (!doc["actions"]["faultReset"].isNull() && doc["actions"]["faultReset"].is<bool>() && doc["actions"]["faultReset"].as<bool>()) {
-      vars.actions.faultReset = true;
+    if (!doc["actions"]["resetFault"].isNull() && doc["actions"]["resetFault"].is<bool>() && doc["actions"]["resetFault"].as<bool>()) {
+      vars.actions.resetFault = true;
     }
 
-    if (!doc["actions"]["diagnosticReset"].isNull() && doc["actions"]["diagnosticReset"].is<bool>() && doc["actions"]["diagnosticReset"].as<bool>()) {
-      vars.actions.diagnosticReset = true;
+    if (!doc["actions"]["resetDiagnostic"].isNull() && doc["actions"]["resetDiagnostic"].is<bool>() && doc["actions"]["resetDiagnostic"].as<bool>()) {
+      vars.actions.resetDiagnostic = true;
     }
 
     if (flag) {
@@ -441,8 +441,8 @@ protected:
 
     // buttons
     haHelper.publishButtonRestart(false);
-    haHelper.publishButtonFaultReset();
-    haHelper.publishButtonDiagnosticReset();
+    haHelper.publishButtonResetFault();
+    haHelper.publishButtonResetDiagnostic();
   }
 
   static bool publishNonStaticHaEntities(bool force = false) {
@@ -646,8 +646,30 @@ protected:
     }
 
     StaticJsonDocument<2048> doc;
-    DeserializationError dErr = deserializeJson(doc, (const byte*)payload, length);
+    DeserializationError dErr = deserializeJson(doc, (const byte*) payload, length);
     if (dErr != DeserializationError::Ok || doc.isNull()) {
+      const char* errMsg;
+      switch (dErr.code()) {
+        case DeserializationError::EmptyInput:
+        case DeserializationError::IncompleteInput:
+        case DeserializationError::InvalidInput:
+          errMsg = "invalid input";
+          break;
+
+        case DeserializationError::NoMemory:
+          errMsg = "no memory";
+          break;
+
+        case DeserializationError::TooDeep:
+          errMsg = "too deep";
+          break;
+        
+        default:
+          errMsg = "failed";
+          break;
+      }
+      Log.swarningln("MQTT.MSG", "No deserialization: %s", errMsg);
+
       return;
     }
 

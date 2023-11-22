@@ -1153,36 +1153,36 @@ public:
     return publish(getTopic("button", "restart").c_str(), doc);
   }
 
-  bool publishButtonFaultReset(bool enabledByDefault = true) {
+  bool publishButtonResetFault(bool enabledByDefault = true) {
     StaticJsonDocument<1024> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/state");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.fault, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_fault_reset");
-    doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_fault_reset");
+    doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_reset_fault");
+    doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_reset_fault");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("restart");
-    doc[FPSTR(HA_NAME)] = F("Fault reset");
+    doc[FPSTR(HA_NAME)] = F("Reset fault");
     doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/state/set");
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"faultReset\": true}}");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetFault\": true}}");
 
-    return publish(getTopic("button", "fault_reset").c_str(), doc);
+    return publish(getTopic("button", "reset_fault").c_str(), doc);
   }
 
-  bool publishButtonDiagnosticReset(bool enabledByDefault = true) {
+  bool publishButtonResetDiagnostic(bool enabledByDefault = true) {
     StaticJsonDocument<1024> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/state");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.diagnostic, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_diagnostic_reset");
-    doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_diagnostic_reset");
+    doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_reset_diagnostic");
+    doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_reset_diagnostic");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("restart");
-    doc[FPSTR(HA_NAME)] = F("Diagnostic reset");
+    doc[FPSTR(HA_NAME)] = F("Reset diagnostic");
     doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/state/set");
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"diagnosticReset\": true}}");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetDiagnostic\": true}}");
 
-    return publish(getTopic("button", "diagnostic_reset").c_str(), doc);
+    return publish(getTopic("button", "reset_diagnostic").c_str(), doc);
   }
 
 
