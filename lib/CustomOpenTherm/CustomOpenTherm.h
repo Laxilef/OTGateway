@@ -76,15 +76,21 @@ public:
     return buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::Status, data);
   }
 
-  bool setBoilerTemperature(float temperature) {
+  bool setHeatingCh1Temp(float temperature) {
     unsigned int data = temperatureToData(temperature);
     unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TSet, data));
     return isValidResponse(response);
   }
 
-  bool setBoilerTemperature2(float temperature) {
+  bool setHeatingCh2Temp(float temperature) {
     unsigned int data = temperatureToData(temperature);
     unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TsetCH2, data));
+    return isValidResponse(response);
+  }
+
+  bool setDHWTemp(float temperature) {
+    unsigned int data = temperatureToData(temperature);
+    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TdhwSet, data));
     return isValidResponse(response);
   }
 

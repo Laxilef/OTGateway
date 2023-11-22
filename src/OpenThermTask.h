@@ -215,7 +215,7 @@ protected:
       Log.sinfoln("OT.DHW", "Set temp = %u", newDHWTemp);
 
       // Записываем заданную температуру ГВС
-      if (ot->setDHWSetpoint(newDHWTemp)) {
+      if (ot->setDHWTemp(newDHWTemp)) {
         currentDHWTemp = newDHWTemp;
         dhwSetTempTime = millis();
 
@@ -230,7 +230,7 @@ protected:
       Log.sinfoln("OT.HEATING", "Set temp = %u", vars.parameters.heatingSetpoint);
 
       // Записываем заданную температуру
-      if (ot->setBoilerTemperature(vars.parameters.heatingSetpoint)) {
+      if (ot->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         heatingSetTempTime = millis();
 
@@ -239,7 +239,7 @@ protected:
       }
 
       if (settings.opentherm.heatingCh1ToCh2) {
-        if (!ot->setBoilerTemperature2(vars.parameters.heatingSetpoint)) {
+        if (!ot->setHeatingCh2Temp(vars.parameters.heatingSetpoint)) {
           Log.swarningln("OT.HEATING", "Failed set ch2 temp");
         }
       }
