@@ -32,6 +32,7 @@ struct Settings {
     bool turbo = false;
     float target = 40.0f;
     float hysteresis = 0.5f;
+    byte maxModulation = 100;
     byte minTemp = 20.0f;
     byte maxTemp = 90.0f;
   } heating;

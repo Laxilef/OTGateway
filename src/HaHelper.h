@@ -257,6 +257,28 @@ public:
     return publish(getTopic("number", "heating_hysteresis").c_str(), doc);
   }
 
+  bool publishNumberHeatingMaxModulation(bool enabledByDefault = true) {
+    StaticJsonDocument<1536> doc;
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_max_modulation");
+    doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_heating_max_modulation");
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("%");
+    doc[FPSTR(HA_NAME)] = F("Max modulation");
+    doc[FPSTR(HA_ICON)] = F("mdi:speedometer");
+    doc[FPSTR(HA_STATE_TOPIC)] = devicePrefix + F("/settings");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.maxModulation|int(1) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"maxModulation\" : {{ value }}}}");
+    doc[FPSTR(HA_MIN)] = 1;
+    doc[FPSTR(HA_MAX)] = 100;
+    doc[FPSTR(HA_STEP)] = 1;
+    doc[FPSTR(HA_MODE)] = "box";
+
+    return publish(getTopic("number", "heating_max_modulation").c_str(), doc);
+  }
+
   bool publishSensorHeatingSetpoint(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");

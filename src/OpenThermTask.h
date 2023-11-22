@@ -79,7 +79,7 @@ protected:
     vars.states.fault = ot->isFault(localResponse);
     vars.states.diagnostic = ot->isDiagnostic(localResponse);
 
-    setMaxModulationLevel(heatingEnabled ? 100 : 0);
+    setMaxModulationLevel(heatingEnabled ? settings.heating.maxModulation : 0);
     yield();
 
     // Команды чтения данных котла

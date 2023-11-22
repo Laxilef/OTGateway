@@ -27,6 +27,7 @@ protected:
     Log.sinfoln("MQTT", "Started");
 
     client.setCallback(__callback);
+    client.setBufferSize(1024);
     haHelper.setDevicePrefix(settings.mqtt.prefix);
     haHelper.setDeviceVersion(PROJECT_VERSION);
     haHelper.setDeviceModel(PROJECT_NAME);
@@ -134,6 +135,13 @@ protected:
     if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<float>()) {
       if (doc["heating"]["hysteresis"].as<float>() >= 0 && doc["heating"]["hysteresis"].as<float>() <= 5) {
         settings.heating.hysteresis = round(doc["heating"]["hysteresis"].as<float>() * 10) / 10;
+        flag = true;
+      }
+    }
+
+    if (!doc["heating"]["maxModulation"].isNull() && doc["heating"]["maxModulation"].is<unsigned char>()) {
+      if (doc["heating"]["maxModulation"].as<unsigned char>() > 0 && doc["heating"]["maxModulation"].as<unsigned char>() <= 100) {
+        settings.heating.maxModulation = doc["heating"]["maxModulation"].as<unsigned char>();
         flag = true;
       }
     }
@@ -386,6 +394,7 @@ protected:
     haHelper.publishSwitchHeatingTurbo();
     //haHelper.publishNumberHeatingTarget(false);
     haHelper.publishNumberHeatingHysteresis();
+    haHelper.publishNumberHeatingMaxModulation(false);
     haHelper.publishSensorHeatingSetpoint(false);
     haHelper.publishSensorCurrentHeatingMinTemp(false);
     haHelper.publishSensorCurrentHeatingMaxTemp(false);
@@ -542,6 +551,7 @@ protected:
     doc["heating"]["turbo"] = settings.heating.turbo;
     doc["heating"]["target"] = settings.heating.target;
     doc["heating"]["hysteresis"] = settings.heating.hysteresis;
+    doc["heating"]["maxModulation"] = settings.heating.maxModulation;
     doc["heating"]["minTemp"] = settings.heating.minTemp;
     doc["heating"]["maxTemp"] = settings.heating.maxTemp;
 
