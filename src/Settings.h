@@ -94,14 +94,14 @@ struct Variables {
     bool flame = false;
     bool fault = false;
     bool diagnostic = false;
-    byte faultCode = 0;
-    int8_t rssi = 0;
   } states;
 
   struct {
     float modulation = 0.0f;
     float pressure = 0.0f;
     float dhwFlowRate = 0.0f;
+    byte faultCode = 0;
+    int8_t rssi = 0;
   } sensors;
 
   struct {

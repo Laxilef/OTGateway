@@ -54,7 +54,7 @@ protected:
 
     if (WiFi.status() == WL_CONNECTED) {
       //timeClient.update();
-      vars.states.rssi = WiFi.RSSI();
+      vars.sensors.rssi = WiFi.RSSI();
 
       if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
         tMqtt->enable();

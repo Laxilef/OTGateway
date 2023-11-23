@@ -595,13 +595,13 @@ protected:
     doc["states"]["flame"] = vars.states.flame;
     doc["states"]["fault"] = vars.states.fault;
     doc["states"]["diagnostic"] = vars.states.diagnostic;
-    doc["states"]["faultCode"] = vars.states.faultCode;
-    doc["states"]["rssi"] = vars.states.rssi;
-    doc["states"]["uptime"] = (unsigned long) (millis() / 1000);
 
     doc["sensors"]["modulation"] = vars.sensors.modulation;
     doc["sensors"]["pressure"] = vars.sensors.pressure;
     doc["sensors"]["dhwFlowRate"] = vars.sensors.dhwFlowRate;
+    doc["sensors"]["faultCode"] = vars.sensors.faultCode;
+    doc["sensors"]["rssi"] = vars.sensors.rssi;
+    doc["sensors"]["uptime"] = (unsigned long) (millis() / 1000);
 
     doc["temperatures"]["indoor"] = vars.temperatures.indoor;
     doc["temperatures"]["outdoor"] = vars.temperatures.outdoor;

@@ -528,7 +528,7 @@ protected:
       return false;
     }
 
-    vars.states.faultCode = response & 0xFF;
+    vars.sensors.faultCode = response & 0xFF;
     return true;
   }
 

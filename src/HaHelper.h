@@ -864,13 +864,14 @@ public:
     doc[FPSTR(HA_NAME)] = F("Fault code");
     doc[FPSTR(HA_ICON)] = F("mdi:chat-alert-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = devicePrefix + F("/state");
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"E%02d\"|format(value_json.states.faultCode) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"E%02d\"|format(value_json.sensors.faultCode) }}");
 
     return publish(getTopic("sensor", "fault_code").c_str(), doc);
   }
 
   bool publishSensorRssi(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_rssi");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_rssi");
@@ -881,13 +882,14 @@ public:
     doc[FPSTR(HA_NAME)] = F("RSSI");
     doc[FPSTR(HA_ICON)] = F("mdi:signal");
     doc[FPSTR(HA_STATE_TOPIC)] = devicePrefix + F("/state");
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.states.rssi|float(0)|round(1) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.rssi|float(0)|round(1) }}");
 
     return publish(getTopic("sensor", "rssi").c_str(), doc);
   }
 
   bool publishSensorUptime(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_uptime");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_uptime");
@@ -898,7 +900,7 @@ public:
     doc[FPSTR(HA_NAME)] = F("Uptime");
     doc[FPSTR(HA_ICON)] = F("mdi:clock-start");
     doc[FPSTR(HA_STATE_TOPIC)] = devicePrefix + F("/state");
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.states.uptime|int(0) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.uptime|int(0) }}");
 
     return publish(getTopic("sensor", "uptime").c_str(), doc);
   }
