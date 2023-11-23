@@ -57,7 +57,7 @@ protected:
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
       heatingCh2Enabled = heatingEnabled;
-      
+
     } else if (settings.opentherm.dhwToCh2) {
       heatingCh2Enabled = settings.opentherm.dhwPresent && settings.dhw.enable;
     }
@@ -180,8 +180,10 @@ protected:
 
     if (settings.opentherm.dhwPresent) {
       updateDHWTemp();
+      updateDHWFlowRate();
     } else {
       vars.temperatures.dhw = 0;
+      vars.sensors.dhwFlowRate = 0.0f;
     }
 
     updateHeatingTemp();
@@ -506,6 +508,16 @@ protected:
     }
 
     vars.temperatures.dhw = ot->getFloat(response);
+    return true;
+  }
+
+  bool updateDHWFlowRate() {
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ, OpenThermMessageID::DHWFlowRate, 0));
+    if (!ot->isValidResponse(response)) {
+      return false;
+    }
+
+    vars.sensors.dhwFlowRate = ot->getFloat(response);
     return true;
   }
 

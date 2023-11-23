@@ -101,6 +101,7 @@ struct Variables {
   struct {
     float modulation = 0.0f;
     float pressure = 0.0f;
+    float dhwFlowRate = 0.0f;
   } sensors;
 
   struct {

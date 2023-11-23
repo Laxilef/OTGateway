@@ -940,6 +940,23 @@ public:
     return publish(getTopic("sensor", "pressure").c_str(), doc);
   }
 
+  bool publishSensorDhwFlowRate(bool enabledByDefault = true) {
+    StaticJsonDocument<1024> doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_flow_rate");
+    doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_dhw_flow_rate");
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
+    doc[FPSTR(HA_NAME)] = F("DHW flow rate");
+    doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
+    doc[FPSTR(HA_STATE_TOPIC)] = devicePrefix + F("/state");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.dhwFlowRate|float(0)|round(2) }}");
+
+    return publish(getTopic("sensor", "dhw_flow_rate").c_str(), doc);
+  }
+
 
   bool publishNumberIndoorTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
@@ -1232,6 +1249,10 @@ public:
 
   bool deleteNumberDHWTarget() {
     return publish(getTopic("number", "dhw_target").c_str());
+  }
+
+  bool deleteSensorDhwFlowRate() {
+    return publish(getTopic("sensor", "dhw_flow_rate").c_str());
   }
 
   bool deleteClimateDHW() {

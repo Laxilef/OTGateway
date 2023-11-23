@@ -467,6 +467,7 @@ protected:
         haHelper.publishNumberDHWMaxTemp(false);
         haHelper.publishBinSensorDHW();
         haHelper.publishSensorDHWTemp();
+        haHelper.publishSensorDhwFlowRate(false);
 
       } else {
         haHelper.deleteSwitchDHW();
@@ -478,6 +479,7 @@ protected:
         haHelper.deleteSensorDHWTemp();
         haHelper.deleteNumberDHWTarget();
         haHelper.deleteClimateDHW();
+        haHelper.deleteSensorDhwFlowRate();
       }
 
       published = true;
@@ -601,6 +603,7 @@ protected:
 
     doc["sensors"]["modulation"] = vars.sensors.modulation;
     doc["sensors"]["pressure"] = vars.sensors.pressure;
+    doc["sensors"]["dhwFlowRate"] = vars.sensors.dhwFlowRate;
 
     doc["temperatures"]["indoor"] = vars.temperatures.indoor;
     doc["temperatures"]["outdoor"] = vars.temperatures.outdoor;
