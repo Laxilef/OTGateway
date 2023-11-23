@@ -42,7 +42,7 @@ protected:
   }
 
   void loop() {
-    static byte currentHeatingTemp, currentDHWTemp = 0;
+    static byte currentHeatingTemp, currentDhwTemp = 0;
     unsigned long localResponse;
 
     if (setMasterMemberIdCode()) {
@@ -179,8 +179,8 @@ protected:
     yield();
 
     if (settings.opentherm.dhwPresent) {
-      updateDHWTemp();
-      updateDHWFlowRate();
+      updateDhwTemp();
+      updateDhwFlowRate();
     } else {
       vars.temperatures.dhw = 0;
       vars.sensors.dhwFlowRate = 0.0f;
@@ -221,17 +221,17 @@ protected:
 
     //
     // Температура ГВС
-    byte newDHWTemp = settings.dhw.target;
-    if (settings.opentherm.dhwPresent && settings.dhw.enable && (needSetDhwTemp() || newDHWTemp != currentDHWTemp)) {
-      if (newDHWTemp < settings.dhw.minTemp || newDHWTemp > settings.dhw.maxTemp) {
-        newDHWTemp = constrain(newDHWTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
+    byte newDhwTemp = settings.dhw.target;
+    if (settings.opentherm.dhwPresent && settings.dhw.enable && (needSetDhwTemp() || newDhwTemp != currentDhwTemp)) {
+      if (newDhwTemp < settings.dhw.minTemp || newDhwTemp > settings.dhw.maxTemp) {
+        newDhwTemp = constrain(newDhwTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
       }
 
-      Log.sinfoln("OT.DHW", "Set temp = %u", newDHWTemp);
+      Log.sinfoln("OT.DHW", "Set temp = %u", newDhwTemp);
 
       // Записываем заданную температуру ГВС
-      if (ot->setDHWTemp(newDHWTemp)) {
-        currentDHWTemp = newDHWTemp;
+      if (ot->setDhwTemp(newDhwTemp)) {
+        currentDhwTemp = newDhwTemp;
         dhwSetTempTime = millis();
 
       } else {
@@ -239,7 +239,7 @@ protected:
       }
 
       if (settings.opentherm.dhwToCh2) {
-        if (!ot->setHeatingCh2Temp(newDHWTemp)) {
+        if (!ot->setHeatingCh2Temp(newDhwTemp)) {
           Log.swarningln("OT.DHW", "Failed set ch2 temp");
         }
       }
@@ -501,7 +501,7 @@ protected:
   }
 
 
-  bool updateDHWTemp() {
+  bool updateDhwTemp() {
     unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ, OpenThermMessageID::Tdhw, 0));
     if (!ot->isValidResponse(response)) {
       return false;
@@ -511,7 +511,7 @@ protected:
     return true;
   }
 
-  bool updateDHWFlowRate() {
+  bool updateDhwFlowRate() {
     unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ, OpenThermMessageID::DHWFlowRate, 0));
     if (!ot->isValidResponse(response)) {
       return false;

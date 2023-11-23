@@ -392,7 +392,6 @@ protected:
     // heating
     haHelper.publishSwitchHeating(false);
     haHelper.publishSwitchHeatingTurbo();
-    //haHelper.publishNumberHeatingTarget(false);
     haHelper.publishNumberHeatingHysteresis();
     haHelper.publishSensorHeatingSetpoint(false);
     haHelper.publishSensorCurrentHeatingMinTemp(false);
@@ -436,7 +435,6 @@ protected:
 
     // temperatures
     haHelper.publishNumberIndoorTemp();
-    //haHelper.publishNumberOutdoorTemp();
     haHelper.publishSensorHeatingTemp();
 
     // buttons
@@ -460,25 +458,25 @@ protected:
       _dhwPresent = settings.opentherm.dhwPresent;
 
       if (_dhwPresent) {
-        haHelper.publishSwitchDHW(false);
-        haHelper.publishSensorCurrentDHWMinTemp(false);
-        haHelper.publishSensorCurrentDHWMaxTemp(false);
-        haHelper.publishNumberDHWMinTemp(false);
-        haHelper.publishNumberDHWMaxTemp(false);
-        haHelper.publishBinSensorDHW();
-        haHelper.publishSensorDHWTemp();
+        haHelper.publishSwitchDhw(false);
+        haHelper.publishSensorCurrentDhwMinTemp(false);
+        haHelper.publishSensorCurrentDhwMaxTemp(false);
+        haHelper.publishNumberDhwMinTemp(false);
+        haHelper.publishNumberDhwMaxTemp(false);
+        haHelper.publishBinSensorDhw();
+        haHelper.publishSensorDhwTemp();
         haHelper.publishSensorDhwFlowRate(false);
 
       } else {
-        haHelper.deleteSwitchDHW();
-        haHelper.deleteSensorCurrentDHWMinTemp();
-        haHelper.deleteSensorCurrentDHWMaxTemp();
-        haHelper.deleteNumberDHWMinTemp();
-        haHelper.deleteNumberDHWMaxTemp();
-        haHelper.deleteBinSensorDHW();
-        haHelper.deleteSensorDHWTemp();
-        haHelper.deleteNumberDHWTarget();
-        haHelper.deleteClimateDHW();
+        haHelper.deleteSwitchDhw();
+        haHelper.deleteSensorCurrentDhwMinTemp();
+        haHelper.deleteSensorCurrentDhwMaxTemp();
+        haHelper.deleteNumberDhwMinTemp();
+        haHelper.deleteNumberDhwMaxTemp();
+        haHelper.deleteBinSensorDhw();
+        haHelper.deleteSensorDhwTemp();
+        haHelper.deleteNumberDhwTarget();
+        haHelper.deleteClimateDhw();
         haHelper.deleteSensorDhwFlowRate();
       }
 
@@ -503,8 +501,8 @@ protected:
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
 
-      haHelper.publishNumberDHWTarget(settings.dhw.minTemp, settings.dhw.maxTemp, false);
-      haHelper.publishClimateDHW(settings.dhw.minTemp, settings.dhw.maxTemp);
+      haHelper.publishNumberDhwTarget(settings.dhw.minTemp, settings.dhw.maxTemp, false);
+      haHelper.publishClimateDhw(settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
     }

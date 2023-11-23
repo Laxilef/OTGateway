@@ -88,7 +88,7 @@ public:
     return isValidResponse(response);
   }
 
-  bool setDHWTemp(float temperature) {
+  bool setDhwTemp(float temperature) {
     unsigned int data = temperatureToData(temperature);
     unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TdhwSet, data));
     return isValidResponse(response);

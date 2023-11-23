@@ -15,11 +15,11 @@ UnsignedIntParameter* wmMqttPublishInterval;
 UnsignedIntParameter* wmOtInPin;
 UnsignedIntParameter* wmOtOutPin;
 UnsignedIntParameter* wmOtMemberIdCode;
-CheckboxParameter* wmOtDHWPresent;
+CheckboxParameter* wmOtDhwPresent;
 CheckboxParameter* wmOtSummerWinterMode;
 CheckboxParameter* wmOtHeatingCh2Enabled;
 CheckboxParameter* wmOtHeatingCh1ToCh2;
-CheckboxParameter* wmOtDHWToCh2;
+CheckboxParameter* wmOtDhwToCh2;
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
 
@@ -94,8 +94,8 @@ protected:
     wmOtMemberIdCode = new UnsignedIntParameter("ot_member_id_code", "Opentherm Master Member ID", settings.opentherm.memberIdCode, 5);
     wm.addParameter(wmOtMemberIdCode);
 
-    wmOtDHWPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
-    wm.addParameter(wmOtDHWPresent);
+    wmOtDhwPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
+    wm.addParameter(wmOtDhwPresent);
 
     wmOtSummerWinterMode = new CheckboxParameter("ot_summer_winter_mode", "Opentherm summer/winter mode", settings.opentherm.summerWinterMode);
     wm.addParameter(wmOtSummerWinterMode);
@@ -106,8 +106,8 @@ protected:
     wmOtHeatingCh1ToCh2 = new CheckboxParameter("ot_heating_ch1_to_ch2", "Opentherm heating CH1 to CH2", settings.opentherm.heatingCh1ToCh2);
     wm.addParameter(wmOtHeatingCh1ToCh2);
 
-    wmOtDHWToCh2 = new CheckboxParameter("ot_dhw_to_ch2", "Opentherm DHW to CH2", settings.opentherm.dhwToCh2);
-    wm.addParameter(wmOtDHWToCh2);
+    wmOtDhwToCh2 = new CheckboxParameter("ot_dhw_to_ch2", "Opentherm DHW to CH2", settings.opentherm.dhwToCh2);
+    wm.addParameter(wmOtDhwToCh2);
 
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
@@ -240,9 +240,9 @@ protected:
       settings.opentherm.memberIdCode = wmOtMemberIdCode->getValue();
     }
 
-    if (wmOtDHWPresent->getCheckboxValue() != settings.opentherm.dhwPresent) {
+    if (wmOtDhwPresent->getCheckboxValue() != settings.opentherm.dhwPresent) {
       changed = true;
-      settings.opentherm.dhwPresent = wmOtDHWPresent->getCheckboxValue();
+      settings.opentherm.dhwPresent = wmOtDhwPresent->getCheckboxValue();
     }
 
     if (wmOtSummerWinterMode->getCheckboxValue() != settings.opentherm.summerWinterMode) {
@@ -261,7 +261,7 @@ protected:
 
       if (settings.opentherm.dhwToCh2) {
         settings.opentherm.dhwToCh2 = false;
-        wmOtDHWToCh2->setValue(false);
+        wmOtDhwToCh2->setValue(false);
       }
     }
 
@@ -276,13 +276,13 @@ protected:
 
       if (settings.opentherm.dhwToCh2) {
         settings.opentherm.dhwToCh2 = false;
-        wmOtDHWToCh2->setValue(false);
+        wmOtDhwToCh2->setValue(false);
       }
     }
 
-    if (wmOtDHWToCh2->getCheckboxValue() != settings.opentherm.dhwToCh2) {
+    if (wmOtDhwToCh2->getCheckboxValue() != settings.opentherm.dhwToCh2) {
       changed = true;
-      settings.opentherm.dhwToCh2 = wmOtDHWToCh2->getCheckboxValue();
+      settings.opentherm.dhwToCh2 = wmOtDhwToCh2->getCheckboxValue();
 
       if (settings.opentherm.heatingCh2Enabled) {
         settings.opentherm.heatingCh2Enabled = false;

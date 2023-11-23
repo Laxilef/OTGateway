@@ -378,7 +378,7 @@ public:
   }
 
 
-  bool publishSwitchDHW(bool enabledByDefault = true) {
+  bool publishSwitchDhw(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -398,7 +398,7 @@ public:
     return publish(getTopic("switch", "dhw").c_str(), doc);
   }
 
-  bool publishNumberDHWTarget(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishNumberDhwTarget(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -421,7 +421,7 @@ public:
     return publish(getTopic("number", "dhw_target").c_str(), doc);
   }
 
-  bool publishSensorCurrentDHWMinTemp(bool enabledByDefault = true) {
+  bool publishSensorCurrentDhwMinTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -439,7 +439,7 @@ public:
     return publish(getTopic("sensor", "current_dhw_min_temp").c_str(), doc);
   }
 
-  bool publishSensorCurrentDHWMaxTemp(bool enabledByDefault = true) {
+  bool publishSensorCurrentDhwMaxTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -457,7 +457,7 @@ public:
     return publish(getTopic("sensor", "current_dhw_max_temp").c_str(), doc);
   }
 
-  bool publishNumberDHWMinTemp(bool enabledByDefault = true) {
+  bool publishNumberDhwMinTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_min_temp");
@@ -479,7 +479,7 @@ public:
     return publish(getTopic("number", "dhw_min_temp").c_str(), doc);
   }
 
-  bool publishNumberDHWMaxTemp(bool enabledByDefault = true) {
+  bool publishNumberDhwMaxTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_max_temp");
@@ -788,7 +788,7 @@ public:
     return publish(getTopic("binary_sensor", "heating").c_str(), doc);
   }
 
-  bool publishBinSensorDHW(bool enabledByDefault = true) {
+  bool publishBinSensorDhw(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1056,7 +1056,7 @@ public:
     return publish(getTopic("sensor", "heating_temp").c_str(), doc);
   }
 
-  bool publishSensorDHWTemp(bool enabledByDefault = true) {
+  bool publishSensorDhwTemp(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1119,7 +1119,7 @@ public:
     return publish(getTopic("climate", "heating", "_").c_str(), doc);
   }
 
-  bool publishClimateDHW(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishClimateDhw(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
     StaticJsonDocument<2560> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
 
@@ -1219,35 +1219,35 @@ public:
     return publish(getTopic("sensor", "indoor_temp").c_str());
   }
 
-  bool deleteSwitchDHW() {
+  bool deleteSwitchDhw() {
     return publish(getTopic("switch", "dhw").c_str());
   }
 
-  bool deleteSensorCurrentDHWMinTemp() {
+  bool deleteSensorCurrentDhwMinTemp() {
     return publish(getTopic("sensor", "current_dhw_min_temp").c_str());
   }
 
-  bool deleteSensorCurrentDHWMaxTemp() {
+  bool deleteSensorCurrentDhwMaxTemp() {
     return publish(getTopic("sensor", "current_dhw_max_temp").c_str());
   }
 
-  bool deleteNumberDHWMinTemp() {
+  bool deleteNumberDhwMinTemp() {
     return publish(getTopic("number", "dhw_min_temp").c_str());
   }
 
-  bool deleteNumberDHWMaxTemp() {
+  bool deleteNumberDhwMaxTemp() {
     return publish(getTopic("number", "dhw_max_temp").c_str());
   }
 
-  bool deleteBinSensorDHW() {
+  bool deleteBinSensorDhw() {
     return publish(getTopic("binary_sensor", "dhw").c_str());
   }
 
-  bool deleteSensorDHWTemp() {
+  bool deleteSensorDhwTemp() {
     return publish(getTopic("sensor", "dhw_temp").c_str());
   }
 
-  bool deleteNumberDHWTarget() {
+  bool deleteNumberDhwTarget() {
     return publish(getTopic("number", "dhw_target").c_str());
   }
 
@@ -1255,7 +1255,7 @@ public:
     return publish(getTopic("sensor", "dhw_flow_rate").c_str());
   }
 
-  bool deleteClimateDHW() {
+  bool deleteClimateDhw() {
     return publish(getTopic("climate", "dhw", "_").c_str());
   }
 };
