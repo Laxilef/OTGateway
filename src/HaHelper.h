@@ -895,7 +895,7 @@ public:
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_uptime");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("duration");
-    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_STATE_CLASS)] = F("total_increasing");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("s");
     doc[FPSTR(HA_NAME)] = F("Uptime");
     doc[FPSTR(HA_ICON)] = F("mdi:clock-start");
