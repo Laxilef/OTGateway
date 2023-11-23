@@ -949,6 +949,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_flow_rate");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_dhw_flow_rate");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("volume");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
     doc[FPSTR(HA_NAME)] = F("DHW flow rate");
@@ -1086,37 +1087,37 @@ public:
     doc[FPSTR(HA_NAME)] = F("Heating");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
 
-    doc[F("current_temperature_topic")] = devicePrefix + F("/state");
-    doc[F("current_temperature_template")] = F("{% if value_json.temperatures.indoor|float(0) != 0 %}{{ value_json.temperatures.indoor|float(0)|round(2) }}"
+    doc[FPSTR(HA_CURRENT_TEMPERATURE_TOPIC)] = devicePrefix + F("/state");
+    doc[FPSTR(HA_CURRENT_TEMPERATURE_TEMPLATE)] = F("{% if value_json.temperatures.indoor|float(0) != 0 %}{{ value_json.temperatures.indoor|float(0)|round(2) }}"
       "{% else %}{{ value_json.temperatures.heating|float(0)|round(2) }}{% endif %}");
 
-    doc[F("temperature_command_topic")] = devicePrefix + F("/settings/set");
-    doc[F("temperature_command_template")] = F("{\"heating\": {\"target\" : {{ value }}}}");
+    doc[FPSTR(HA_TEMPERATURE_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+    doc[FPSTR(HA_TEMPERATURE_COMMAND_TEMPLATE)] = F("{\"heating\": {\"target\" : {{ value }}}}");
 
-    doc[F("temperature_state_topic")] = devicePrefix + F("/settings");
-    doc[F("temperature_state_template")] = F("{{ value_json.heating.target|float(0)|round(1) }}");
+    doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = devicePrefix + F("/settings");
+    doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.heating.target|float(0)|round(1) }}");
 
-    doc[F("mode_command_topic")] = devicePrefix + F("/settings/set");
-    doc[F("mode_command_template")] = F("{% if value == 'heat' %}{\"heating\": {\"enable\" : true}}"
+    doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+    doc[FPSTR(HA_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'heat' %}{\"heating\": {\"enable\" : true}}"
       "{% elif value == 'off' %}{\"heating\": {\"enable\" : false}}{% endif %}");
-    doc[F("mode_state_topic")] = devicePrefix + F("/settings");
-    doc[F("mode_state_template")] = F("{{ iif(value_json.heating.enable, 'heat', 'off') }}");
-    doc[F("modes")][0] = F("off");
-    doc[F("modes")][1] = F("heat");
+    doc[FPSTR(HA_MODE_STATE_TOPIC)] = devicePrefix + F("/settings");
+    doc[FPSTR(HA_MODE_STATE_TEMPLATE)] = F("{{ iif(value_json.heating.enable, 'heat', 'off') }}");
+    doc[FPSTR(HA_MODES)][0] = F("off");
+    doc[FPSTR(HA_MODES)][1] = F("heat");
 
-    doc[F("action_topic")] = devicePrefix + F("/state");
-    doc[F("action_template")] = F("{{ iif(value_json.states.heating, 'heating', 'idle') }}");
+    doc[FPSTR(HA_ACTION_TOPIC)] = devicePrefix + F("/state");
+    doc[FPSTR(HA_ACTION_TEMPLATE)] = F("{{ iif(value_json.states.heating, 'heating', 'idle') }}");
 
-    doc[F("preset_mode_command_topic")] = devicePrefix + F("/settings/set");
-    doc[F("preset_mode_command_template")] = F("{% if value == 'boost' %}{\"heating\": {\"turbo\" : true}}"
+    doc[FPSTR(HA_PRESET_MODE_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+    doc[FPSTR(HA_PRESET_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'boost' %}{\"heating\": {\"turbo\" : true}}"
       "{% elif value == 'none' %}{\"heating\": {\"turbo\" : false}}{% endif %}");
-    doc[F("preset_mode_state_topic")] = devicePrefix + F("/settings");
-    doc[F("preset_mode_value_template")] = F("{{ iif(value_json.heating.turbo, 'boost', 'none') }}");
-    doc[F("preset_modes")][0] = F("boost");
+    doc[FPSTR(HA_PRESET_MODE_STATE_TOPIC)] = devicePrefix + F("/settings");
+    doc[FPSTR(HA_PRESET_MODE_VALUE_TEMPLATE)] = F("{{ iif(value_json.heating.turbo, 'boost', 'none') }}");
+    doc[FPSTR(HA_PRESET_MODES)][0] = F("boost");
 
-    doc[F("min_temp")] = minTemp;
-    doc[F("max_temp")] = maxTemp;
-    doc[F("temp_step")] = 0.5;
+    doc[FPSTR(HA_MIN_TEMP)] = minTemp;
+    doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
+    doc[FPSTR(HA_TEMP_STEP)] = 0.5;
 
     return publish(getTopic("climate", "heating", "_").c_str(), doc);
   }
@@ -1131,28 +1132,28 @@ public:
     doc[FPSTR(HA_NAME)] = F("DHW");
     doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
 
-    doc[F("current_temperature_topic")] = devicePrefix + F("/state");
-    doc[F("current_temperature_template")] = F("{{ value_json.temperatures.dhw|float(0)|round(1) }}");
+    doc[FPSTR(HA_CURRENT_TEMPERATURE_TOPIC)] = devicePrefix + F("/state");
+    doc[FPSTR(HA_CURRENT_TEMPERATURE_TEMPLATE)] = F("{{ value_json.temperatures.dhw|float(0)|round(1) }}");
 
-    doc[F("temperature_command_topic")] = devicePrefix + F("/settings/set");
-    doc[F("temperature_command_template")] = F("{\"dhw\": {\"target\" : {{ value|int(0) }}}}");
+    doc[FPSTR(HA_TEMPERATURE_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+    doc[FPSTR(HA_TEMPERATURE_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"target\" : {{ value|int(0) }}}}");
 
-    doc[F("temperature_state_topic")] = devicePrefix + F("/settings");
-    doc[F("temperature_state_template")] = F("{{ value_json.dhw.target|int(0) }}");
+    doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = devicePrefix + F("/settings");
+    doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.dhw.target|int(0) }}");
 
-    doc[F("mode_command_topic")] = devicePrefix + F("/settings/set");
-    doc[F("mode_command_template")] = F("{% if value == 'heat' %}{\"dhw\": {\"enable\" : true}}"
+    doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+    doc[FPSTR(HA_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'heat' %}{\"dhw\": {\"enable\" : true}}"
       "{% elif value == 'off' %}{\"dhw\": {\"enable\" : false}}{% endif %}");
-    doc[F("mode_state_topic")] = devicePrefix + F("/settings");
-    doc[F("mode_state_template")] = F("{{ iif(value_json.dhw.enable, 'heat', 'off') }}");
-    doc[F("modes")][0] = F("off");
-    doc[F("modes")][1] = F("heat");
+    doc[FPSTR(HA_MODE_STATE_TOPIC)] = devicePrefix + F("/settings");
+    doc[FPSTR(HA_MODE_STATE_TEMPLATE)] = F("{{ iif(value_json.dhw.enable, 'heat', 'off') }}");
+    doc[FPSTR(HA_MODES)][0] = F("off");
+    doc[FPSTR(HA_MODES)][1] = F("heat");
 
-    doc[F("action_topic")] = devicePrefix + F("/state");
-    doc[F("action_template")] = F("{{ iif(value_json.states.dhw, 'heating', 'idle') }}");
+    doc[FPSTR(HA_ACTION_TOPIC)] = devicePrefix + F("/state");
+    doc[FPSTR(HA_ACTION_TEMPLATE)] = F("{{ iif(value_json.states.dhw, 'heating', 'idle') }}");
 
-    doc[F("min_temp")] = minTemp;
-    doc[F("max_temp")] = maxTemp;
+    doc[FPSTR(HA_MIN_TEMP)] = minTemp;
+    doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
 
     return publish(getTopic("climate", "dhw", "_").c_str(), doc);
   }

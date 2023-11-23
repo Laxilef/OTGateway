@@ -6,7 +6,7 @@
 #include <TinyLogger.h>
 #include "Settings.h"
 
-EEManager eeSettings(settings, 30000);
+EEManager eeSettings(settings, 60000);
 
 #if defined(ESP32)
   #include <ESP32Scheduler.h>

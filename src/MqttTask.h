@@ -425,13 +425,13 @@ protected:
     haHelper.publishBinSensorFlame();
     haHelper.publishBinSensorFault();
     haHelper.publishBinSensorDiagnostic();
-    haHelper.publishSensorFaultCode();
-    haHelper.publishSensorRssi(false);
-    haHelper.publishSensorUptime(false);
 
     // sensors
     haHelper.publishSensorModulation(false);
     haHelper.publishSensorPressure(false);
+    haHelper.publishSensorFaultCode();
+    haHelper.publishSensorRssi(false);
+    haHelper.publishSensorUptime(false);
 
     // temperatures
     haHelper.publishNumberIndoorTemp();
