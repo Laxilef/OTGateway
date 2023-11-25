@@ -1,6 +1,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+
 class SensorsTask : public LeanTask {
 public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
@@ -59,7 +60,7 @@ protected:
       outdoorSensor->requestTemperatures();
       startConversionTime = millis();
 
-      Log.serrorln("SENSORS.OUTDOOR", "Could not read temperature data (no response)");
+      Log.serrorln("SENSORS.OUTDOOR", PSTR("Could not read temperature data (no response)"));
     }
 
     if (!completed) {
@@ -68,10 +69,10 @@ protected:
 
     float rawTemp = outdoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
-      Log.serrorln("SENSORS.OUTDOOR", "Could not read temperature data (not connected)");
+      Log.serrorln("SENSORS.OUTDOOR", PSTR("Could not read temperature data (not connected)"));
 
     } else {
-      Log.straceln("SENSORS.OUTDOOR", "Raw temp: %f", rawTemp);
+      Log.straceln("SENSORS.OUTDOOR", PSTR("Raw temp: %f"), rawTemp);
 
       if (emptyOutdoorTemp) {
         filteredOutdoorTemp = rawTemp;
@@ -85,7 +86,7 @@ protected:
 
       if (fabs(vars.temperatures.outdoor - filteredOutdoorTemp) > 0.099) {
         vars.temperatures.outdoor = filteredOutdoorTemp + settings.sensors.outdoor.offset;
-        Log.sinfoln("SENSORS.OUTDOOR", "New temp: %f", filteredOutdoorTemp);
+        Log.sinfoln("SENSORS.OUTDOOR", PSTR("New temp: %f"), filteredOutdoorTemp);
       }
     }
 
@@ -116,7 +117,7 @@ protected:
       indoorSensor->requestTemperatures();
       startConversionTime = millis();
       
-      Log.serrorln("SENSORS.INDOOR", "Could not read temperature data (no response)");
+      Log.serrorln("SENSORS.INDOOR", PSTR("Could not read temperature data (no response)"));
     }
 
     if (!completed) {
@@ -125,10 +126,10 @@ protected:
 
     float rawTemp = indoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
-      Log.serrorln("SENSORS.INDOOR", "Could not read temperature data (not connected)");
+      Log.serrorln("SENSORS.INDOOR", PSTR("Could not read temperature data (not connected)"));
 
     } else {
-      Log.straceln("SENSORS.INDOOR", "Raw temp: %f", rawTemp);
+      Log.straceln("SENSORS.INDOOR", PSTR("Raw temp: %f"), rawTemp);
 
       if (emptyIndoorTemp) {
         filteredIndoorTemp = rawTemp;
@@ -142,7 +143,7 @@ protected:
 
       if (fabs(vars.temperatures.indoor - filteredIndoorTemp) > 0.099) {
         vars.temperatures.indoor = filteredIndoorTemp + settings.sensors.indoor.offset;
-        Log.sinfoln("SENSORS.INDOOR", "New temp: %f", filteredIndoorTemp);
+        Log.sinfoln("SENSORS.INDOOR", PSTR("New temp: %f"), filteredIndoorTemp);
       }
     }
 

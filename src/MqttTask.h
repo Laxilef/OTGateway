@@ -24,7 +24,7 @@ protected:
   }
 
   void setup() {
-    Log.sinfoln("MQTT", "Started");
+    Log.sinfoln("MQTT", PSTR("Started"));
 
     client.setCallback(__callback);
     client.setBufferSize(1024);
@@ -39,11 +39,11 @@ protected:
 
   void loop() {
     if (!client.connected() && millis() - lastReconnectAttempt >= MQTT_RECONNECT_INTERVAL) {
-      Log.sinfoln("MQTT", "Not connected, state: %i, connecting to server %s...", client.state(), settings.mqtt.server);
+      Log.sinfoln("MQTT", PSTR("Not connected, state: %i, connecting to server %s..."), client.state(), settings.mqtt.server);
 
       client.setServer(settings.mqtt.server, settings.mqtt.port);
       if (client.connect(settings.hostname, settings.mqtt.user, settings.mqtt.password)) {
-        Log.sinfoln("MQTT", "Connected");
+        Log.sinfoln("MQTT", PSTR("Connected"));
 
         client.subscribe(getTopicPath("settings/set").c_str());
         client.subscribe(getTopicPath("state/set").c_str());
@@ -54,7 +54,7 @@ protected:
         lastReconnectAttempt = 0;
 
       } else {
-        Log.swarningln("MQTT", "Failed to connect to server");
+        Log.swarningln("MQTT", PSTR("Failed to connect to server"));
 
         if (settings.emergency.enable && !vars.states.emergency) {
           if (firstFailConnect == 0) {
@@ -63,7 +63,7 @@ protected:
 
           if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
             vars.states.emergency = true;
-            Log.sinfoln("MQTT", "Emergency mode enabled");
+            Log.sinfoln("MQTT", PSTR("Emergency mode enabled"));
           }
         }
 
@@ -76,7 +76,7 @@ protected:
       if (vars.states.emergency) {
         vars.states.emergency = false;
 
-        Log.sinfoln("MQTT", "Emergency mode disabled");
+        Log.sinfoln("MQTT", PSTR("Emergency mode disabled"));
       }
 
       client.loop();
@@ -630,16 +630,16 @@ protected:
     }
 
     if (settings.debug) {
-      Log.strace("MQTT.MSG", "Topic: %s\r\n>  ", topic);
+      Log.strace("MQTT.MSG", PSTR("Topic: %s\r\n>  "), topic);
       for (unsigned int i = 0; i < length; i++) {
         if ( payload[i] == 10 ) {
-          Log.print("\r\n>  ");
+          Log.print(PSTR("\r\n>  "));
 
         } else {
           Log.print((char) payload[i]);
         }
       }
-      Log.print("\r\n\n");
+      Log.print(PSTR("\r\n\n"));
       
       for (Stream* stream : Log.getStreams()) {
         stream->flush();
@@ -654,22 +654,22 @@ protected:
         case DeserializationError::EmptyInput:
         case DeserializationError::IncompleteInput:
         case DeserializationError::InvalidInput:
-          errMsg = "invalid input";
+          errMsg = PSTR("invalid input");
           break;
 
         case DeserializationError::NoMemory:
-          errMsg = "no memory";
+          errMsg = PSTR("no memory");
           break;
 
         case DeserializationError::TooDeep:
-          errMsg = "too deep";
+          errMsg = PSTR("too deep");
           break;
         
         default:
-          errMsg = "failed";
+          errMsg = PSTR("failed");
           break;
       }
-      Log.swarningln("MQTT.MSG", "No deserialization: %s", errMsg);
+      Log.swarningln("MQTT.MSG", PSTR("No deserialization: %s"), errMsg);
 
       return;
     }

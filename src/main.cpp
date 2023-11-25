@@ -1,31 +1,36 @@
 #include <Arduino.h>
 #include "defines.h"
 #include <ArduinoJson.h>
-#include <TelnetStream.h>
 #include <EEManager.h>
 #include <TinyLogger.h>
 #include "Settings.h"
 
-EEManager eeSettings(settings, 60000);
+#if USE_TELNET
+  #include "ESPTelnetStream.h"
+#endif
 
 #if defined(ESP32)
   #include <ESP32Scheduler.h>
-  #include <Task.h>
-  #include <LeanTask.h>
 #elif defined(ESP8266)
   #include <Scheduler.h>
-  #include <Task.h>
-  #include <LeanTask.h>
 #elif
   #error Wrong board. Supported boards: esp8266, esp32
 #endif
 
+#include <Task.h>
+#include <LeanTask.h>
 #include "WifiManagerTask.h"
 #include "MqttTask.h"
 #include "OpenThermTask.h"
 #include "SensorsTask.h"
 #include "RegulatorTask.h"
 #include "MainTask.h"
+
+// Vars
+EEManager eeSettings(settings, 60000);
+#if USE_TELNET
+  ESPTelnetStream TelnetStream;
+#endif
 
 // Tasks
 WifiManagerTask* tWm;
@@ -37,34 +42,35 @@ MainTask* tMain;
 
 
 void setup() {
+  Log.setLevel(TinyLogger::Level::VERBOSE);
+  #if USE_SERIAL
+    Serial.begin(115200);
+    Log.addStream(&Serial);
+    Serial.println("\n\n");
+  #endif
+
   #if USE_TELNET
-  TelnetStream.begin();
-  Log.begin(&TelnetStream, TinyLogger::Level::VERBOSE);
-  delay(1000);
-  #else
-  Serial.begin(115200);
-  Log.begin(&Serial, TinyLogger::Level::VERBOSE);
-  Serial.println("\n\n");
+    Log.addStream(&TelnetStream);
   #endif
   //Log.setNtpClient(&timeClient);
 
   EEPROM.begin(eeSettings.blockSize());
   uint8_t eeSettingsResult = eeSettings.begin(0, 's');
   if (eeSettingsResult == 0) {
-    Log.sinfoln("MAIN", "Settings loaded");
+    Log.sinfoln("MAIN", PSTR("Settings loaded"));
 
     if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
-      Log.swarningln("MAIN", "Settings not valid, reset and restart...");
+      Log.swarningln("MAIN", PSTR("Settings not valid, reset and restart..."));
       eeSettings.reset();
       delay(1000);
       ESP.restart();
     }
 
   } else if (eeSettingsResult == 1) {
-    Log.sinfoln("MAIN", "Settings NOT loaded, first start");
+    Log.sinfoln("MAIN", PSTR("Settings NOT loaded, first start"));
 
   } else if (eeSettingsResult == 2) {
-    Log.serrorln("MAIN", "Settings NOT loaded (error)");
+    Log.serrorln("MAIN", PSTR("Settings NOT loaded (error)"));
   }
 
   Log.setLevel(settings.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
@@ -84,7 +90,7 @@ void setup() {
   tRegulator = new RegulatorTask(true, 10000);
   Scheduler.start(tRegulator);
 
-  tMain = new MainTask(true, 50);
+  tMain = new MainTask(true, 10);
   Scheduler.start(tMain);
 
   Scheduler.begin();

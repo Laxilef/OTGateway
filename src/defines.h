@@ -26,6 +26,10 @@
   #define WM_DEBUG_MODE WM_DEBUG_NOTIFY
 #endif
 
+#ifndef USE_SERIAL
+  #define USE_SERIAL true
+#endif
+
 #ifndef USE_TELNET
   #define USE_TELNET true
 #endif

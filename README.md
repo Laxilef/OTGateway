@@ -31,7 +31,7 @@
 | Boiler | Master Member ID | Notes |
 | --- | --- | --- |
 | BAXI ECO Nova | default | Pressure sensor not supported, modulation level not stable |
-| BAXI Ampera | 1028 | Pressure sensor not supported, only heating (DHW not tested) |
+| BAXI Ampera | 4 | Pressure sensor not supported, only heating (DHW not tested) |
 | [Remeha Calenta Ace 40C](https://github.com/Laxilef/OTGateway/issues/1#issuecomment-1726081554) | default | - |
 | [Baxi Nuvola DUO-TEC HT 16](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1751061488) | default | - |
 | [AEG GBA124](https://github.com/Laxilef/OTGateway/issues/3#issuecomment-1765857609) | default | Pressure sensor not supported |
@@ -220,11 +220,11 @@ In Google you can find instructions for tuning the PID controller.
 ## Dependencies
 - [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler) (for ESP8266)
 - [ESP32Scheduler](https://github.com/laxilef/ESP32Scheduler) (for ESP32)
-- [NTPClient](https://github.com/arduino-libraries/NTPClient)
+<!-- - [NTPClient](https://github.com/arduino-libraries/NTPClient)-->
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
 - [PubSubClient](https://github.com/knolleary/pubsubclient)
-- [TelnetStream](https://github.com/jandrassy/TelnetStream)
+- [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet)
 - [EEManager](https://github.com/GyverLibs/EEManager)
 - [GyverPID](https://github.com/GyverLibs/GyverPID)
 - [GyverBlinker](https://github.com/GyverLibs/GyverBlinker)

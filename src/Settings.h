@@ -11,6 +11,7 @@ struct Settings {
     bool heatingCh2Enabled = true;
     bool heatingCh1ToCh2 = false;
     bool dhwToCh2 = false;
+    bool dhwBlocking = false;
   } opentherm;
 
   struct {

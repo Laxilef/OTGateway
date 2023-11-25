@@ -3,6 +3,11 @@
 extern MqttTask* tMqtt;
 extern SensorsTask* tSensors;
 extern OpenThermTask* tOt;
+extern EEManager eeSettings;
+#if USE_TELNET
+  extern ESPTelnetStream TelnetStream;
+#endif
+
 
 class MainTask : public Task {
 public:
@@ -42,11 +47,15 @@ protected:
 
   void loop() {
     if (eeSettings.tick()) {
-      Log.sinfoln("MAIN", "Settings updated (EEPROM)");
+      Log.sinfoln("MAIN", PSTR("Settings updated (EEPROM)"));
     }
 
+    #if USE_TELNET
+      TelnetStream.loop();
+    #endif
+
     if (vars.actions.restart) {
-      Log.sinfoln("MAIN", "Restart signal received. Restart after 10 sec.");
+      Log.sinfoln("MAIN", PSTR("Restart signal received. Restart after 10 sec."));
       eeSettings.updateNow();
       restartSignalTime = millis();
       vars.actions.restart = false;
@@ -83,7 +92,7 @@ protected:
 
         if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
-          Log.sinfoln("MAIN", "Emergency mode enabled");
+          Log.sinfoln("MAIN", PSTR("Emergency mode enabled"));
         }
       }
     }
@@ -98,15 +107,15 @@ protected:
     #endif
     heap();
 
-    #if USE_TELNET
-      yield();
+    // anti memory leak
+    for (Stream* stream : Log.getStreams()) {
+      stream->flush();
 
-      // anti memory leak
-      TelnetStream.flush();
-      while (TelnetStream.available() > 0) {
-        TelnetStream.read();
+      while (stream->available()) {
+        stream->read();
+        yield();
       }
-    #endif
+    }
 
     if (restartSignalTime > 0 && millis() - restartSignalTime > 10000) {
       restartSignalTime = 0;
@@ -128,7 +137,7 @@ protected:
     }
 
     if (millis() - lastHeapInfo > 60000 || minFreeHeapSizeDiff > 0) {
-      Log.sverboseln("MAIN", "Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)", freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
+      Log.sverboseln("MAIN", PSTR("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)"), freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
       lastHeapInfo = millis();
     }
   }

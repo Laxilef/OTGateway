@@ -3,7 +3,6 @@
 #include <WiFiManagerParameters.h>
 #include <netif/etharp.h>
 
-
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
 WiFiManagerParameter* wmMqttServer;
@@ -20,11 +19,17 @@ CheckboxParameter* wmOtSummerWinterMode;
 CheckboxParameter* wmOtHeatingCh2Enabled;
 CheckboxParameter* wmOtHeatingCh1ToCh2;
 CheckboxParameter* wmOtDhwToCh2;
+CheckboxParameter* wmOtDhwBlocking;
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
 
 SeparatorParameter* wmSep1;
 SeparatorParameter* wmSep2;
+
+extern EEManager eeSettings;
+#if USE_TELNET
+  extern ESPTelnetStream TelnetStream;
+#endif
 
 
 class WifiManagerTask : public Task {
@@ -109,6 +114,9 @@ protected:
     wmOtDhwToCh2 = new CheckboxParameter("ot_dhw_to_ch2", "Opentherm DHW to CH2", settings.opentherm.dhwToCh2);
     wm.addParameter(wmOtDhwToCh2);
 
+    wmOtDhwBlocking = new CheckboxParameter("ot_dhw_blocking", "Opentherm DHW blocking", settings.opentherm.dhwBlocking);
+    wm.addParameter(wmOtDhwBlocking);
+
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
 
@@ -150,7 +158,7 @@ protected:
         TelnetStream.stop();
       #endif
 
-      Log.sinfoln("WIFI", "Disconnected");
+      Log.sinfoln("WIFI", PSTR("Disconnected"));
 
     } else if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
@@ -167,10 +175,10 @@ protected:
       }
 
       #if USE_TELNET
-        TelnetStream.begin();
+        TelnetStream.begin(23, false);
       #endif
 
-      Log.sinfoln("WIFI", "Connected. IP: %s, RSSI: %d", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+      Log.sinfoln("WIFI", PSTR("Connected. IP: %s, RSSI: %d"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
     #if defined(ESP8266)
@@ -295,6 +303,11 @@ protected:
       }
     }
 
+    if (wmOtDhwBlocking->getCheckboxValue() != settings.opentherm.dhwBlocking) {
+      changed = true;
+      settings.opentherm.dhwBlocking = wmOtDhwBlocking->getCheckboxValue();
+    }
+
     if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
       changed = true;
       needRestart = true;
@@ -317,7 +330,7 @@ protected:
 
     Log.sinfo(
       "WIFI",
-      "New settings:\r\n"
+      PSTR("New settings:\r\n"
       "  Hostname: %s\r\n"
       "  Mqtt server: %s:%d\r\n"
       "  Mqtt user: %s\r\n"
@@ -332,8 +345,9 @@ protected:
       "  OT heating ch2 enabled: %d\r\n"
       "  OT heating ch1 to ch2: %d\r\n"
       "  OT DHW to ch2: %d\r\n"
+      "  OT DHW blocking: %d\r\n"
       "  Outdoor sensor pin: %d\r\n"
-      "  Indoor sensor pin: %d\r\n",
+      "  Indoor sensor pin: %d\r\n"),
       settings.hostname,
       settings.mqtt.server,
       settings.mqtt.port,
@@ -349,11 +363,12 @@ protected:
       settings.opentherm.heatingCh2Enabled,
       settings.opentherm.heatingCh1ToCh2,
       settings.opentherm.dhwToCh2,
+      settings.opentherm.dhwBlocking,
       settings.sensors.outdoor.pin,
       settings.sensors.indoor.pin
     );
 
-    eeSettings.updateNow();
+    eeSettings.update();
   }
 
   static void arpGratuitous() {
