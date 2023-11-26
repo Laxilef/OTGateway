@@ -12,6 +12,7 @@ struct Settings {
     bool heatingCh1ToCh2 = false;
     bool dhwToCh2 = false;
     bool dhwBlocking = false;
+    bool modulationSyncWithHeating = false;
   } opentherm;
 
   struct {
@@ -119,11 +120,17 @@ struct Variables {
     byte heatingSetpoint = 0;
     byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
     byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;
-    uint8_t slaveMemberIdCode;
+    byte maxModulation;
+    uint8_t slaveMemberId;
+    uint8_t slaveFlags;
     uint8_t slaveType;
     uint8_t slaveVersion;
+    float slaveOtVersion;
+    uint8_t masterMemberId;
+    uint8_t masterFlags;
     uint8_t masterType;
     uint8_t masterVersion;
+    float masterOtVersion;
   } parameters;
 
   struct {

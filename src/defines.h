@@ -54,4 +54,8 @@
   #define SENSOR_INDOOR_PIN_DEFAULT 0
 #endif
 
+#ifndef PROGMEM
+  #define PROGMEM 
+#endif
+
 char buffer[255];

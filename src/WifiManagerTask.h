@@ -20,6 +20,7 @@ CheckboxParameter* wmOtHeatingCh2Enabled;
 CheckboxParameter* wmOtHeatingCh1ToCh2;
 CheckboxParameter* wmOtDhwToCh2;
 CheckboxParameter* wmOtDhwBlocking;
+CheckboxParameter* wmOtModSyncWithHeating;
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
 
@@ -117,6 +118,9 @@ protected:
     wmOtDhwBlocking = new CheckboxParameter("ot_dhw_blocking", "Opentherm DHW blocking", settings.opentherm.dhwBlocking);
     wm.addParameter(wmOtDhwBlocking);
 
+    wmOtModSyncWithHeating = new CheckboxParameter("ot_mod_sync_with_heating", "Modulation sync with heating", settings.opentherm.modulationSyncWithHeating);
+    wm.addParameter(wmOtModSyncWithHeating);
+
     wmSep2 = new SeparatorParameter();
     wm.addParameter(wmSep2);
 
@@ -158,7 +162,7 @@ protected:
         TelnetStream.stop();
       #endif
 
-      Log.sinfoln("WIFI", PSTR("Disconnected"));
+      Log.sinfoln("WIFI", F("Disconnected"));
 
     } else if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
@@ -178,7 +182,7 @@ protected:
         TelnetStream.begin(23, false);
       #endif
 
-      Log.sinfoln("WIFI", PSTR("Connected. IP: %s, RSSI: %d"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
+      Log.sinfoln("WIFI", F("Connected. IP: %s, RSSI: %d"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
     #if defined(ESP8266)
@@ -308,6 +312,11 @@ protected:
       settings.opentherm.dhwBlocking = wmOtDhwBlocking->getCheckboxValue();
     }
 
+    if (wmOtModSyncWithHeating->getCheckboxValue() != settings.opentherm.modulationSyncWithHeating) {
+      changed = true;
+      settings.opentherm.modulationSyncWithHeating = wmOtModSyncWithHeating->getCheckboxValue();
+    }
+
     if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
       changed = true;
       needRestart = true;
@@ -330,7 +339,7 @@ protected:
 
     Log.sinfo(
       "WIFI",
-      PSTR("New settings:\r\n"
+      F("New settings:\r\n"
       "  Hostname: %s\r\n"
       "  Mqtt server: %s:%d\r\n"
       "  Mqtt user: %s\r\n"
@@ -346,6 +355,7 @@ protected:
       "  OT heating ch1 to ch2: %d\r\n"
       "  OT DHW to ch2: %d\r\n"
       "  OT DHW blocking: %d\r\n"
+      "  OT modulation sync with heating: %d\r\n"
       "  Outdoor sensor pin: %d\r\n"
       "  Indoor sensor pin: %d\r\n"),
       settings.hostname,
@@ -364,6 +374,7 @@ protected:
       settings.opentherm.heatingCh1ToCh2,
       settings.opentherm.dhwToCh2,
       settings.opentherm.dhwBlocking,
+      settings.opentherm.modulationSyncWithHeating,
       settings.sensors.outdoor.pin,
       settings.sensors.indoor.pin
     );
