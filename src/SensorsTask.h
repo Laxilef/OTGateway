@@ -63,7 +63,7 @@ protected:
       outdoorSensor->requestTemperatures();
       startOutdoorConversionTime = millis();
 
-      Log.serrorln(FPSTR(S_SENSORS_OUTDOOR), PSTR("Could not read temperature data (no response)"));
+      Log.serrorln(FPSTR(S_SENSORS_OUTDOOR), F("Could not read temperature data (no response)"));
     }
 
     if (!completed) {
@@ -72,10 +72,10 @@ protected:
 
     float rawTemp = outdoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
-      Log.serrorln(FPSTR(S_SENSORS_OUTDOOR), PSTR("Could not read temperature data (not connected)"));
+      Log.serrorln(FPSTR(S_SENSORS_OUTDOOR), F("Could not read temperature data (not connected)"));
 
     } else {
-      Log.straceln(FPSTR(S_SENSORS_OUTDOOR), PSTR("Raw temp: %f"), rawTemp);
+      Log.straceln(FPSTR(S_SENSORS_OUTDOOR), F("Raw temp: %f"), rawTemp);
 
       if (emptyOutdoorTemp) {
         filteredOutdoorTemp = rawTemp;
@@ -89,7 +89,7 @@ protected:
 
       if (fabs(vars.temperatures.outdoor - filteredOutdoorTemp) > 0.099) {
         vars.temperatures.outdoor = filteredOutdoorTemp + settings.sensors.outdoor.offset;
-        Log.sinfoln(FPSTR(S_SENSORS_OUTDOOR), PSTR("New temp: %f"), filteredOutdoorTemp);
+        Log.sinfoln(FPSTR(S_SENSORS_OUTDOOR), F("New temp: %f"), filteredOutdoorTemp);
       }
     }
 
@@ -120,7 +120,7 @@ protected:
       indoorSensor->requestTemperatures();
       startIndoorConversionTime = millis();
       
-      Log.serrorln(FPSTR(S_SENSORS_INDOOR), PSTR("Could not read temperature data (no response)"));
+      Log.serrorln(FPSTR(S_SENSORS_INDOOR), F("Could not read temperature data (no response)"));
     }
 
     if (!completed) {
@@ -129,10 +129,10 @@ protected:
 
     float rawTemp = indoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
-      Log.serrorln(FPSTR(S_SENSORS_INDOOR), PSTR("Could not read temperature data (not connected)"));
+      Log.serrorln(FPSTR(S_SENSORS_INDOOR), F("Could not read temperature data (not connected)"));
 
     } else {
-      Log.straceln(FPSTR(S_SENSORS_INDOOR), PSTR("Raw temp: %f"), rawTemp);
+      Log.straceln(FPSTR(S_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
 
       if (emptyIndoorTemp) {
         filteredIndoorTemp = rawTemp;
@@ -146,7 +146,7 @@ protected:
 
       if (fabs(vars.temperatures.indoor - filteredIndoorTemp) > 0.099) {
         vars.temperatures.indoor = filteredIndoorTemp + settings.sensors.indoor.offset;
-        Log.sinfoln(FPSTR(S_SENSORS_INDOOR), PSTR("New temp: %f"), filteredIndoorTemp);
+        Log.sinfoln(FPSTR(S_SENSORS_INDOOR), F("New temp: %f"), filteredIndoorTemp);
       }
     }
 

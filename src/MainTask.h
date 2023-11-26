@@ -47,7 +47,7 @@ protected:
 
   void loop() {
     if (eeSettings.tick()) {
-      Log.sinfoln("MAIN", PSTR("Settings updated (EEPROM)"));
+      Log.sinfoln("MAIN", F("Settings updated (EEPROM)"));
     }
 
     #if USE_TELNET
@@ -55,7 +55,7 @@ protected:
     #endif
 
     if (vars.actions.restart) {
-      Log.sinfoln("MAIN", PSTR("Restart signal received. Restart after 10 sec."));
+      Log.sinfoln("MAIN", F("Restart signal received. Restart after 10 sec."));
       eeSettings.updateNow();
       restartSignalTime = millis();
       vars.actions.restart = false;
@@ -92,7 +92,7 @@ protected:
 
         if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
-          Log.sinfoln("MAIN", PSTR("Emergency mode enabled"));
+          Log.sinfoln("MAIN", F("Emergency mode enabled"));
         }
       }
     }
@@ -137,7 +137,7 @@ protected:
     }
 
     if (millis() - lastHeapInfo > 60000 || minFreeHeapSizeDiff > 0) {
-      Log.sverboseln("MAIN", PSTR("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)"), freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
+      Log.sverboseln("MAIN", F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)"), freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
       lastHeapInfo = millis();
     }
   }

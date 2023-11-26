@@ -57,20 +57,20 @@ void setup() {
   EEPROM.begin(eeSettings.blockSize());
   uint8_t eeSettingsResult = eeSettings.begin(0, 's');
   if (eeSettingsResult == 0) {
-    Log.sinfoln("MAIN", PSTR("Settings loaded"));
+    Log.sinfoln("MAIN", F("Settings loaded"));
 
     if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
-      Log.swarningln("MAIN", PSTR("Settings not valid, reset and restart..."));
+      Log.swarningln("MAIN", F("Settings not valid, reset and restart..."));
       eeSettings.reset();
       delay(1000);
       ESP.restart();
     }
 
   } else if (eeSettingsResult == 1) {
-    Log.sinfoln("MAIN", PSTR("Settings NOT loaded, first start"));
+    Log.sinfoln("MAIN", F("Settings NOT loaded, first start"));
 
   } else if (eeSettingsResult == 2) {
-    Log.serrorln("MAIN", PSTR("Settings NOT loaded (error)"));
+    Log.serrorln("MAIN", F("Settings NOT loaded (error)"));
   }
 
   Log.setLevel(settings.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);

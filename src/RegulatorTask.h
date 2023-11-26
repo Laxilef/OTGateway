@@ -34,7 +34,7 @@ protected:
       if (settings.heating.turbo) {
         settings.heating.turbo = false;
 
-        Log.sinfoln("REGULATOR", PSTR("Turbo mode auto disabled"));
+        Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
       }
 
       newTemp = getEmergencyModeTemp();
@@ -44,7 +44,7 @@ protected:
         if (settings.heating.turbo) {
           settings.heating.turbo = false;
 
-          Log.sinfoln("REGULATOR", PSTR("Turbo mode auto disabled"));
+          Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
         }
 
         newTemp = getTuningModeTemp();
@@ -58,7 +58,7 @@ protected:
         if (settings.heating.turbo && (fabs(settings.heating.target - vars.temperatures.indoor) < 1 || (settings.equitherm.enable && settings.pid.enable))) {
           settings.heating.turbo = false;
 
-          Log.sinfoln("REGULATOR", PSTR("Turbo mode auto disabled"));
+          Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
         }
 
         newTemp = getNormalModeTemp();
@@ -87,7 +87,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", PSTR("New emergency result: %u (%f)"), (int) round(etResult), etResult);
+        Log.sinfoln("REGULATOR.EQUITHERM", F("New emergency result: %u (%f)"), (int) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -106,11 +106,11 @@ protected:
 
     if (fabs(prevHeatingTarget - settings.heating.target) > 0.0001) {
       prevHeatingTarget = settings.heating.target;
-      Log.sinfoln("REGULATOR", PSTR("New target: %f"), settings.heating.target);
+      Log.sinfoln("REGULATOR", F("New target: %f"), settings.heating.target);
 
       if (settings.equitherm.enable && settings.pid.enable) {
         pidRegulator.integral = 0;
-        Log.sinfoln("REGULATOR.PID", PSTR("Integral sum has been reset"));
+        Log.sinfoln("REGULATOR.PID", F("Integral sum has been reset"));
       }
     }
 
@@ -122,7 +122,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", PSTR("New result: %u (%f)"), (int) round(etResult), etResult);
+        Log.sinfoln("REGULATOR.EQUITHERM", F("New result: %u (%f)"), (int) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -140,7 +140,7 @@ protected:
         prevPidResult = pidResult;
         newTemp += pidResult;
 
-        Log.sinfoln("REGULATOR.PID", PSTR("New result: %d (%f)"), (int) round(pidResult), pidResult);
+        Log.sinfoln("REGULATOR.PID", F("New result: %d (%f)"), (int) round(pidResult), pidResult);
 
       } else {
         newTemp += prevPidResult;
@@ -169,7 +169,7 @@ protected:
       tunerInit = false;
       tunerRegulator = 0;
       tunerState = 0;
-      Log.sinfoln("REGULATOR.TUNING", PSTR("Stopped"));
+      Log.sinfoln("REGULATOR.TUNING", F("Stopped"));
     }
 
     if (!vars.tuning.enable) {
@@ -179,7 +179,7 @@ protected:
 
     if (vars.tuning.regulator == 0) {
       // @TODO дописать
-      Log.sinfoln("REGULATOR.TUNING.EQUITHERM", PSTR("Not implemented"));
+      Log.sinfoln("REGULATOR.TUNING.EQUITHERM", F("Not implemented"));
       return 0;
 
     } else if (vars.tuning.regulator == 1) {
@@ -189,7 +189,7 @@ protected:
         : settings.heating.target;
 
       if (tunerInit && pidTuner.getState() == 3) {
-        Log.sinfoln("REGULATOR.TUNING.PID", PSTR("Finished"));
+        Log.sinfoln("REGULATOR.TUNING.PID", F("Finished"));
         for (Stream* stream : Log.getStreams()) {
           pidTuner.debugText(stream);
         }
@@ -200,7 +200,7 @@ protected:
         tunerState = 0;
 
         if (pidTuner.getAccuracy() < 90) {
-          Log.swarningln("REGULATOR.TUNING.PID", PSTR("Bad result, try again..."));
+          Log.swarningln("REGULATOR.TUNING.PID", F("Bad result, try again..."));
 
         } else {
           settings.pid.p_factor = pidTuner.getPID_p();
@@ -212,7 +212,7 @@ protected:
       }
 
       if (!tunerInit) {
-        Log.sinfoln("REGULATOR.TUNING.PID", PSTR("Start..."));
+        Log.sinfoln("REGULATOR.TUNING.PID", F("Start..."));
 
         float step;
         if (vars.temperatures.indoor - vars.temperatures.outdoor > 10) {
@@ -222,7 +222,7 @@ protected:
         }
 
         float startTemp = step;
-        Log.sinfoln("REGULATOR.TUNING.PID", PSTR("Started. Start value: %f, step: %f"), startTemp, step);
+        Log.sinfoln("REGULATOR.TUNING.PID", F("Started. Start value: %f, step: %f"), startTemp, step);
         pidTuner.setParameters(NORMAL, startTemp, step, 20 * 60 * 1000, 0.15, 60 * 1000, 10000);
         tunerInit = true;
         tunerRegulator = 1;
@@ -232,7 +232,7 @@ protected:
       pidTuner.compute();
 
       if (tunerState > 0 && pidTuner.getState() != tunerState) {
-        Log.sinfoln("REGULATOR.TUNING.PID", PSTR("Log:"));
+        Log.sinfoln("REGULATOR.TUNING.PID", F("Log:"));
         for (Stream* stream : Log.getStreams()) {
           pidTuner.debugText(stream);
         }
