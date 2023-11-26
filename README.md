@@ -170,10 +170,16 @@ After these settings, you can enable the "Equitherm" and/or "PID" modes and conf
 **A:** Try changing the "Master Member ID", this is most likely the problem. If you don't know which identifier is valid for your boiler, you need to use brute force.
 
 **Q:** The boiler does not respond to setting the heating temperature.<br>
-**A:** Try checking the "Opentherm summer/winter mode", "Opentherm CH2 enabled", "Opentherm heating CH1 to CH2" checkboxes one by one and all together on the "setup" page. If this doesn't work, see above.
+**A:** Try on "Opentherm summer/winter mode", "Opentherm CH2 enabled", "Opentherm heating CH1 to CH2" checkboxes one by one and all together on the "setup" page. If this doesn't work, see above.
 
 **Q:** My boiler does not have a hot water heating function. How to turn it off?<br>
 **A:** Uncheck "Opentherm DHW present" on the "setup" page.
+
+**Q:** My boiler does not stop heating the heat carrier even if I turn off the heating.<br>
+**A:** Try on "Modulation sync with heating" checkbox on the "setup" page.
+
+**Q:** My DHW does not work when the heating is turned off.<br>
+**A:** Try off "Modulation sync with heating" checkbox on the "setup" page.
 
 
 ## About modes
