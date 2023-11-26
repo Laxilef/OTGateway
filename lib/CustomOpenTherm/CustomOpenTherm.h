@@ -116,15 +116,19 @@ public:
   }
 
   // converters
-  float f88(unsigned long response) {
+  float fromF88(unsigned long response) {
     const byte valueLB = response & 0xFF;
     const byte valueHB = (response >> 8) & 0xFF;
 
-    float value = (int8_t)valueHB;
-    return value + (float)valueLB / 256.0;
+    float value = (int8_t) valueHB;
+    return value + (float) valueLB / 256.0;
   }
 
-  int16_t s16(unsigned long response) {
+  template <class T> unsigned int toF88(T val) {
+    return (unsigned int) (val * 256);
+  }
+
+  int16_t fromS16(unsigned long response) {
     const byte valueLB = response & 0xFF;
     const byte valueHB = (response >> 8) & 0xFF;
 
