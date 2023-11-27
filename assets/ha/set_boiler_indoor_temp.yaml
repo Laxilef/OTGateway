@@ -1,0 +1,22 @@
+alias: Set boiler indoor temp
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - sensor.livingroom_temperature
+  - platform: time_pattern
+    seconds: /30
+condition:
+  - condition: template
+    value_template: "{{ states('sensor.livingroom_temperature') not in ['unavailable', '0'] }}"
+action:
+  - if:
+      - condition: template
+        value_template: "{{ has_value('number.opentherm_indoor_temp') and (states('sensor.livingroom_temperature')|float(0) - states('number.opentherm_indoor_temp')|float(0)) | abs | round(2) >= 0.01 }}"
+    then:
+      - service: number.set_value
+        data:
+          value: "{{ states('sensor.livingroom_temperature')|float(0)|round(2) }}"
+        target:
+          entity_id: number.opentherm_indoor_temp
+mode: single
