@@ -62,7 +62,7 @@ void setup() {
     if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
       Log.swarningln("MAIN", F("Settings not valid, reset and restart..."));
       eeSettings.reset();
-      delay(1000);
+      delay(5000);
       ESP.restart();
     }
 
@@ -81,7 +81,7 @@ void setup() {
   tMqtt = new MqttTask(false);
   Scheduler.start(tMqtt);
 
-  tOt = new OpenThermTask(false);
+  tOt = new OpenThermTask(false, 1000);
   Scheduler.start(tOt);
 
   tSensors = new SensorsTask(true, EXT_SENSORS_INTERVAL);
