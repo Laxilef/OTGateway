@@ -41,8 +41,8 @@ protected:
 
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
-    ot->setHandleSendRequestCallback(this->sendRequestCallback);
-    ot->begin(OpenThermTask::handleInterrupt, this->responseCallback);
+    ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
+    ot->begin(OpenThermTask::handleInterrupt, OpenThermTask::responseCallback);
 
     ot->setYieldCallback([](void* self) {
       static_cast<OpenThermTask*>(self)->delay(10);
@@ -346,11 +346,11 @@ protected:
     }
   }
 
-  void static sendRequestCallback(unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
+  static void sendRequestCallback(unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
     printRequestDetail(ot->getDataID(request), status, request, response, attempt);
   }
 
-  void static responseCallback(unsigned long result, OpenThermResponseStatus status) {
+  static void responseCallback(unsigned long result, OpenThermResponseStatus status) {
     static byte attempt = 0;
 
     switch (status) {
@@ -394,7 +394,7 @@ protected:
     return millis() - heatingSetTempTime > heatingSetTempInterval;
   }
 
-  void static printRequestDetail(OpenThermMessageID id, OpenThermResponseStatus status, unsigned long request, unsigned long response, byte attempt) {
+  static void printRequestDetail(OpenThermMessageID id, OpenThermResponseStatus status, unsigned long request, unsigned long response, byte attempt) {
     Log.straceln(FPSTR(S_OT), F("OT REQUEST ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"), id, request, response, attempt, ot->statusToString(status));
   }
 
