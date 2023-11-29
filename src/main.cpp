@@ -43,6 +43,10 @@ MainTask* tMain;
 
 void setup() {
   Log.setLevel(TinyLogger::Level::VERBOSE);
+  Log.setServiceTemplate("\033[1m[%s]\033[22m");
+  Log.setLevelTemplate("\033[1m[%s]\033[22m");
+  Log.setMsgPrefix("\033[m ");
+  
   #if USE_SERIAL
     Serial.begin(115200);
     Log.addStream(&Serial);

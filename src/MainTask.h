@@ -73,7 +73,7 @@ protected:
         firstFailConnect = 0;
       }
 
-      if ( Log.getLevel() == TinyLogger::Level::VERBOSE && !settings.debug ) {
+      if ( Log.getLevel() != TinyLogger::Level::INFO && !settings.debug ) {
         Log.setLevel(TinyLogger::Level::INFO);
 
       } else if ( Log.getLevel() != TinyLogger::Level::VERBOSE && settings.debug ) {
@@ -108,11 +108,14 @@ protected:
     heap();
 
     // anti memory leak
-    for (Stream* stream : Log.getStreams()) {
-      while (stream->available()) {
-        stream->read();
-        yield();
+    if (!Log.isLocked()) {
+      Log.lock();
+      for (Stream* stream : Log.getStreams()) {
+        while (stream->available() > 0) {
+          stream->read();
+        }
       }
+      Log.unlock();
     }
 
     if (restartSignalTime > 0 && millis() - restartSignalTime > 10000) {
