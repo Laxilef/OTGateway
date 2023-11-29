@@ -42,11 +42,10 @@ protected:
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
     ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
-    ot->begin(OpenThermTask::handleInterrupt, OpenThermTask::responseCallback);
-
     ot->setYieldCallback([](void* self) {
       static_cast<OpenThermTask*>(self)->delay(10);
     }, this);
+    ot->begin(OpenThermTask::handleInterrupt, OpenThermTask::responseCallback);
 
     #ifdef LED_OT_RX_PIN
       pinMode(LED_OT_RX_PIN, OUTPUT);
