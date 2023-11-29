@@ -631,6 +631,7 @@ protected:
 
     if (settings.debug) {
       Log.strace("MQTT.MSG", F("Topic: %s\r\n>  "), topic);
+      Log.lock();
       for (unsigned int i = 0; i < length; i++) {
         if ( payload[i] == 10 ) {
           Log.print("\r\n>  ");
@@ -640,10 +641,8 @@ protected:
         }
       }
       Log.print("\r\n\n");
-      
-      for (Stream* stream : Log.getStreams()) {
-        stream->flush();
-      }
+      Log.unlock();
+      Log.flush();
     }
 
     StaticJsonDocument<2048> doc;

@@ -109,8 +109,6 @@ protected:
 
     // anti memory leak
     for (Stream* stream : Log.getStreams()) {
-      stream->flush();
-
       while (stream->available()) {
         stream->read();
         yield();
