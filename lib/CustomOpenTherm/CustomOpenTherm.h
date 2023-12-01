@@ -3,10 +3,10 @@
 
 class CustomOpenTherm : public OpenTherm {
 private:
-  unsigned long send_ts = millis();
-  void(*handleSendRequestCallback)(unsigned long, unsigned long, OpenThermResponseStatus status, byte attempt);
-  void(*yieldCallback)(void*);
-  void* yieldArg;
+  unsigned long prevRequestTime = 0;
+  void(*handleSendRequestCallback)(unsigned long, unsigned long, OpenThermResponseStatus status, byte attempt) = nullptr;
+  void(*yieldCallback)(void*) = nullptr;
+  void* yieldArg = nullptr;
 
 public:
   CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
@@ -26,22 +26,28 @@ public:
 
   unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
     _attempt++;
-    while (send_ts > 0 && millis() - send_ts < 200) {
-      if (yieldCallback != NULL) {
-        yieldCallback(yieldArg);
+    bool antiFreeze = true;
+    while (antiFreeze || (this->prevRequestTime > 0 && millis() - this->prevRequestTime <= 200)) {
+      if (this->yieldCallback != nullptr) {
+        this->yieldCallback(yieldArg);
 
       } else {
         ::yield();
+      }
+
+      if (antiFreeze) {
+        antiFreeze = false;
       }
     }
 
     unsigned long _response;
     if (!sendRequestAync(request)) {
       _response = 0;
+      
     } else {
       while (!isReady()) {
-        if (yieldCallback != NULL) {
-          yieldCallback(yieldArg);
+        if (this->yieldCallback != nullptr) {
+          this->yieldCallback(yieldArg);
 
         } else {
           ::yield();
@@ -52,15 +58,16 @@ public:
 
       _response = getLastResponse();
     }
+    this->prevRequestTime = millis();
 
     OpenThermResponseStatus _responseStatus = getLastResponseStatus();
-    if (handleSendRequestCallback != NULL) {
-      handleSendRequestCallback(request, _response, _responseStatus, _attempt);
+    if (this->handleSendRequestCallback != nullptr) {
+      this->handleSendRequestCallback(request, _response, _responseStatus, _attempt);
     }
 
-    send_ts = millis();
     if (_responseStatus == OpenThermResponseStatus::SUCCESS || _responseStatus == OpenThermResponseStatus::INVALID || _attempt >= attempts) {
       return _response;
+
     } else {
       return sendRequest(request, attempts, _attempt);
     }
