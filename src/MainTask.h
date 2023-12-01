@@ -108,8 +108,7 @@ protected:
     heap();
 
     // anti memory leak
-    if (!Log.isLocked()) {
-      Log.lock();
+    if (Log.lock()) {
       for (Stream* stream : Log.getStreams()) {
         while (stream->available() > 0) {
           stream->read();
@@ -117,7 +116,7 @@ protected:
       }
       Log.unlock();
     }
-
+    
     if (restartSignalTime > 0 && millis() - restartSignalTime > 10000) {
       restartSignalTime = 0;
       ESP.restart();
