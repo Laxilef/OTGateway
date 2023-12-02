@@ -1,11 +1,19 @@
 #pragma once
 #include <Arduino.h>
+#include <StreamUtils.h>
 
 class HomeAssistantHelper {
 public:
-  HomeAssistantHelper(PubSubClient& client) :
-    client(&client)
-  {
+  HomeAssistantHelper(PubSubClient& client) {
+    this->client = &client;
+  }
+
+  void setBufferedClient() {
+    this->bClient = nullptr;
+  }
+
+  void setBufferedClient(BufferingPrint* bClient) {
+    this->bClient = bClient;
   }
 
   void setDevicePrefix(String value) {
@@ -52,11 +60,14 @@ public:
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = deviceConfigUrl;
     }
 
-    // Feeding the watchdog
-    yield();
-
     client->beginPublish(topic, measureJson(doc), true);
-    serializeJson(doc, *client);
+    if (this->bClient != nullptr) {
+      serializeJson(doc, *this->bClient);
+      this->bClient->flush();
+
+    } else {
+      serializeJson(doc, *client);
+    }
     return client->endPublish();
   }
 
@@ -79,6 +90,7 @@ public:
 
 protected:
   PubSubClient* client;
+  BufferingPrint* bClient = nullptr;
   String prefix = "homeassistant";
   String devicePrefix = "";
   String deviceVersion = "1.0";
