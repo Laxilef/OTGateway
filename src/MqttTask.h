@@ -11,7 +11,14 @@ class MqttTask : public Task {
 public:
   MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
+  ~MqttTask() {
+    if (this->bClient != nullptr) {
+      delete this->bClient;
+    }
+  }
+
 protected:
+  BufferingPrint* bClient = nullptr;
   unsigned long lastReconnectAttempt = 0;
   unsigned long firstFailConnect = 0;
 
@@ -26,8 +33,12 @@ protected:
   void setup() {
     Log.sinfoln("MQTT", F("Started"));
 
-    client.setCallback(__callback);
+    this->bClient = new BufferingPrint(client, 32);
+
+    client.setCallback(std::bind(&MqttTask::__callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     client.setBufferSize(1024);
+
+    haHelper.setBufferedClient(this->bClient);
     haHelper.setDevicePrefix(settings.mqtt.prefix);
     haHelper.setDeviceVersion(PROJECT_VERSION);
     haHelper.setDeviceModel(PROJECT_NAME);
@@ -86,7 +97,7 @@ protected:
   }
 
 
-  static bool updateSettings(JsonDocument& doc) {
+  bool updateSettings(JsonDocument& doc) {
     bool flag = false;
 
     if (!doc["debug"].isNull() && doc["debug"].is<bool>()) {
@@ -298,7 +309,7 @@ protected:
     return false;
   }
 
-  static bool updateVariables(const JsonDocument& doc) {
+  bool updateVariables(const JsonDocument& doc) {
     bool flag = false;
 
     if (!doc["ping"].isNull() && doc["ping"]) {
@@ -352,7 +363,7 @@ protected:
     return false;
   }
 
-  static void publish(bool force = false) {
+  void publish(bool force = false) {
     static unsigned int prevPubVars = 0;
     static unsigned int prevPubSettings = 0;
 
@@ -376,74 +387,74 @@ protected:
     }
   }
 
-  static void publishHaEntities() {
+  void publishHaEntities() {
     // main
-    haHelper.publishSelectOutdoorSensorType();
-    haHelper.publishSelectIndoorSensorType();
-    haHelper.publishNumberOutdoorSensorOffset(false);
-    haHelper.publishNumberIndoorSensorOffset(false);
-    haHelper.publishSwitchDebug(false);
+    haHelper.publishSelectOutdoorSensorType(); yield();
+    haHelper.publishSelectIndoorSensorType(); yield();
+    haHelper.publishNumberOutdoorSensorOffset(false); yield();
+    haHelper.publishNumberIndoorSensorOffset(false); yield();
+    haHelper.publishSwitchDebug(false); yield();
 
     // emergency
-    haHelper.publishSwitchEmergency();
-    haHelper.publishNumberEmergencyTarget();
-    haHelper.publishSwitchEmergencyUseEquitherm();
+    haHelper.publishSwitchEmergency(); yield();
+    haHelper.publishNumberEmergencyTarget(); yield();
+    haHelper.publishSwitchEmergencyUseEquitherm(); yield();
 
     // heating
-    haHelper.publishSwitchHeating(false);
-    haHelper.publishSwitchHeatingTurbo();
-    haHelper.publishNumberHeatingHysteresis();
-    haHelper.publishSensorHeatingSetpoint(false);
-    haHelper.publishSensorCurrentHeatingMinTemp(false);
-    haHelper.publishSensorCurrentHeatingMaxTemp(false);
-    haHelper.publishNumberHeatingMinTemp(false);
-    haHelper.publishNumberHeatingMaxTemp(false);
-    haHelper.publishNumberHeatingMaxModulation(false);
+    haHelper.publishSwitchHeating(false); yield();
+    haHelper.publishSwitchHeatingTurbo(); yield();
+    haHelper.publishNumberHeatingHysteresis(); yield();
+    haHelper.publishSensorHeatingSetpoint(false); yield();
+    haHelper.publishSensorCurrentHeatingMinTemp(false); yield();
+    haHelper.publishSensorCurrentHeatingMaxTemp(false); yield();
+    haHelper.publishNumberHeatingMinTemp(false); yield();
+    haHelper.publishNumberHeatingMaxTemp(false); yield();
+    haHelper.publishNumberHeatingMaxModulation(false); yield();
 
     // pid
-    haHelper.publishSwitchPID();
-    haHelper.publishNumberPIDFactorP();
-    haHelper.publishNumberPIDFactorI();
-    haHelper.publishNumberPIDFactorD();
-    haHelper.publishNumberPIDMinTemp(false);
-    haHelper.publishNumberPIDMaxTemp(false);
+    haHelper.publishSwitchPID(); yield();
+    haHelper.publishNumberPIDFactorP(); yield();
+    haHelper.publishNumberPIDFactorI(); yield();
+    haHelper.publishNumberPIDFactorD(); yield();
+    haHelper.publishNumberPIDMinTemp(false); yield();
+    haHelper.publishNumberPIDMaxTemp(false); yield();
 
     // equitherm
-    haHelper.publishSwitchEquitherm();
-    haHelper.publishNumberEquithermFactorN();
-    haHelper.publishNumberEquithermFactorK();
-    haHelper.publishNumberEquithermFactorT();
+    haHelper.publishSwitchEquitherm(); yield();
+    haHelper.publishNumberEquithermFactorN(); yield();
+    haHelper.publishNumberEquithermFactorK(); yield();
+    haHelper.publishNumberEquithermFactorT(); yield();
 
     // tuning
-    haHelper.publishSwitchTuning();
-    haHelper.publishSelectTuningRegulator();
+    haHelper.publishSwitchTuning(); yield();
+    haHelper.publishSelectTuningRegulator(); yield();
 
     // states
-    haHelper.publishBinSensorStatus();
-    haHelper.publishBinSensorOtStatus();
-    haHelper.publishBinSensorHeating();
-    haHelper.publishBinSensorFlame();
-    haHelper.publishBinSensorFault();
-    haHelper.publishBinSensorDiagnostic();
+    haHelper.publishBinSensorStatus(); yield();
+    haHelper.publishBinSensorOtStatus(); yield();
+    haHelper.publishBinSensorHeating(); yield();
+    haHelper.publishBinSensorFlame(); yield();
+    haHelper.publishBinSensorFault(); yield();
+    haHelper.publishBinSensorDiagnostic(); yield();
 
     // sensors
-    haHelper.publishSensorModulation(false);
-    haHelper.publishSensorPressure(false);
-    haHelper.publishSensorFaultCode();
-    haHelper.publishSensorRssi(false);
-    haHelper.publishSensorUptime(false);
+    haHelper.publishSensorModulation(false); yield();
+    haHelper.publishSensorPressure(false); yield();
+    haHelper.publishSensorFaultCode(); yield();
+    haHelper.publishSensorRssi(false); yield();
+    haHelper.publishSensorUptime(false); yield();
 
     // temperatures
-    haHelper.publishNumberIndoorTemp();
-    haHelper.publishSensorHeatingTemp();
+    haHelper.publishNumberIndoorTemp(); yield();
+    haHelper.publishSensorHeatingTemp(); yield();
 
     // buttons
-    haHelper.publishButtonRestart(false);
-    haHelper.publishButtonResetFault();
-    haHelper.publishButtonResetDiagnostic();
+    haHelper.publishButtonRestart(false); yield();
+    haHelper.publishButtonResetFault(); yield();
+    haHelper.publishButtonResetDiagnostic(); yield();
   }
 
-  static bool publishNonStaticHaEntities(bool force = false) {
+  bool publishNonStaticHaEntities(bool force = false) {
     static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp;
     static bool _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent;
 
@@ -538,7 +549,7 @@ protected:
     return published;
   }
 
-  static bool publishSettings(const char* topic) {
+  bool publishSettings(const char* topic) {
     StaticJsonDocument<2048> doc;
 
     doc["debug"] = settings.debug;
@@ -579,11 +590,12 @@ protected:
     doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 
     client.beginPublish(topic, measureJson(doc), false);
-    serializeJson(doc, client);
+    serializeJson(doc, *this->bClient);
+    this->bClient->flush();
     return client.endPublish();
   }
 
-  static bool publishVariables(const char* topic) {
+  bool publishVariables(const char* topic) {
     StaticJsonDocument<2048> doc;
 
     doc["tuning"]["enable"] = vars.tuning.enable;
@@ -616,7 +628,8 @@ protected:
     doc["parameters"]["dhwMaxTemp"] = vars.parameters.dhwMaxTemp;
 
     client.beginPublish(topic, measureJson(doc), false);
-    serializeJson(doc, client);
+    serializeJson(doc, *this->bClient);
+    this->bClient->flush();
     return client.endPublish();
   }
 
@@ -624,25 +637,26 @@ protected:
     return std::string(settings.mqtt.prefix) + "/" + std::string(topic);
   }
 
-  static void __callback(char* topic, byte* payload, unsigned int length) {
+  void __callback(char* topic, byte* payload, unsigned int length) {
     if (!length) {
       return;
     }
 
     if (settings.debug) {
       Log.strace("MQTT.MSG", F("Topic: %s\r\n>  "), topic);
-      Log.lock();
-      for (unsigned int i = 0; i < length; i++) {
-        if ( payload[i] == 10 ) {
-          Log.print("\r\n>  ");
+      if (Log.lock()) {
+        for (unsigned int i = 0; i < length; i++) {
+          if ( payload[i] == 10 ) {
+            Log.print("\r\n>  ");
 
-        } else {
-          Log.print((char) payload[i]);
+          } else {
+            Log.print((char) payload[i]);
+          }
         }
+        Log.print("\r\n\n");
+        Log.flush();
+        Log.unlock();
       }
-      Log.print("\r\n\n");
-      Log.unlock();
-      Log.flush();
     }
 
     StaticJsonDocument<2048> doc;
