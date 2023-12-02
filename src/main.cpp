@@ -78,11 +78,11 @@ void setup() {
   }
 
   Log.setLevel(settings.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
-
-  tWm = new WifiManagerTask(true);
+  
+  tWm = new WifiManagerTask(true, 0);
   Scheduler.start(tWm);
 
-  tMqtt = new MqttTask(false);
+  tMqtt = new MqttTask(false, 100);
   Scheduler.start(tMqtt);
 
   tOt = new OpenThermTask(false, 1000);
@@ -94,7 +94,7 @@ void setup() {
   tRegulator = new RegulatorTask(true, 10000);
   Scheduler.start(tRegulator);
 
-  tMain = new MainTask(true, 10);
+  tMain = new MainTask(true, 100);
   Scheduler.start(tMain);
 
   Scheduler.begin();
