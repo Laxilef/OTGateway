@@ -32,8 +32,12 @@ protected:
     return "OpenTherm";
   }
   
-  int getTaskCore() {
+  /*int getTaskCore() {
     return 1;
+  }*/
+
+  int getTaskPriority() {
+    return 2;
   }
 
   void setup() {
@@ -43,7 +47,7 @@ protected:
 
     ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
     ot->setYieldCallback([](void* self) {
-      static_cast<OpenThermTask*>(self)->delay(10);
+      static_cast<OpenThermTask*>(self)->delay(5);
     }, this);
     ot->begin(OpenThermTask::handleInterrupt, OpenThermTask::responseCallback);
 
@@ -92,7 +96,7 @@ protected:
         Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
       }
 
-      yield();
+      //yield();
     }
 
     bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
@@ -155,7 +159,7 @@ protected:
           Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %d%"), settings.heating.maxModulation);
         }
       }
-      yield();
+      //yield();
 
       // DHW min/max temp
       if (settings.opentherm.dhwPresent) {
@@ -182,7 +186,7 @@ protected:
           eeSettings.update();
         }
 
-        yield();
+        //yield();
       }
 
 
@@ -203,7 +207,7 @@ protected:
       } else {
         Log.swarningln(FPSTR(S_OT_HEATING), F("Failed get min/max temp"));
       }
-      yield();
+      //yield();
 
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
         settings.heating.minTemp = 20;
@@ -223,7 +227,7 @@ protected:
       }
 
       prevUpdateNonEssentialVars = millis();
-      yield();
+      //yield();
     }
 
     updatePressure();
@@ -233,12 +237,12 @@ protected:
     } else {
       vars.sensors.modulation = 0;
     }
-    yield();
+    //yield();
 
     if (settings.opentherm.dhwPresent) {
       updateDhwTemp();
       updateDhwFlowRate();
-      yield();
+      //yield();
 
     } else {
       vars.temperatures.dhw = 0.0f;
@@ -246,7 +250,7 @@ protected:
     }
 
     updateHeatingTemp();
-    yield();
+    //yield();
 
     // fault reset action
     if (vars.actions.resetFault) {
@@ -260,7 +264,7 @@ protected:
       }
 
       vars.actions.resetFault = false;
-      yield();
+      //yield();
     }
 
     // diag reset action
@@ -275,7 +279,7 @@ protected:
       }
 
       vars.actions.resetDiagnostic = false;
-      yield();
+      //yield();
     }
 
     //
@@ -303,7 +307,7 @@ protected:
         }
       }
 
-      yield();
+      //yield();
     }
 
     //
@@ -326,7 +330,7 @@ protected:
         }
       }
 
-      yield();
+      //yield();
     }
 
     // коммутационная разность (hysteresis)

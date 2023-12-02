@@ -26,8 +26,12 @@ protected:
     return "Mqtt";
   }
   
-  int getTaskCore() {
-    return 0;
+  /*int getTaskCore() {
+    return 1;
+  }*/
+
+  int getTaskPriority() {
+    return 1;
   }
 
   void setup() {

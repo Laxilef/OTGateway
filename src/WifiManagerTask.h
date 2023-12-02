@@ -45,7 +45,11 @@ protected:
     return "WifiManager";
   }
   
-  int getTaskCore() {
+  /*int getTaskCore() {
+    return 1;
+  }*/
+
+  int getTaskPriority() {
     return 0;
   }
 

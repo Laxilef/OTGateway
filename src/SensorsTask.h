@@ -30,6 +30,14 @@ protected:
     return "Sensors";
   }
 
+  /*int getTaskCore() {
+    return 1;
+  }*/
+
+  int getTaskPriority() {
+    return 4;
+  }
+
   void loop() {
     if (settings.sensors.outdoor.type == 2) {
       outdoorTemperatureSensor();

@@ -23,8 +23,12 @@ protected:
     return "Regulator";
   }
   
-  int getTaskCore() {
+  /*int getTaskCore() {
     return 1;
+  }*/
+
+  int getTaskPriority() {
+    return 4;
   }
   
   void loop() {

@@ -25,8 +25,12 @@ protected:
     return "Main";
   }
 
-  int getTaskCore() {
+  /*int getTaskCore() {
     return 1;
+  }*/
+
+  int getTaskPriority() {
+    return 3;
   }
 
   void setup() {
