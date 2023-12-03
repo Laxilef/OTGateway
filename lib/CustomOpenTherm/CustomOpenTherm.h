@@ -45,15 +45,19 @@ public:
       _response = 0;
       
     } else {
-      while (!isReady()) {
+      while (true) {
+        process();
+
+        if (isReady()) {
+          break;
+        }
+
         if (this->yieldCallback != nullptr) {
           this->yieldCallback(yieldArg);
 
         } else {
           ::yield();
         }
-
-        process();
       }
 
       _response = getLastResponse();
