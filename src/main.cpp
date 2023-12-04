@@ -97,6 +97,13 @@ void setup() {
   tMain = new MainTask(true, 100);
   Scheduler.start(tMain);
 
+  tWm
+    ->addTaskForDisable(tMain)
+    ->addTaskForDisable(tMqtt)
+    ->addTaskForDisable(tOt)
+    ->addTaskForDisable(tSensors)
+    ->addTaskForDisable(tRegulator);
+    
   Scheduler.begin();
 }
 

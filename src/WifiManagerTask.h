@@ -37,9 +37,15 @@ class WifiManagerTask : public Task {
 public:
   WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
+  WifiManagerTask* addTaskForDisable(Task* task) {
+    this->tasksForDisable.push_back(task);
+    return this;
+  }
+
 protected:
   bool connected = false;
   unsigned long lastArpGratuitous = 0;
+  std::vector<Task*> tasksForDisable;
 
   const char* getTaskName() {
     return "WifiManager";
@@ -142,6 +148,14 @@ protected:
     wm.setAPClientCheck(true);
     wm.setConfigPortalBlocking(false);
     wm.setSaveParamsCallback(saveParamsCallback);
+    wm.setPreOtaUpdateCallback([this] {
+      for (Task* task : this->tasksForDisable) {
+        if (task->isEnabled()) {
+          task->disable();
+        }
+      }
+      this->delay(10);
+    });
     wm.setConfigPortalTimeout(wm.getWiFiIsSaved() ? 180 : 0);
     wm.setDisableConfigPortal(false);
 
