@@ -13,7 +13,8 @@ public:
 
   ~MqttTask() {
     if (this->bClient != nullptr) {
-      delete this->bClient;
+      // todo: delete polymorph?
+      //delete this->bClient;
     }
   }
 
