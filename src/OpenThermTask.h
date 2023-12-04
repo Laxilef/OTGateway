@@ -32,9 +32,9 @@ protected:
     return "OpenTherm";
   }
   
-  /*int getTaskCore() {
+  int getTaskCore() {
     return 1;
-  }*/
+  }
 
   int getTaskPriority() {
     return 2;
@@ -47,7 +47,7 @@ protected:
 
     ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
     ot->setYieldCallback([](void* self) {
-      static_cast<OpenThermTask*>(self)->delay(5);
+      static_cast<OpenThermTask*>(self)->delay(25);
     }, this);
     ot->begin(OpenThermTask::handleInterrupt, OpenThermTask::responseCallback);
 
@@ -226,11 +226,12 @@ protected:
         updateFaultCode();
       }
 
+      updatePressure();
+
       prevUpdateNonEssentialVars = millis();
       //yield();
     }
 
-    updatePressure();
     if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled) {
       updateModulationLevel();
 
