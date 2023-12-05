@@ -3,6 +3,9 @@
 
 class HaHelper : public HomeAssistantHelper {
 public:
+  static const byte TEMP_SOURCE_HEATING = 0;
+  static const byte TEMP_SOURCE_INDOOR = 1;
+
   HaHelper(PubSubClient& client) : HomeAssistantHelper(client) {}
 
   bool publishSelectOutdoorSensorType(bool enabledByDefault = true) {
@@ -1078,7 +1081,7 @@ public:
   }
 
 
-  bool publishClimateHeating(byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
+  bool publishClimateHeating(byte minTemp = 20, byte maxTemp = 90, byte currentTempSource = HaHelper::TEMP_SOURCE_HEATING, bool enabledByDefault = true) {
     StaticJsonDocument<2560> doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1087,9 +1090,16 @@ public:
     doc[FPSTR(HA_NAME)] = F("Heating");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
 
-    doc[FPSTR(HA_CURRENT_TEMPERATURE_TOPIC)] = devicePrefix + F("/state");
-    doc[FPSTR(HA_CURRENT_TEMPERATURE_TEMPLATE)] = F("{% if value_json.temperatures.indoor|float(0) != 0 %}{{ value_json.temperatures.indoor|float(0)|round(2) }}"
-      "{% else %}{{ value_json.temperatures.heating|float(0)|round(2) }}{% endif %}");
+    if (currentTempSource == HaHelper::TEMP_SOURCE_HEATING || currentTempSource == HaHelper::TEMP_SOURCE_INDOOR) {
+      doc[FPSTR(HA_CURRENT_TEMPERATURE_TOPIC)] = devicePrefix + F("/state");
+    }
+
+    if (currentTempSource == HaHelper::TEMP_SOURCE_HEATING) {
+      doc[FPSTR(HA_CURRENT_TEMPERATURE_TEMPLATE)] = F("{{ value_json.temperatures.heating|float(0)|round(2) }}");
+
+    } else if (currentTempSource == HaHelper::TEMP_SOURCE_INDOOR) {
+      doc[FPSTR(HA_CURRENT_TEMPERATURE_TEMPLATE)] = F("{{ value_json.temperatures.indoor|float(0)|round(2) }}");
+    }
 
     doc[FPSTR(HA_TEMPERATURE_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
     doc[FPSTR(HA_TEMPERATURE_COMMAND_TEMPLATE)] = F("{\"heating\": {\"target\" : {{ value }}}}");

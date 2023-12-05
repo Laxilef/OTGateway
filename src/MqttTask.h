@@ -461,7 +461,7 @@ protected:
 
   bool publishNonStaticHaEntities(bool force = false) {
     static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp;
-    static bool _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent;
+    static bool _isStupidMode, _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent;
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
@@ -506,9 +506,16 @@ protected:
 
       _heatingMinTemp = heatingMinTemp;
       _heatingMaxTemp = heatingMaxTemp;
+      _isStupidMode = isStupidMode;
 
       haHelper.publishNumberHeatingTarget(heatingMinTemp, heatingMaxTemp, false);
-      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp);
+      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
+
+      published = true;
+
+    } else if (_isStupidMode != isStupidMode) {
+      _isStupidMode = isStupidMode;
+      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
 
       published = true;
     }
