@@ -113,6 +113,7 @@ protected:
       tOt->enable();
     }
 
+    yield();
     #ifdef LED_STATUS_PIN
       ledStatus(LED_STATUS_PIN);
     #endif
@@ -120,6 +121,7 @@ protected:
     externalPump();
 
     // anti memory leak
+    yield();
     if (Log.lock()) {
       for (Stream* stream : Log.getStreams()) {
         while (stream->available() > 0) {

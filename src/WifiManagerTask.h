@@ -42,6 +42,9 @@ extern EEManager eeSettings;
   extern ESPTelnetStream TelnetStream;
 #endif
 
+const char S_WIFI[]          PROGMEM = "WIFI";
+const char S_WIFI_SETTINGS[] PROGMEM = "WIFI.SETTINGS";
+
 
 class WifiManagerTask : public Task {
 public:
@@ -207,7 +210,7 @@ protected:
         TelnetStream.stop();
       #endif
 
-      Log.sinfoln("WIFI", F("Disconnected"));
+      Log.sinfoln(FPSTR(S_WIFI), F("Disconnected"));
 
     } else if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
@@ -227,7 +230,7 @@ protected:
         TelnetStream.begin(23, false);
       #endif
 
-      Log.sinfoln("WIFI", F("Connected. IP: %s, RSSI: %d"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
+      Log.sinfoln(FPSTR(S_WIFI), F("Connected. IP: %s, RSSI: %hh"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
     #if defined(ESP8266)
@@ -248,77 +251,107 @@ protected:
       changed = true;
       needRestart = true;
       strcpy(settings.hostname, wmHostname->getValue());
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New hostname: %s"), settings.hostname);
     }
 
     if (strcmp(wmMqttServer->getValue(), settings.mqtt.server) != 0) {
       changed = true;
       strcpy(settings.mqtt.server, wmMqttServer->getValue());
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.server: %s"), settings.mqtt.server);
     }
 
     if (wmMqttPort->getValue() != settings.mqtt.port) {
       changed = true;
       settings.mqtt.port = wmMqttPort->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.port: %du"), settings.mqtt.port);
     }
 
     if (strcmp(wmMqttUser->getValue(), settings.mqtt.user) != 0) {
       changed = true;
       strcpy(settings.mqtt.user, wmMqttUser->getValue());
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.user: %s"), settings.mqtt.user);
     }
 
     if (strcmp(wmMqttPassword->getValue(), settings.mqtt.password) != 0) {
       changed = true;
       strcpy(settings.mqtt.password, wmMqttPassword->getValue());
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.password: %s"), settings.mqtt.password);
     }
 
     if (strcmp(wmMqttPrefix->getValue(), settings.mqtt.prefix) != 0) {
       changed = true;
       strcpy(settings.mqtt.prefix, wmMqttPrefix->getValue());
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.prefix: %s"), settings.mqtt.prefix);
     }
 
     if (wmMqttPublishInterval->getValue() != settings.mqtt.interval) {
       changed = true;
       settings.mqtt.interval = wmMqttPublishInterval->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.interval: %du"), settings.mqtt.interval);
     }
 
     if (wmOtInPin->getValue() != settings.opentherm.inPin) {
       changed = true;
       needRestart = true;
       settings.opentherm.inPin = wmOtInPin->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.inPin: %hhu"), settings.opentherm.inPin);
     }
 
     if (wmOtOutPin->getValue() != settings.opentherm.outPin) {
       changed = true;
       needRestart = true;
       settings.opentherm.outPin = wmOtOutPin->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.outPin: %hhu"), settings.opentherm.outPin);
     }
 
     if (wmOtMemberIdCode->getValue() != settings.opentherm.memberIdCode) {
       changed = true;
       settings.opentherm.memberIdCode = wmOtMemberIdCode->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.memberIdCode: %du"), settings.opentherm.memberIdCode);
     }
 
     if (wmOtDhwPresent->getCheckboxValue() != settings.opentherm.dhwPresent) {
       changed = true;
       settings.opentherm.dhwPresent = wmOtDhwPresent->getCheckboxValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.dhwPresent: %s"), settings.opentherm.dhwPresent ? "on" : "off");
     }
 
     if (wmOtSummerWinterMode->getCheckboxValue() != settings.opentherm.summerWinterMode) {
       changed = true;
       settings.opentherm.summerWinterMode = wmOtSummerWinterMode->getCheckboxValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.summerWinterMode: %s"), settings.opentherm.summerWinterMode ? "on" : "off");
     }
 
     if (wmOtHeatingCh2Enabled->getCheckboxValue() != settings.opentherm.heatingCh2Enabled) {
       changed = true;
       settings.opentherm.heatingCh2Enabled = wmOtHeatingCh2Enabled->getCheckboxValue();
 
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.heatingCh2Enabled: %s"), settings.opentherm.heatingCh2Enabled ? "on" : "off");
+
       if (settings.opentherm.heatingCh1ToCh2) {
         settings.opentherm.heatingCh1ToCh2 = false;
         wmOtHeatingCh1ToCh2->setValue(false);
+
+        Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.heatingCh1ToCh2: %s"), settings.opentherm.heatingCh1ToCh2 ? "on" : "off");
       }
 
       if (settings.opentherm.dhwToCh2) {
         settings.opentherm.dhwToCh2 = false;
         wmOtDhwToCh2->setValue(false);
+
+        Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.dhwToCh2: %s"), settings.opentherm.dhwToCh2 ? "on" : "off");
       }
     }
 
@@ -326,14 +359,20 @@ protected:
       changed = true;
       settings.opentherm.heatingCh1ToCh2 = wmOtHeatingCh1ToCh2->getCheckboxValue();
 
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.heatingCh1ToCh2: %s"), settings.opentherm.heatingCh1ToCh2 ? "on" : "off");
+
       if (settings.opentherm.heatingCh2Enabled) {
         settings.opentherm.heatingCh2Enabled = false;
         wmOtHeatingCh2Enabled->setValue(false);
+
+        Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.heatingCh2Enabled: %s"), settings.opentherm.heatingCh2Enabled ? "on" : "off");
       }
 
       if (settings.opentherm.dhwToCh2) {
         settings.opentherm.dhwToCh2 = false;
         wmOtDhwToCh2->setValue(false);
+
+        Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.dhwToCh2: %s"), settings.opentherm.dhwToCh2 ? "on" : "off");
       }
     }
 
@@ -341,114 +380,94 @@ protected:
       changed = true;
       settings.opentherm.dhwToCh2 = wmOtDhwToCh2->getCheckboxValue();
 
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.dhwToCh2: %s"), settings.opentherm.dhwToCh2 ? "on" : "off");
+
       if (settings.opentherm.heatingCh2Enabled) {
         settings.opentherm.heatingCh2Enabled = false;
         wmOtHeatingCh2Enabled->setValue(false);
+
+        Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.heatingCh2Enabled: %s"), settings.opentherm.heatingCh2Enabled ? "on" : "off");
       }
 
       if (settings.opentherm.heatingCh1ToCh2) {
         settings.opentherm.heatingCh1ToCh2 = false;
         wmOtHeatingCh1ToCh2->setValue(false);
+
+        Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.heatingCh1ToCh2: %s"), settings.opentherm.heatingCh1ToCh2 ? "on" : "off");
       }
     }
 
     if (wmOtDhwBlocking->getCheckboxValue() != settings.opentherm.dhwBlocking) {
       changed = true;
       settings.opentherm.dhwBlocking = wmOtDhwBlocking->getCheckboxValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.dhwBlocking: %s"), settings.opentherm.dhwBlocking ? "on" : "off");
     }
 
     if (wmOtModSyncWithHeating->getCheckboxValue() != settings.opentherm.modulationSyncWithHeating) {
       changed = true;
       settings.opentherm.modulationSyncWithHeating = wmOtModSyncWithHeating->getCheckboxValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New opentherm.modulationSyncWithHeating: %s"), settings.opentherm.modulationSyncWithHeating ? "on" : "off");
     }
 
     if (wmOutdoorSensorPin->getValue() != settings.sensors.outdoor.pin) {
       changed = true;
       needRestart = true;
       settings.sensors.outdoor.pin = wmOutdoorSensorPin->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New sensors.outdoor.pin: %hhu"), settings.sensors.outdoor.pin);
     }
 
     if (wmIndoorSensorPin->getValue() != settings.sensors.indoor.pin) {
       changed = true;
       needRestart = true;
       settings.sensors.indoor.pin = wmIndoorSensorPin->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New sensors.indoor.pin: %hhu"), settings.sensors.indoor.pin);
     }
 
     if (wmExtPumpUse->getCheckboxValue() != settings.externalPump.use) {
       changed = true;
       settings.externalPump.use = wmExtPumpUse->getCheckboxValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.use: %s"), settings.externalPump.use ? "on" : "off");
     }
 
     if (wmExtPumpPin->getValue() != settings.externalPump.pin) {
       changed = true;
       needRestart = true;
       settings.externalPump.pin = wmExtPumpPin->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.pin: %hhu"), settings.externalPump.pin);
     }
 
     if (wmExtPumpPostCirculationTime->getValue() != settings.externalPump.postCirculationTime) {
       changed = true;
       settings.externalPump.postCirculationTime = wmExtPumpPostCirculationTime->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.postCirculationTime: %hu"), settings.externalPump.postCirculationTime);
     }
 
     if (wmExtPumpAntiStuckInterval->getValue() != settings.externalPump.antiStuckInterval) {
       changed = true;
       settings.externalPump.antiStuckInterval = wmExtPumpAntiStuckInterval->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.antiStuckInterval: %du"), settings.externalPump.antiStuckInterval);
     }
 
     if (wmExtPumpAntiStuckTime->getValue() != settings.externalPump.antiStuckTime) {
       changed = true;
       settings.externalPump.antiStuckTime = wmExtPumpAntiStuckTime->getValue();
+
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.antiStuckTime: %hu"), settings.externalPump.antiStuckTime);
     }
 
     if (!changed) {
       return;
-    }
-
-    if (needRestart) {
+    } else if (needRestart) {
       vars.actions.restart = true;
     }
-
-    Log.sinfo(
-      "WIFI",
-      F("New settings:\r\n"
-      "  Hostname: %s\r\n"
-      "  Mqtt server: %s:%d\r\n"
-      "  Mqtt user: %s\r\n"
-      "  Mqtt pass: %s\r\n"
-      "  Mqtt prefix: %s\r\n"
-      "  Mqtt publish interval: %d\r\n"
-      "  OT in pin: %d\r\n"
-      "  OT out pin: %d\r\n"
-      "  OT member id code: %d\r\n"
-      "  OT DHW present: %d\r\n"
-      "  OT summer/winter mode: %d\r\n"
-      "  OT heating ch2 enabled: %d\r\n"
-      "  OT heating ch1 to ch2: %d\r\n"
-      "  OT DHW to ch2: %d\r\n"
-      "  OT DHW blocking: %d\r\n"
-      "  OT modulation sync with heating: %d\r\n"
-      "  Outdoor sensor pin: %d\r\n"
-      "  Indoor sensor pin: %d\r\n"),
-      settings.hostname,
-      settings.mqtt.server,
-      settings.mqtt.port,
-      settings.mqtt.user,
-      settings.mqtt.password,
-      settings.mqtt.prefix,
-      settings.mqtt.interval,
-      settings.opentherm.inPin,
-      settings.opentherm.outPin,
-      settings.opentherm.memberIdCode,
-      settings.opentherm.dhwPresent,
-      settings.opentherm.summerWinterMode,
-      settings.opentherm.heatingCh2Enabled,
-      settings.opentherm.heatingCh1ToCh2,
-      settings.opentherm.dhwToCh2,
-      settings.opentherm.dhwBlocking,
-      settings.opentherm.modulationSyncWithHeating,
-      settings.sensors.outdoor.pin,
-      settings.sensors.indoor.pin
-    );
 
     eeSettings.update();
   }
