@@ -55,11 +55,6 @@ protected:
       pinMode(LED_OT_RX_PIN, OUTPUT);
       digitalWrite(LED_OT_RX_PIN, false);
     #endif
-
-    #ifdef HEATING_STATUS_PIN
-      pinMode(HEATING_STATUS_PIN, OUTPUT);
-      digitalWrite(HEATING_STATUS_PIN, false);
-    #endif
   }
 
   void loop() {
@@ -127,10 +122,6 @@ protected:
       prevUpdateNonEssentialVars = 0;
       vars.parameters.heatingEnabled = heatingEnabled;
       Log.sinfoln(FPSTR(S_OT_HEATING), "%s", heatingEnabled ? F("Enabled") : F("Disabled"));
-
-      #ifdef HEATING_STATUS_PIN
-        digitalWrite(HEATING_STATUS_PIN, heatingEnabled);
-      #endif
     }
 
     vars.states.heating = ot->isCentralHeatingActive(localResponse);

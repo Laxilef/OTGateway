@@ -1,6 +1,9 @@
 #define WM_MDNS
 #include <WiFiManager.h>
-#include <WiFiManagerParameters.h>
+#include <UnsignedIntParameter.h>
+#include <UnsignedShortParameter.h>
+#include <CheckboxParameter.h>
+#include <SeparatorParameter.h>
 #include <netif/etharp.h>
 
 WiFiManager wm;
@@ -11,6 +14,7 @@ WiFiManagerParameter* wmMqttUser;
 WiFiManagerParameter* wmMqttPassword;
 WiFiManagerParameter* wmMqttPrefix;
 UnsignedIntParameter* wmMqttPublishInterval;
+
 UnsignedIntParameter* wmOtInPin;
 UnsignedIntParameter* wmOtOutPin;
 UnsignedIntParameter* wmOtMemberIdCode;
@@ -21,11 +25,17 @@ CheckboxParameter* wmOtHeatingCh1ToCh2;
 CheckboxParameter* wmOtDhwToCh2;
 CheckboxParameter* wmOtDhwBlocking;
 CheckboxParameter* wmOtModSyncWithHeating;
+
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
 
-SeparatorParameter* wmSep1;
-SeparatorParameter* wmSep2;
+CheckboxParameter* wmExtPumpUse;
+UnsignedIntParameter* wmExtPumpPin;
+UnsignedShortParameter* wmExtPumpPostCirculationTime;
+UnsignedIntParameter* wmExtPumpAntiStuckInterval;
+UnsignedShortParameter* wmExtPumpAntiStuckTime;
+
+SeparatorParameter* wmSep;
 
 extern EEManager eeSettings;
 #if USE_TELNET
@@ -37,7 +47,7 @@ class WifiManagerTask : public Task {
 public:
   WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
-  WifiManagerTask* addTaskForDisable(Task* task) {
+  WifiManagerTask* addTaskForDisable(AbstractTask* task) {
     this->tasksForDisable.push_back(task);
     return this;
   }
@@ -45,7 +55,7 @@ public:
 protected:
   bool connected = false;
   unsigned long lastArpGratuitous = 0;
-  std::vector<Task*> tasksForDisable;
+  std::vector<AbstractTask*> tasksForDisable;
 
   const char* getTaskName() {
     return "WifiManager";
@@ -77,6 +87,8 @@ protected:
     std::vector<const char *> menu = {"custom", "wifi", "param", "sep", "info", "update", "restart"};
     wm.setMenu(menu);
 
+    wmSep = new SeparatorParameter();
+
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
     wm.addParameter(wmHostname);
 
@@ -98,8 +110,7 @@ protected:
     wmMqttPublishInterval = new UnsignedIntParameter("mqtt_publish_interval", "MQTT publish interval", settings.mqtt.interval, 5);
     wm.addParameter(wmMqttPublishInterval);
 
-    wmSep1 = new SeparatorParameter();
-    wm.addParameter(wmSep1);
+    wm.addParameter(wmSep);
 
     wmOtInPin = new UnsignedIntParameter("ot_in_pin", "Opentherm GPIO IN", settings.opentherm.inPin, 2);
     wm.addParameter(wmOtInPin);
@@ -131,14 +142,30 @@ protected:
     wmOtModSyncWithHeating = new CheckboxParameter("ot_mod_sync_with_heating", "Modulation sync with heating", settings.opentherm.modulationSyncWithHeating);
     wm.addParameter(wmOtModSyncWithHeating);
 
-    wmSep2 = new SeparatorParameter();
-    wm.addParameter(wmSep2);
+    wm.addParameter(wmSep);
 
     wmOutdoorSensorPin = new UnsignedIntParameter("outdoor_sensor_pin", "Outdoor sensor GPIO", settings.sensors.outdoor.pin, 2);
     wm.addParameter(wmOutdoorSensorPin);
 
     wmIndoorSensorPin = new UnsignedIntParameter("indoor_sensor_pin", "Indoor sensor GPIO", settings.sensors.indoor.pin, 2);
     wm.addParameter(wmIndoorSensorPin);
+
+    wm.addParameter(wmSep);
+
+    wmExtPumpUse = new CheckboxParameter("ext_pump_use", "Use external pump", settings.externalPump.use);
+    wm.addParameter(wmExtPumpUse);
+
+    wmExtPumpPin = new UnsignedIntParameter("ext_pump_pin", "External pump GPIO", settings.externalPump.pin, 2);
+    wm.addParameter(wmExtPumpPin);
+
+    wmExtPumpPostCirculationTime = new UnsignedShortParameter("ext_pump_ps_time", "External pump post circulation time", settings.externalPump.postCirculationTime, 5);
+    wm.addParameter(wmExtPumpPostCirculationTime);
+
+    wmExtPumpAntiStuckInterval = new UnsignedIntParameter("ext_pump_as_interval", "External pump anti stuck interval", settings.externalPump.antiStuckInterval, 7);
+    wm.addParameter(wmExtPumpAntiStuckInterval);
+
+    wmExtPumpAntiStuckTime = new UnsignedShortParameter("ext_pump_as_time", "External pump anti stuck time", settings.externalPump.antiStuckTime, 5);
+    wm.addParameter(wmExtPumpAntiStuckTime);
 
     //wm.setCleanConnect(true);
     wm.setRestorePersistent(false);
@@ -149,7 +176,7 @@ protected:
     wm.setConfigPortalBlocking(false);
     wm.setSaveParamsCallback(saveParamsCallback);
     wm.setPreOtaUpdateCallback([this] {
-      for (Task* task : this->tasksForDisable) {
+      for (AbstractTask* task : this->tasksForDisable) {
         if (task->isEnabled()) {
           task->disable();
         }
@@ -345,6 +372,32 @@ protected:
       changed = true;
       needRestart = true;
       settings.sensors.indoor.pin = wmIndoorSensorPin->getValue();
+    }
+
+    if (wmExtPumpUse->getCheckboxValue() != settings.externalPump.use) {
+      changed = true;
+      settings.externalPump.use = wmExtPumpUse->getCheckboxValue();
+    }
+
+    if (wmExtPumpPin->getValue() != settings.externalPump.pin) {
+      changed = true;
+      needRestart = true;
+      settings.externalPump.pin = wmExtPumpPin->getValue();
+    }
+
+    if (wmExtPumpPostCirculationTime->getValue() != settings.externalPump.postCirculationTime) {
+      changed = true;
+      settings.externalPump.postCirculationTime = wmExtPumpPostCirculationTime->getValue();
+    }
+
+    if (wmExtPumpAntiStuckInterval->getValue() != settings.externalPump.antiStuckInterval) {
+      changed = true;
+      settings.externalPump.antiStuckInterval = wmExtPumpAntiStuckInterval->getValue();
+    }
+
+    if (wmExtPumpAntiStuckTime->getValue() != settings.externalPump.antiStuckTime) {
+      changed = true;
+      settings.externalPump.antiStuckTime = wmExtPumpAntiStuckTime->getValue();
     }
 
     if (!changed) {

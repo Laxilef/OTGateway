@@ -14,12 +14,19 @@ public:
   MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
 protected:
+  const static byte REASON_PUMP_START_HEATING = 1;
+  const static byte REASON_PUMP_START_ANTISTUCK = 2;
+
   Blinker* blinker = nullptr;
   unsigned long lastHeapInfo = 0;
   unsigned long firstFailConnect = 0;
   unsigned int heapSize = 0;
   unsigned int minFreeHeapSize = 0;
   unsigned long restartSignalTime = 0;
+  bool heatingEnabled = false;
+  unsigned long heatingDisabledTime = 0;
+  byte externalPumpStartReason;
+  unsigned long externalPumpStartTime = 0;
 
   const char* getTaskName() {
     return "Main";
@@ -38,6 +45,7 @@ protected:
       pinMode(LED_STATUS_PIN, OUTPUT);
       digitalWrite(LED_STATUS_PIN, false);
     #endif
+    pinMode(settings.externalPump.pin, OUTPUT);
 
     #if defined(ESP32)
       heapSize = ESP.getHeapSize();
@@ -107,9 +115,9 @@ protected:
 
     #ifdef LED_STATUS_PIN
       ledStatus(LED_STATUS_PIN);
-      yield();
     #endif
     heap();
+    externalPump();
 
     // anti memory leak
     if (Log.lock()) {
@@ -206,5 +214,68 @@ protected:
     }
 
     this->blinker->tick();
+  }
+
+  void externalPump() {
+    if (!vars.states.heating && this->heatingEnabled) {
+      this->heatingEnabled = false;
+      this->heatingDisabledTime = millis();
+
+    } else if (vars.states.heating && !this->heatingEnabled) {
+      this->heatingEnabled = true;
+    }
+
+    if (!settings.externalPump.use) {
+      if (vars.externalPump.enable) {
+        digitalWrite(settings.externalPump.pin, false);
+
+        vars.externalPump.enable = false;
+        vars.externalPump.lastEnableTime = millis();
+
+        Log.sinfoln("EXTPUMP", F("Disabled: use = off"));
+      }
+
+      return;
+    }
+
+    if (vars.externalPump.enable && !this->heatingEnabled) {
+      if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > settings.externalPump.postCirculationTime) {
+        digitalWrite(settings.externalPump.pin, false);
+
+        vars.externalPump.enable = false;
+        vars.externalPump.lastEnableTime = millis();
+
+        Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
+
+      } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= settings.externalPump.antiStuckTime) {
+        digitalWrite(settings.externalPump.pin, false);
+
+        vars.externalPump.enable = false;
+        vars.externalPump.lastEnableTime = millis();
+
+        Log.sinfoln("EXTPUMP", F("Disabled: expired anti stuck time"));
+      }
+
+    } else if (vars.externalPump.enable && this->heatingEnabled && this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK) {
+      this->externalPumpStartReason = MainTask::REASON_PUMP_START_HEATING;
+
+    } else if (!vars.externalPump.enable && this->heatingEnabled) {
+      vars.externalPump.enable = true;
+      this->externalPumpStartTime = millis();
+      this->externalPumpStartReason = MainTask::REASON_PUMP_START_HEATING;
+
+      digitalWrite(settings.externalPump.pin, true);
+
+      Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
+
+    } else if (!vars.externalPump.enable && millis() - vars.externalPump.lastEnableTime >= settings.externalPump.antiStuckInterval) {
+      vars.externalPump.enable = true;
+      this->externalPumpStartTime = millis();
+      this->externalPumpStartReason = MainTask::REASON_PUMP_START_ANTISTUCK;
+
+      digitalWrite(settings.externalPump.pin, true);
+
+      Log.sinfoln("EXTPUMP", F("Enabled: anti stuck"));
+    }
   }
 };

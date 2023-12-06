@@ -79,6 +79,14 @@ struct Settings {
     } indoor;
   } sensors;
 
+  struct {
+    bool use = false;
+    byte pin = EXT_PUMP_PIN_DEFAULT;
+    unsigned short postCirculationTime = 600;
+    unsigned int antiStuckInterval = 2592000;
+    unsigned short antiStuckTime = 300;
+  } externalPump;
+
   char validationValue[8] = SETTINGS_VALID_VALUE;
 } settings;
 
@@ -112,6 +120,11 @@ struct Variables {
     float heating = 0.0f;
     float dhw = 0.0f;
   } temperatures;
+
+  struct {
+    bool enable = false;
+    unsigned long lastEnableTime = 0;
+  } externalPump;
 
   struct {
     bool heatingEnabled = false;

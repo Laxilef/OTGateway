@@ -1,5 +1,5 @@
 #define PROJECT_NAME                "OpenTherm Gateway"
-#define PROJECT_VERSION             "1.3.4"
+#define PROJECT_VERSION             "1.4.0"
 #define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
@@ -52,6 +52,10 @@
 
 #ifndef SENSOR_INDOOR_PIN_DEFAULT
   #define SENSOR_INDOOR_PIN_DEFAULT 0
+#endif
+
+#ifndef EXT_PUMP_PIN_DEFAULT
+  #define EXT_PUMP_PIN_DEFAULT 0
 #endif
 
 #ifndef PROGMEM
