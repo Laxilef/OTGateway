@@ -23,6 +23,10 @@ protected:
   unsigned short heatingSetTempInterval = 60000;
 
   bool pump = true;
+  bool tryGetSlaveVersion = true;
+  bool trySetMasterVersion = true;
+  bool tryGetSlaveConfig = true;
+  bool trySetMasterConfig = true;
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long startupTime = millis();
   unsigned long dhwSetTempTime = 0;
@@ -61,39 +65,6 @@ protected:
     static byte currentHeatingTemp, currentDhwTemp = 0;
     unsigned long localResponse;
 
-    if (millis() - prevUpdateNonEssentialVars > 60000) {
-      if (updateSlaveVersion()) {
-        Log.straceln(FPSTR(S_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
-
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Get slave version failed"));
-      }
-
-      // 0x013F
-      if (setMasterVersion(0x3F, 0x01)) {
-        Log.straceln(FPSTR(S_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
-        
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Set master version failed"));
-      }
-
-      if (updateSlaveConfig()) {
-        Log.straceln(FPSTR(S_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
-
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Get slave config failed"));
-      }
-
-      if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
-        Log.straceln(FPSTR(S_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
-        
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
-      }
-
-      //yield();
-    }
-
     bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
@@ -115,6 +86,11 @@ protected:
 
     if (!ot->isValidResponse(localResponse)) {
       Log.swarningln(FPSTR(S_OT), F("Invalid response after setBoilerStatus: %s"), ot->statusToString(ot->getLastResponseStatus()));
+      // Boiler is disconnected, try to get these variables when it becomes connected again
+      bool tryGetSlaveVersion = true;
+      bool trySetMasterVersion = true;
+      bool tryGetSlaveConfig = true;
+      bool trySetMasterConfig = true;
       return;
     }
 
@@ -130,8 +106,53 @@ protected:
     vars.states.fault = ot->isFault(localResponse);
     vars.states.diagnostic = ot->isDiagnostic(localResponse);
 
+    // These parameters will be updated every minute
+    // Not all boilers support these, so only try once if not supported
+    if (millis() - prevUpdateNonEssentialVars > 60000) {
+      if (tryGetSlaveVersion) {
+        if (updateSlaveVersion()) {
+          Log.straceln(FPSTR(S_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
 
-    // 
+        } else {
+          Log.swarningln(FPSTR(S_OT), F("Get slave version failed"));
+          tryGetSlaveVersion = false;
+        }
+      }
+
+      // 0x013F
+      if (trySetMasterVersion) {
+        if (setMasterVersion(0x3F, 0x01)) {
+          Log.straceln(FPSTR(S_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
+          
+        } else {
+          Log.swarningln(FPSTR(S_OT), F("Set master version failed"));
+          trySetMasterVersion = false;
+        }
+      }
+
+      if (tryGetSlaveConfig) {
+        if (updateSlaveConfig()) {
+          Log.straceln(FPSTR(S_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
+
+        } else {
+          Log.swarningln(FPSTR(S_OT), F("Get slave config failed"));
+          tryGetSlaveConfig = false;
+        }
+      }
+
+      if (trySetMasterConfig) {
+        if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
+          Log.straceln(FPSTR(S_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
+          
+        } else {
+          Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
+          trySetMasterConfig = false;
+        }
+      }
+
+      //yield();
+    }
+
     // These parameters will be updated every minute
     if (millis() - prevUpdateNonEssentialVars > 60000) {
       if (!heatingEnabled && settings.opentherm.modulationSyncWithHeating) {
