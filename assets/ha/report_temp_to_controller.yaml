@@ -1,5 +1,5 @@
 # Script for reporting indoor/outdoor temperature to the controller from any home assistant sensor
-# Updated: 28.11.2023
+# Updated: 07.12.2023
 
 alias: Report temp to controller
 description: ""
@@ -16,7 +16,7 @@ trigger:
     seconds: /30
 condition:
   - condition: template
-    value_template: "{{ has_value(source_entity) and has_value(target_entity) }}"
+    value_template: "{{ states(source_entity) != 'unavailable' and states(target_entity) != 'unavailable' }}"
 action:
   - if:
       - condition: template
