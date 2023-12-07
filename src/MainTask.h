@@ -122,13 +122,10 @@ protected:
 
     // anti memory leak
     yield();
-    if (Log.lock()) {
-      for (Stream* stream : Log.getStreams()) {
-        while (stream->available() > 0) {
-          stream->read();
-        }
+    for (Stream* stream : Log.getStreams()) {
+      while (stream->available() > 0) {
+        stream->read();
       }
-      Log.unlock();
     }
     
     if (restartSignalTime > 0 && millis() - restartSignalTime > 10000) {
@@ -226,7 +223,7 @@ protected:
     } else if (vars.states.heating && !this->heatingEnabled) {
       this->heatingEnabled = true;
     }
-
+    
     if (!settings.externalPump.use) {
       if (vars.externalPump.enable) {
         digitalWrite(settings.externalPump.pin, false);

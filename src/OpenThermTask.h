@@ -144,10 +144,10 @@ protected:
 
       } else {
         if (setMaxModulationLevel(settings.heating.maxModulation)) {
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation %d%"), settings.heating.maxModulation);
+          Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation %d\%"), settings.heating.maxModulation);
 
         } else {
-          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %d%"), settings.heating.maxModulation);
+          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %d\%"), settings.heating.maxModulation);
         }
       }
       //yield();
