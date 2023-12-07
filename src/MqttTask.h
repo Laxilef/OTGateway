@@ -394,69 +394,79 @@ protected:
 
   void publishHaEntities() {
     // main
-    haHelper.publishSelectOutdoorSensorType(); yield();
-    haHelper.publishSelectIndoorSensorType(); yield();
-    haHelper.publishNumberOutdoorSensorOffset(false); yield();
-    haHelper.publishNumberIndoorSensorOffset(false); yield();
-    haHelper.publishSwitchDebug(false); yield();
+    haHelper.publishSelectOutdoorSensorType();
+    haHelper.publishSelectIndoorSensorType();
+    haHelper.publishNumberOutdoorSensorOffset(false);
+    haHelper.publishNumberIndoorSensorOffset(false);
+    haHelper.publishSwitchDebug(false);
+    yield();
 
     // emergency
-    haHelper.publishSwitchEmergency(); yield();
-    haHelper.publishNumberEmergencyTarget(); yield();
-    haHelper.publishSwitchEmergencyUseEquitherm(); yield();
+    haHelper.publishSwitchEmergency();
+    haHelper.publishNumberEmergencyTarget();
+    haHelper.publishSwitchEmergencyUseEquitherm();
+    yield();
 
     // heating
-    haHelper.publishSwitchHeating(false); yield();
-    haHelper.publishSwitchHeatingTurbo(); yield();
-    haHelper.publishNumberHeatingHysteresis(); yield();
-    haHelper.publishSensorHeatingSetpoint(false); yield();
-    haHelper.publishSensorCurrentHeatingMinTemp(false); yield();
-    haHelper.publishSensorCurrentHeatingMaxTemp(false); yield();
-    haHelper.publishNumberHeatingMinTemp(false); yield();
-    haHelper.publishNumberHeatingMaxTemp(false); yield();
-    haHelper.publishNumberHeatingMaxModulation(false); yield();
+    haHelper.publishSwitchHeating(false);
+    haHelper.publishSwitchHeatingTurbo();
+    haHelper.publishNumberHeatingHysteresis();
+    haHelper.publishSensorHeatingSetpoint(false);
+    haHelper.publishSensorCurrentHeatingMinTemp(false);
+    yield();
+    haHelper.publishSensorCurrentHeatingMaxTemp(false);
+    haHelper.publishNumberHeatingMinTemp(false);
+    haHelper.publishNumberHeatingMaxTemp(false);
+    haHelper.publishNumberHeatingMaxModulation(false);
+    yield();
 
     // pid
-    haHelper.publishSwitchPID(); yield();
-    haHelper.publishNumberPIDFactorP(); yield();
-    haHelper.publishNumberPIDFactorI(); yield();
-    haHelper.publishNumberPIDFactorD(); yield();
-    haHelper.publishNumberPIDMinTemp(false); yield();
-    haHelper.publishNumberPIDMaxTemp(false); yield();
+    haHelper.publishSwitchPID();
+    haHelper.publishNumberPIDFactorP();
+    haHelper.publishNumberPIDFactorI();
+    haHelper.publishNumberPIDFactorD();
+    haHelper.publishNumberPIDMinTemp(false);
+    haHelper.publishNumberPIDMaxTemp(false);
+    yield();
 
     // equitherm
-    haHelper.publishSwitchEquitherm(); yield();
-    haHelper.publishNumberEquithermFactorN(); yield();
-    haHelper.publishNumberEquithermFactorK(); yield();
-    haHelper.publishNumberEquithermFactorT(); yield();
+    haHelper.publishSwitchEquitherm();
+    haHelper.publishNumberEquithermFactorN();
+    haHelper.publishNumberEquithermFactorK();
+    haHelper.publishNumberEquithermFactorT();
+    yield();
 
     // tuning
-    haHelper.publishSwitchTuning(); yield();
-    haHelper.publishSelectTuningRegulator(); yield();
+    haHelper.publishSwitchTuning();
+    haHelper.publishSelectTuningRegulator();
+    yield();
 
     // states
-    haHelper.publishBinSensorStatus(); yield();
-    haHelper.publishBinSensorOtStatus(); yield();
-    haHelper.publishBinSensorHeating(); yield();
-    haHelper.publishBinSensorFlame(); yield();
-    haHelper.publishBinSensorFault(); yield();
-    haHelper.publishBinSensorDiagnostic(); yield();
+    haHelper.publishBinSensorStatus();
+    haHelper.publishBinSensorOtStatus();
+    haHelper.publishBinSensorHeating();
+    haHelper.publishBinSensorFlame();
+    haHelper.publishBinSensorFault();
+    haHelper.publishBinSensorDiagnostic();
+    yield();
 
     // sensors
-    haHelper.publishSensorModulation(false); yield();
-    haHelper.publishSensorPressure(false); yield();
-    haHelper.publishSensorFaultCode(); yield();
-    haHelper.publishSensorRssi(false); yield();
-    haHelper.publishSensorUptime(false); yield();
+    haHelper.publishSensorModulation(false);
+    haHelper.publishSensorPressure(false);
+    haHelper.publishSensorFaultCode();
+    haHelper.publishSensorRssi(false);
+    haHelper.publishSensorUptime(false);
+    yield();
 
     // temperatures
-    haHelper.publishNumberIndoorTemp(); yield();
-    haHelper.publishSensorHeatingTemp(); yield();
+    haHelper.publishNumberIndoorTemp();
+    haHelper.publishSensorHeatingTemp();
+    yield();
 
     // buttons
-    haHelper.publishButtonRestart(false); yield();
-    haHelper.publishButtonResetFault(); yield();
-    haHelper.publishButtonResetDiagnostic(); yield();
+    haHelper.publishButtonRestart(false);
+    haHelper.publishButtonResetFault();
+    haHelper.publishButtonResetDiagnostic();
   }
 
   bool publishNonStaticHaEntities(bool force = false) {
@@ -497,6 +507,7 @@ protected:
       }
 
       published = true;
+      yield();
     }
 
     if (force || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
@@ -512,12 +523,14 @@ protected:
       haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
 
       published = true;
+      yield();
 
     } else if (_isStupidMode != isStupidMode) {
       _isStupidMode = isStupidMode;
       haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
 
       published = true;
+      yield();
     }
 
     if (_dhwPresent && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp)) {
@@ -528,6 +541,7 @@ protected:
       haHelper.publishClimateDhw(settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
+      yield();
     }
 
     if (force || _editableOutdoorTemp != editableOutdoorTemp) {
@@ -542,6 +556,7 @@ protected:
       }
 
       published = true;
+      yield();
     }
 
     if (force || _editableIndoorTemp != editableIndoorTemp) {
