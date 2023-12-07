@@ -11,9 +11,6 @@ variables:
   # If the prefix has not changed, then you do not need to change it
   target_entity: "number.opentherm_outdoor_temp"
 trigger:
-  - platform: state
-    entity_id: "{{ source_entity }}"
-    attribute: temperature
   - platform: time_pattern
     seconds: /30
 condition:

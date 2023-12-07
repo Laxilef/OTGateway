@@ -12,8 +12,6 @@ variables:
   # To report outdoor temperature: number.opentherm_outdoor_temp
   target_entity: "number.opentherm_indoor_temp"
 trigger:
-  - platform: state
-    entity_id: "{{ source_entity }}"
   - platform: time_pattern
     seconds: /30
 condition:
