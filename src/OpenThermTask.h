@@ -394,7 +394,7 @@ protected:
   }
 
   bool updateSlaveConfig() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SConfigSMemberIDcode, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::SConfigSMemberIDcode, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -451,7 +451,7 @@ protected:
     }
 
     unsigned long response = ot->sendRequest(ot->buildRequest(
-      OpenThermRequestType::WRITE,
+      OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MConfigMMemberIDcode,
       request
     ));
@@ -461,7 +461,7 @@ protected:
 
   bool setMaxModulationLevel(byte value) {
     unsigned long response = ot->sendRequest(ot->buildRequest(
-      OpenThermRequestType::WRITE,
+      OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MaxRelModLevelSetting,
       ot->toF88(value)
     ));
@@ -475,7 +475,7 @@ protected:
   }
 
   bool updateSlaveOtVersion() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::OpenThermVersionSlave, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::OpenThermVersionSlave, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -501,7 +501,7 @@ protected:
   }
 
   bool updateSlaveVersion() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SlaveVersion, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::SlaveVersion, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -514,7 +514,7 @@ protected:
 
   bool setMasterVersion(uint8_t version, uint8_t type) {
     unsigned long response = ot->sendRequest(ot->buildRequest(
-      OpenThermRequestType::WRITE,
+      OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MasterVersion,
       (unsigned int) version | (unsigned int) type << 8 // 0x013F
     ));
@@ -530,7 +530,7 @@ protected:
   }
 
   bool updateMinMaxDhwTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::TdhwSetUBTdhwSetLB, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::TdhwSetUBTdhwSetLB, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -549,7 +549,7 @@ protected:
   }
 
   bool updateMinMaxHeatingTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::MaxTSetUBMaxTSetLB, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::MaxTSetUBMaxTSetLB, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -576,7 +576,7 @@ protected:
   }
 
   bool updateOutsideTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::Toutside, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -597,7 +597,7 @@ protected:
 
 
   bool updateDhwTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ, OpenThermMessageID::Tdhw, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::Tdhw, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -607,7 +607,7 @@ protected:
   }
 
   bool updateDhwFlowRate() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ, OpenThermMessageID::DHWFlowRate, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHWFlowRate, 0));
     if (!ot->isValidResponse(response)) {
       return false;
     }
@@ -617,7 +617,7 @@ protected:
   }
 
   bool updateFaultCode() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::ASFflags, 0));
 
     if (!ot->isValidResponse(response)) {
       return false;
@@ -628,7 +628,7 @@ protected:
   }
 
   bool updateModulationLevel() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::RelModLevel, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::RelModLevel, 0));
 
     if (!ot->isValidResponse(response)) {
       return false;
@@ -645,7 +645,7 @@ protected:
   }
 
   bool updatePressure() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ, OpenThermMessageID::CHPressure, 0));
+    unsigned long response = ot->sendRequest(ot->buildRequest(OpenThermRequestType::READ_DATA, OpenThermMessageID::CHPressure, 0));
 
     if (!ot->isValidResponse(response)) {
       return false;
