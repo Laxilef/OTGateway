@@ -1,8 +1,20 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+#if defined(ESP32)
+  #include <NimBLEDevice.h>
+
+  // BLE services and characterstics that we are interested in
+  const uint16_t bleUuidServiceBattery = 0x180F;
+  const uint16_t bleUuidServiceEnvironment = 0x181AU;
+  const uint16_t bleUuidCharacteristicBatteryLevel = 0x2A19;
+  const uint16_t bleUuidCharacteristicTemperature = 0x2A6E;
+  const uint16_t bleUuidCharacteristicHumidity = 0x2A6F;
+#endif
+
 const char S_SENSORS_OUTDOOR[]  PROGMEM = "SENSORS.OUTDOOR";
 const char S_SENSORS_INDOOR[]   PROGMEM = "SENSORS.INDOOR";
+const char S_SENSORS_BLE[]      PROGMEM = "SENSORS.BLE";
 
 class SensorsTask : public LeanTask {
 public:
@@ -25,6 +37,12 @@ protected:
   float filteredIndoorTemp = 0;
   bool emptyIndoorTemp = true;
 
+#if defined(ESP32)
+  BLEClient* pBleClient = nullptr;
+  BLERemoteService* pBleServiceBattery = nullptr;
+  BLERemoteService* pBleServiceEnvironment = nullptr;
+  bool initBleSensor = false;
+#endif
 
   const char* getTaskName() {
     return "Sensors";
@@ -39,14 +57,68 @@ protected:
   }
 
   void loop() {
-    if (settings.sensors.outdoor.type == 2) {
+    if (settings.sensors.outdoor.type == 2 && settings.sensors.outdoor.pin) {
       outdoorTemperatureSensor();
     }
 
-    if (settings.sensors.indoor.type == 2) {
+    if (settings.sensors.indoor.type == 2 && settings.sensors.indoor.pin) {
       indoorTemperatureSensor();
     }
+#if defined(ESP32)
+    else if (settings.sensors.indoor.type == 3 && strlen(settings.sensors.indoor.bleAddresss)) {
+      bluetoothSensor();
+    }
   }
+
+  void bluetoothSensor() {
+    if (!initBleSensor && millis() > 5000) {
+      Log.sinfoln(FPSTR(S_SENSORS_BLE), "Init BLE. Free heap %u bytes", ESP.getFreeHeap());
+      BLEDevice::init("");
+
+      pBleClient = BLEDevice::createClient();   
+
+      // Connect to the remote BLE Server.
+      BLEAddress bleServerAddress(std::string(settings.sensors.indoor.bleAddresss));
+      if (pBleClient->connect(bleServerAddress)) {
+        Log.sinfoln(FPSTR(S_SENSORS_BLE), "Connected to BLE device at %s", bleServerAddress.toString().c_str());
+        // Obtain a reference to the services we are interested in
+        pBleServiceBattery = pBleClient->getService(BLEUUID(bleUuidServiceBattery));
+        if (pBleServiceBattery == nullptr) {
+          Log.sinfoln(FPSTR(S_SENSORS_BLE), "Failed to find battery service");
+        }
+        pBleServiceEnvironment = pBleClient->getService(BLEUUID(bleUuidServiceEnvironment));
+        if (pBleServiceEnvironment == nullptr) {
+          Log.sinfoln(FPSTR(S_SENSORS_BLE), "Failed to find environmental service");
+        }
+
+      }
+      else {
+        Log.swarningln(FPSTR(S_SENSORS_BLE), "Error connecting to BLE device at %s", bleServerAddress.toString().c_str());
+      }
+      initBleSensor = true;
+    }
+
+    if (pBleClient && pBleClient->isConnected()) {
+      Log.straceln(FPSTR(S_SENSORS_BLE), "Connected. Free heap %u bytes", ESP.getFreeHeap());
+      if (pBleServiceBattery) {
+        uint8_t batteryLevel = *reinterpret_cast<const uint8_t *>(pBleServiceBattery->getValue(bleUuidCharacteristicBatteryLevel).data());
+        Log.straceln(FPSTR(S_SENSORS_BLE), "Battery: %d", batteryLevel);
+      }
+      if (pBleServiceEnvironment) {
+        float temperature = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicTemperature).data()) / 100.0f;
+        Log.straceln(FPSTR(S_SENSORS_BLE), "Temperature: %.2f", temperature);
+        float humidity = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicHumidity).data()) / 100.0f;
+        Log.straceln(FPSTR(S_SENSORS_BLE), "Humidity: %.2f", humidity);
+
+        vars.temperatures.indoor = temperature + settings.sensors.indoor.offset;
+      }
+    }
+    else
+    {
+      Log.straceln(FPSTR(S_SENSORS_BLE), "Not connected");
+    }
+  }
+#endif
 
   void outdoorTemperatureSensor() {
     if (!initOutdoorSensor) {

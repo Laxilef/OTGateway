@@ -290,7 +290,7 @@ protected:
     }
 
     if (!doc["sensors"]["indoor"]["type"].isNull() && doc["sensors"]["indoor"]["type"].is<unsigned char>()) {
-      if (doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 2) {
+      if (doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 3) {
         settings.sensors.indoor.type = doc["sensors"]["indoor"]["type"].as<unsigned char>();
         flag = true;
       }
