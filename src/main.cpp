@@ -6,7 +6,7 @@
 #include "Settings.h"
 
 #if USE_TELNET
-  #include "ESPTelnetStream.h"
+  #include "BufferedTelnetStream.h"
 #endif
 
 #if defined(ESP32)
@@ -29,7 +29,7 @@
 // Vars
 EEManager eeSettings(settings, 60000);
 #if USE_TELNET
-  ESPTelnetStream TelnetStream;
+  BufferedTelnetStream TelnetStream;
 #endif
 
 // Tasks

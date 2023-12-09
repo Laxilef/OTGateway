@@ -39,7 +39,7 @@ SeparatorParameter* wmSep;
 
 extern EEManager eeSettings;
 #if USE_TELNET
-  extern ESPTelnetStream TelnetStream;
+  extern BufferedTelnetStream TelnetStream;
 #endif
 
 const char S_WIFI[]          PROGMEM = "WIFI";

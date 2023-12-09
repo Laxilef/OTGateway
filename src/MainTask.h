@@ -5,7 +5,7 @@ extern SensorsTask* tSensors;
 extern OpenThermTask* tOt;
 extern EEManager eeSettings;
 #if USE_TELNET
-  extern ESPTelnetStream TelnetStream;
+  extern BufferedTelnetStream TelnetStream;
 #endif
 
 
