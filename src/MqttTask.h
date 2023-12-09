@@ -72,6 +72,7 @@ protected:
         client.subscribe(getTopicPath("settings/set").c_str());
         client.subscribe(getTopicPath("state/set").c_str());
         publishHaEntities();
+        publishNonStaticHaEntities(true);
 
         firstFailConnect = 0;
         lastReconnectAttempt = 0;
@@ -517,13 +518,21 @@ protected:
       _isStupidMode = isStupidMode;
 
       haHelper.publishNumberHeatingTarget(heatingMinTemp, heatingMaxTemp, false);
-      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
+      haHelper.publishClimateHeating(
+        heatingMinTemp,
+        heatingMaxTemp,
+        isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
+      );
 
       published = true;
 
     } else if (_isStupidMode != isStupidMode) {
       _isStupidMode = isStupidMode;
-      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
+      haHelper.publishClimateHeating(
+        heatingMinTemp,
+        heatingMaxTemp,
+        isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
+      );
 
       published = true;
     }
