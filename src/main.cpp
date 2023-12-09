@@ -6,7 +6,7 @@
 #include "Settings.h"
 
 #if USE_TELNET
-  #include "BufferedTelnetStream.h"
+  #include "ESPTelnetStream.h"
 #endif
 
 #if defined(ESP32)
@@ -29,7 +29,7 @@
 // Vars
 EEManager eeSettings(settings, 60000);
 #if USE_TELNET
-  BufferedTelnetStream TelnetStream;
+  ESPTelnetStream TelnetStream;
 #endif
 
 // Tasks
@@ -54,6 +54,7 @@ void setup() {
   #endif
 
   #if USE_TELNET
+    TelnetStream.setKeepAliveInterval(500);
     Log.addStream(&TelnetStream);
   #endif
   //Log.setNtpClient(&timeClient);
