@@ -3,7 +3,7 @@
 #include <UnsignedIntParameter.h>
 #include <UnsignedShortParameter.h>
 #include <CheckboxParameter.h>
-#include <SeparatorParameter.h>
+#include <HeaderParameter.h>
 #include <netif/etharp.h>
 
 WiFiManager wm;
@@ -35,11 +35,16 @@ UnsignedShortParameter* wmExtPumpPostCirculationTime;
 UnsignedIntParameter* wmExtPumpAntiStuckInterval;
 UnsignedShortParameter* wmExtPumpAntiStuckTime;
 
-SeparatorParameter* wmSep;
+HeaderParameter* wmMqttHeader;
+HeaderParameter* wmOtHeader;
+HeaderParameter* wmOtFlagsHeader;
+HeaderParameter* wmSensorsHeader;
+HeaderParameter* wmExtPumpHeader;
+
 
 extern EEManager eeSettings;
 #if USE_TELNET
-  extern BufferedTelnetStream TelnetStream;
+  extern ESPTelnetStream TelnetStream;
 #endif
 
 const char S_WIFI[]          PROGMEM = "WIFI";
@@ -79,6 +84,12 @@ protected:
 
     wm.setDebugOutput(settings.debug, (wm_debuglevel_t) WM_DEBUG_MODE);
     wm.setTitle(PROJECT_NAME);
+    wm.setCustomHeadElement(PSTR(
+      "<style>"
+      ".bheader + br {display: none;}"
+      ".bheader {margin: 1.25em 0 0.5em 0;padding: 0;border-bottom: 2px solid #000;font-size: 1.5em;}"
+      "</style>"
+    ));
     wm.setCustomMenuHTML(PSTR(
       "<style>.wrap h1 {display: none;} .wrap h3 {display: none;} .nh {margin: 0 0 1em 0;} .nh .logo {font-size: 1.8em; margin: 0.5em; text-align: center;} .nh .links {text-align: center;}</style>"
       "<div class=\"nh\">"
@@ -90,62 +101,68 @@ protected:
     std::vector<const char *> menu = {"custom", "wifi", "param", "sep", "info", "update", "restart"};
     wm.setMenu(menu);
 
-    wmSep = new SeparatorParameter();
-
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
     wm.addParameter(wmHostname);
 
-    wmMqttServer = new WiFiManagerParameter("mqtt_server", "MQTT server", settings.mqtt.server, 80);
+    wmMqttHeader = new HeaderParameter("MQTT");
+    wm.addParameter(wmMqttHeader);
+
+    wmMqttServer = new WiFiManagerParameter("mqtt_server", "Server", settings.mqtt.server, 80);
     wm.addParameter(wmMqttServer);
 
-    wmMqttPort = new UnsignedIntParameter("mqtt_port", "MQTT port", settings.mqtt.port, 6);
+    wmMqttPort = new UnsignedIntParameter("mqtt_port", "Port", settings.mqtt.port, 6);
     wm.addParameter(wmMqttPort);
 
-    wmMqttUser = new WiFiManagerParameter("mqtt_user", "MQTT username", settings.mqtt.user, 32);
+    wmMqttUser = new WiFiManagerParameter("mqtt_user", "Username", settings.mqtt.user, 32);
     wm.addParameter(wmMqttUser);
 
-    wmMqttPassword = new WiFiManagerParameter("mqtt_password", "MQTT password", settings.mqtt.password, 32, "type=\"password\"");
+    wmMqttPassword = new WiFiManagerParameter("mqtt_password", "Password", settings.mqtt.password, 32, "type=\"password\"");
     wm.addParameter(wmMqttPassword);
 
-    wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "MQTT prefix", settings.mqtt.prefix, 32);
+    wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "Prefix", settings.mqtt.prefix, 32);
     wm.addParameter(wmMqttPrefix);
 
-    wmMqttPublishInterval = new UnsignedIntParameter("mqtt_publish_interval", "MQTT publish interval", settings.mqtt.interval, 5);
+    wmMqttPublishInterval = new UnsignedIntParameter("mqtt_publish_interval", "Publish interval", settings.mqtt.interval, 5);
     wm.addParameter(wmMqttPublishInterval);
 
-    wm.addParameter(wmSep);
+    wmOtHeader = new HeaderParameter("OpenTherm");
+    wm.addParameter(wmOtHeader);
 
-    wmOtInPin = new UnsignedIntParameter("ot_in_pin", "Opentherm GPIO IN", settings.opentherm.inPin, 2);
+    wmOtInPin = new UnsignedIntParameter("ot_in_pin", "GPIO IN", settings.opentherm.inPin, 2);
     wm.addParameter(wmOtInPin);
 
-    wmOtOutPin = new UnsignedIntParameter("ot_out_pin", "Opentherm GPIO OUT", settings.opentherm.outPin, 2);
+    wmOtOutPin = new UnsignedIntParameter("ot_out_pin", "GPIO OUT", settings.opentherm.outPin, 2);
     wm.addParameter(wmOtOutPin);
 
-    wmOtMemberIdCode = new UnsignedIntParameter("ot_member_id_code", "Opentherm Master Member ID", settings.opentherm.memberIdCode, 5);
+    wmOtMemberIdCode = new UnsignedIntParameter("ot_member_id_code", "Master Member ID", settings.opentherm.memberIdCode, 5);
     wm.addParameter(wmOtMemberIdCode);
 
-    wmOtDhwPresent = new CheckboxParameter("ot_dhw_present", "Opentherm DHW present", settings.opentherm.dhwPresent);
+    wmOtFlagsHeader = new HeaderParameter("OpenTherm flags");
+    wm.addParameter(wmOtFlagsHeader);
+
+    wmOtDhwPresent = new CheckboxParameter("ot_dhw_present", "DHW present", settings.opentherm.dhwPresent);
     wm.addParameter(wmOtDhwPresent);
 
-    wmOtSummerWinterMode = new CheckboxParameter("ot_summer_winter_mode", "Opentherm summer/winter mode", settings.opentherm.summerWinterMode);
+    wmOtSummerWinterMode = new CheckboxParameter("ot_summer_winter_mode", "Summer/winter mode", settings.opentherm.summerWinterMode);
     wm.addParameter(wmOtSummerWinterMode);
 
-    wmOtHeatingCh2Enabled = new CheckboxParameter("ot_heating_ch2_enabled", "Opentherm CH2 enabled", settings.opentherm.heatingCh2Enabled);
+    wmOtHeatingCh2Enabled = new CheckboxParameter("ot_heating_ch2_enabled", "CH2 enabled", settings.opentherm.heatingCh2Enabled);
     wm.addParameter(wmOtHeatingCh2Enabled);
 
-    wmOtHeatingCh1ToCh2 = new CheckboxParameter("ot_heating_ch1_to_ch2", "Opentherm heating CH1 to CH2", settings.opentherm.heatingCh1ToCh2);
+    wmOtHeatingCh1ToCh2 = new CheckboxParameter("ot_heating_ch1_to_ch2", "Heating CH1 to CH2", settings.opentherm.heatingCh1ToCh2);
     wm.addParameter(wmOtHeatingCh1ToCh2);
 
-    wmOtDhwToCh2 = new CheckboxParameter("ot_dhw_to_ch2", "Opentherm DHW to CH2", settings.opentherm.dhwToCh2);
+    wmOtDhwToCh2 = new CheckboxParameter("ot_dhw_to_ch2", "DHW to CH2", settings.opentherm.dhwToCh2);
     wm.addParameter(wmOtDhwToCh2);
 
-    wmOtDhwBlocking = new CheckboxParameter("ot_dhw_blocking", "Opentherm DHW blocking", settings.opentherm.dhwBlocking);
+    wmOtDhwBlocking = new CheckboxParameter("ot_dhw_blocking", "DHW blocking", settings.opentherm.dhwBlocking);
     wm.addParameter(wmOtDhwBlocking);
 
     wmOtModSyncWithHeating = new CheckboxParameter("ot_mod_sync_with_heating", "Modulation sync with heating", settings.opentherm.modulationSyncWithHeating);
     wm.addParameter(wmOtModSyncWithHeating);
 
-    wm.addParameter(wmSep);
+    wmSensorsHeader = new HeaderParameter("Sensors");
+    wm.addParameter(wmSensorsHeader);
 
     wmOutdoorSensorPin = new UnsignedIntParameter("outdoor_sensor_pin", "Outdoor sensor GPIO", settings.sensors.outdoor.pin, 2);
     wm.addParameter(wmOutdoorSensorPin);
@@ -153,21 +170,22 @@ protected:
     wmIndoorSensorPin = new UnsignedIntParameter("indoor_sensor_pin", "Indoor sensor GPIO", settings.sensors.indoor.pin, 2);
     wm.addParameter(wmIndoorSensorPin);
 
-    wm.addParameter(wmSep);
+    wmExtPumpHeader = new HeaderParameter("External pump");
+    wm.addParameter(wmExtPumpHeader);
 
-    wmExtPumpUse = new CheckboxParameter("ext_pump_use", "Use external pump", settings.externalPump.use);
+    wmExtPumpUse = new CheckboxParameter("ext_pump_use", "Use external pump<br>", settings.externalPump.use);
     wm.addParameter(wmExtPumpUse);
 
-    wmExtPumpPin = new UnsignedIntParameter("ext_pump_pin", "External pump GPIO", settings.externalPump.pin, 2);
+    wmExtPumpPin = new UnsignedIntParameter("ext_pump_pin", "Relay GPIO", settings.externalPump.pin, 2);
     wm.addParameter(wmExtPumpPin);
 
-    wmExtPumpPostCirculationTime = new UnsignedShortParameter("ext_pump_ps_time", "External pump post circulation time", settings.externalPump.postCirculationTime, 5);
+    wmExtPumpPostCirculationTime = new UnsignedShortParameter("ext_pump_ps_time", "Post circulation time", settings.externalPump.postCirculationTime, 5);
     wm.addParameter(wmExtPumpPostCirculationTime);
 
-    wmExtPumpAntiStuckInterval = new UnsignedIntParameter("ext_pump_as_interval", "External pump anti stuck interval", settings.externalPump.antiStuckInterval, 7);
+    wmExtPumpAntiStuckInterval = new UnsignedIntParameter("ext_pump_as_interval", "Anti stuck interval", settings.externalPump.antiStuckInterval, 7);
     wm.addParameter(wmExtPumpAntiStuckInterval);
 
-    wmExtPumpAntiStuckTime = new UnsignedShortParameter("ext_pump_as_time", "External pump anti stuck time", settings.externalPump.antiStuckTime, 5);
+    wmExtPumpAntiStuckTime = new UnsignedShortParameter("ext_pump_as_time", "Anti stuck time", settings.externalPump.antiStuckTime, 5);
     wm.addParameter(wmExtPumpAntiStuckTime);
 
     //wm.setCleanConnect(true);
