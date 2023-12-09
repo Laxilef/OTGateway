@@ -45,7 +45,11 @@ protected:
       pinMode(LED_STATUS_PIN, OUTPUT);
       digitalWrite(LED_STATUS_PIN, false);
     #endif
-    pinMode(settings.externalPump.pin, OUTPUT);
+
+    if (settings.externalPump.pin != 0) {
+      pinMode(settings.externalPump.pin, OUTPUT);
+      digitalWrite(settings.externalPump.pin, false);
+    }
 
     #if defined(ESP32)
       heapSize = ESP.getHeapSize();
@@ -224,9 +228,11 @@ protected:
       this->heatingEnabled = true;
     }
     
-    if (!settings.externalPump.use) {
+    if (!settings.externalPump.use || settings.externalPump.pin == 0) {
       if (vars.externalPump.enable) {
-        digitalWrite(settings.externalPump.pin, false);
+        if (settings.externalPump.pin != 0) {
+          digitalWrite(settings.externalPump.pin, false);
+        }
 
         vars.externalPump.enable = false;
         vars.externalPump.lastEnableTime = millis();
