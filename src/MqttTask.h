@@ -45,7 +45,7 @@ protected:
 
     haHelper.setYieldCallback([](void* self) {
       MqttTask* task = static_cast<MqttTask*>(self);
-      task->delay(10);
+      task->delay(50);
 
       if (client.connected()) {
         client.loop();
