@@ -41,7 +41,7 @@ protected:
   }
 
   void setup() {
-    Log.sinfoln(FPSTR(S_OT), F("Started. GPIO IN: %d, GPIO OUT: %d"), settings.opentherm.inPin, settings.opentherm.outPin);
+    Log.sinfoln(FPSTR(S_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
 
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
@@ -144,10 +144,10 @@ protected:
 
       } else {
         if (setMaxModulationLevel(settings.heating.maxModulation)) {
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation %d\%"), settings.heating.maxModulation);
+          Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation %hhu%%"), settings.heating.maxModulation);
 
         } else {
-          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %d\%"), settings.heating.maxModulation);
+          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %hhu%%"), settings.heating.maxModulation);
         }
       }
       //yield();
@@ -158,13 +158,13 @@ protected:
           if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
             eeSettings.update();
-            Log.snoticeln(FPSTR(S_OT_DHW), F("Updated min temp: %d"), settings.dhw.minTemp);
+            Log.snoticeln(FPSTR(S_OT_DHW), F("Updated min temp: %hhu"), settings.dhw.minTemp);
           }
 
           if (settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
             settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
             eeSettings.update();
-            Log.snoticeln(FPSTR(S_OT_DHW), F("Updated max temp: %d"), settings.dhw.maxTemp);
+            Log.snoticeln(FPSTR(S_OT_DHW), F("Updated max temp: %hhu"), settings.dhw.maxTemp);
           }
 
         } else {
@@ -186,13 +186,13 @@ protected:
         if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
           settings.heating.minTemp = vars.parameters.heatingMinTemp;
           eeSettings.update();
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Updated min temp: %d"), settings.heating.minTemp);
+          Log.snoticeln(FPSTR(S_OT_HEATING), F("Updated min temp: %hhu"), settings.heating.minTemp);
         }
 
         if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
           settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
           eeSettings.update();
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Updated max temp: %d"), settings.heating.maxTemp);
+          Log.snoticeln(FPSTR(S_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
         }
 
       } else {
