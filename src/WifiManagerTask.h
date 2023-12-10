@@ -174,9 +174,6 @@ protected:
     wmBleAddress = new WiFiManagerParameter("ble_address", "BLE sensor address", settings.sensors.indoor.bleAddresss, 17);
     wm.addParameter(wmBleAddress);
 
-    wmBleAddress = new WiFiManagerParameter("ble_address", "BLE sensor address", settings.sensors.indoor.bleAddresss, 17);
-    wm.addParameter(wmBleAddress);
-
     wmExtPumpHeader = new HeaderParameter("External pump");
     wm.addParameter(wmExtPumpHeader);
 
