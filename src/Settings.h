@@ -72,9 +72,10 @@ struct Settings {
     } outdoor;
 
     struct {
-      // 1 - manual, 2 - ds18b20
+      // 1 - manual, 2 - ds18b20, 3 - ble
       byte type = 1;
       byte pin = SENSOR_INDOOR_PIN_DEFAULT;
+      char bleAddresss[18];
       float offset = 0.0f;
     } indoor;
   } sensors;
