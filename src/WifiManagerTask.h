@@ -28,7 +28,9 @@ CheckboxParameter* wmOtModSyncWithHeating;
 
 UnsignedIntParameter* wmOutdoorSensorPin;
 UnsignedIntParameter* wmIndoorSensorPin;
-WiFiManagerParameter* wmBleAddress;
+#if USE_BLE
+WiFiManagerParameter* wmOutdoorSensorBleAddress;
+#endif
 
 CheckboxParameter* wmExtPumpUse;
 UnsignedIntParameter* wmExtPumpPin;
@@ -171,8 +173,10 @@ protected:
     wmIndoorSensorPin = new UnsignedIntParameter("indoor_sensor_pin", "Indoor sensor GPIO", settings.sensors.indoor.pin, 2);
     wm.addParameter(wmIndoorSensorPin);
 
-    wmBleAddress = new WiFiManagerParameter("ble_address", "BLE sensor address", settings.sensors.indoor.bleAddresss, 17);
-    wm.addParameter(wmBleAddress);
+#if USE_BLE
+    wmOutdoorSensorBleAddress = new WiFiManagerParameter("ble_address", "BLE sensor address", settings.sensors.indoor.bleAddresss, 17);
+    wm.addParameter(wmOutdoorSensorBleAddress);
+#endif
 
     wmExtPumpHeader = new HeaderParameter("External pump");
     wm.addParameter(wmExtPumpHeader);
@@ -449,12 +453,14 @@ protected:
       Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New sensors.indoor.pin: %hhu"), settings.sensors.indoor.pin);
     }
 
-    if (strcmp(wmBleAddress->getValue(), settings.sensors.indoor.bleAddresss) != 0) {
+#if USE_BLE
+    if (strcmp(wmOutdoorSensorBleAddress->getValue(), settings.sensors.indoor.bleAddresss) != 0) {
       changed = true;
-      strcpy(settings.sensors.indoor.bleAddresss, wmBleAddress->getValue());
+      strcpy(settings.sensors.indoor.bleAddresss, wmOutdoorSensorBleAddress->getValue());
 
-      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New BLE address: %s"), settings.sensors.indoor.bleAddresss);
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New sensors.indoor.bleAddresss: %s"), settings.sensors.indoor.bleAddresss);
     }
+#endif
 
     if (wmExtPumpUse->getCheckboxValue() != settings.externalPump.use) {
       changed = true;

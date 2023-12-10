@@ -29,17 +29,27 @@ public:
   bool publishSelectIndoorSensorType(bool enabledByDefault = true) {
     StaticJsonDocument<1536> doc;
     doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
+#if USE_BLE
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"indoor\": {\"type\": {% if value == 'Manual' %}1{% elif value == 'External' %}2{% elif value == 'Bluetooth' %}3{% endif %}}}}");
+#else
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"indoor\": {\"type\": {% if value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}}}");
+#endif
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_indoor_sensor_type");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_indoor_sensor_type");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_NAME)] = F("Indoor temperature source");
     doc[FPSTR(HA_STATE_TOPIC)] = devicePrefix + F("/settings");
+#if USE_BLE
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{% if value_json.sensors.indoor.type == 1 %}Manual{% elif value_json.sensors.indoor.type == 2 %}External{% elif value_json.sensors.indoor.type == 3 %}Bluetooth{% endif %}");
+#else
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{% if value_json.sensors.indoor.type == 1 %}Manual{% elif value_json.sensors.indoor.type == 2 %}External{% endif %}");
+#endif
     doc[FPSTR(HA_OPTIONS)][0] = F("Manual");
     doc[FPSTR(HA_OPTIONS)][1] = F("External");
+#if USE_BLE
     doc[FPSTR(HA_OPTIONS)][2] = F("Bluetooth");
+#endif
 
     return publish(getTopic("select", "indoor_sensor_type").c_str(), doc);
   }

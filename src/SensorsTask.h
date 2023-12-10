@@ -64,8 +64,9 @@ protected:
     if (settings.sensors.indoor.type == 2 && settings.sensors.indoor.pin) {
       indoorTemperatureSensor();
     }
+
 #if USE_BLE
-    else if (settings.sensors.indoor.type == 3 && strlen(settings.sensors.indoor.bleAddresss)) {
+    if (settings.sensors.indoor.type == 3 && strlen(settings.sensors.indoor.bleAddresss)) {
       bluetoothSensor();
     }
 #endif
@@ -93,10 +94,10 @@ protected:
           Log.sinfoln(FPSTR(S_SENSORS_BLE), "Failed to find environmental service");
         }
 
-      }
-      else {
+      } else {
         Log.swarningln(FPSTR(S_SENSORS_BLE), "Error connecting to BLE device at %s", bleServerAddress.toString().c_str());
       }
+      
       initBleSensor = true;
     }
 
@@ -106,6 +107,7 @@ protected:
         uint8_t batteryLevel = *reinterpret_cast<const uint8_t *>(pBleServiceBattery->getValue(bleUuidCharacteristicBatteryLevel).data());
         Log.straceln(FPSTR(S_SENSORS_BLE), "Battery: %d", batteryLevel);
       }
+
       if (pBleServiceEnvironment) {
         float temperature = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicTemperature).data()) / 100.0f;
         Log.straceln(FPSTR(S_SENSORS_BLE), "Temperature: %.2f", temperature);
@@ -114,9 +116,7 @@ protected:
 
         vars.temperatures.indoor = temperature + settings.sensors.indoor.offset;
       }
-    }
-    else
-    {
+    } else {
       Log.straceln(FPSTR(S_SENSORS_BLE), "Not connected");
     }
   }
