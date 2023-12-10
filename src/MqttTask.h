@@ -38,10 +38,11 @@ protected:
   void setup() {
     Log.sinfoln("MQTT", F("Started"));
 
-    this->bClient = new BufferingPrint(client, 32);
+    this->bClient = new BufferingPrint(client, 64);
 
     client.setCallback(std::bind(&MqttTask::__callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     client.setBufferSize(1024);
+    client.setSocketTimeout(1);
 
     haHelper.setYieldCallback([](void* self) {
       MqttTask* task = static_cast<MqttTask*>(self);
@@ -618,9 +619,13 @@ protected:
     doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
     doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 
-    client.beginPublish(topic, measureJson(doc), false);
+    if (!client.beginPublish(topic, measureJson(doc), false)) {
+      return false;
+    }
+
     serializeJson(doc, *this->bClient);
     this->bClient->flush();
+
     return client.endPublish();
   }
 
@@ -656,9 +661,13 @@ protected:
     doc["parameters"]["dhwMinTemp"] = vars.parameters.dhwMinTemp;
     doc["parameters"]["dhwMaxTemp"] = vars.parameters.dhwMaxTemp;
 
-    client.beginPublish(topic, measureJson(doc), false);
+    if (!client.beginPublish(topic, measureJson(doc), false)) {
+      return false;
+    }
+
     serializeJson(doc, *this->bClient);
     this->bClient->flush();
+    
     return client.endPublish();
   }
 

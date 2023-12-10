@@ -70,7 +70,14 @@ public:
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = deviceConfigUrl;
     }
 
-    client->beginPublish(topic, measureJson(doc), true);
+    if (!client->beginPublish(topic, measureJson(doc), true)) {
+      if (this->yieldCallback != nullptr) {
+        this->yieldCallback(yieldArg);
+      }
+
+      return false;
+    }
+
     if (this->bClient != nullptr) {
       serializeJson(doc, *this->bClient);
       this->bClient->flush();
@@ -78,7 +85,7 @@ public:
     } else {
       serializeJson(doc, *client);
     }
-
+    
     int pubResult = client->endPublish();
     if (this->yieldCallback != nullptr) {
       this->yieldCallback(yieldArg);
