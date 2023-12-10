@@ -1,7 +1,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#if defined(ESP32)
+#if USE_BLE
   #include <NimBLEDevice.h>
 
   // BLE services and characterstics that we are interested in
@@ -37,7 +37,7 @@ protected:
   float filteredIndoorTemp = 0;
   bool emptyIndoorTemp = true;
 
-#if defined(ESP32)
+#if USE_BLE
   BLEClient* pBleClient = nullptr;
   BLERemoteService* pBleServiceBattery = nullptr;
   BLERemoteService* pBleServiceEnvironment = nullptr;
@@ -64,12 +64,14 @@ protected:
     if (settings.sensors.indoor.type == 2 && settings.sensors.indoor.pin) {
       indoorTemperatureSensor();
     }
-#if defined(ESP32)
+#if USE_BLE
     else if (settings.sensors.indoor.type == 3 && strlen(settings.sensors.indoor.bleAddresss)) {
       bluetoothSensor();
     }
+#endif
   }
 
+#if USE_BLE
   void bluetoothSensor() {
     if (!initBleSensor && millis() > 5000) {
       Log.sinfoln(FPSTR(S_SENSORS_BLE), "Init BLE. Free heap %u bytes", ESP.getFreeHeap());

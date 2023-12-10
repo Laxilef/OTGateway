@@ -34,6 +34,10 @@
   #define USE_TELNET true
 #endif
 
+#ifndef USE_BLE
+  #define USE_BLE false
+#endif
+
 #ifndef DEBUG_BY_DEFAULT
   #define DEBUG_BY_DEFAULT false
 #endif
