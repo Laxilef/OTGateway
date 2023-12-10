@@ -54,6 +54,7 @@ void setup() {
   #endif
 
   #if USE_TELNET
+    TelnetStream.setKeepAliveInterval(500);
     Log.addStream(&TelnetStream);
   #endif
   //Log.setNtpClient(&timeClient);

@@ -43,6 +43,14 @@ protected:
     client.setCallback(std::bind(&MqttTask::__callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     client.setBufferSize(1024);
 
+    haHelper.setYieldCallback([](void* self) {
+      MqttTask* task = static_cast<MqttTask*>(self);
+      task->delay(50);
+
+      if (client.connected()) {
+        client.loop();
+      }
+    }, this);
     haHelper.setBufferedClient(this->bClient);
     haHelper.setDevicePrefix(settings.mqtt.prefix);
     haHelper.setDeviceVersion(PROJECT_VERSION);
@@ -85,6 +93,7 @@ protected:
 
         lastReconnectAttempt = millis();
       }
+      delay(100);
     }
 
 
@@ -399,13 +408,11 @@ protected:
     haHelper.publishNumberOutdoorSensorOffset(false);
     haHelper.publishNumberIndoorSensorOffset(false);
     haHelper.publishSwitchDebug(false);
-    yield();
 
     // emergency
     haHelper.publishSwitchEmergency();
     haHelper.publishNumberEmergencyTarget();
     haHelper.publishSwitchEmergencyUseEquitherm();
-    yield();
 
     // heating
     haHelper.publishSwitchHeating(false);
@@ -413,12 +420,10 @@ protected:
     haHelper.publishNumberHeatingHysteresis();
     haHelper.publishSensorHeatingSetpoint(false);
     haHelper.publishSensorCurrentHeatingMinTemp(false);
-    yield();
     haHelper.publishSensorCurrentHeatingMaxTemp(false);
     haHelper.publishNumberHeatingMinTemp(false);
     haHelper.publishNumberHeatingMaxTemp(false);
     haHelper.publishNumberHeatingMaxModulation(false);
-    yield();
 
     // pid
     haHelper.publishSwitchPID();
@@ -427,19 +432,16 @@ protected:
     haHelper.publishNumberPIDFactorD();
     haHelper.publishNumberPIDMinTemp(false);
     haHelper.publishNumberPIDMaxTemp(false);
-    yield();
 
     // equitherm
     haHelper.publishSwitchEquitherm();
     haHelper.publishNumberEquithermFactorN();
     haHelper.publishNumberEquithermFactorK();
     haHelper.publishNumberEquithermFactorT();
-    yield();
 
     // tuning
     haHelper.publishSwitchTuning();
     haHelper.publishSelectTuningRegulator();
-    yield();
 
     // states
     haHelper.publishBinSensorStatus();
@@ -448,7 +450,6 @@ protected:
     haHelper.publishBinSensorFlame();
     haHelper.publishBinSensorFault();
     haHelper.publishBinSensorDiagnostic();
-    yield();
 
     // sensors
     haHelper.publishSensorModulation(false);
@@ -456,12 +457,10 @@ protected:
     haHelper.publishSensorFaultCode();
     haHelper.publishSensorRssi(false);
     haHelper.publishSensorUptime(false);
-    yield();
 
     // temperatures
     haHelper.publishNumberIndoorTemp();
     haHelper.publishSensorHeatingTemp();
-    yield();
 
     // buttons
     haHelper.publishButtonRestart(false);
@@ -507,7 +506,6 @@ protected:
       }
 
       published = true;
-      yield();
     }
 
     if (force || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
@@ -520,17 +518,23 @@ protected:
       _isStupidMode = isStupidMode;
 
       haHelper.publishNumberHeatingTarget(heatingMinTemp, heatingMaxTemp, false);
-      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
+      haHelper.publishClimateHeating(
+        heatingMinTemp,
+        heatingMaxTemp,
+        isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
+      );
 
       published = true;
-      yield();
 
     } else if (_isStupidMode != isStupidMode) {
       _isStupidMode = isStupidMode;
-      haHelper.publishClimateHeating(heatingMinTemp, heatingMaxTemp, isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR);
+      haHelper.publishClimateHeating(
+        heatingMinTemp,
+        heatingMaxTemp,
+        isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
+      );
 
       published = true;
-      yield();
     }
 
     if (_dhwPresent && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp)) {
@@ -541,7 +545,6 @@ protected:
       haHelper.publishClimateDhw(settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
-      yield();
     }
 
     if (force || _editableOutdoorTemp != editableOutdoorTemp) {
@@ -556,7 +559,6 @@ protected:
       }
 
       published = true;
-      yield();
     }
 
     if (force || _editableIndoorTemp != editableIndoorTemp) {

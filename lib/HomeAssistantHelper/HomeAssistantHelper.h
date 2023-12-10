@@ -8,6 +8,16 @@ public:
     this->client = &client;
   }
 
+  void setYieldCallback(void(*yieldCallback)(void*)) {
+    this->yieldCallback = yieldCallback;
+    this->yieldArg = nullptr;
+  }
+
+  void setYieldCallback(void(*yieldCallback)(void*), void* arg) {
+    this->yieldCallback = yieldCallback;
+    this->yieldArg = arg;
+  }
+
   void setBufferedClient() {
     this->bClient = nullptr;
   }
@@ -68,7 +78,13 @@ public:
     } else {
       serializeJson(doc, *client);
     }
-    return client->endPublish();
+
+    int pubResult = client->endPublish();
+    if (this->yieldCallback != nullptr) {
+      this->yieldCallback(yieldArg);
+    }
+
+    return pubResult;
   }
 
   bool publish(const char* topic) {
@@ -89,6 +105,8 @@ public:
   }
 
 protected:
+  void(*yieldCallback)(void*) = nullptr;
+  void* yieldArg = nullptr;
   PubSubClient* client;
   BufferingPrint* bClient = nullptr;
   String prefix = "homeassistant";
