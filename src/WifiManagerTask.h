@@ -54,9 +54,9 @@ const char S_WIFI[]          PROGMEM = "WIFI";
 const char S_WIFI_SETTINGS[] PROGMEM = "WIFI.SETTINGS";
 
 
-class WifiManagerTask : public Task {
+class WifiManagerTask : public LeanTask {
 public:
-  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
   WifiManagerTask* addTaskForDisable(AbstractTask* task) {
     this->tasksForDisable.push_back(task);
@@ -66,6 +66,7 @@ public:
 protected:
   bool connected = false;
   unsigned long lastArpGratuitous = 0;
+  unsigned long lastReconnecting = 0;
   std::vector<AbstractTask*> tasksForDisable;
 
   const char* getTaskName() {
@@ -200,7 +201,7 @@ protected:
     wm.setRestorePersistent(false);
 
     wm.setHostname(settings.hostname);
-    wm.setWiFiAutoReconnect(true);
+    wm.setWiFiAutoReconnect(false);
     wm.setAPClientCheck(true);
     wm.setConfigPortalBlocking(false);
     wm.setSaveParamsCallback(saveParamsCallback);
@@ -210,7 +211,7 @@ protected:
           task->disable();
         }
       }
-      this->delay(10);
+      //this->delay(10);
     });
     wm.setConfigPortalTimeout(wm.getWiFiIsSaved() ? 180 : 0);
     wm.setDisableConfigPortal(false);
@@ -226,19 +227,29 @@ protected:
         wm.stopWebPortal();
       }
 
-      wm.setCaptivePortalEnable(true);
+      /*wm.setCaptivePortalEnable(true);
 
       if (!wm.getConfigPortalActive()) {
-        wm.startConfigPortal();
-      }
+        wm.startConfigPortal(AP_SSID, AP_PASSWORD);
+      }*/
 
       #if USE_TELNET
         TelnetStream.stop();
       #endif
 
       Log.sinfoln(FPSTR(S_WIFI), F("Disconnected"));
+    }
+    
+    if (WiFi.status() != WL_CONNECTED && !wm.getConfigPortalActive()) {
+      if (millis() - this->lastReconnecting > 5000) {
+        Log.sinfoln(FPSTR(S_WIFI), F("Reconnecting..."));
 
-    } else if (!connected && WiFi.status() == WL_CONNECTED) {
+        WiFi.reconnect();
+        this->lastReconnecting = millis();
+      }
+    }
+    
+    if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
 
       wm.setConfigPortalTimeout(180);
@@ -247,7 +258,6 @@ protected:
       }
 
       wm.setCaptivePortalEnable(false);
-
       if (!wm.getWebPortalActive()) {
         wm.startWebPortal();
       }
