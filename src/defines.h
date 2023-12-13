@@ -5,7 +5,7 @@
 #define AP_PASSWORD                 "otgateway123456"
 
 #define EMERGENCY_TIME_TRESHOLD     120000
-#define MQTT_RECONNECT_INTERVAL     5000
+#define MQTT_RECONNECT_INTERVAL     15000
 #define MQTT_KEEPALIVE              30
 
 #define OPENTHERM_OFFLINE_TRESHOLD  10
