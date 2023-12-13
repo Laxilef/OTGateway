@@ -266,7 +266,7 @@ protected:
         TelnetStream.begin(23, false);
       #endif
 
-      Log.sinfoln(FPSTR(S_WIFI), F("Connected. IP: %s, RSSI: %hh"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
+      Log.sinfoln(FPSTR(S_WIFI), F("Connected. IP: %s, RSSI: %hhd"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
     #if defined(ESP8266)
