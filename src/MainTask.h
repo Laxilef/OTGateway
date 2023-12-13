@@ -77,6 +77,10 @@ protected:
       vars.actions.restart = false;
     }
 
+    if (!tOt->isEnabled() && settings.opentherm.inPin > 0 && settings.opentherm.outPin > 0 && settings.opentherm.inPin != settings.opentherm.outPin) {
+      tOt->enable();
+    }
+
     if (WiFi.status() == WL_CONNECTED) {
       //timeClient.update();
       vars.sensors.rssi = WiFi.RSSI();
@@ -113,10 +117,6 @@ protected:
       }
     }
 
-    if (!tOt->isEnabled() && settings.opentherm.inPin > 0 && settings.opentherm.outPin > 0 && settings.opentherm.inPin != settings.opentherm.outPin) {
-      tOt->enable();
-    }
-
     yield();
     #ifdef LED_STATUS_PIN
       ledStatus(LED_STATUS_PIN);
@@ -139,12 +139,20 @@ protected:
   }
 
   void heap() {
+    unsigned int freeHeapSize = ESP.getFreeHeap();
+    unsigned int maxFreeBlockSize = ESP.getMaxFreeBlockSize();
+
+    if (freeHeapSize < 1024 || maxFreeBlockSize < 1024) {
+      vars.actions.restart = true;
+      return;
+    }
+
     if (!settings.debug) {
       return;
     }
 
-    unsigned int freeHeapSize = ESP.getFreeHeap();
     unsigned int minFreeHeapSizeDiff = 0;
+    uint8_t heapFrag = ESP.getHeapFragmentation();
 
     if (freeHeapSize < minFreeHeapSize) {
       minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;
@@ -152,7 +160,7 @@ protected:
     }
 
     if (millis() - lastHeapInfo > 60000 || minFreeHeapSizeDiff > 0) {
-      Log.sverboseln("MAIN", F("Free heap size: %u of %u bytes, min: %u bytes (diff: %u bytes)"), freeHeapSize, heapSize, minFreeHeapSize, minFreeHeapSizeDiff);
+      Log.sverboseln("MAIN", F("Free heap size: %u of %u bytes, frag: %hhu, max block: %u, min heap: %u bytes (diff: %u bytes)"), freeHeapSize, heapSize, heapFrag, maxFreeBlockSize, minFreeHeapSize, minFreeHeapSizeDiff);
       lastHeapInfo = millis();
     }
   }
