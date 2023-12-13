@@ -1,10 +1,7 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
+#include <StreamUtils.h>
 #include "HaHelper.h"
-
-WiFiClient espClient;
-PubSubClient client(espClient);
-HaHelper haHelper(client);
 
 
 class MqttTask : public Task {
@@ -12,16 +9,36 @@ public:
   MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
   ~MqttTask() {
-    if (this->bClient != nullptr) {
-      // todo: delete polymorph?
-      //delete this->bClient;
+    if (this->haHelper != nullptr) {
+      delete this->haHelper;
+    }
+
+    if (this->client != nullptr) {
+      if (this->client->connected()) {
+        this->client->disconnect();
+      }
+
+      delete this->client;
+    }
+
+    if (this->wifiClient != nullptr) {
+      delete this->wifiClient;
     }
   }
 
 protected:
-  BufferingPrint* bClient = nullptr;
-  unsigned long lastReconnectAttempt = 0;
-  unsigned long firstFailConnect = 0;
+  WiFiClient* wifiClient;
+  PubSubClient* client = nullptr;
+  HaHelper* haHelper = nullptr;
+  unsigned long lastReconnectTime = 0;
+  unsigned long connectedTime = 0;
+  unsigned long disconnectedTime = 0;
+  unsigned long prevPubVars = 0;
+  unsigned long prevPubSettings = 0;
+  bool connected = false;
+  bool newConnection = false;
+  
+  unsigned short readyForSendTime = 15000;
 
   const char* getTaskName() {
     return "Mqtt";
@@ -35,79 +52,199 @@ protected:
     return 1;
   }
 
+  bool isReadyForSend() {
+    return millis() - this->connectedTime > this->readyForSendTime;
+  }
+
   void setup() {
     Log.sinfoln("MQTT", F("Started"));
 
-    this->bClient = new BufferingPrint(client, 64);
+    // client settings
+    this->client = new PubSubClient();
+    this->client->setSocketTimeout(2);
+    this->client->setKeepAlive(5);
+    this->client->setBufferSize(768);
+    this->client->setCallback(std::bind(&MqttTask::onMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    client.setCallback(std::bind(&MqttTask::__callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    client.setBufferSize(1024);
-    client.setSocketTimeout(1);
-
-    haHelper.setYieldCallback([](void* self) {
+    // ha helper settings
+    this->haHelper = new HaHelper();
+    this->haHelper->setDevicePrefix(settings.mqtt.prefix);
+    this->haHelper->setDeviceVersion(PROJECT_VERSION);
+    this->haHelper->setDeviceModel(PROJECT_NAME);
+    this->haHelper->setDeviceName(PROJECT_NAME);
+    this->haHelper->setClient(this->client);
+    this->haHelper->setYieldCallback([](void* self) {
       MqttTask* task = static_cast<MqttTask*>(self);
-      task->delay(50);
-
-      if (client.connected()) {
-        client.loop();
-      }
+      task->client->loop();
+      task->delay(100);
     }, this);
-    haHelper.setBufferedClient(this->bClient);
-    haHelper.setDevicePrefix(settings.mqtt.prefix);
-    haHelper.setDeviceVersion(PROJECT_VERSION);
-    haHelper.setDeviceModel(PROJECT_NAME);
-    haHelper.setDeviceName(PROJECT_NAME);
 
     sprintf(buffer, CONFIG_URL, WiFi.localIP().toString().c_str());
-    haHelper.setDeviceConfigUrl(buffer);
+    this->haHelper->setDeviceConfigUrl(buffer);
   }
 
   void loop() {
-    if (!client.connected() && millis() - lastReconnectAttempt >= MQTT_RECONNECT_INTERVAL) {
-      Log.sinfoln("MQTT", F("Not connected, state: %i, connecting to server %s..."), client.state(), settings.mqtt.server);
+    if (this->wifiClient == nullptr || (!this->client->connected() && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL)) {
+      Log.sinfoln("MQTT", F("Not connected, state: %d"), this->client->state());
 
-      client.setServer(settings.mqtt.server, settings.mqtt.port);
-      if (client.connect(settings.hostname, settings.mqtt.user, settings.mqtt.password)) {
-        Log.sinfoln("MQTT", F("Connected"));
-
-        client.subscribe(getTopicPath("settings/set").c_str());
-        client.subscribe(getTopicPath("state/set").c_str());
-        publishHaEntities();
-        publishNonStaticHaEntities(true);
-
-        firstFailConnect = 0;
-        lastReconnectAttempt = 0;
-
-      } else {
-        Log.swarningln("MQTT", F("Failed to connect to server"));
-
-        if (settings.emergency.enable && !vars.states.emergency) {
-          if (firstFailConnect == 0) {
-            firstFailConnect = millis();
-          }
-
-          if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
-            vars.states.emergency = true;
-            Log.sinfoln("MQTT", F("Emergency mode enabled"));
-          }
-        }
-
-        lastReconnectAttempt = millis();
+      // bug?
+      // memory leak at random times if this is not done
+      if (this->wifiClient != nullptr) {
+        delete this->wifiClient;
       }
-      delay(100);
+
+      this->wifiClient = new WiFiClient();
+      this->client->setClient(*this->wifiClient);
+      this->client->setServer(settings.mqtt.server, settings.mqtt.port);
+
+      Log.sinfoln("MQTT", F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
+      this->client->connect(settings.hostname, settings.mqtt.user, settings.mqtt.password);
+
+      this->lastReconnectTime = millis();
+      return;
     }
 
+    if (!this->client->connected() && this->connected) {
+      this->connected = false;
+      this->onDisconnect();
 
-    if (client.connected()) {
-      if (vars.states.emergency) {
-        vars.states.emergency = false;
+    } else if (this->client->connected() && !this->connected) {
+      this->connected = true;
+      this->onConnect();
+    }
 
-        Log.sinfoln("MQTT", F("Emergency mode disabled"));
+    if (!this->client->connected()) {
+      if (settings.emergency.enable && !vars.states.emergency) {
+        if (millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
+          vars.states.emergency = true;
+          Log.sinfoln("MQTT", F("Emergency mode enabled"));
+        }
       }
 
-      client.loop();
-      bool published = publishNonStaticHaEntities();
-      publish(published);
+      return;
+    }
+
+    this->client->loop();
+
+    // delay for publish data
+    if (!this->isReadyForSend()) {
+      return;
+    }
+
+    // publish variables and status
+    if (this->newConnection || millis() - this->prevPubVars > settings.mqtt.interval) {
+      this->client->publish(
+        this->getTopicPath("status").c_str(), 
+        !vars.states.otStatus ? "offline" : vars.states.fault ? "fault" : "online"
+      );
+      this->client->loop();
+
+      this->publishVariables(this->getTopicPath("state").c_str());
+      this->client->loop();
+      this->prevPubVars = millis();
+    }
+
+    // publish settings
+    if (this->newConnection || millis() - this->prevPubSettings > settings.mqtt.interval * 10) {
+      this->publishSettings(this->getTopicPath("settings").c_str());
+      this->client->loop();
+      this->prevPubSettings = millis();
+    }
+
+    // publish ha entities if not published
+    if (this->newConnection) {
+      this->publishHaEntities();
+      this->publishNonStaticHaEntities(true);
+      this->newConnection = false;
+
+    } else {
+      // publish non static ha entities
+      this->publishNonStaticHaEntities();
+    }
+  }
+
+  void onConnect() {
+    this->connectedTime = millis();
+    this->newConnection = true;
+    unsigned long downtime = (millis() - this->disconnectedTime) / 1000;
+    Log.sinfoln("MQTT", F("Connected (downtime: %u s.)"), downtime);
+
+    if (vars.states.emergency) {
+      vars.states.emergency = false;
+      Log.sinfoln("MQTT", F("Emergency mode disabled"));
+    }
+
+    this->client->subscribe(this->getTopicPath("settings/set").c_str());
+    this->client->subscribe(this->getTopicPath("state/set").c_str());
+  }
+
+  void onDisconnect() {
+    this->disconnectedTime = millis();
+
+    unsigned long uptime = (millis() - this->connectedTime) / 1000;
+    Log.swarningln("MQTT", F("Disconnected (reason: %d uptime: %u s.)"), this->client->state(), uptime);
+  }
+
+  void onMessage(char* topic, byte* payload, unsigned int length) {
+    if (!length) {
+      return;
+    }
+
+    if (settings.debug) {
+      Log.strace("MQTT.MSG", F("Topic: %s\r\n>  "), topic);
+      if (Log.lock()) {
+        for (size_t i = 0; i < length; i++) {
+          if (payload[i] == 0) {
+            break;
+          } else if (payload[i] == 13) {
+            continue;
+          } else if (payload[i] == 10) {
+            Log.print("\r\n>  ");
+          } else {
+            Log.print((char) payload[i]);
+          }
+        }
+        Log.print("\r\n\n");
+        Log.flush();
+        Log.unlock();
+      }
+    }
+
+    JsonDocument doc;
+    DeserializationError dErr = deserializeJson(doc, payload, length);
+    if (dErr != DeserializationError::Ok || doc.isNull()) {
+      const char* errMsg;
+      switch (dErr.code()) {
+        case DeserializationError::EmptyInput:
+        case DeserializationError::IncompleteInput:
+        case DeserializationError::InvalidInput:
+          errMsg = "invalid input";
+          break;
+
+        case DeserializationError::NoMemory:
+          errMsg = "no memory";
+          break;
+
+        case DeserializationError::TooDeep:
+          errMsg = "too deep";
+          break;
+        
+        default:
+          errMsg = "failed";
+          break;
+      }
+      Log.swarningln("MQTT.MSG", F("No deserialization: %s"), errMsg);
+
+      return;
+    }
+
+    if (this->getTopicPath("state/set").compare(topic) == 0) {
+      this->client->publish(this->getTopicPath("state/set").c_str(), NULL, true);
+      this->updateVariables(doc);
+
+    } else if (this->getTopicPath("settings/set").compare(topic) == 0) {
+      this->client->publish(this->getTopicPath("settings/set").c_str(), NULL, true);
+      this->updateSettings(doc);
     }
   }
 
@@ -313,18 +450,16 @@ protected:
       }
     }
 
-
     if (flag) {
+      this->prevPubSettings = 0;
       eeSettings.update();
-      publish(true);
-
       return true;
     }
 
     return false;
   }
 
-  bool updateVariables(const JsonDocument& doc) {
+  bool updateVariables(JsonDocument& doc) {
     bool flag = false;
 
     if (!doc["ping"].isNull() && doc["ping"]) {
@@ -370,108 +505,83 @@ protected:
     }
 
     if (flag) {
-      publish(true);
-
+      this->prevPubVars = 0;
       return true;
     }
 
     return false;
   }
 
-  void publish(bool force = false) {
-    static unsigned int prevPubVars = 0;
-    static unsigned int prevPubSettings = 0;
-
-    // publish variables and status
-    if (force || millis() - prevPubVars > settings.mqtt.interval) {
-      publishVariables(getTopicPath("state").c_str());
-
-      if (vars.states.fault) {
-        client.publish(getTopicPath("status").c_str(), "fault");
-      } else {
-        client.publish(getTopicPath("status").c_str(), vars.states.otStatus ? "online" : "offline");
-      }
-      
-      prevPubVars = millis();
-    }
-
-    // publish settings
-    if (force || millis() - prevPubSettings > settings.mqtt.interval * 10) {
-      publishSettings(getTopicPath("settings").c_str());
-      prevPubSettings = millis();
-    }
-  }
-
   void publishHaEntities() {
     // main
-    haHelper.publishSelectOutdoorSensorType();
-    haHelper.publishSelectIndoorSensorType();
-    haHelper.publishNumberOutdoorSensorOffset(false);
-    haHelper.publishNumberIndoorSensorOffset(false);
-    haHelper.publishSwitchDebug(false);
+    this->haHelper->publishSelectOutdoorSensorType();
+    this->haHelper->publishSelectIndoorSensorType();
+    this->haHelper->publishNumberOutdoorSensorOffset(false);
+    this->haHelper->publishNumberIndoorSensorOffset(false);
+    this->haHelper->publishSwitchDebug(false);
 
     // emergency
-    haHelper.publishSwitchEmergency();
-    haHelper.publishNumberEmergencyTarget();
-    haHelper.publishSwitchEmergencyUseEquitherm();
+    this->haHelper->publishSwitchEmergency();
+    this->haHelper->publishNumberEmergencyTarget();
+    this->haHelper->publishSwitchEmergencyUseEquitherm();
 
     // heating
-    haHelper.publishSwitchHeating(false);
-    haHelper.publishSwitchHeatingTurbo();
-    haHelper.publishNumberHeatingHysteresis();
-    haHelper.publishSensorHeatingSetpoint(false);
-    haHelper.publishSensorCurrentHeatingMinTemp(false);
-    haHelper.publishSensorCurrentHeatingMaxTemp(false);
-    haHelper.publishNumberHeatingMinTemp(false);
-    haHelper.publishNumberHeatingMaxTemp(false);
-    haHelper.publishNumberHeatingMaxModulation(false);
+    this->haHelper->publishSwitchHeating(false);
+    this->haHelper->publishSwitchHeatingTurbo();
+    this->haHelper->publishNumberHeatingHysteresis();
+    this->haHelper->publishSensorHeatingSetpoint(false);
+    this->haHelper->publishSensorCurrentHeatingMinTemp(false);
+    this->haHelper->publishSensorCurrentHeatingMaxTemp(false);
+    this->haHelper->publishNumberHeatingMinTemp(false);
+    this->haHelper->publishNumberHeatingMaxTemp(false);
+    this->haHelper->publishNumberHeatingMaxModulation(false);
 
     // pid
-    haHelper.publishSwitchPID();
-    haHelper.publishNumberPIDFactorP();
-    haHelper.publishNumberPIDFactorI();
-    haHelper.publishNumberPIDFactorD();
-    haHelper.publishNumberPIDMinTemp(false);
-    haHelper.publishNumberPIDMaxTemp(false);
+    this->haHelper->publishSwitchPID();
+    this->haHelper->publishNumberPIDFactorP();
+    this->haHelper->publishNumberPIDFactorI();
+    this->haHelper->publishNumberPIDFactorD();
+    this->haHelper->publishNumberPIDMinTemp(false);
+    this->haHelper->publishNumberPIDMaxTemp(false);
 
     // equitherm
-    haHelper.publishSwitchEquitherm();
-    haHelper.publishNumberEquithermFactorN();
-    haHelper.publishNumberEquithermFactorK();
-    haHelper.publishNumberEquithermFactorT();
+    this->haHelper->publishSwitchEquitherm();
+    this->haHelper->publishNumberEquithermFactorN();
+    this->haHelper->publishNumberEquithermFactorK();
+    this->haHelper->publishNumberEquithermFactorT();
 
     // tuning
-    haHelper.publishSwitchTuning();
-    haHelper.publishSelectTuningRegulator();
+    this->haHelper->publishSwitchTuning();
+    this->haHelper->publishSelectTuningRegulator();
 
     // states
-    haHelper.publishBinSensorStatus();
-    haHelper.publishBinSensorOtStatus();
-    haHelper.publishBinSensorHeating();
-    haHelper.publishBinSensorFlame();
-    haHelper.publishBinSensorFault();
-    haHelper.publishBinSensorDiagnostic();
+    this->haHelper->publishBinSensorStatus();
+    this->haHelper->publishBinSensorOtStatus();
+    this->haHelper->publishBinSensorHeating();
+    this->haHelper->publishBinSensorFlame();
+    this->haHelper->publishBinSensorFault();
+    this->haHelper->publishBinSensorDiagnostic();
 
     // sensors
-    haHelper.publishSensorModulation(false);
-    haHelper.publishSensorPressure(false);
-    haHelper.publishSensorFaultCode();
-    haHelper.publishSensorRssi(false);
-    haHelper.publishSensorUptime(false);
+    this->haHelper->publishSensorModulation(false);
+    this->haHelper->publishSensorPressure(false);
+    this->haHelper->publishSensorFaultCode();
+    this->haHelper->publishSensorRssi(false);
+    this->haHelper->publishSensorUptime(false);
 
     // temperatures
-    haHelper.publishNumberIndoorTemp();
-    haHelper.publishSensorHeatingTemp();
+    this->haHelper->publishNumberIndoorTemp();
+    this->haHelper->publishSensorHeatingTemp();
 
     // buttons
-    haHelper.publishButtonRestart(false);
-    haHelper.publishButtonResetFault();
-    haHelper.publishButtonResetDiagnostic();
+    this->haHelper->publishButtonRestart(false);
+    this->haHelper->publishButtonResetFault();
+    this->haHelper->publishButtonResetDiagnostic();
   }
 
   bool publishNonStaticHaEntities(bool force = false) {
-    static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp;
-    static bool _isStupidMode, _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent;
+    static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
+    static bool _isStupidMode, _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent = false;
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
@@ -484,26 +594,26 @@ protected:
       _dhwPresent = settings.opentherm.dhwPresent;
 
       if (_dhwPresent) {
-        haHelper.publishSwitchDhw(false);
-        haHelper.publishSensorCurrentDhwMinTemp(false);
-        haHelper.publishSensorCurrentDhwMaxTemp(false);
-        haHelper.publishNumberDhwMinTemp(false);
-        haHelper.publishNumberDhwMaxTemp(false);
-        haHelper.publishBinSensorDhw();
-        haHelper.publishSensorDhwTemp();
-        haHelper.publishSensorDhwFlowRate(false);
+        this->haHelper->publishSwitchDhw(false);
+        this->haHelper->publishSensorCurrentDhwMinTemp(false);
+        this->haHelper->publishSensorCurrentDhwMaxTemp(false);
+        this->haHelper->publishNumberDhwMinTemp(false);
+        this->haHelper->publishNumberDhwMaxTemp(false);
+        this->haHelper->publishBinSensorDhw();
+        this->haHelper->publishSensorDhwTemp();
+        this->haHelper->publishSensorDhwFlowRate(false);
 
       } else {
-        haHelper.deleteSwitchDhw();
-        haHelper.deleteSensorCurrentDhwMinTemp();
-        haHelper.deleteSensorCurrentDhwMaxTemp();
-        haHelper.deleteNumberDhwMinTemp();
-        haHelper.deleteNumberDhwMaxTemp();
-        haHelper.deleteBinSensorDhw();
-        haHelper.deleteSensorDhwTemp();
-        haHelper.deleteNumberDhwTarget();
-        haHelper.deleteClimateDhw();
-        haHelper.deleteSensorDhwFlowRate();
+        this->haHelper->deleteSwitchDhw();
+        this->haHelper->deleteSensorCurrentDhwMinTemp();
+        this->haHelper->deleteSensorCurrentDhwMaxTemp();
+        this->haHelper->deleteNumberDhwMinTemp();
+        this->haHelper->deleteNumberDhwMaxTemp();
+        this->haHelper->deleteBinSensorDhw();
+        this->haHelper->deleteSensorDhwTemp();
+        this->haHelper->deleteNumberDhwTarget();
+        this->haHelper->deleteClimateDhw();
+        this->haHelper->deleteSensorDhwFlowRate();
       }
 
       published = true;
@@ -518,8 +628,8 @@ protected:
       _heatingMaxTemp = heatingMaxTemp;
       _isStupidMode = isStupidMode;
 
-      haHelper.publishNumberHeatingTarget(heatingMinTemp, heatingMaxTemp, false);
-      haHelper.publishClimateHeating(
+      this->haHelper->publishNumberHeatingTarget(heatingMinTemp, heatingMaxTemp, false);
+      this->haHelper->publishClimateHeating(
         heatingMinTemp,
         heatingMaxTemp,
         isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
@@ -529,7 +639,7 @@ protected:
 
     } else if (_isStupidMode != isStupidMode) {
       _isStupidMode = isStupidMode;
-      haHelper.publishClimateHeating(
+      this->haHelper->publishClimateHeating(
         heatingMinTemp,
         heatingMaxTemp,
         isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
@@ -542,8 +652,8 @@ protected:
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
 
-      haHelper.publishNumberDhwTarget(settings.dhw.minTemp, settings.dhw.maxTemp, false);
-      haHelper.publishClimateDhw(settings.dhw.minTemp, settings.dhw.maxTemp);
+      this->haHelper->publishNumberDhwTarget(settings.dhw.minTemp, settings.dhw.maxTemp, false);
+      this->haHelper->publishClimateDhw(settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
     }
@@ -552,11 +662,11 @@ protected:
       _editableOutdoorTemp = editableOutdoorTemp;
 
       if (editableOutdoorTemp) {
-        haHelper.deleteSensorOutdoorTemp();
-        haHelper.publishNumberOutdoorTemp();
+        this->haHelper->deleteSensorOutdoorTemp();
+        this->haHelper->publishNumberOutdoorTemp();
       } else {
-        haHelper.deleteNumberOutdoorTemp();
-        haHelper.publishSensorOutdoorTemp();
+        this->haHelper->deleteNumberOutdoorTemp();
+        this->haHelper->publishSensorOutdoorTemp();
       }
 
       published = true;
@@ -566,11 +676,11 @@ protected:
       _editableIndoorTemp = editableIndoorTemp;
 
       if (editableIndoorTemp) {
-        haHelper.deleteSensorIndoorTemp();
-        haHelper.publishNumberIndoorTemp();
+        this->haHelper->deleteSensorIndoorTemp();
+        this->haHelper->publishNumberIndoorTemp();
       } else {
-        haHelper.deleteNumberIndoorTemp();
-        haHelper.publishSensorIndoorTemp();
+        this->haHelper->deleteNumberIndoorTemp();
+        this->haHelper->publishSensorIndoorTemp();
       }
 
       published = true;
@@ -580,8 +690,7 @@ protected:
   }
 
   bool publishSettings(const char* topic) {
-    StaticJsonDocument<2048> doc;
-
+    JsonDocument doc;
     doc["debug"] = settings.debug;
 
     doc["emergency"]["enable"] = settings.emergency.enable;
@@ -619,18 +728,31 @@ protected:
     doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
     doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 
-    if (!client.beginPublish(topic, measureJson(doc), false)) {
-      return false;
+
+    size_t docSize = measureJson(doc);
+    uint8_t* buffer = (uint8_t*) malloc(docSize * sizeof(*buffer));
+    size_t length = serializeJson(doc, buffer, docSize);
+
+    size_t written = 0;
+    if (length != 0) {
+      if (this->client->beginPublish(topic, docSize, true)) {
+        for (size_t offset = 0; offset < docSize; offset += 128) {
+          size_t packetSize = offset + 128 <= docSize ? 128 : docSize - offset;
+          written += this->client->write(buffer + offset, packetSize);
+        }
+        
+        this->client->flush();
+      }
     }
+    free(buffer);
 
-    serializeJson(doc, *this->bClient);
-    this->bClient->flush();
+    Log.straceln("MQTT", "Publish %u of %u bytes to topic: %s", written, docSize, topic);
 
-    return client.endPublish();
+    return docSize == written;
   }
 
   bool publishVariables(const char* topic) {
-    StaticJsonDocument<2048> doc;
+    JsonDocument doc;
 
     doc["tuning"]["enable"] = vars.tuning.enable;
     doc["tuning"]["regulator"] = vars.tuning.regulator;
@@ -661,77 +783,30 @@ protected:
     doc["parameters"]["dhwMinTemp"] = vars.parameters.dhwMinTemp;
     doc["parameters"]["dhwMaxTemp"] = vars.parameters.dhwMaxTemp;
 
-    if (!client.beginPublish(topic, measureJson(doc), false)) {
-      return false;
-    }
 
-    serializeJson(doc, *this->bClient);
-    this->bClient->flush();
-    
-    return client.endPublish();
+    size_t docSize = measureJson(doc);
+    uint8_t* buffer = (uint8_t*) malloc(docSize * sizeof(*buffer));
+    size_t length = serializeJson(doc, buffer, docSize);
+
+    size_t written = 0;
+    if (length != 0) {
+      if (this->client->beginPublish(topic, docSize, true)) {
+        for (size_t offset = 0; offset < docSize; offset += 128) {
+          size_t packetSize = offset + 128 <= docSize ? 128 : docSize - offset;
+          written += this->client->write(buffer + offset, packetSize);
+        }
+        
+        this->client->flush();
+      }
+    }
+    free(buffer);
+
+    Log.straceln("MQTT", "Publish %u of %u bytes to topic: %s", written, docSize, topic);
+
+    return docSize == written;
   }
 
   static std::string getTopicPath(const char* topic) {
     return std::string(settings.mqtt.prefix) + "/" + std::string(topic);
-  }
-
-  void __callback(char* topic, byte* payload, unsigned int length) {
-    if (!length) {
-      return;
-    }
-
-    if (settings.debug) {
-      Log.strace("MQTT.MSG", F("Topic: %s\r\n>  "), topic);
-      if (Log.lock()) {
-        for (unsigned int i = 0; i < length; i++) {
-          if ( payload[i] == 10 ) {
-            Log.print("\r\n>  ");
-
-          } else {
-            Log.print((char) payload[i]);
-          }
-        }
-        Log.print("\r\n\n");
-        Log.flush();
-        Log.unlock();
-      }
-    }
-
-    StaticJsonDocument<2048> doc;
-    DeserializationError dErr = deserializeJson(doc, (const byte*) payload, length);
-    if (dErr != DeserializationError::Ok || doc.isNull()) {
-      const char* errMsg;
-      switch (dErr.code()) {
-        case DeserializationError::EmptyInput:
-        case DeserializationError::IncompleteInput:
-        case DeserializationError::InvalidInput:
-          errMsg = "invalid input";
-          break;
-
-        case DeserializationError::NoMemory:
-          errMsg = "no memory";
-          break;
-
-        case DeserializationError::TooDeep:
-          errMsg = "too deep";
-          break;
-        
-        default:
-          errMsg = "failed";
-          break;
-      }
-      Log.swarningln("MQTT.MSG", F("No deserialization: %s"), errMsg);
-
-      return;
-    }
-
-    if (getTopicPath("state/set").compare(topic) == 0) {
-      updateVariables(doc);
-      client.publish(getTopicPath("state/set").c_str(), NULL, true);
-
-    } else if (getTopicPath("settings/set").compare(topic) == 0) {
-      updateSettings(doc);
-      client.publish(getTopicPath("settings/set").c_str(), NULL, true);
-    }
   }
 };

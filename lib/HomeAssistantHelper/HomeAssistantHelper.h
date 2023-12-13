@@ -4,8 +4,18 @@
 
 class HomeAssistantHelper {
 public:
-  HomeAssistantHelper(PubSubClient& client) {
-    this->client = &client;
+  HomeAssistantHelper() {}
+
+  HomeAssistantHelper(PubSubClient* client) {
+    this->setClient(client);
+  }
+
+  void setClient() {
+    this->client = nullptr;
+  }
+
+  void setClient(PubSubClient* client) {
+    this->client = client;
   }
 
   void setYieldCallback(void(*yieldCallback)(void*)) {
@@ -16,14 +26,6 @@ public:
   void setYieldCallback(void(*yieldCallback)(void*), void* arg) {
     this->yieldCallback = yieldCallback;
     this->yieldArg = arg;
-  }
-
-  void setBufferedClient() {
-    this->bClient = nullptr;
-  }
-
-  void setBufferedClient(BufferingPrint* bClient) {
-    this->bClient = bClient;
   }
 
   void setDevicePrefix(String value) {
@@ -51,6 +53,10 @@ public:
   }
 
   bool publish(const char* topic, JsonDocument& doc) {
+    if (this->client == nullptr) {
+      return false;
+    }
+
     doc[FPSTR(HA_DEVICE)][FPSTR(HA_IDENTIFIERS)][0] = devicePrefix;
     doc[FPSTR(HA_DEVICE)][FPSTR(HA_SW_VERSION)] = deviceVersion;
 
@@ -70,31 +76,38 @@ public:
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = deviceConfigUrl;
     }
 
-    if (!client->beginPublish(topic, measureJson(doc), true)) {
-      if (this->yieldCallback != nullptr) {
-        this->yieldCallback(yieldArg);
+
+    size_t docSize = measureJson(doc);
+    uint8_t* buffer = (uint8_t*) malloc(docSize * sizeof(*buffer));
+    size_t length = serializeJson(doc, buffer, docSize);
+
+    size_t written = 0;
+    if (length != 0) {
+      if (this->client->beginPublish(topic, docSize, true)) {
+        for (size_t offset = 0; offset < docSize; offset += 128) {
+          size_t packetSize = offset + 128 <= docSize ? 128 : docSize - offset;
+          written += this->client->write(buffer + offset, packetSize);
+        }
+        
+        this->client->flush();
       }
-
-      return false;
     }
+    free(buffer);
 
-    if (this->bClient != nullptr) {
-      serializeJson(doc, *this->bClient);
-      this->bClient->flush();
+    Log.straceln("MQTT", "Publish %u of %u bytes to topic: %s", written, docSize, topic);
 
-    } else {
-      serializeJson(doc, *client);
-    }
-    
-    int pubResult = client->endPublish();
     if (this->yieldCallback != nullptr) {
       this->yieldCallback(yieldArg);
     }
 
-    return pubResult;
+    return docSize == written;
   }
 
   bool publish(const char* topic) {
+    if (this->client == nullptr) {
+      return false;
+    }
+
     return client->publish(topic, NULL, true);
   }
 
@@ -114,8 +127,7 @@ public:
 protected:
   void(*yieldCallback)(void*) = nullptr;
   void* yieldArg = nullptr;
-  PubSubClient* client;
-  BufferingPrint* bClient = nullptr;
+  PubSubClient* client = nullptr;
   String prefix = "homeassistant";
   String devicePrefix = "";
   String deviceVersion = "1.0";

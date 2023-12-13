@@ -5,11 +5,9 @@ class HaHelper : public HomeAssistantHelper {
 public:
   static const byte TEMP_SOURCE_HEATING = 0;
   static const byte TEMP_SOURCE_INDOOR = 1;
-
-  HaHelper(PubSubClient& client) : HomeAssistantHelper(client) {}
-
+  
   bool publishSelectOutdoorSensorType(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"outdoor\": {\"type\": {% if value == 'Boiler' %}0{% elif value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}}}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -27,7 +25,7 @@ public:
   }
 
   bool publishSelectIndoorSensorType(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/settings/set");
 #if USE_BLE
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"indoor\": {\"type\": {% if value == 'Manual' %}1{% elif value == 'External' %}2{% elif value == 'Bluetooth' %}3{% endif %}}}}");
@@ -55,7 +53,7 @@ public:
   }
 
   bool publishNumberOutdoorSensorOffset(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/settings");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.outdoor.type != 1, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -79,7 +77,7 @@ public:
   }
 
   bool publishNumberIndoorSensorOffset(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/settings");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.indoor.type != 1, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -104,7 +102,7 @@ public:
 
 
   bool publishSwitchDebug(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_debug");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_debug");
@@ -124,7 +122,7 @@ public:
 
 
   bool publishSwitchEmergency(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_emergency");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_emergency");
@@ -143,7 +141,7 @@ public:
   }
 
   bool publishNumberEmergencyTarget(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_emergency_target");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_emergency_target");
@@ -165,7 +163,7 @@ public:
   }
 
   bool publishSwitchEmergencyUseEquitherm(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/settings");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.outdoor.type != 1, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -187,7 +185,7 @@ public:
 
 
   bool publishSwitchHeating(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating");
@@ -207,7 +205,7 @@ public:
   }
 
   bool publishSwitchHeatingTurbo(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_turbo");
@@ -227,7 +225,7 @@ public:
   }
 
   bool publishNumberHeatingTarget(byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_target");
@@ -250,7 +248,7 @@ public:
   }
 
   bool publishNumberHeatingHysteresis(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_hysteresis");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_heating_hysteresis");
@@ -272,7 +270,7 @@ public:
   }
 
   bool publishSensorHeatingSetpoint(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_setpoint");
@@ -290,7 +288,7 @@ public:
   }
 
   bool publishSensorCurrentHeatingMinTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_current_heating_min_temp");
@@ -308,7 +306,7 @@ public:
   }
 
   bool publishSensorCurrentHeatingMaxTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_current_heating_max_temp");
@@ -326,7 +324,7 @@ public:
   }
 
   bool publishNumberHeatingMinTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_min_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_heating_min_temp");
@@ -348,7 +346,7 @@ public:
   }
 
   bool publishNumberHeatingMaxTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_max_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_heating_max_temp");
@@ -370,7 +368,7 @@ public:
   }
 
   bool publishNumberHeatingMaxModulation(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_max_modulation");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_heating_max_modulation");
@@ -393,7 +391,7 @@ public:
 
 
   bool publishSwitchDhw(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw");
@@ -413,7 +411,7 @@ public:
   }
 
   bool publishNumberDhwTarget(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_target");
@@ -436,7 +434,7 @@ public:
   }
 
   bool publishSensorCurrentDhwMinTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_current_dhw_min_temp");
@@ -454,7 +452,7 @@ public:
   }
 
   bool publishSensorCurrentDhwMaxTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_current_dhw_max_temp");
@@ -472,7 +470,7 @@ public:
   }
 
   bool publishNumberDhwMinTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_min_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_dhw_min_temp");
@@ -494,7 +492,7 @@ public:
   }
 
   bool publishNumberDhwMaxTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_max_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_dhw_max_temp");
@@ -517,7 +515,7 @@ public:
 
 
   bool publishSwitchPID(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pid");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_pid");
@@ -536,7 +534,7 @@ public:
   }
 
   bool publishNumberPIDFactorP(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pid_p");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_pid_p");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
@@ -555,7 +553,7 @@ public:
   }
 
   bool publishNumberPIDFactorI(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pid_i");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_pid_i");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
@@ -574,7 +572,7 @@ public:
   }
 
   bool publishNumberPIDFactorD(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pid_d");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_pid_d");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
@@ -593,7 +591,7 @@ public:
   }
 
   bool publishNumberPIDMinTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pid_min_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_pid_min_temp");
@@ -615,7 +613,7 @@ public:
   }
 
   bool publishNumberPIDMaxTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pid_max_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_pid_max_temp");
@@ -638,7 +636,7 @@ public:
 
 
   bool publishSwitchEquitherm(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_equitherm");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_equitherm");
@@ -657,7 +655,7 @@ public:
   }
 
   bool publishNumberEquithermFactorN(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_equitherm_n");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_equitherm_n");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
@@ -676,7 +674,7 @@ public:
   }
 
   bool publishNumberEquithermFactorK(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_equitherm_k");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_equitherm_k");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
@@ -695,7 +693,7 @@ public:
   }
 
   bool publishNumberEquithermFactorT(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/settings");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.pid.enable, 'offline', 'online') }}");
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_equitherm_t");
@@ -717,7 +715,7 @@ public:
 
 
   bool publishSwitchTuning(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_tuning");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_tuning");
@@ -736,7 +734,7 @@ public:
   }
 
   bool publishSelectTuningRegulator(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_COMMAND_TOPIC)] = devicePrefix + F("/state/set");
@@ -756,7 +754,7 @@ public:
 
 
   bool publishBinSensorStatus(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_status");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_status");
@@ -772,7 +770,7 @@ public:
   }
 
   bool publishBinSensorOtStatus(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_ot_status");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_ot_status");
@@ -787,7 +785,7 @@ public:
   }
 
   bool publishBinSensorHeating(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating");
@@ -803,7 +801,7 @@ public:
   }
 
   bool publishBinSensorDhw(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw");
@@ -819,7 +817,7 @@ public:
   }
 
   bool publishBinSensorFlame(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_flame");
@@ -835,7 +833,7 @@ public:
   }
 
   bool publishBinSensorFault(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/state");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -852,7 +850,7 @@ public:
   }
 
   bool publishBinSensorDiagnostic(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_diagnostic");
@@ -868,7 +866,7 @@ public:
   }
 
   bool publishSensorFaultCode(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/state");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.fault, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -884,7 +882,7 @@ public:
   }
 
   bool publishSensorRssi(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_rssi");
@@ -902,7 +900,7 @@ public:
   }
 
   bool publishSensorUptime(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_uptime");
@@ -921,7 +919,7 @@ public:
 
 
   bool publishSensorModulation(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_modulation_level");
@@ -939,7 +937,7 @@ public:
   }
 
   bool publishSensorPressure(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_pressure");
@@ -957,7 +955,7 @@ public:
   }
 
   bool publishSensorDhwFlowRate(bool enabledByDefault = true) {
-    StaticJsonDocument<1024> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_flow_rate");
@@ -976,7 +974,7 @@ public:
 
 
   bool publishNumberIndoorTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_indoor_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_indoor_temp");
@@ -997,7 +995,7 @@ public:
   }
 
   bool publishSensorIndoorTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("any");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1016,7 +1014,7 @@ public:
   }
 
   bool publishNumberOutdoorTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_outdoor_temp");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_outdoor_temp");
@@ -1037,7 +1035,7 @@ public:
   }
 
   bool publishSensorOutdoorTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("any");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1056,7 +1054,7 @@ public:
   }
 
   bool publishSensorHeatingTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating_temp");
@@ -1074,7 +1072,7 @@ public:
   }
 
   bool publishSensorDhwTemp(bool enabledByDefault = true) {
-    StaticJsonDocument<1536> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_dhw_temp");
@@ -1093,7 +1091,7 @@ public:
 
 
   bool publishClimateHeating(byte minTemp = 20, byte maxTemp = 90, byte currentTempSource = HaHelper::TEMP_SOURCE_HEATING, bool enabledByDefault = true) {
-    StaticJsonDocument<2560> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_heating");
@@ -1144,7 +1142,7 @@ public:
   }
 
   bool publishClimateDhw(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
-    StaticJsonDocument<2560> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/status");
 
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1181,7 +1179,7 @@ public:
 
 
   bool publishButtonRestart(bool enabledByDefault = true) {
-    StaticJsonDocument<1024> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = devicePrefix + F("_restart");
     doc[FPSTR(HA_OBJECT_ID)] = devicePrefix + F("_restart");
@@ -1195,7 +1193,7 @@ public:
   }
 
   bool publishButtonResetFault(bool enabledByDefault = true) {
-    StaticJsonDocument<1024> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/state");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.fault, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1211,7 +1209,7 @@ public:
   }
 
   bool publishButtonResetDiagnostic(bool enabledByDefault = true) {
-    StaticJsonDocument<1024> doc;
+    JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = devicePrefix + F("/state");
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.diagnostic, 'online', 'offline') }}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
