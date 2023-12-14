@@ -46,18 +46,26 @@ void setup() {
   Log.setServiceTemplate("\033[1m[%s]\033[22m");
   Log.setLevelTemplate("\033[1m[%s]\033[22m");
   Log.setMsgPrefix("\033[m ");
+  Log.setDateTemplate("\033[1m[%H:%M:%S]\033[22m");
+  Log.setDateCallback([] {
+    unsigned int time = millis() / 1000;
+    int sec = time % 60;
+    int min = time % 3600 / 60;
+    int hour = time / 3600;
+    
+    return tm{sec, min, hour};
+  });
   
   #if USE_SERIAL
     Serial.begin(115200);
-    Log.addStream(&Serial);
     Serial.println("\n\n");
+    Log.addStream(&Serial);
   #endif
 
   #if USE_TELNET
     TelnetStream.setKeepAliveInterval(500);
     Log.addStream(&TelnetStream);
   #endif
-  //Log.setNtpClient(&timeClient);
 
   EEPROM.begin(eeSettings.blockSize());
   uint8_t eeSettingsResult = eeSettings.begin(0, 's');
