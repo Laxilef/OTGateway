@@ -269,7 +269,7 @@ protected:
       Log.sinfoln(FPSTR(S_WIFI), F("Connected. IP: %s, RSSI: %hhd"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
-    #if defined(ESP8266)
+    #if defined(ARDUINO_ARCH_ESP8266)
     if (connected && millis() - lastArpGratuitous > 60000) {
       arpGratuitous();
       lastArpGratuitous = millis();

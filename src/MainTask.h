@@ -51,9 +51,9 @@ protected:
       digitalWrite(settings.externalPump.pin, false);
     }
 
-    #if defined(ESP32)
+    #if defined(ARDUINO_ARCH_ESP32)
       heapSize = ESP.getHeapSize();
-    #elif defined(ESP8266)
+    #elif defined(ARDUINO_ARCH_ESP8266)
       heapSize = 81920;
     #elif
       heapSize = 99999;
@@ -82,7 +82,6 @@ protected:
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      //timeClient.update();
       vars.sensors.rssi = WiFi.RSSI();
 
       if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
@@ -140,7 +139,11 @@ protected:
 
   void heap() {
     unsigned int freeHeapSize = ESP.getFreeHeap();
-    unsigned int maxFreeBlockSize = ESP.getMaxFreeBlockSize();
+    #if defined(ARDUINO_ARCH_ESP32)
+      unsigned int maxFreeBlockSize = ESP.getMaxAllocHeap();
+    #else
+      unsigned int maxFreeBlockSize = ESP.getMaxFreeBlockSize();
+    #endif
 
     if (freeHeapSize < 1024 || maxFreeBlockSize < 1024) {
       vars.actions.restart = true;
@@ -152,7 +155,11 @@ protected:
     }
 
     unsigned int minFreeHeapSizeDiff = 0;
-    uint8_t heapFrag = ESP.getHeapFragmentation();
+    #if defined(ARDUINO_ARCH_ESP32)
+      uint8_t heapFrag = 0;
+    #else
+      uint8_t heapFrag = ESP.getHeapFragmentation();
+    #endif
 
     if (freeHeapSize < minFreeHeapSize) {
       minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;

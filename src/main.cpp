@@ -9,9 +9,9 @@
   #include "ESPTelnetStream.h"
 #endif
 
-#if defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP32)
   #include <ESP32Scheduler.h>
-#elif defined(ESP8266)
+#elif defined(ARDUINO_ARCH_ESP8266)
   #include <Scheduler.h>
 #elif
   #error Wrong board. Supported boards: esp8266, esp32
@@ -117,7 +117,7 @@ void setup() {
 }
 
 void loop() {
-  #if defined(ESP32)
+  #if defined(ARDUINO_ARCH_ESP32)
     vTaskDelete(NULL);
   #endif
 }
