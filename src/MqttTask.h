@@ -26,18 +26,17 @@ public:
   }
 
 protected:
-  WiFiClient* wifiClient;
+  WiFiClient* wifiClient = nullptr;
   PubSubClient* client = nullptr;
   HaHelper* haHelper = nullptr;
+  unsigned short readyForSendTime = 15000;
   unsigned long lastReconnectTime = 0;
   unsigned long connectedTime = 0;
   unsigned long disconnectedTime = 0;
-  unsigned long prevPubVars = 0;
-  unsigned long prevPubSettings = 0;
+  unsigned long prevPubVarsTime = 0;
+  unsigned long prevPubSettingsTime = 0;
   bool connected = false;
   bool newConnection = false;
-  
-  unsigned short readyForSendTime = 15000;
 
   const char* getTaskName() {
     return "Mqtt";
@@ -90,6 +89,7 @@ protected:
       // memory leak at random times if this is not done
       if (this->wifiClient != nullptr) {
         delete this->wifiClient;
+        this->wifiClient = nullptr;
       }
 
       this->wifiClient = new WiFiClient();
@@ -131,7 +131,7 @@ protected:
     }
 
     // publish variables and status
-    if (this->newConnection || millis() - this->prevPubVars > settings.mqtt.interval) {
+    if (this->newConnection || millis() - this->prevPubVarsTime > settings.mqtt.interval) {
       this->client->publish(
         this->getTopicPath("status").c_str(), 
         !vars.states.otStatus ? "offline" : vars.states.fault ? "fault" : "online"
@@ -140,14 +140,14 @@ protected:
 
       this->publishVariables(this->getTopicPath("state").c_str());
       this->client->loop();
-      this->prevPubVars = millis();
+      this->prevPubVarsTime = millis();
     }
 
     // publish settings
-    if (this->newConnection || millis() - this->prevPubSettings > settings.mqtt.interval * 10) {
+    if (this->newConnection || millis() - this->prevPubSettingsTime > settings.mqtt.interval * 10) {
       this->publishSettings(this->getTopicPath("settings").c_str());
       this->client->loop();
-      this->prevPubSettings = millis();
+      this->prevPubSettingsTime = millis();
     }
 
     // publish ha entities if not published
@@ -450,7 +450,7 @@ protected:
     }
 
     if (flag) {
-      this->prevPubSettings = 0;
+      this->prevPubSettingsTime = 0;
       eeSettings.update();
       return true;
     }
@@ -504,7 +504,7 @@ protected:
     }
 
     if (flag) {
-      this->prevPubVars = 0;
+      this->prevPubVarsTime = 0;
       return true;
     }
 
