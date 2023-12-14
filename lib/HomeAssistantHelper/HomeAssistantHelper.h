@@ -1,6 +1,5 @@
 #pragma once
 #include <Arduino.h>
-#include <StreamUtils.h>
 
 class HomeAssistantHelper {
 public:
