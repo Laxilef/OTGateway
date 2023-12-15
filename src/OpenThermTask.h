@@ -118,15 +118,15 @@ protected:
       Log.swarningln(FPSTR(S_OT), F("Invalid response after setBoilerStatus: %s"), ot->statusToString(ot->getLastResponseStatus()));
     }
 
-    if (this->prevOtStatus != vars.states.otStatus) {
-      if (vars.states.otStatus) {
-        Log.sinfoln(FPSTR(S_OT), F("Boiler connected...initializing"));
-        this->initBoiler();
-      }
-      else {
-        Log.swarningln(FPSTR(S_OT), F("Boiler disconnected"));
-      }
+    if (vars.states.otStatus && !this->prevOtStatus) {
       this->prevOtStatus = vars.states.otStatus;
+      
+      Log.sinfoln(FPSTR(S_OT), F("Connected. Initializing"));
+      this->initBoiler();
+      
+    } else if (!vars.states.otStatus && this->prevOtStatus) {
+      this->prevOtStatus = vars.states.otStatus;
+      Log.swarningln(FPSTR(S_OT), F("Disconnected"));
     }
 
     if (!vars.states.otStatus) {
