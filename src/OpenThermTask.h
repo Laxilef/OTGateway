@@ -120,7 +120,11 @@ protected:
 
     if (this->prevOtStatus != vars.states.otStatus) {
       if (vars.states.otStatus) {
+        Log.sinfoln(FPSTR(S_OT), F("Boiler connected...initializing"));
         this->initBoiler();
+      }
+      else {
+        Log.swarningln(FPSTR(S_OT), F("Boiler disconnected"));
       }
       this->prevOtStatus = vars.states.otStatus;
     }
@@ -129,7 +133,7 @@ protected:
       // Boiler is disconnected, no need try setting other OT stuff
       return;
     }
-    
+
     if (vars.parameters.heatingEnabled != heatingEnabled) {
       prevUpdateNonEssentialVars = 0;
       vars.parameters.heatingEnabled = heatingEnabled;
