@@ -23,6 +23,7 @@ protected:
   unsigned short heatingSetTempInterval = 60000;
 
   bool pump = true;
+  bool prevOtStatus = false;
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long startupTime = millis();
   unsigned long dhwSetTempTime = 0;
@@ -57,42 +58,42 @@ protected:
     #endif
   }
 
+  void initBoiler() {
+    // Not all boilers support these, only try once when the boiler becomes connected
+    if (updateSlaveVersion()) {
+      Log.straceln(FPSTR(S_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
+
+    } else {
+      Log.swarningln(FPSTR(S_OT), F("Get slave version failed"));
+    }
+
+    // 0x013F
+    if (setMasterVersion(0x3F, 0x01)) {
+      Log.straceln(FPSTR(S_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
+      
+    } else {
+      Log.swarningln(FPSTR(S_OT), F("Set master version failed"));
+    }
+
+    if (updateSlaveConfig()) {
+      Log.straceln(FPSTR(S_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
+
+    } else {
+      Log.swarningln(FPSTR(S_OT), F("Get slave config failed"));
+    }
+
+    if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
+      Log.straceln(FPSTR(S_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
+      
+    } else {
+      Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
+    }
+
+  }
+
   void loop() {
     static byte currentHeatingTemp, currentDhwTemp = 0;
     unsigned long localResponse;
-
-    if (millis() - prevUpdateNonEssentialVars > 60000) {
-      if (updateSlaveVersion()) {
-        Log.straceln(FPSTR(S_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
-
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Get slave version failed"));
-      }
-
-      // 0x013F
-      if (setMasterVersion(0x3F, 0x01)) {
-        Log.straceln(FPSTR(S_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
-        
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Set master version failed"));
-      }
-
-      if (updateSlaveConfig()) {
-        Log.straceln(FPSTR(S_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
-
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Get slave config failed"));
-      }
-
-      if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
-        Log.straceln(FPSTR(S_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
-        
-      } else {
-        Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
-      }
-
-      //yield();
-    }
 
     bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
@@ -115,6 +116,21 @@ protected:
 
     if (!ot->isValidResponse(localResponse)) {
       Log.swarningln(FPSTR(S_OT), F("Invalid response after setBoilerStatus: %s"), ot->statusToString(ot->getLastResponseStatus()));
+    }
+
+    if (vars.states.otStatus && !this->prevOtStatus) {
+      this->prevOtStatus = vars.states.otStatus;
+      
+      Log.sinfoln(FPSTR(S_OT), F("Connected. Initializing"));
+      this->initBoiler();
+      
+    } else if (!vars.states.otStatus && this->prevOtStatus) {
+      this->prevOtStatus = vars.states.otStatus;
+      Log.swarningln(FPSTR(S_OT), F("Disconnected"));
+    }
+
+    if (!vars.states.otStatus) {
+      // Boiler is disconnected, no need try setting other OT stuff
       return;
     }
 
@@ -130,8 +146,6 @@ protected:
     vars.states.fault = ot->isFault(localResponse);
     vars.states.diagnostic = ot->isDiagnostic(localResponse);
 
-
-    // 
     // These parameters will be updated every minute
     if (millis() - prevUpdateNonEssentialVars > 60000) {
       if (!heatingEnabled && settings.opentherm.modulationSyncWithHeating) {
