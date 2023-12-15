@@ -22,6 +22,7 @@ protected:
   unsigned long firstFailConnect = 0;
   unsigned int heapSize = 0;
   unsigned int minFreeHeapSize = 0;
+  unsigned int minMaxFreeHeapBlockSize = 0;
   unsigned long restartSignalTime = 0;
   bool heatingEnabled = false;
   unsigned long heatingDisabledTime = 0;
@@ -52,13 +53,14 @@ protected:
     }
 
     #if defined(ARDUINO_ARCH_ESP32)
-      heapSize = ESP.getHeapSize();
+      this->heapSize = ESP.getHeapSize();
     #elif defined(ARDUINO_ARCH_ESP8266)
-      heapSize = 81920;
+      this->heapSize = 81920;
     #elif
-      heapSize = 99999;
+      this->heapSize = 99999;
     #endif
-    minFreeHeapSize = heapSize;
+    this->minFreeHeapSize = heapSize;
+    this->minMaxFreeHeapBlockSize = heapSize;
   }
 
   void loop() {
@@ -73,7 +75,7 @@ protected:
     if (vars.actions.restart) {
       Log.sinfoln("MAIN", F("Restart signal received. Restart after 10 sec."));
       eeSettings.updateNow();
-      restartSignalTime = millis();
+      this->restartSignalTime = millis();
       vars.actions.restart = false;
     }
 
@@ -88,8 +90,8 @@ protected:
         tMqtt->enable();
       }
 
-      if (firstFailConnect != 0) {
-        firstFailConnect = 0;
+      if (this->firstFailConnect != 0) {
+        this->firstFailConnect = 0;
       }
 
       if ( Log.getLevel() != TinyLogger::Level::INFO && !settings.debug ) {
@@ -105,11 +107,11 @@ protected:
       }
 
       if (settings.emergency.enable && !vars.states.emergency) {
-        if (firstFailConnect == 0) {
-          firstFailConnect = millis();
+        if (this->firstFailConnect == 0) {
+          this->firstFailConnect = millis();
         }
 
-        if (millis() - firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
+        if (millis() - this->firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
           Log.sinfoln("MAIN", F("Emergency mode enabled"));
         }
@@ -120,7 +122,6 @@ protected:
     #ifdef LED_STATUS_PIN
       ledStatus(LED_STATUS_PIN);
     #endif
-    heap();
     externalPump();
 
     // anti memory leak
@@ -130,9 +131,11 @@ protected:
         stream->read();
       }
     }
+
+    heap();
     
-    if (restartSignalTime > 0 && millis() - restartSignalTime > 10000) {
-      restartSignalTime = 0;
+    if (this->restartSignalTime > 0 && millis() - this->restartSignalTime > 10000) {
+      this->restartSignalTime = 0;
       ESP.restart();
     }
   }
@@ -154,21 +157,31 @@ protected:
       return;
     }
 
-    unsigned int minFreeHeapSizeDiff = 0;
     #if defined(ARDUINO_ARCH_ESP32)
       uint8_t heapFrag = 0;
     #else
       uint8_t heapFrag = ESP.getHeapFragmentation();
     #endif
 
-    if (freeHeapSize < minFreeHeapSize) {
-      minFreeHeapSizeDiff = minFreeHeapSize - freeHeapSize;
-      minFreeHeapSize = freeHeapSize;
+    unsigned int minFreeHeapSizeDiff = 0;
+    if (freeHeapSize < this->minFreeHeapSize) {
+      minFreeHeapSizeDiff = this->minFreeHeapSize - freeHeapSize;
+      this->minFreeHeapSize = freeHeapSize;
     }
 
-    if (millis() - lastHeapInfo > 60000 || minFreeHeapSizeDiff > 0) {
-      Log.sverboseln("MAIN", F("Free heap size: %u of %u bytes, frag: %hhu, max block: %u, min heap: %u bytes (diff: %u bytes)"), freeHeapSize, heapSize, heapFrag, maxFreeBlockSize, minFreeHeapSize, minFreeHeapSizeDiff);
-      lastHeapInfo = millis();
+    unsigned int minMaxFreeBlockSizeDiff = 0;
+    if (maxFreeBlockSize < this->minMaxFreeHeapBlockSize) {
+      minMaxFreeBlockSizeDiff = this->minMaxFreeHeapBlockSize - maxFreeBlockSize;
+      this->minMaxFreeHeapBlockSize = maxFreeBlockSize;
+    }
+
+    if (millis() - this->lastHeapInfo > 20000 || minFreeHeapSizeDiff > 0 || minMaxFreeBlockSizeDiff > 0) {
+      Log.sverboseln(
+        "MAIN",
+        F("Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu)"),
+        freeHeapSize, this->heapSize, this->minFreeHeapSize, minFreeHeapSizeDiff, maxFreeBlockSize, this->minMaxFreeHeapBlockSize, minMaxFreeBlockSizeDiff, heapFrag
+      );
+      this->lastHeapInfo = millis();
     }
   }
 
