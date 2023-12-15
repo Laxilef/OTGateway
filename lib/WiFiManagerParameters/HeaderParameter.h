@@ -4,8 +4,7 @@
 
 class HeaderParameter : public WiFiManagerParameter {
 public:
-  HeaderParameter(const char* title) {
-    WiFiManagerParameter("");
+  HeaderParameter(const char* title) : WiFiManagerParameter("") {
     byte size = strlen(title) + strlen(this->tpl) + 1;
     this->buffer = new char[size];
     this->title = title;
