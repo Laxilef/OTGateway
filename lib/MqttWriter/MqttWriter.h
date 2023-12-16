@@ -96,7 +96,6 @@ public:
     size_t written = 0;
     if (this->client->beginPublish(topic, docSize, retained)) {
       serializeJson(doc, *this);
-      doc.clear();
       this->flush();
       
       written = this->writeAfterLock;

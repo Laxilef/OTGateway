@@ -71,6 +71,9 @@ public:
     }
 
     bool result = this->writer->publish(topic, doc, true);
+    doc.clear();
+    doc.shrinkToFit();
+
     if (this->eventPublishCallback) {
       this->eventPublishCallback(topic, result);
     }

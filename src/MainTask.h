@@ -11,13 +11,22 @@ extern EEManager eeSettings;
 
 class MainTask : public Task {
 public:
-  MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+  MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
+    this->blinker = new Blinker();
+  }
+
+  ~MainTask() {
+    if (this->blinker != nullptr) {
+      delete this->blinker;
+    }
+  }
 
 protected:
   const static byte REASON_PUMP_START_HEATING = 1;
   const static byte REASON_PUMP_START_ANTISTUCK = 2;
 
   Blinker* blinker = nullptr;
+  bool blinkerInitialized = false;
   unsigned long lastHeapInfo = 0;
   unsigned long firstFailConnect = 0;
   unsigned int heapSize = 0;
@@ -192,8 +201,9 @@ protected:
     static unsigned long endBlinkTime = 0;
     static bool ledOn = false;
 
-    if (this->blinker == nullptr) {
-      this->blinker = new Blinker(ledPin);
+    if (!this->blinkerInitialized) {
+      this->blinker->init(ledPin);
+      this->blinkerInitialized = true;
     }
 
     if (WiFi.status() != WL_CONNECTED) {

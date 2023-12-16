@@ -7,7 +7,12 @@
 
 class MqttTask : public Task {
 public:
-  MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+  MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
+    this->wifiClient = new MqttWiFiClient();
+    this->client = new PubSubClient();
+    this->writer = new MqttWriter(this->client, 256);
+    this->haHelper = new HaHelper();
+  }
 
   ~MqttTask() {
     if (this->haHelper != nullptr) {
@@ -64,11 +69,10 @@ protected:
   void setup() {
     Log.sinfoln("MQTT", F("Started"));
 
-    this->wifiClient = new MqttWiFiClient();
+    // wificlient settings
     this->wifiClient->setSync(true);
 
     // client settings
-    this->client = new PubSubClient();
     this->client->setClient(*this->wifiClient);
     this->client->setSocketTimeout(3);
     this->client->setKeepAlive(15);
@@ -77,8 +81,7 @@ protected:
       this->onMessage(topic, payload, length);
     });
 
-    // writer
-    this->writer = new MqttWriter(this->client, 256);
+    // writer settings
     this->writer->setYieldCallback([this] {
       this->delay(10);
     });
@@ -86,7 +89,7 @@ protected:
       Log.straceln("MQTT", F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
 
       this->client->loop();
-      this->delay(100);
+      this->delay(250);
     });
     this->writer->setEventFlushCallback([this] (size_t, size_t) {
       if (!this->wifiClient->getSync() && this->wifiClient->connected()) {
@@ -99,7 +102,6 @@ protected:
     });
 
     // ha helper settings
-    this->haHelper = new HaHelper();
     this->haHelper->setDevicePrefix(settings.mqtt.prefix);
     this->haHelper->setDeviceVersion(PROJECT_VERSION);
     this->haHelper->setDeviceModel(PROJECT_NAME);
@@ -445,6 +447,9 @@ protected:
       }
     }
 
+    doc.clear();
+    doc.shrinkToFit();
+
     if (flag) {
       this->prevPubSettingsTime = 0;
       eeSettings.update();
@@ -498,6 +503,9 @@ protected:
     if (!doc["actions"]["resetDiagnostic"].isNull() && doc["actions"]["resetDiagnostic"].is<bool>() && doc["actions"]["resetDiagnostic"].as<bool>()) {
       vars.actions.resetDiagnostic = true;
     }
+
+    doc.clear();
+    doc.shrinkToFit();
 
     if (flag) {
       this->prevPubVarsTime = 0;
@@ -723,6 +731,8 @@ protected:
     doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
     doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
 
+    doc.shrinkToFit();
+
     return this->writer->publish(topic, doc, true);
   }
 
@@ -757,6 +767,8 @@ protected:
     doc["parameters"]["heatingSetpoint"] = vars.parameters.heatingSetpoint;
     doc["parameters"]["dhwMinTemp"] = vars.parameters.dhwMinTemp;
     doc["parameters"]["dhwMaxTemp"] = vars.parameters.dhwMaxTemp;
+
+    doc.shrinkToFit();
 
     return this->writer->publish(topic, doc, true);
   }

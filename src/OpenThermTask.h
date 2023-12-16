@@ -11,7 +11,9 @@ const char S_OT_HEATING[] PROGMEM = "OT.HEATING";
 
 class OpenThermTask : public Task {
 public:
-  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
+    ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
+  }
 
   static void IRAM_ATTR handleInterrupt() {
     ot->handleInterrupt();
@@ -43,8 +45,6 @@ protected:
 
   void setup() {
     Log.sinfoln(FPSTR(S_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
-
-    ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
 
     ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
     ot->setYieldCallback([](void* self) {
@@ -95,7 +95,7 @@ protected:
     static byte currentHeatingTemp, currentDhwTemp = 0;
     unsigned long localResponse;
 
-    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && pump && isReady();
+    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && isReady();
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
       heatingCh2Enabled = heatingEnabled;
@@ -135,7 +135,7 @@ protected:
     }
 
     if (vars.parameters.heatingEnabled != heatingEnabled) {
-      prevUpdateNonEssentialVars = 0;
+      this->prevUpdateNonEssentialVars = 0;
       vars.parameters.heatingEnabled = heatingEnabled;
       Log.sinfoln(FPSTR(S_OT_HEATING), "%s", heatingEnabled ? F("Enabled") : F("Disabled"));
     }
@@ -147,7 +147,7 @@ protected:
     vars.states.diagnostic = ot->isDiagnostic(localResponse);
 
     // These parameters will be updated every minute
-    if (millis() - prevUpdateNonEssentialVars > 60000) {
+    if (millis() - this->prevUpdateNonEssentialVars > 60000) {
       if (!heatingEnabled && settings.opentherm.modulationSyncWithHeating) {
         if (setMaxModulationLevel(0)) {
           Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation 0% (off)"));
@@ -233,7 +233,7 @@ protected:
 
       updatePressure();
 
-      prevUpdateNonEssentialVars = millis();
+      this->prevUpdateNonEssentialVars = millis();
       //yield();
     }
 
@@ -301,7 +301,7 @@ protected:
       // Записываем заданную температуру ГВС
       if (ot->setDhwTemp(newDhwTemp)) {
         currentDhwTemp = newDhwTemp;
-        dhwSetTempTime = millis();
+        this->dhwSetTempTime = millis();
 
       } else {
         Log.swarningln(FPSTR(S_OT_DHW), F("Failed set temp"));
@@ -324,7 +324,7 @@ protected:
       // Записываем заданную температуру
       if (ot->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
-        heatingSetTempTime = millis();
+        this->heatingSetTempTime = millis();
 
       } else {
         Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set temp"));
@@ -343,15 +343,15 @@ protected:
     // только для pid и/или equitherm
     if (settings.heating.hysteresis > 0 && !vars.states.emergency && (settings.equitherm.enable || settings.pid.enable)) {
       float halfHyst = settings.heating.hysteresis / 2;
-      if (pump && vars.temperatures.indoor - settings.heating.target + 0.0001 >= halfHyst) {
-        pump = false;
+      if (this->pump && vars.temperatures.indoor - settings.heating.target + 0.0001 >= halfHyst) {
+        this->pump = false;
 
-      } else if (!pump && vars.temperatures.indoor - settings.heating.target - 0.0001 <= -(halfHyst)) {
-        pump = true;
+      } else if (!this->pump && vars.temperatures.indoor - settings.heating.target - 0.0001 <= -(halfHyst)) {
+        this->pump = true;
       }
 
-    } else if (!pump) {
-      pump = true;
+    } else if (!this->pump) {
+      this->pump = true;
     }
   }
 
@@ -392,15 +392,15 @@ protected:
   }
 
   bool isReady() {
-    return millis() - startupTime > readyTime;
+    return millis() - this->startupTime > this->readyTime;
   }
 
   bool needSetDhwTemp() {
-    return millis() - dhwSetTempTime > dhwSetTempInterval;
+    return millis() - this->dhwSetTempTime > this->dhwSetTempInterval;
   }
 
   bool needSetHeatingTemp() {
-    return millis() - heatingSetTempTime > heatingSetTempInterval;
+    return millis() - this->heatingSetTempTime > this->heatingSetTempInterval;
   }
 
   static void printRequestDetail(OpenThermMessageID id, OpenThermResponseStatus status, unsigned long request, unsigned long response, byte attempt) {

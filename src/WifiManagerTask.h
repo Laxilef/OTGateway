@@ -56,55 +56,7 @@ const char S_WIFI_SETTINGS[] PROGMEM = "WIFI.SETTINGS";
 
 class WifiManagerTask : public LeanTask {
 public:
-  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
-
-  WifiManagerTask* addTaskForDisable(AbstractTask* task) {
-    this->tasksForDisable.push_back(task);
-    return this;
-  }
-
-protected:
-  bool connected = false;
-  unsigned long lastArpGratuitous = 0;
-  unsigned long lastReconnecting = 0;
-  std::vector<AbstractTask*> tasksForDisable;
-
-  const char* getTaskName() {
-    return "WifiManager";
-  }
-  
-  /*int getTaskCore() {
-    return 1;
-  }*/
-
-  int getTaskPriority() {
-    return 0;
-  }
-
-  void setup() {
-    #ifdef WOKWI
-      WiFi.begin("Wokwi-GUEST", "", 6);
-    #endif
-
-    wm.setDebugOutput(settings.debug, (wm_debuglevel_t) WM_DEBUG_MODE);
-    wm.setTitle(PROJECT_NAME);
-    wm.setCustomHeadElement(PSTR(
-      "<style>"
-      ".bheader + br {display: none;}"
-      ".bheader {margin: 1.25em 0 0.5em 0;padding: 0;border-bottom: 2px solid #000;font-size: 1.5em;}"
-      "</style>"
-    ));
-    wm.setCustomMenuHTML(PSTR(
-      "<style>.wrap h1 {display: none;} .wrap h3 {display: none;} .nh {margin: 0 0 1em 0;} .nh .logo {font-size: 1.8em; margin: 0.5em; text-align: center;} .nh .links {text-align: center;}</style>"
-      "<div class=\"nh\">"
-      "<div class=\"logo\">" PROJECT_NAME "</div>"
-      "<div class=\"links\"><a href=\"" PROJECT_REPO "\" target=\"_blank\">Repo</a> | <a href=\"" PROJECT_REPO "/issues\" target=\"_blank\">Issues</a> | <a href=\"" PROJECT_REPO "/releases\" target=\"_blank\">Releases</a> | <small>v" PROJECT_VERSION " (" __DATE__ ")</small></div>"
-      "</div>"
-    ));
-
-    std::vector<const char *> menu = {"custom", "wifi", "param", "sep", "info", "update", "restart"};
-    wm.setMenu(menu);
-
+  WifiManagerTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
     wmHostname = new WiFiManagerParameter("hostname", "Hostname", settings.hostname, 80);
     wm.addParameter(wmHostname);
 
@@ -196,10 +148,57 @@ protected:
 
     wmExtPumpAntiStuckTime = new UnsignedShortParameter("ext_pump_as_time", "Anti stuck time", settings.externalPump.antiStuckTime, 5);
     wm.addParameter(wmExtPumpAntiStuckTime);
+  }
+
+  WifiManagerTask* addTaskForDisable(AbstractTask* task) {
+    this->tasksForDisable.push_back(task);
+    return this;
+  }
+
+protected:
+  bool connected = false;
+  unsigned long lastArpGratuitous = 0;
+  unsigned long lastReconnecting = 0;
+  std::vector<AbstractTask*> tasksForDisable;
+
+  const char* getTaskName() {
+    return "WifiManager";
+  }
+  
+  /*int getTaskCore() {
+    return 1;
+  }*/
+
+  int getTaskPriority() {
+    return 0;
+  }
+
+  void setup() {
+    #ifdef WOKWI
+      WiFi.begin("Wokwi-GUEST", "", 6);
+    #endif
+
+    wm.setDebugOutput(settings.debug, (wm_debuglevel_t) WM_DEBUG_MODE);
+    wm.setTitle(PROJECT_NAME);
+    wm.setCustomHeadElement(PSTR(
+      "<style>"
+      ".bheader + br {display: none;}"
+      ".bheader {margin: 1.25em 0 0.5em 0;padding: 0;border-bottom: 2px solid #000;font-size: 1.5em;}"
+      "</style>"
+    ));
+    wm.setCustomMenuHTML(PSTR(
+      "<style>.wrap h1 {display: none;} .wrap h3 {display: none;} .nh {margin: 0 0 1em 0;} .nh .logo {font-size: 1.8em; margin: 0.5em; text-align: center;} .nh .links {text-align: center;}</style>"
+      "<div class=\"nh\">"
+      "<div class=\"logo\">" PROJECT_NAME "</div>"
+      "<div class=\"links\"><a href=\"" PROJECT_REPO "\" target=\"_blank\">Repo</a> | <a href=\"" PROJECT_REPO "/issues\" target=\"_blank\">Issues</a> | <a href=\"" PROJECT_REPO "/releases\" target=\"_blank\">Releases</a> | <small>v" PROJECT_VERSION " (" __DATE__ ")</small></div>"
+      "</div>"
+    ));
+
+    std::vector<const char *> menu = {"custom", "wifi", "param", "sep", "info", "update", "restart"};
+    wm.setMenu(menu);
 
     //wm.setCleanConnect(true);
     wm.setRestorePersistent(false);
-
     wm.setHostname(settings.hostname);
     wm.setWiFiAutoReconnect(false);
     wm.setAPClientCheck(true);

@@ -21,6 +21,7 @@ public:
     doc[FPSTR(HA_OPTIONS)][1] = F("Manual");
     doc[FPSTR(HA_OPTIONS)][2] = F("External");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("select", "outdoor_sensor_type").c_str(), doc);
   }
@@ -50,6 +51,7 @@ public:
     doc[FPSTR(HA_OPTIONS)][2] = F("Bluetooth");
 #endif
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("select", "indoor_sensor_type").c_str(), doc);
   }
@@ -75,6 +77,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "outdoor_sensor_offset").c_str(), doc);
   }
@@ -100,6 +103,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "indoor_sensor_offset").c_str(), doc);
   }
@@ -121,6 +125,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"debug\": true}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"debug\": false}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "debug").c_str(), doc);
   }
@@ -142,6 +147,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"emergency\": {\"enable\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"emergency\": {\"enable\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "emergency").c_str(), doc);
   }
@@ -165,6 +171,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.5;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "emergency_target").c_str(), doc);
   }
@@ -187,6 +194,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"emergency\": {\"useEquitherm\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"emergency\": {\"useEquitherm\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "emergency_use_equitherm").c_str(), doc);
   }
@@ -209,6 +217,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"heating\": {\"enable\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"heating\": {\"enable\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "heating").c_str(), doc);
   }
@@ -230,6 +239,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"heating\": {\"turbo\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"heating\": {\"turbo\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "heating_turbo").c_str(), doc);
   }
@@ -254,6 +264,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.5;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "heating_target").c_str(), doc);
   }
@@ -277,6 +288,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "heating_hysteresis").c_str(), doc);
   }
@@ -296,6 +308,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingSetpoint|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "heating_setpoint").c_str(), doc);
   }
@@ -315,6 +328,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingMinTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "current_heating_min_temp").c_str(), doc);
   }
@@ -334,6 +348,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingMaxTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "current_heating_max_temp").c_str(), doc);
   }
@@ -357,6 +372,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "heating_min_temp").c_str(), doc);
   }
@@ -380,6 +396,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "heating_max_temp").c_str(), doc);
   }
@@ -403,6 +420,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "heating_max_modulation").c_str(), doc);
   }
@@ -425,6 +443,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"dhw\": {\"enable\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"dhw\": {\"enable\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "dhw").c_str(), doc);
   }
@@ -449,6 +468,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "dhw_target").c_str(), doc);
   }
@@ -468,6 +488,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.dhwMinTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "current_dhw_min_temp").c_str(), doc);
   }
@@ -487,6 +508,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.dhwMaxTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "current_dhw_max_temp").c_str(), doc);
   }
@@ -510,6 +532,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "dhw_min_temp").c_str(), doc);
   }
@@ -533,6 +556,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "dhw_max_temp").c_str(), doc);
   }
@@ -554,6 +578,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"pid\": {\"enable\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"pid\": {\"enable\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "pid").c_str(), doc);
   }
@@ -574,6 +599,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.001;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "pid_p_factor").c_str(), doc);
   }
@@ -594,6 +620,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.001;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "pid_i_factor").c_str(), doc);
   }
@@ -614,6 +641,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.001;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "pid_d_factor").c_str(), doc);
   }
@@ -637,6 +665,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "pid_min_temp").c_str(), doc);
   }
@@ -660,6 +689,7 @@ public:
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "pid_max_temp").c_str(), doc);
   }
@@ -681,6 +711,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"equitherm\": {\"enable\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"equitherm\": {\"enable\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "equitherm").c_str(), doc);
   }
@@ -701,6 +732,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.001;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "equitherm_n_factor").c_str(), doc);
   }
@@ -721,6 +753,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "equitherm_k_factor").c_str(), doc);
   }
@@ -743,6 +776,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "equitherm_t_factor").c_str(), doc);
   }
@@ -764,6 +798,7 @@ public:
     doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"tuning\": {\"enable\" : true}}");
     doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"tuning\": {\"enable\" : false}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("switch", "tuning").c_str(), doc);
   }
@@ -784,6 +819,7 @@ public:
     doc[FPSTR(HA_OPTIONS)][0] = F("Equitherm");
     doc[FPSTR(HA_OPTIONS)][1] = F("PID");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("select", "tuning_regulator").c_str(), doc);
   }
@@ -801,6 +837,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("status");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value == 'online', 'OFF', 'ON') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 60;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "status").c_str(), doc);
   }
@@ -817,6 +854,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'OFF', 'ON') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "ot_status").c_str(), doc);
   }
@@ -834,6 +872,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.heating, 'ON', 'OFF') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "heating").c_str(), doc);
   }
@@ -851,6 +890,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.dhw, 'ON', 'OFF') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "dhw").c_str(), doc);
   }
@@ -868,6 +908,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.flame, 'ON', 'OFF') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "flame").c_str(), doc);
   }
@@ -886,6 +927,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.fault, 'ON', 'OFF') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "fault").c_str(), doc);
   }
@@ -903,6 +945,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.diagnostic, 'ON', 'OFF') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("binary_sensor", "diagnostic").c_str(), doc);
   }
@@ -920,6 +963,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"E%02d\"|format(value_json.sensors.faultCode) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "fault_code").c_str(), doc);
   }
@@ -939,6 +983,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.rssi|float(0)|round(1) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "rssi").c_str(), doc);
   }
@@ -958,6 +1003,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.uptime|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "uptime").c_str(), doc);
   }
@@ -978,6 +1024,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.modulation|float(0)|round(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "modulation").c_str(), doc);
   }
@@ -997,6 +1044,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.pressure|float(0)|round(2) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "pressure").c_str(), doc);
   }
@@ -1016,6 +1064,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.dhwFlowRate|float(0)|round(2) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "dhw_flow_rate").c_str(), doc);
   }
@@ -1039,6 +1088,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "indoor_temp").c_str(), doc);
   }
@@ -1059,6 +1109,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "indoor_temp").c_str(), doc);
   }
@@ -1081,6 +1132,7 @@ public:
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("number", "outdoor_temp").c_str(), doc);
   }
@@ -1101,6 +1153,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.outdoor|float(0)|round(1) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "outdoor_temp").c_str(), doc);
   }
@@ -1120,6 +1173,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.heating|float(0)|round(2) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "heating_temp").c_str(), doc);
   }
@@ -1139,6 +1193,7 @@ public:
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.dhw|float(0)|round(2) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("sensor", "dhw_temp").c_str(), doc);
   }
@@ -1192,6 +1247,7 @@ public:
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
     doc[FPSTR(HA_TEMP_STEP)] = 0.5;
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("climate", "heating", '_').c_str(), doc);
   }
@@ -1228,6 +1284,7 @@ public:
     doc[FPSTR(HA_MIN_TEMP)] = minTemp;
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("climate", "dhw", '_').c_str(), doc);
   }
@@ -1244,6 +1301,7 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("state/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"restart\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("button", "restart").c_str(), doc);
   }
@@ -1261,6 +1319,7 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("state/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetFault\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("button", "reset_fault").c_str(), doc);
   }
@@ -1278,6 +1337,7 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("state/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetDiagnostic\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
 
     return this->publish(this->getTopic("button", "reset_diagnostic").c_str(), doc);
   }
