@@ -273,6 +273,8 @@ protected:
       arpGratuitous();
       lastArpGratuitous = millis();
     }
+
+    ::yield();
     #endif
 
     wm.process();

@@ -70,36 +70,51 @@ protected:
     Log.sinfoln("MQTT", F("Started"));
 
     // wificlient settings
+    #ifdef ARDUINO_ARCH_ESP8266
     this->wifiClient->setSync(true);
+    #endif
 
     // client settings
     this->client->setClient(*this->wifiClient);
-    this->client->setSocketTimeout(3);
     this->client->setKeepAlive(15);
+
+    #ifdef ARDUINO_ARCH_ESP8266
+    this->client->setSocketTimeout(1);
     this->client->setBufferSize(768);
+    #else
+    this->client->setSocketTimeout(3);
+    this->client->setBufferSize(1536);
+    #endif
+    
     this->client->setCallback([this] (char* topic, uint8_t* payload, unsigned int length) {
       this->onMessage(topic, payload, length);
     });
 
     // writer settings
+    #ifdef ARDUINO_ARCH_ESP32
     this->writer->setYieldCallback([this] {
       this->delay(10);
     });
+    #endif
+
     this->writer->setEventPublishCallback([this] (const char* topic, size_t written, size_t length, bool result) {
       Log.straceln("MQTT", F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
-
-      this->client->loop();
-      this->delay(250);
-    });
-    this->writer->setEventFlushCallback([this] (size_t, size_t) {
-      if (!this->wifiClient->getSync() && this->wifiClient->connected()) {
-        this->wifiClient->flush();
-      }
 
       #ifdef ARDUINO_ARCH_ESP8266
       ::yield();
       #endif
+
+      this->client->loop();
+      this->delay(250);
     });
+
+    #ifdef ARDUINO_ARCH_ESP8266
+    this->writer->setEventFlushCallback([this] (size_t, size_t) {
+      this->client->flush();
+      this->wifiClient->flush();
+      ::yield();
+    });
+    #endif
 
     // ha helper settings
     this->haHelper->setDevicePrefix(settings.mqtt.prefix);
@@ -117,9 +132,8 @@ protected:
       this->connected = false;
       this->onDisconnect();
     }
-
+    
     if (this->wifiClient == nullptr || (!this->client->connected() && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL)) {
-      Log.sinfoln("MQTT", F("Not connected, state: %d"), this->client->state());
       Log.sinfoln("MQTT", F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
 
       this->client->setServer(settings.mqtt.server, settings.mqtt.port);
@@ -144,12 +158,19 @@ protected:
       return;
     }
 
+    #ifdef ARDUINO_ARCH_ESP8266
+    ::yield();
+    #endif
     this->client->loop();
 
     // delay for publish data
     if (!this->isReadyForSend()) {
       return;
     }
+
+    #ifdef ARDUINO_ARCH_ESP8266
+    ::yield();
+    #endif
 
     // publish variables and status
     if (this->newConnection || millis() - this->prevPubVarsTime > settings.mqtt.interval) {
