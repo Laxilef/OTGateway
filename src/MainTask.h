@@ -65,7 +65,7 @@ protected:
       this->heapSize = ESP.getHeapSize();
     #elif defined(ARDUINO_ARCH_ESP8266)
       this->heapSize = 81920;
-    #elif
+    #else
       this->heapSize = 99999;
     #endif
     this->minFreeHeapSize = heapSize;

@@ -13,7 +13,7 @@
   #include <ESP32Scheduler.h>
 #elif defined(ARDUINO_ARCH_ESP8266)
   #include <Scheduler.h>
-#elif
+#else
   #error Wrong board. Supported boards: esp8266, esp32
 #endif
 
