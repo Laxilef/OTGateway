@@ -166,17 +166,19 @@ protected:
       return;
     }
 
-    #if defined(ARDUINO_ARCH_ESP32)
-      uint8_t heapFrag = 0;
-    #else
-      uint8_t heapFrag = ESP.getHeapFragmentation();
-    #endif
-
     unsigned int minFreeHeapSizeDiff = 0;
+    #if defined(ARDUINO_ARCH_ESP32)
+    unsigned int currentMinFreeHeapSize = ESP.getMinFreeHeap();
+    if (currentMinFreeHeapSize < this->minFreeHeapSize) {
+      minFreeHeapSizeDiff = this->minFreeHeapSize - currentMinFreeHeapSize;
+      this->minFreeHeapSize = currentMinFreeHeapSize;
+    }
+    #else
     if (freeHeapSize < this->minFreeHeapSize) {
       minFreeHeapSizeDiff = this->minFreeHeapSize - freeHeapSize;
       this->minFreeHeapSize = freeHeapSize;
     }
+    #endif
 
     unsigned int minMaxFreeBlockSizeDiff = 0;
     if (maxFreeBlockSize < this->minMaxFreeHeapBlockSize) {
@@ -184,10 +186,11 @@ protected:
       this->minMaxFreeHeapBlockSize = maxFreeBlockSize;
     }
 
+    uint8_t heapFrag = 100 - maxFreeBlockSize * 100.0 / freeHeapSize;
     if (millis() - this->lastHeapInfo > 20000 || minFreeHeapSizeDiff > 0 || minMaxFreeBlockSizeDiff > 0) {
       Log.sverboseln(
         "MAIN",
-        F("Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu)"),
+        F("Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu%%)"),
         freeHeapSize, this->heapSize, this->minFreeHeapSize, minFreeHeapSizeDiff, maxFreeBlockSize, this->minMaxFreeHeapBlockSize, minMaxFreeBlockSizeDiff, heapFrag
       );
       this->lastHeapInfo = millis();
