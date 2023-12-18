@@ -27,8 +27,8 @@ protected:
 
   Blinker* blinker = nullptr;
   bool blinkerInitialized = false;
-  unsigned long lastHeapInfo = 0;
   unsigned long firstFailConnect = 0;
+  unsigned long lastHeapInfo = 0;
   unsigned int heapSize = 0;
   unsigned int minFreeHeapSize = 0;
   unsigned int minMaxFreeHeapBlockSize = 0;

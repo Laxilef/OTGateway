@@ -1,4 +1,3 @@
-#include <WiFiClient.h>
 #include <PubSubClient.h>
 #include <MqttWiFiClient.h>
 #include <MqttWriter.h>
