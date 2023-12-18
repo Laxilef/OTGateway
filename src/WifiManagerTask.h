@@ -9,7 +9,7 @@
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
 WiFiManagerParameter* wmMqttServer;
-UnsignedIntParameter* wmMqttPort;
+UnsignedShortParameter* wmMqttPort;
 WiFiManagerParameter* wmMqttUser;
 WiFiManagerParameter* wmMqttPassword;
 WiFiManagerParameter* wmMqttPrefix;
@@ -66,7 +66,7 @@ public:
     wmMqttServer = new WiFiManagerParameter("mqtt_server", "Server", settings.mqtt.server, 80);
     wm.addParameter(wmMqttServer);
 
-    wmMqttPort = new UnsignedIntParameter("mqtt_port", "Port", settings.mqtt.port, 6);
+    wmMqttPort = new UnsignedShortParameter("mqtt_port", "Port", settings.mqtt.port, 6);
     wm.addParameter(wmMqttPort);
 
     wmMqttUser = new WiFiManagerParameter("mqtt_user", "Username", settings.mqtt.user, 32);
@@ -303,7 +303,7 @@ protected:
       changed = true;
       settings.mqtt.port = wmMqttPort->getValue();
 
-      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.port: %du"), settings.mqtt.port);
+      Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New mqtt.port: %hu"), settings.mqtt.port);
     }
 
     if (strcmp(wmMqttUser->getValue(), settings.mqtt.user) != 0) {

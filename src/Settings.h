@@ -17,7 +17,7 @@ struct Settings {
 
   struct {
     char server[80];
-    unsigned int port = 1883;
+    unsigned short port = 1883;
     char user[32];
     char password[32];
     char prefix[80] = "opentherm";
