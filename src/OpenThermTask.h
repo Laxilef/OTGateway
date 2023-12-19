@@ -341,7 +341,7 @@ protected:
 
     // коммутационная разность (hysteresis)
     // только для pid и/или equitherm
-    if (settings.heating.hysteresis > 0 && !vars.states.emergency && (settings.equitherm.enable || settings.pid.enable)) {
+    if (settings.heating.hysteresis > 0 && (!vars.states.emergency || settings.emergency.usePid) && (settings.equitherm.enable || settings.pid.enable)) {
       float halfHyst = settings.heating.hysteresis / 2;
       if (this->pump && vars.temperatures.indoor - settings.heating.target + 0.0001 >= halfHyst) {
         this->pump = false;

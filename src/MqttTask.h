@@ -3,6 +3,8 @@
 #include <MqttWriter.h>
 #include "HaHelper.h"
 
+extern EEManager eeSettings;
+
 
 class MqttTask : public Task {
 public:
@@ -289,7 +291,32 @@ protected:
     }
 
     if (!doc["emergency"]["useEquitherm"].isNull() && doc["emergency"]["useEquitherm"].is<bool>()) {
-      settings.emergency.useEquitherm = doc["emergency"]["useEquitherm"].as<bool>();
+      if (settings.sensors.outdoor.type != 1) {
+        settings.emergency.useEquitherm = doc["emergency"]["useEquitherm"].as<bool>();
+
+      } else {
+        settings.emergency.useEquitherm = false;
+      }
+
+      if (settings.emergency.useEquitherm && settings.emergency.usePid) {
+        settings.emergency.usePid = false;
+      }
+
+      flag = true;
+    }
+
+    if (!doc["emergency"]["usePid"].isNull() && doc["emergency"]["usePid"].is<bool>()) {
+      if (settings.sensors.indoor.type != 1) {
+        settings.emergency.usePid = doc["emergency"]["usePid"].as<bool>();
+
+      } else {
+        settings.emergency.usePid = false;
+      }
+
+      if (settings.emergency.usePid && settings.emergency.useEquitherm) {
+        settings.emergency.useEquitherm = false;
+      }
+
       flag = true;
     }
 
@@ -442,6 +469,11 @@ protected:
     if (!doc["sensors"]["outdoor"]["type"].isNull() && doc["sensors"]["outdoor"]["type"].is<unsigned char>()) {
       if (doc["sensors"]["outdoor"]["type"].as<unsigned char>() >= 0 && doc["sensors"]["outdoor"]["type"].as<unsigned char>() <= 2) {
         settings.sensors.outdoor.type = doc["sensors"]["outdoor"]["type"].as<unsigned char>();
+
+        if (settings.sensors.outdoor.type == 1) {
+          settings.emergency.useEquitherm = false;
+        }
+
         flag = true;
       }
     }
@@ -456,6 +488,11 @@ protected:
     if (!doc["sensors"]["indoor"]["type"].isNull() && doc["sensors"]["indoor"]["type"].is<unsigned char>()) {
       if (doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 3) {
         settings.sensors.indoor.type = doc["sensors"]["indoor"]["type"].as<unsigned char>();
+
+        if (settings.sensors.indoor.type == 1) {
+          settings.emergency.usePid = false;
+        }
+
         flag = true;
       }
     }
@@ -547,6 +584,7 @@ protected:
     this->haHelper->publishSwitchEmergency();
     this->haHelper->publishNumberEmergencyTarget();
     this->haHelper->publishSwitchEmergencyUseEquitherm();
+    this->haHelper->publishSwitchEmergencyUsePid();
 
     // heating
     this->haHelper->publishSwitchHeating(false);
@@ -719,6 +757,7 @@ protected:
     doc["emergency"]["enable"] = settings.emergency.enable;
     doc["emergency"]["target"] = settings.emergency.target;
     doc["emergency"]["useEquitherm"] = settings.emergency.useEquitherm;
+    doc["emergency"]["usePid"] = settings.emergency.usePid;
 
     doc["heating"]["enable"] = settings.heating.enable;
     doc["heating"]["turbo"] = settings.heating.turbo;

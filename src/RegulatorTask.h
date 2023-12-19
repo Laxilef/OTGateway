@@ -91,10 +91,31 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", F("New emergency result: %u (%f)"), (int) round(etResult), etResult);
+        Log.sinfoln("REGULATOR.EQUITHERM", F("New emergency result: %hhu (%f)"), (uint8_t) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
+      }
+
+    } else if(settings.emergency.usePid && settings.sensors.indoor.type != 1) {
+      if (vars.parameters.heatingEnabled) {
+        float pidResult = getPidTemp(
+          settings.heating.minTemp,
+          settings.heating.maxTemp
+        );
+
+        if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
+          prevPidResult = pidResult;
+          newTemp += pidResult;
+
+          Log.sinfoln("REGULATOR.PID", F("New emergency result: %hhu (%f)"), (uint8_t) round(pidResult), pidResult);
+
+        } else {
+          newTemp += prevPidResult;
+        }
+
+      } else if (!vars.parameters.heatingEnabled && prevPidResult != 0) {
+        newTemp += prevPidResult;
       }
 
     } else {
@@ -126,7 +147,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", F("New result: %u (%f)"), (int) round(etResult), etResult);
+        Log.sinfoln("REGULATOR.EQUITHERM", F("New result: %hhu (%f)"), (uint8_t) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -144,7 +165,7 @@ protected:
         prevPidResult = pidResult;
         newTemp += pidResult;
 
-        Log.sinfoln("REGULATOR.PID", F("New result: %d (%f)"), (int) round(pidResult), pidResult);
+        Log.sinfoln("REGULATOR.PID", F("New result: %hh (%f)"), (int8_t) round(pidResult), pidResult);
 
       } else {
         newTemp += prevPidResult;

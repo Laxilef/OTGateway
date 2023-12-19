@@ -28,6 +28,7 @@ struct Settings {
     bool enable = true;
     float target = 40.0f;
     bool useEquitherm = false;
+    bool usePid = false;
   } emergency;
 
   struct {
