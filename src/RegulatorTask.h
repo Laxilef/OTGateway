@@ -3,7 +3,7 @@
 #include <PIDtuner.h>
 
 Equitherm etRegulator;
-GyverPID pidRegulator(0, 0, 0);
+GyverPID<int, unsigned long> pidRegulator(0, 0, 0);
 PIDtuner pidTuner;
 
 
@@ -308,10 +308,11 @@ protected:
     pidRegulator.Kd = settings.pid.d_factor;
 
     pidRegulator.setLimits(minTemp, maxTemp);
+    pidRegulator.setDt(180000);
     pidRegulator.input = vars.temperatures.indoor;
     pidRegulator.setpoint = settings.heating.target;
 
-    return pidRegulator.getResultNow();
+    return pidRegulator.getResultTimer();
   }
 
   float tuneEquithermN(float ratio, float currentTemp, float setTemp, unsigned int dirtyInterval = 60, unsigned int accurateInterval = 1800, float accurateStep = 0.01, float accurateStepAfter = 1) {
