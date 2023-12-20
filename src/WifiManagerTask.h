@@ -4,7 +4,11 @@
 #include <UnsignedShortParameter.h>
 #include <CheckboxParameter.h>
 #include <HeaderParameter.h>
-#include <netif/etharp.h>
+#ifdef ARDUINO_ARCH_ESP8266
+extern "C" {
+#include "lwip/etharp.h"
+}
+#endif
 
 WiFiManager wm;
 WiFiManagerParameter* wmHostname;
@@ -47,7 +51,7 @@ HeaderParameter* wmExtPumpHeader;
 
 extern EEManager eeSettings;
 #if USE_TELNET
-  extern ESPTelnetStream TelnetStream;
+extern ESPTelnetStream TelnetStream;
 #endif
 
 const char S_WIFI[]          PROGMEM = "WIFI";
@@ -164,7 +168,7 @@ protected:
   const char* getTaskName() {
     return "WifiManager";
   }
-  
+
   /*int getTaskCore() {
     return 1;
   }*/
@@ -174,9 +178,9 @@ protected:
   }
 
   void setup() {
-    #ifdef WOKWI
-      WiFi.begin("Wokwi-GUEST", "", 6);
-    #endif
+#ifdef WOKWI
+    WiFi.begin("Wokwi-GUEST", "", 6);
+#endif
 
     wm.setDebugOutput(settings.debug, (wm_debuglevel_t) WM_DEBUG_MODE);
     wm.setTitle(PROJECT_NAME);
@@ -210,7 +214,6 @@ protected:
           task->disable();
         }
       }
-      //this->delay(10);
     });
     wm.setConfigPortalTimeout(wm.getWiFiIsSaved() ? 180 : 0);
     wm.setDisableConfigPortal(false);
@@ -224,6 +227,10 @@ protected:
 
       if (wm.getWebPortalActive()) {
         wm.stopWebPortal();
+
+#ifdef ARDUINO_ARCH_ESP8266
+        ::yield();
+#endif
       }
 
       /*wm.setCaptivePortalEnable(true);
@@ -232,13 +239,16 @@ protected:
         wm.startConfigPortal(AP_SSID, AP_PASSWORD);
       }*/
 
-      #if USE_TELNET
-        TelnetStream.stop();
-      #endif
+#if USE_TELNET
+      TelnetStream.stop();
+#ifdef ARDUINO_ARCH_ESP8266
+      ::yield();
+#endif
+#endif
 
       Log.sinfoln(FPSTR(S_WIFI), F("Disconnected"));
     }
-    
+
     if (WiFi.status() != WL_CONNECTED && !wm.getConfigPortalActive()) {
       if (millis() - this->lastReconnecting > 5000) {
         Log.sinfoln(FPSTR(S_WIFI), F("Reconnecting..."));
@@ -247,35 +257,44 @@ protected:
         this->lastReconnecting = millis();
       }
     }
-    
+
     if (!connected && WiFi.status() == WL_CONNECTED) {
       connected = true;
 
       wm.setConfigPortalTimeout(180);
       if (wm.getConfigPortalActive()) {
         wm.stopConfigPortal();
+#ifdef ARDUINO_ARCH_ESP8266
+        ::yield();
+#endif
       }
 
       wm.setCaptivePortalEnable(false);
       if (!wm.getWebPortalActive()) {
         wm.startWebPortal();
+#ifdef ARDUINO_ARCH_ESP8266
+        ::yield();
+#endif
       }
 
-      #if USE_TELNET
-        TelnetStream.begin(23, false);
-      #endif
+#if USE_TELNET
+      TelnetStream.begin(23, false);
+#ifdef ARDUINO_ARCH_ESP8266
+      ::yield();
+#endif
+#endif
 
       Log.sinfoln(FPSTR(S_WIFI), F("Connected. IP: %s, RSSI: %hhd"), WiFi.localIP().toString().c_str(), WiFi.RSSI());
     }
 
-    #if defined(ARDUINO_ARCH_ESP8266)
+#ifdef ARDUINO_ARCH_ESP8266
     if (connected && millis() - lastArpGratuitous > 60000) {
-      arpGratuitous();
+      stationKeepAliveNow();
       lastArpGratuitous = millis();
-    }
 
-    ::yield();
-    #endif
+      ::yield();
+    }
+#endif
 
     wm.process();
   }
@@ -518,11 +537,23 @@ protected:
     eeSettings.update();
   }
 
-  static void arpGratuitous() {
-    struct netif* netif = netif_list;
-    while (netif) {
-      etharp_gratuitous(netif);
-      netif = netif->next;
+#ifdef ARDUINO_ARCH_ESP8266
+  /**
+   * @brief
+   * https://github.com/arendst/Tasmota/blob/e6515883f0ee5451931b6280ff847b117de5a231/tasmota/tasmota_support/support_wifi.ino#L1196
+   */
+  static void stationKeepAliveNow(void) {
+    for (netif* interface = netif_list; interface != nullptr; interface = interface->next) {
+      if (
+        (interface->flags & NETIF_FLAG_LINK_UP)
+        && (interface->flags & NETIF_FLAG_UP)
+        && interface->num == STATION_IF
+        && (!ip4_addr_isany_val(*netif_ip4_addr(interface)))
+      ) {
+        etharp_gratuitous(interface);
+        break;
+      }
     }
   }
+#endif
 };
