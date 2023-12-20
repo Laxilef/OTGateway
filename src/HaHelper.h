@@ -585,7 +585,7 @@ public:
   }
 
 
-  bool publishSwitchPID(bool enabledByDefault = true) {
+  bool publishSwitchPid(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid");
@@ -606,7 +606,7 @@ public:
     return this->publish(this->getTopic("switch", "pid").c_str(), doc);
   }
 
-  bool publishNumberPIDFactorP(bool enabledByDefault = true) {
+  bool publishNumberPidFactorP(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_p");
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("pid_p");
@@ -627,7 +627,7 @@ public:
     return this->publish(this->getTopic("number", "pid_p_factor").c_str(), doc);
   }
 
-  bool publishNumberPIDFactorI(bool enabledByDefault = true) {
+  bool publishNumberPidFactorI(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_i");
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("pid_i");
@@ -648,7 +648,7 @@ public:
     return this->publish(this->getTopic("number", "pid_i_factor").c_str(), doc);
   }
 
-  bool publishNumberPIDFactorD(bool enabledByDefault = true) {
+  bool publishNumberPidFactorD(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_d");
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("pid_d");
@@ -669,7 +669,28 @@ public:
     return this->publish(this->getTopic("number", "pid_d_factor").c_str(), doc);
   }
 
-  bool publishNumberPIDMinTemp(bool enabledByDefault = true) {
+  bool publishNumberPidDt(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_dt");
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("pid_dt");
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_NAME)] = F("PID DT");
+    doc[FPSTR(HA_ICON)] = F("mdi:timer-cog-outline");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("settings");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.dt|int(0) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("settings/set");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"dt\" : {{ value }}}}");
+    doc[FPSTR(HA_MIN)] = 30;
+    doc[FPSTR(HA_MAX)] = 600;
+    doc[FPSTR(HA_STEP)] = 1;
+    doc[FPSTR(HA_MODE)] = "box";
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic("number", "pid_dt").c_str(), doc);
+  }
+
+  bool publishNumberPidMinTemp(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_min_temp");
@@ -693,7 +714,7 @@ public:
     return this->publish(this->getTopic("number", "pid_min_temp").c_str(), doc);
   }
 
-  bool publishNumberPIDMaxTemp(bool enabledByDefault = true) {
+  bool publishNumberPidMaxTemp(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_max_temp");

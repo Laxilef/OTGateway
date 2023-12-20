@@ -308,7 +308,7 @@ protected:
     pidRegulator.Kd = settings.pid.d_factor;
 
     pidRegulator.setLimits(minTemp, maxTemp);
-    pidRegulator.setDt(180000);
+    pidRegulator.setDt((unsigned long) settings.pid.dt * 1000);
     pidRegulator.input = vars.temperatures.indoor;
     pidRegulator.setpoint = settings.heating.target;
 

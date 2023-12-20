@@ -423,6 +423,13 @@ protected:
       }
     }
 
+    if (!doc["pid"]["dt"].isNull() && doc["pid"]["dt"].is<float>()) {
+      if (doc["pid"]["dt"].as<unsigned short>() >= 30 && doc["pid"]["dt"].as<unsigned short>() <= 600) {
+        settings.pid.dt = doc["pid"]["dt"].as<unsigned short>();
+        flag = true;
+      }
+    }
+
     if (!doc["pid"]["maxTemp"].isNull() && doc["pid"]["maxTemp"].is<unsigned char>()) {
       if (doc["pid"]["maxTemp"].as<unsigned char>() > 0 && doc["pid"]["maxTemp"].as<unsigned char>() <= 100 && doc["pid"]["maxTemp"].as<unsigned char>() > settings.pid.minTemp) {
         settings.pid.maxTemp = doc["pid"]["maxTemp"].as<unsigned char>();
@@ -598,12 +605,13 @@ protected:
     this->haHelper->publishNumberHeatingMaxModulation(false);
 
     // pid
-    this->haHelper->publishSwitchPID();
-    this->haHelper->publishNumberPIDFactorP();
-    this->haHelper->publishNumberPIDFactorI();
-    this->haHelper->publishNumberPIDFactorD();
-    this->haHelper->publishNumberPIDMinTemp(false);
-    this->haHelper->publishNumberPIDMaxTemp(false);
+    this->haHelper->publishSwitchPid();
+    this->haHelper->publishNumberPidFactorP();
+    this->haHelper->publishNumberPidFactorI();
+    this->haHelper->publishNumberPidFactorD();
+    this->haHelper->publishNumberPidDt(false);
+    this->haHelper->publishNumberPidMinTemp(false);
+    this->haHelper->publishNumberPidMaxTemp(false);
 
     // equitherm
     this->haHelper->publishSwitchEquitherm();
@@ -776,6 +784,7 @@ protected:
     doc["pid"]["p_factor"] = settings.pid.p_factor;
     doc["pid"]["i_factor"] = settings.pid.i_factor;
     doc["pid"]["d_factor"] = settings.pid.d_factor;
+    doc["pid"]["dt"] = settings.pid.dt;
     doc["pid"]["minTemp"] = settings.pid.minTemp;
     doc["pid"]["maxTemp"] = settings.pid.maxTemp;
 

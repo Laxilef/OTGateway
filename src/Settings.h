@@ -50,9 +50,10 @@ struct Settings {
 
   struct {
     bool enable = false;
-    float p_factor = 3;
-    float i_factor = 0.2f;
-    float d_factor = 0;
+    float p_factor = 50;
+    float i_factor = 0.006f;
+    float d_factor = 10000;
+    unsigned short dt = 180;
     byte minTemp = 0;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
   } pid;
