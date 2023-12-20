@@ -129,6 +129,11 @@ protected:
   }
 
   void loop() {
+    if (settings.mqtt.interval > 120) {
+      settings.mqtt.interval = 5;
+      eeSettings.update();
+    }
+
     if (!this->client->connected() && this->connected) {
       this->connected = false;
       this->onDisconnect();
@@ -174,7 +179,7 @@ protected:
     #endif
 
     // publish variables and status
-    if (this->newConnection || millis() - this->prevPubVarsTime > settings.mqtt.interval) {
+    if (this->newConnection || millis() - this->prevPubVarsTime > ((unsigned int) settings.mqtt.interval * 1000)) {
       this->writer->publish(
         this->haHelper->getDeviceTopic("status").c_str(),
         !vars.states.otStatus ? "offline" : vars.states.fault ? "fault" : "online",
@@ -186,7 +191,7 @@ protected:
     }
 
     // publish settings
-    if (this->newConnection || millis() - this->prevPubSettingsTime > settings.mqtt.interval * 10) {
+    if (this->newConnection || millis() - this->prevPubSettingsTime > ((unsigned int) settings.mqtt.interval * 10000)) {
       this->publishSettings(this->haHelper->getDeviceTopic("settings").c_str());
       this->prevPubSettingsTime = millis();
     }

@@ -21,7 +21,7 @@ struct Settings {
     char user[32];
     char password[32];
     char prefix[80] = "opentherm";
-    unsigned int interval = 5000;
+    unsigned short interval = 5;
   } mqtt;
 
   struct {

@@ -82,7 +82,7 @@ public:
     wmMqttPrefix = new WiFiManagerParameter("mqtt_prefix", "Prefix", settings.mqtt.prefix, 32);
     wm.addParameter(wmMqttPrefix);
 
-    wmMqttPublishInterval = new UnsignedIntParameter("mqtt_publish_interval", "Publish interval", settings.mqtt.interval, 5);
+    wmMqttPublishInterval = new UnsignedIntParameter("mqtt_publish_interval", "Publish interval (sec)", settings.mqtt.interval, 3);
     wm.addParameter(wmMqttPublishInterval);
 
     wmOtHeader = new HeaderParameter("OpenTherm");
@@ -144,13 +144,13 @@ public:
     wmExtPumpPin = new UnsignedIntParameter("ext_pump_pin", "Relay GPIO", settings.externalPump.pin, 2);
     wm.addParameter(wmExtPumpPin);
 
-    wmExtPumpPostCirculationTime = new UnsignedShortParameter("ext_pump_ps_time", "Post circulation time", settings.externalPump.postCirculationTime, 5);
+    wmExtPumpPostCirculationTime = new UnsignedShortParameter("ext_pump_ps_time", "Post circulation time (min)", (settings.externalPump.postCirculationTime / 60), 5);
     wm.addParameter(wmExtPumpPostCirculationTime);
 
-    wmExtPumpAntiStuckInterval = new UnsignedIntParameter("ext_pump_as_interval", "Anti stuck interval", settings.externalPump.antiStuckInterval, 7);
+    wmExtPumpAntiStuckInterval = new UnsignedIntParameter("ext_pump_as_interval", "Anti stuck interval (days)", (settings.externalPump.antiStuckInterval / 86400), 7);
     wm.addParameter(wmExtPumpAntiStuckInterval);
 
-    wmExtPumpAntiStuckTime = new UnsignedShortParameter("ext_pump_as_time", "Anti stuck time", settings.externalPump.antiStuckTime, 5);
+    wmExtPumpAntiStuckTime = new UnsignedShortParameter("ext_pump_as_time", "Anti stuck time (min)", (settings.externalPump.antiStuckTime / 60), 5);
     wm.addParameter(wmExtPumpAntiStuckTime);
   }
 
@@ -507,23 +507,23 @@ protected:
       Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.pin: %hhu"), settings.externalPump.pin);
     }
 
-    if (wmExtPumpPostCirculationTime->getValue() != settings.externalPump.postCirculationTime) {
+    if ((wmExtPumpPostCirculationTime->getValue() * 60) != settings.externalPump.postCirculationTime) {
       changed = true;
-      settings.externalPump.postCirculationTime = wmExtPumpPostCirculationTime->getValue();
+      settings.externalPump.postCirculationTime = wmExtPumpPostCirculationTime->getValue() * 60;
 
       Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.postCirculationTime: %hu"), settings.externalPump.postCirculationTime);
     }
 
-    if (wmExtPumpAntiStuckInterval->getValue() != settings.externalPump.antiStuckInterval) {
+    if ((wmExtPumpAntiStuckInterval->getValue() * 86400) != settings.externalPump.antiStuckInterval) {
       changed = true;
-      settings.externalPump.antiStuckInterval = wmExtPumpAntiStuckInterval->getValue();
+      settings.externalPump.antiStuckInterval = wmExtPumpAntiStuckInterval->getValue() * 86400;
 
       Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.antiStuckInterval: %du"), settings.externalPump.antiStuckInterval);
     }
 
-    if (wmExtPumpAntiStuckTime->getValue() != settings.externalPump.antiStuckTime) {
+    if ((wmExtPumpAntiStuckTime->getValue() * 60) != settings.externalPump.antiStuckTime) {
       changed = true;
-      settings.externalPump.antiStuckTime = wmExtPumpAntiStuckTime->getValue();
+      settings.externalPump.antiStuckTime = wmExtPumpAntiStuckTime->getValue() * 60;
 
       Log.sinfoln(FPSTR(S_WIFI_SETTINGS), F("New externalPump.antiStuckTime: %hu"), settings.externalPump.antiStuckTime);
     }

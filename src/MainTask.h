@@ -285,7 +285,7 @@ protected:
     }
 
     if (vars.externalPump.enable && !this->heatingEnabled) {
-      if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > (unsigned long) settings.externalPump.postCirculationTime * 1000) {
+      if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > ((unsigned int) settings.externalPump.postCirculationTime * 1000)) {
         digitalWrite(settings.externalPump.pin, false);
 
         vars.externalPump.enable = false;
@@ -293,7 +293,7 @@ protected:
 
         Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
 
-      } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= (unsigned long) settings.externalPump.antiStuckTime * 1000) {
+      } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= ((unsigned int) settings.externalPump.antiStuckTime * 1000)) {
         digitalWrite(settings.externalPump.pin, false);
 
         vars.externalPump.enable = false;
@@ -314,7 +314,7 @@ protected:
 
       Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
 
-    } else if (!vars.externalPump.enable && millis() - vars.externalPump.lastEnableTime >= (unsigned long) settings.externalPump.antiStuckInterval * 1000) {
+    } else if (!vars.externalPump.enable && (vars.externalPump.lastEnableTime == 0 || millis() - vars.externalPump.lastEnableTime >= ((unsigned long) settings.externalPump.antiStuckInterval * 1000))) {
       vars.externalPump.enable = true;
       this->externalPumpStartTime = millis();
       this->externalPumpStartReason = MainTask::REASON_PUMP_START_ANTISTUCK;
