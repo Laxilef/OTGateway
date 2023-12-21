@@ -59,7 +59,7 @@ protected:
       }
 
       if (!vars.tuning.enable) {
-        if (settings.heating.turbo && (fabs(settings.heating.target - vars.temperatures.indoor) < 1 || (settings.equitherm.enable && settings.pid.enable))) {
+        if (settings.heating.turbo && (fabs(settings.heating.target - vars.temperatures.indoor) < 1 || !settings.heating.enable || (settings.equitherm.enable && settings.pid.enable))) {
           settings.heating.turbo = false;
 
           Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
