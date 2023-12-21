@@ -73,6 +73,7 @@ protected:
     // wificlient settings
     #ifdef ARDUINO_ARCH_ESP8266
     this->wifiClient->setSync(true);
+    this->wifiClient->setTimeout(1000);
     #endif
 
     // client settings
