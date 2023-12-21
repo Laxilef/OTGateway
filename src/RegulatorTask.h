@@ -91,7 +91,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", F("New emergency result: %hhu (%f)"), (uint8_t) round(etResult), etResult);
+        Log.sinfoln("REGULATOR.EQUITHERM", F("New emergency result: %hhu (%.2f)"), (uint8_t) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -108,7 +108,7 @@ protected:
           prevPidResult = pidResult;
           newTemp += pidResult;
 
-          Log.sinfoln("REGULATOR.PID", F("New emergency result: %hhu (%f)"), (uint8_t) round(pidResult), pidResult);
+          Log.sinfoln("REGULATOR.PID", F("New emergency result: %hhu (%.2f)"), (uint8_t) round(pidResult), pidResult);
 
         } else {
           newTemp += prevPidResult;
@@ -131,7 +131,7 @@ protected:
 
     if (fabs(prevHeatingTarget - settings.heating.target) > 0.0001) {
       prevHeatingTarget = settings.heating.target;
-      Log.sinfoln("REGULATOR", F("New target: %f"), settings.heating.target);
+      Log.sinfoln("REGULATOR", F("New target: %.2f"), settings.heating.target);
 
       if (settings.equitherm.enable && settings.pid.enable) {
         pidRegulator.integral = 0;
@@ -147,7 +147,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", F("New result: %hhu (%f)"), (uint8_t) round(etResult), etResult);
+        Log.sinfoln("REGULATOR.EQUITHERM", F("New result: %hhu (%.2f)"), (uint8_t) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -155,24 +155,25 @@ protected:
     }
 
     // if use pid
-    if (settings.pid.enable && vars.parameters.heatingEnabled) {
-      float pidResult = getPidTemp(
-        settings.equitherm.enable ? (settings.pid.maxTemp * -1) : settings.pid.minTemp,
-        settings.equitherm.enable ? settings.pid.maxTemp : settings.pid.maxTemp
-      );
+    if (settings.pid.enable) {
+      if (vars.parameters.heatingEnabled) {
+        float pidResult = getPidTemp(
+          settings.equitherm.enable ? (settings.pid.maxTemp * -1) : settings.pid.minTemp,
+          settings.equitherm.enable ? settings.pid.maxTemp : settings.pid.maxTemp
+        );
 
-      if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
-        prevPidResult = pidResult;
-        newTemp += pidResult;
+        if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {
+          prevPidResult = pidResult;
+          newTemp += pidResult;
 
-        Log.sinfoln("REGULATOR.PID", F("New result: %hh (%f)"), (int8_t) round(pidResult), pidResult);
+          Log.sinfoln("REGULATOR.PID", F("New result: %hhd (%.2f)"), (int8_t) round(pidResult), pidResult);
 
+        } else {
+          newTemp += prevPidResult;
+        }
       } else {
         newTemp += prevPidResult;
       }
-
-    } else if (settings.pid.enable && !vars.parameters.heatingEnabled && prevPidResult != 0) {
-      newTemp += prevPidResult;
     }
 
     // default temp, manual mode
