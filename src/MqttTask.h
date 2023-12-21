@@ -408,22 +408,22 @@ protected:
     }
 
     if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<float>()) {
-      if (doc["pid"]["p_factor"].as<float>() > 0 && doc["pid"]["p_factor"].as<float>() <= 10) {
-        settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 1000) / 1000;
+      if (doc["pid"]["p_factor"].as<float>() > 0 && doc["pid"]["p_factor"].as<float>() <= 1000) {
+        settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 10) / 10;
         flag = true;
       }
     }
 
     if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<float>()) {
-      if (doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 10) {
+      if (doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 100) {
         settings.pid.i_factor = round(doc["pid"]["i_factor"].as<float>() * 1000) / 1000;
         flag = true;
       }
     }
 
     if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<float>()) {
-      if (doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 10) {
-        settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 1000) / 1000;
+      if (doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 100000) {
+        settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 10) / 10;
         flag = true;
       }
     }

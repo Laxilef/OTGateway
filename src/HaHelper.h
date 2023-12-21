@@ -617,9 +617,9 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.p_factor|float(0)|round(3) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("settings/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"p_factor\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0.001;
-    doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.001;
+    doc[FPSTR(HA_MIN)] = 0.1;
+    doc[FPSTR(HA_MAX)] = 1000;
+    doc[FPSTR(HA_STEP)] = 0.1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -639,7 +639,7 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("settings/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"i_factor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 10;
+    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 0.001;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -660,8 +660,8 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic("settings/set");
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"d_factor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.001;
+    doc[FPSTR(HA_MAX)] = 100000;
+    doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
