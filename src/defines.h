@@ -1,5 +1,5 @@
 #define PROJECT_NAME                "OpenTherm Gateway"
-#define PROJECT_VERSION             "1.4.0-rc.4"
+#define PROJECT_VERSION             "1.4.0-rc.5"
 #define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
 #define AP_SSID                     "OpenTherm Gateway"
 #define AP_PASSWORD                 "otgateway123456"
