@@ -336,44 +336,44 @@ public:
     return this->publish(this->getTopic("sensor", "heating_setpoint").c_str(), doc);
   }
 
-  bool publishSensorCurrentHeatingMinTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerHeatingMinTemp(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic("status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("current_heating_min_temp");
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("current_heating_min_temp");
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("boiler_heating_min_temp");
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("boiler_heating_min_temp");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
-    doc[FPSTR(HA_NAME)] = F("Current heating min temp");
+    doc[FPSTR(HA_NAME)] = F("Boiler heating min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingMinTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic("sensor", "current_heating_min_temp").c_str(), doc);
+    return this->publish(this->getTopic("sensor", "boiler_heating_min_temp").c_str(), doc);
   }
 
-  bool publishSensorCurrentHeatingMaxTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerHeatingMaxTemp(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic("status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("current_heating_max_temp");
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("current_heating_max_temp");
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("boiler_heating_max_temp");
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("boiler_heating_max_temp");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
-    doc[FPSTR(HA_NAME)] = F("Current heating max temp");
+    doc[FPSTR(HA_NAME)] = F("Boiler heating max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingMaxTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic("sensor", "current_heating_max_temp").c_str(), doc);
+    return this->publish(this->getTopic("sensor", "boiler_heating_max_temp").c_str(), doc);
   }
 
   bool publishNumberHeatingMinTemp(bool enabledByDefault = true) {
@@ -496,44 +496,44 @@ public:
     return this->publish(this->getTopic("number", "dhw_target").c_str(), doc);
   }
 
-  bool publishSensorCurrentDhwMinTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerDhwMinTemp(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic("status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("current_dhw_min_temp");
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("current_dhw_min_temp");
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("boiler_dhw_min_temp");
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("boiler_dhw_min_temp");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
-    doc[FPSTR(HA_NAME)] = F("Current DHW min temp");
+    doc[FPSTR(HA_NAME)] = F("Boiler DHW min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.dhwMinTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic("sensor", "current_dhw_min_temp").c_str(), doc);
+    return this->publish(this->getTopic("sensor", "boiler_dhw_min_temp").c_str(), doc);
   }
 
-  bool publishSensorCurrentDhwMaxTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerDhwMaxTemp(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic("status");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("current_dhw_max_temp");
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("current_dhw_max_temp");
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("boiler_dhw_max_temp");
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("boiler_dhw_max_temp");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
-    doc[FPSTR(HA_NAME)] = F("Current DHW max temp");
+    doc[FPSTR(HA_NAME)] = F("Boiler DHW max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("state");
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.dhwMaxTemp|int(0) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic("sensor", "current_dhw_max_temp").c_str(), doc);
+    return this->publish(this->getTopic("sensor", "boiler_dhw_max_temp").c_str(), doc);
   }
 
   bool publishNumberDhwMinTemp(bool enabledByDefault = true) {
@@ -1407,12 +1407,12 @@ public:
     return this->publish(this->getTopic("switch", "dhw").c_str());
   }
 
-  bool deleteSensorCurrentDhwMinTemp() {
-    return this->publish(this->getTopic("sensor", "current_dhw_min_temp").c_str());
+  bool deleteSensorBoilerDhwMinTemp() {
+    return this->publish(this->getTopic("sensor", "boiler_dhw_min_temp").c_str());
   }
 
-  bool deleteSensorCurrentDhwMaxTemp() {
-    return this->publish(this->getTopic("sensor", "current_dhw_max_temp").c_str());
+  bool deleteSensorBoilerDhwMaxTemp() {
+    return this->publish(this->getTopic("sensor", "boiler_dhw_max_temp").c_str());
   }
 
   bool deleteNumberDhwMinTemp() {

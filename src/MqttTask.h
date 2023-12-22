@@ -604,8 +604,8 @@ protected:
     this->haHelper->publishSwitchHeatingTurbo();
     this->haHelper->publishNumberHeatingHysteresis();
     this->haHelper->publishSensorHeatingSetpoint(false);
-    this->haHelper->publishSensorCurrentHeatingMinTemp(false);
-    this->haHelper->publishSensorCurrentHeatingMaxTemp(false);
+    this->haHelper->publishSensorBoilerHeatingMinTemp(false);
+    this->haHelper->publishSensorBoilerHeatingMaxTemp(false);
     this->haHelper->publishNumberHeatingMinTemp(false);
     this->haHelper->publishNumberHeatingMaxTemp(false);
     this->haHelper->publishNumberHeatingMaxModulation(false);
@@ -670,8 +670,8 @@ protected:
 
       if (_dhwPresent) {
         this->haHelper->publishSwitchDhw(false);
-        this->haHelper->publishSensorCurrentDhwMinTemp(false);
-        this->haHelper->publishSensorCurrentDhwMaxTemp(false);
+        this->haHelper->publishSensorBoilerDhwMinTemp(false);
+        this->haHelper->publishSensorBoilerDhwMaxTemp(false);
         this->haHelper->publishNumberDhwMinTemp(false);
         this->haHelper->publishNumberDhwMaxTemp(false);
         this->haHelper->publishBinSensorDhw();
@@ -680,8 +680,8 @@ protected:
 
       } else {
         this->haHelper->deleteSwitchDhw();
-        this->haHelper->deleteSensorCurrentDhwMinTemp();
-        this->haHelper->deleteSensorCurrentDhwMaxTemp();
+        this->haHelper->deleteSensorBoilerDhwMinTemp();
+        this->haHelper->deleteSensorBoilerDhwMaxTemp();
         this->haHelper->deleteNumberDhwMinTemp();
         this->haHelper->deleteNumberDhwMaxTemp();
         this->haHelper->deleteBinSensorDhw();
