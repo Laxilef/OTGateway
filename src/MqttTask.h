@@ -289,9 +289,9 @@ protected:
       flag = true;
     }
 
-    if (!doc["emergency"]["target"].isNull() && doc["emergency"]["target"].is<float>()) {
-      if (doc["emergency"]["target"].as<float>() > 0 && doc["emergency"]["target"].as<float>() < 100) {
-        settings.emergency.target = round(doc["emergency"]["target"].as<float>() * 10) / 10;
+    if (!doc["emergency"]["target"].isNull() && doc["emergency"]["target"].is<double>()) {
+      if (doc["emergency"]["target"].as<double>() > 0 && doc["emergency"]["target"].as<double>() < 100) {
+        settings.emergency.target = MqttTask::round(doc["emergency"]["target"].as<double>(), 2);
         flag = true;
       }
     }
@@ -338,16 +338,16 @@ protected:
       flag = true;
     }
 
-    if (!doc["heating"]["target"].isNull() && doc["heating"]["target"].is<float>()) {
-      if (doc["heating"]["target"].as<float>() > 0 && doc["heating"]["target"].as<float>() < 100) {
-        settings.heating.target = round(doc["heating"]["target"].as<float>() * 10) / 10;
+    if (!doc["heating"]["target"].isNull() && doc["heating"]["target"].is<double>()) {
+      if (doc["heating"]["target"].as<double>() > 0 && doc["heating"]["target"].as<double>() < 100) {
+        settings.heating.target = MqttTask::round(doc["heating"]["target"].as<double>(), 2);
         flag = true;
       }
     }
 
-    if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<float>()) {
-      if (doc["heating"]["hysteresis"].as<float>() >= 0 && doc["heating"]["hysteresis"].as<float>() <= 5) {
-        settings.heating.hysteresis = round(doc["heating"]["hysteresis"].as<float>() * 10) / 10;
+    if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<double>()) {
+      if (doc["heating"]["hysteresis"].as<double>() >= 0 && doc["heating"]["hysteresis"].as<double>() <= 5) {
+        settings.heating.hysteresis = MqttTask::round(doc["heating"]["hysteresis"].as<double>(), 2);
         flag = true;
       }
     }
@@ -408,28 +408,28 @@ protected:
       flag = true;
     }
 
-    if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<float>()) {
-      if (doc["pid"]["p_factor"].as<float>() > 0 && doc["pid"]["p_factor"].as<float>() <= 1000) {
-        settings.pid.p_factor = round(doc["pid"]["p_factor"].as<float>() * 10) / 10;
+    if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<double>()) {
+      if (doc["pid"]["p_factor"].as<double>() > 0 && doc["pid"]["p_factor"].as<double>() <= 1000) {
+        settings.pid.p_factor = MqttTask::round(doc["pid"]["p_factor"].as<double>(), 3);
         flag = true;
       }
     }
 
-    if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<float>()) {
-      if (doc["pid"]["i_factor"].as<float>() >= 0 && doc["pid"]["i_factor"].as<float>() <= 100) {
-        settings.pid.i_factor = round(doc["pid"]["i_factor"].as<float>() * 1000) / 1000;
+    if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<double>()) {
+      if (doc["pid"]["i_factor"].as<double>() >= 0 && doc["pid"]["i_factor"].as<double>() <= 100) {
+        settings.pid.i_factor = MqttTask::round(doc["pid"]["i_factor"].as<double>(), 3);
         flag = true;
       }
     }
 
-    if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<float>()) {
-      if (doc["pid"]["d_factor"].as<float>() >= 0 && doc["pid"]["d_factor"].as<float>() <= 100000) {
-        settings.pid.d_factor = round(doc["pid"]["d_factor"].as<float>() * 10) / 10;
+    if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<double>()) {
+      if (doc["pid"]["d_factor"].as<double>() >= 0 && doc["pid"]["d_factor"].as<double>() <= 100000) {
+        settings.pid.d_factor = MqttTask::round(doc["pid"]["d_factor"].as<double>(), 1);
         flag = true;
       }
     }
 
-    if (!doc["pid"]["dt"].isNull() && doc["pid"]["dt"].is<float>()) {
+    if (!doc["pid"]["dt"].isNull() && doc["pid"]["dt"].is<double>()) {
       if (doc["pid"]["dt"].as<unsigned short>() >= 30 && doc["pid"]["dt"].as<unsigned short>() <= 600) {
         settings.pid.dt = doc["pid"]["dt"].as<unsigned short>();
         flag = true;
@@ -456,23 +456,23 @@ protected:
       flag = true;
     }
 
-    if (!doc["equitherm"]["n_factor"].isNull() && doc["equitherm"]["n_factor"].is<float>()) {
-      if (doc["equitherm"]["n_factor"].as<float>() > 0 && doc["equitherm"]["n_factor"].as<float>() <= 10) {
-        settings.equitherm.n_factor = round(doc["equitherm"]["n_factor"].as<float>() * 1000) / 1000;
+    if (!doc["equitherm"]["n_factor"].isNull() && doc["equitherm"]["n_factor"].is<double>()) {
+      if (doc["equitherm"]["n_factor"].as<double>() > 0 && doc["equitherm"]["n_factor"].as<double>() <= 10) {
+        settings.equitherm.n_factor = MqttTask::round(doc["equitherm"]["n_factor"].as<double>(), 3);
         flag = true;
       }
     }
 
-    if (!doc["equitherm"]["k_factor"].isNull() && doc["equitherm"]["k_factor"].is<float>()) {
-      if (doc["equitherm"]["k_factor"].as<float>() >= 0 && doc["equitherm"]["k_factor"].as<float>() <= 10) {
-        settings.equitherm.k_factor = round(doc["equitherm"]["k_factor"].as<float>() * 1000) / 1000;
+    if (!doc["equitherm"]["k_factor"].isNull() && doc["equitherm"]["k_factor"].is<double>()) {
+      if (doc["equitherm"]["k_factor"].as<double>() >= 0 && doc["equitherm"]["k_factor"].as<double>() <= 10) {
+        settings.equitherm.k_factor = MqttTask::round(doc["equitherm"]["k_factor"].as<double>(), 3);
         flag = true;
       }
     }
 
-    if (!doc["equitherm"]["t_factor"].isNull() && doc["equitherm"]["t_factor"].is<float>()) {
-      if (doc["equitherm"]["t_factor"].as<float>() >= 0 && doc["equitherm"]["t_factor"].as<float>() <= 10) {
-        settings.equitherm.t_factor = round(doc["equitherm"]["t_factor"].as<float>() * 1000) / 1000;
+    if (!doc["equitherm"]["t_factor"].isNull() && doc["equitherm"]["t_factor"].is<double>()) {
+      if (doc["equitherm"]["t_factor"].as<double>() >= 0 && doc["equitherm"]["t_factor"].as<double>() <= 10) {
+        settings.equitherm.t_factor = MqttTask::round(doc["equitherm"]["t_factor"].as<double>(), 3);
         flag = true;
       }
     }
@@ -491,9 +491,9 @@ protected:
       }
     }
 
-    if (!doc["sensors"]["outdoor"]["offset"].isNull() && doc["sensors"]["outdoor"]["offset"].is<float>()) {
-      if (doc["sensors"]["outdoor"]["offset"].as<float>() >= -10 && doc["sensors"]["outdoor"]["offset"].as<float>() <= 10) {
-        settings.sensors.outdoor.offset = round(doc["sensors"]["outdoor"]["offset"].as<float>() * 1000) / 1000;
+    if (!doc["sensors"]["outdoor"]["offset"].isNull() && doc["sensors"]["outdoor"]["offset"].is<double>()) {
+      if (doc["sensors"]["outdoor"]["offset"].as<double>() >= -10 && doc["sensors"]["outdoor"]["offset"].as<double>() <= 10) {
+        settings.sensors.outdoor.offset = MqttTask::round(doc["sensors"]["outdoor"]["offset"].as<double>(), 2);
         flag = true;
       }
     }
@@ -510,9 +510,9 @@ protected:
       }
     }
 
-    if (!doc["sensors"]["indoor"]["offset"].isNull() && doc["sensors"]["indoor"]["offset"].is<float>()) {
-      if (doc["sensors"]["indoor"]["offset"].as<float>() >= -10 && doc["sensors"]["indoor"]["offset"].as<float>() <= 10) {
-        settings.sensors.indoor.offset = round(doc["sensors"]["indoor"]["offset"].as<float>() * 1000) / 1000;
+    if (!doc["sensors"]["indoor"]["offset"].isNull() && doc["sensors"]["indoor"]["offset"].is<double>()) {
+      if (doc["sensors"]["indoor"]["offset"].as<double>() >= -10 && doc["sensors"]["indoor"]["offset"].as<double>() <= 10) {
+        settings.sensors.indoor.offset = MqttTask::round(doc["sensors"]["indoor"]["offset"].as<double>(), 2);
         flag = true;
       }
     }
@@ -548,16 +548,16 @@ protected:
       }
     }
 
-    if (!doc["temperatures"]["indoor"].isNull() && doc["temperatures"]["indoor"].is<float>()) {
-      if (settings.sensors.indoor.type == 1 && doc["temperatures"]["indoor"].as<float>() > -100 && doc["temperatures"]["indoor"].as<float>() < 100) {
-        vars.temperatures.indoor = round(doc["temperatures"]["indoor"].as<float>() * 100) / 100;
+    if (!doc["temperatures"]["indoor"].isNull() && doc["temperatures"]["indoor"].is<double>()) {
+      if (settings.sensors.indoor.type == 1 && doc["temperatures"]["indoor"].as<double>() > -100 && doc["temperatures"]["indoor"].as<double>() < 100) {
+        vars.temperatures.indoor = MqttTask::round(doc["temperatures"]["indoor"].as<double>(), 2);
         flag = true;
       }
     }
 
-    if (!doc["temperatures"]["outdoor"].isNull() && doc["temperatures"]["outdoor"].is<float>()) {
-      if (settings.sensors.outdoor.type == 1 && doc["temperatures"]["outdoor"].as<float>() > -100 && doc["temperatures"]["outdoor"].as<float>() < 100) {
-        vars.temperatures.outdoor = round(doc["temperatures"]["outdoor"].as<float>() * 100) / 100;
+    if (!doc["temperatures"]["outdoor"].isNull() && doc["temperatures"]["outdoor"].is<double>()) {
+      if (settings.sensors.outdoor.type == 1 && doc["temperatures"]["outdoor"].as<double>() > -100 && doc["temperatures"]["outdoor"].as<double>() < 100) {
+        vars.temperatures.outdoor = MqttTask::round(doc["temperatures"]["outdoor"].as<double>(), 2);
         flag = true;
       }
     }
@@ -769,14 +769,14 @@ protected:
     doc["debug"] = settings.debug;
 
     doc["emergency"]["enable"] = settings.emergency.enable;
-    doc["emergency"]["target"] = settings.emergency.target;
+    doc["emergency"]["target"] = MqttTask::round(settings.emergency.target, 2);
     doc["emergency"]["useEquitherm"] = settings.emergency.useEquitherm;
     doc["emergency"]["usePid"] = settings.emergency.usePid;
 
     doc["heating"]["enable"] = settings.heating.enable;
     doc["heating"]["turbo"] = settings.heating.turbo;
-    doc["heating"]["target"] = settings.heating.target;
-    doc["heating"]["hysteresis"] = settings.heating.hysteresis;
+    doc["heating"]["target"] = MqttTask::round(settings.heating.target, 2);
+    doc["heating"]["hysteresis"] = MqttTask::round(settings.heating.hysteresis, 2);
     doc["heating"]["minTemp"] = settings.heating.minTemp;
     doc["heating"]["maxTemp"] = settings.heating.maxTemp;
     doc["heating"]["maxModulation"] = settings.heating.maxModulation;
@@ -787,23 +787,23 @@ protected:
     doc["dhw"]["maxTemp"] = settings.dhw.maxTemp;
 
     doc["pid"]["enable"] = settings.pid.enable;
-    doc["pid"]["p_factor"] = settings.pid.p_factor;
-    doc["pid"]["i_factor"] = settings.pid.i_factor;
-    doc["pid"]["d_factor"] = settings.pid.d_factor;
+    doc["pid"]["p_factor"] = MqttTask::round(settings.pid.p_factor, 3);
+    doc["pid"]["i_factor"] = MqttTask::round(settings.pid.i_factor, 3);
+    doc["pid"]["d_factor"] = MqttTask::round(settings.pid.d_factor, 1);
     doc["pid"]["dt"] = settings.pid.dt;
     doc["pid"]["minTemp"] = settings.pid.minTemp;
     doc["pid"]["maxTemp"] = settings.pid.maxTemp;
 
     doc["equitherm"]["enable"] = settings.equitherm.enable;
-    doc["equitherm"]["n_factor"] = settings.equitherm.n_factor;
-    doc["equitherm"]["k_factor"] = settings.equitherm.k_factor;
-    doc["equitherm"]["t_factor"] = settings.equitherm.t_factor;
+    doc["equitherm"]["n_factor"] = MqttTask::round(settings.equitherm.n_factor, 3);
+    doc["equitherm"]["k_factor"] = MqttTask::round(settings.equitherm.k_factor, 3);
+    doc["equitherm"]["t_factor"] = MqttTask::round(settings.equitherm.t_factor, 3);
 
     doc["sensors"]["outdoor"]["type"] = settings.sensors.outdoor.type;
-    doc["sensors"]["outdoor"]["offset"] = settings.sensors.outdoor.offset;
+    doc["sensors"]["outdoor"]["offset"] = MqttTask::round(settings.sensors.outdoor.offset, 2);
 
     doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
-    doc["sensors"]["indoor"]["offset"] = settings.sensors.indoor.offset;
+    doc["sensors"]["indoor"]["offset"] = MqttTask::round(settings.sensors.indoor.offset, 2);
 
     doc.shrinkToFit();
 
@@ -823,17 +823,17 @@ protected:
     doc["states"]["fault"] = vars.states.fault;
     doc["states"]["diagnostic"] = vars.states.diagnostic;
 
-    doc["sensors"]["modulation"] = vars.sensors.modulation;
-    doc["sensors"]["pressure"] = vars.sensors.pressure;
+    doc["sensors"]["modulation"] = MqttTask::round(vars.sensors.modulation, 2);
+    doc["sensors"]["pressure"] = MqttTask::round(vars.sensors.pressure, 2);
     doc["sensors"]["dhwFlowRate"] = vars.sensors.dhwFlowRate;
     doc["sensors"]["faultCode"] = vars.sensors.faultCode;
     doc["sensors"]["rssi"] = vars.sensors.rssi;
-    doc["sensors"]["uptime"] = (unsigned long) (millis() / 1000);
+    doc["sensors"]["uptime"] = millis() / 1000ul;
 
-    doc["temperatures"]["indoor"] = vars.temperatures.indoor;
-    doc["temperatures"]["outdoor"] = vars.temperatures.outdoor;
-    doc["temperatures"]["heating"] = vars.temperatures.heating;
-    doc["temperatures"]["dhw"] = vars.temperatures.dhw;
+    doc["temperatures"]["indoor"] = MqttTask::round(vars.temperatures.indoor, 2);
+    doc["temperatures"]["outdoor"] = MqttTask::round(vars.temperatures.outdoor, 2);
+    doc["temperatures"]["heating"] = MqttTask::round(vars.temperatures.heating, 2);
+    doc["temperatures"]["dhw"] = MqttTask::round(vars.temperatures.dhw, 2);
 
     doc["parameters"]["heatingEnabled"] = vars.parameters.heatingEnabled;
     doc["parameters"]["heatingMinTemp"] = vars.parameters.heatingMinTemp;
@@ -845,5 +845,18 @@ protected:
     doc.shrinkToFit();
 
     return this->writer->publish(topic, doc, true);
+  }
+
+  static double round(double value, uint8_t decimals = 2) {
+    if (decimals == 0) {
+      return (int)(value + 0.001);
+
+    } else if (abs(value) < 0.00000001) {
+      return 0.0;
+    }
+
+    double multiplier = pow10(decimals);
+    value += 0.5 / multiplier * (value < 0 ? -1 : 1);
+    return (int)(value * multiplier) / multiplier;
   }
 };
