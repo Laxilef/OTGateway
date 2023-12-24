@@ -30,6 +30,8 @@ protected:
   unsigned long startupTime = millis();
   unsigned long dhwSetTempTime = 0;
   unsigned long heatingSetTempTime = 0;
+  byte dhwFlowRateMultiplier = 1;
+  byte pressureMultiplier = 1;
 
   const char* getTaskName() {
     return "OpenTherm";
@@ -59,6 +61,9 @@ protected:
   }
 
   void initBoiler() {
+    this->dhwFlowRateMultiplier = 1;
+    this->pressureMultiplier = 1;
+
     // Not all boilers support these, only try once when the boiler becomes connected
     if (updateSlaveVersion()) {
       Log.straceln(FPSTR(S_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
@@ -88,7 +93,6 @@ protected:
     } else {
       Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
     }
-
   }
 
   void loop() {
@@ -625,8 +629,13 @@ protected:
     if (!ot->isValidResponse(response)) {
       return false;
     }
-
-    vars.sensors.dhwFlowRate = ot->getFloat(response);
+    
+    float value = ot->getFloat(response);
+    if (value > 16 && this->dhwFlowRateMultiplier != 10) {
+      this->dhwFlowRateMultiplier = 10;
+    }
+    vars.sensors.dhwFlowRate = this->dhwFlowRateMultiplier == 1 ? value : value / this->dhwFlowRateMultiplier;
+    
     return true;
   }
 
@@ -665,7 +674,12 @@ protected:
       return false;
     }
 
-    vars.sensors.pressure = ot->getFloat(response);
+    float value = ot->getFloat(response);
+    if (value > 5 && this->pressureMultiplier != 10) {
+      this->pressureMultiplier = 10;
+    }
+    vars.sensors.pressure = this->pressureMultiplier == 1 ? value : value / this->pressureMultiplier;
+
     return true;
   }
 };
