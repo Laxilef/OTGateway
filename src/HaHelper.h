@@ -674,6 +674,8 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId("pid_dt");
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId("pid_dt");
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("duration");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("s");
     doc[FPSTR(HA_NAME)] = F("PID DT");
     doc[FPSTR(HA_ICON)] = F("mdi:timer-cog-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic("settings");
