@@ -168,7 +168,6 @@ protected:
           Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %hhu%%"), settings.heating.maxModulation);
         }
       }
-      //yield();
 
       // DHW min/max temp
       if (settings.opentherm.dhwPresent) {
@@ -194,8 +193,6 @@ protected:
           settings.dhw.maxTemp = 60;
           eeSettings.update();
         }
-
-        //yield();
       }
 
 
@@ -216,7 +213,6 @@ protected:
       } else {
         Log.swarningln(FPSTR(S_OT_HEATING), F("Failed get min/max temp"));
       }
-      //yield();
 
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
         settings.heating.minTemp = 20;
@@ -238,7 +234,6 @@ protected:
       updatePressure();
 
       this->prevUpdateNonEssentialVars = millis();
-      //yield();
     }
 
     if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled) {
@@ -247,12 +242,10 @@ protected:
     } else {
       vars.sensors.modulation = 0;
     }
-    //yield();
 
     if (settings.opentherm.dhwPresent) {
       updateDhwTemp();
       updateDhwFlowRate();
-      //yield();
 
     } else {
       vars.temperatures.dhw = 0.0f;
@@ -260,7 +253,6 @@ protected:
     }
 
     updateHeatingTemp();
-    //yield();
 
     // fault reset action
     if (vars.actions.resetFault) {
@@ -274,7 +266,6 @@ protected:
       }
 
       vars.actions.resetFault = false;
-      //yield();
     }
 
     // diag reset action
@@ -289,7 +280,6 @@ protected:
       }
 
       vars.actions.resetDiagnostic = false;
-      //yield();
     }
 
     //
@@ -316,8 +306,6 @@ protected:
           Log.swarningln(FPSTR(S_OT_DHW), F("Failed set ch2 temp"));
         }
       }
-
-      //yield();
     }
 
     //
@@ -339,12 +327,10 @@ protected:
           Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set ch2 temp"));
         }
       }
-
-      //yield();
     }
 
-    // коммутационная разность (hysteresis)
-    // только для pid и/или equitherm
+    // Hysteresis
+    // Only if enabled PID or/and Equitherm
     if (settings.heating.hysteresis > 0 && (!vars.states.emergency || settings.emergency.usePid) && (settings.equitherm.enable || settings.pid.enable)) {
       float halfHyst = settings.heating.hysteresis / 2;
       if (this->pump && vars.temperatures.indoor - settings.heating.target + 0.0001 >= halfHyst) {
