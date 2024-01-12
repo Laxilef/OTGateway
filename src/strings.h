@@ -9,6 +9,7 @@ const char L_NETWORK_SETTINGS[]     PROGMEM = "NETWORK.SETTINGS";
 const char L_PORTAL_WEBSERVER[]     PROGMEM = "PORTAL.WEBSERVER";
 const char L_PORTAL_DNSSERVER[]     PROGMEM = "PORTAL.DNSSERVER";
 const char L_PORTAL_CAPTIVE[]       PROGMEM = "PORTAL.CAPTIVE";
+const char L_PORTAL_OTA[]           PROGMEM = "PORTAL.OTA";
 const char L_MAIN[]                 PROGMEM = "MAIN";
 const char L_MQTT[]                 PROGMEM = "MQTT";
 const char L_MQTT_MSG[]             PROGMEM = "MQTT.MSG";

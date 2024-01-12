@@ -154,11 +154,11 @@ public:
         result->error = Update.errorString();
         #endif
 
-        Log.serrorln("PORTAL.OTA", F("File '%s', on start: %s"), upload.filename.c_str(), result->error.c_str());
+        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on start: %s"), upload.filename.c_str(), result->error.c_str());
         return;
       }
       
-      Log.sinfoln("PORTAL.OTA", F("File '%s', started"), upload.filename.c_str());
+      Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s', started"), upload.filename.c_str());
 
     } else if (upload.status == UPLOAD_FILE_WRITE) {
       if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
@@ -172,20 +172,20 @@ public:
         #endif
 
         Log.serrorln(
-          "PORTAL.OTA",
+          FPSTR(L_PORTAL_OTA),
           F("File '%s', on writing %d bytes: %s"),
           upload.filename.c_str(), upload.totalSize, result->error
         );
 
       } else {
-        Log.sinfoln("PORTAL.OTA", F("File '%s', writed %d bytes"), upload.filename.c_str(), upload.totalSize);
+        Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s', writed %d bytes"), upload.filename.c_str(), upload.totalSize);
       }
 
     } else if (upload.status == UPLOAD_FILE_END) {
       if (Update.end(true)) {
         result->status = UpgradeStatus::SUCCESS;
 
-        Log.sinfoln("PORTAL.OTA", F("File '%s': finish"), upload.filename.c_str());
+        Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s': finish"), upload.filename.c_str());
 
       } else {
         result->status = UpgradeStatus::ERROR_ON_FINISH;
@@ -195,14 +195,14 @@ public:
         result->error = Update.errorString();
         #endif
 
-        Log.serrorln("PORTAL.OTA", F("File '%s', on finish: %s"), upload.filename.c_str(), result->error);
+        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on finish: %s"), upload.filename.c_str(), result->error);
       }
 
     } else if (upload.status == UPLOAD_FILE_ABORTED) {
       Update.end(false);
       result->status = UpgradeStatus::ABORTED;
 
-      Log.serrorln("PORTAL.OTA", F("File '%s': aborted"), upload.filename.c_str());
+      Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s': aborted"), upload.filename.c_str());
     }
   }
 
