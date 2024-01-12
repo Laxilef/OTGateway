@@ -12,10 +12,6 @@
   const uint16_t bleUuidCharacteristicHumidity = 0x2A6F;
 #endif
 
-const char S_SENSORS_OUTDOOR[]  PROGMEM = "SENSORS.OUTDOOR";
-const char S_SENSORS_INDOOR[]   PROGMEM = "SENSORS.INDOOR";
-const char S_SENSORS_BLE[]      PROGMEM = "SENSORS.BLE";
-
 class SensorsTask : public LeanTask {
 public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
@@ -99,7 +95,7 @@ protected:
 #if USE_BLE
   void bluetoothSensor() {
     if (!initBleSensor && millis() > 5000) {
-      Log.sinfoln(FPSTR(S_SENSORS_BLE), "Init BLE. Free heap %u bytes", ESP.getFreeHeap());
+      Log.sinfoln(FPSTR(L_SENSORS_BLE), "Init BLE. Free heap %u bytes", ESP.getFreeHeap());
       BLEDevice::init("");
 
       pBleClient = BLEDevice::createClient();   
@@ -107,41 +103,41 @@ protected:
       // Connect to the remote BLE Server.
       BLEAddress bleServerAddress(std::string(settings.sensors.indoor.bleAddresss));
       if (pBleClient->connect(bleServerAddress)) {
-        Log.sinfoln(FPSTR(S_SENSORS_BLE), "Connected to BLE device at %s", bleServerAddress.toString().c_str());
+        Log.sinfoln(FPSTR(L_SENSORS_BLE), "Connected to BLE device at %s", bleServerAddress.toString().c_str());
         // Obtain a reference to the services we are interested in
         pBleServiceBattery = pBleClient->getService(BLEUUID(bleUuidServiceBattery));
         if (pBleServiceBattery == nullptr) {
-          Log.sinfoln(FPSTR(S_SENSORS_BLE), "Failed to find battery service");
+          Log.sinfoln(FPSTR(L_SENSORS_BLE), "Failed to find battery service");
         }
         pBleServiceEnvironment = pBleClient->getService(BLEUUID(bleUuidServiceEnvironment));
         if (pBleServiceEnvironment == nullptr) {
-          Log.sinfoln(FPSTR(S_SENSORS_BLE), "Failed to find environmental service");
+          Log.sinfoln(FPSTR(L_SENSORS_BLE), "Failed to find environmental service");
         }
 
       } else {
-        Log.swarningln(FPSTR(S_SENSORS_BLE), "Error connecting to BLE device at %s", bleServerAddress.toString().c_str());
+        Log.swarningln(FPSTR(L_SENSORS_BLE), "Error connecting to BLE device at %s", bleServerAddress.toString().c_str());
       }
       
       initBleSensor = true;
     }
 
     if (pBleClient && pBleClient->isConnected()) {
-      Log.straceln(FPSTR(S_SENSORS_BLE), "Connected. Free heap %u bytes", ESP.getFreeHeap());
+      Log.straceln(FPSTR(L_SENSORS_BLE), "Connected. Free heap %u bytes", ESP.getFreeHeap());
       if (pBleServiceBattery) {
         uint8_t batteryLevel = *reinterpret_cast<const uint8_t *>(pBleServiceBattery->getValue(bleUuidCharacteristicBatteryLevel).data());
-        Log.straceln(FPSTR(S_SENSORS_BLE), "Battery: %d", batteryLevel);
+        Log.straceln(FPSTR(L_SENSORS_BLE), "Battery: %d", batteryLevel);
       }
 
       if (pBleServiceEnvironment) {
         float temperature = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicTemperature).data()) / 100.0f;
-        Log.straceln(FPSTR(S_SENSORS_BLE), "Temperature: %.2f", temperature);
+        Log.straceln(FPSTR(L_SENSORS_BLE), "Temperature: %.2f", temperature);
         float humidity = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicHumidity).data()) / 100.0f;
-        Log.straceln(FPSTR(S_SENSORS_BLE), "Humidity: %.2f", humidity);
+        Log.straceln(FPSTR(L_SENSORS_BLE), "Humidity: %.2f", humidity);
 
         vars.temperatures.indoor = temperature + settings.sensors.indoor.offset;
       }
     } else {
-      Log.straceln(FPSTR(S_SENSORS_BLE), "Not connected");
+      Log.straceln(FPSTR(L_SENSORS_BLE), "Not connected");
     }
   }
 #endif
@@ -169,7 +165,7 @@ protected:
       this->outdoorSensor->requestTemperatures();
       this->startOutdoorConversionTime = millis();
 
-      Log.serrorln(FPSTR(S_SENSORS_OUTDOOR), F("Could not read temperature data (no response)"));
+      Log.serrorln(FPSTR(L_SENSORS_OUTDOOR), F("Could not read temperature data (no response)"));
     }
 
     if (!completed) {
@@ -178,10 +174,10 @@ protected:
 
     float rawTemp = this->outdoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
-      Log.serrorln(FPSTR(S_SENSORS_OUTDOOR), F("Could not read temperature data (not connected)"));
+      Log.serrorln(FPSTR(L_SENSORS_OUTDOOR), F("Could not read temperature data (not connected)"));
 
     } else {
-      Log.straceln(FPSTR(S_SENSORS_OUTDOOR), F("Raw temp: %f"), rawTemp);
+      Log.straceln(FPSTR(L_SENSORS_OUTDOOR), F("Raw temp: %f"), rawTemp);
 
       if (this->emptyOutdoorTemp) {
         this->filteredOutdoorTemp = rawTemp;
@@ -195,7 +191,7 @@ protected:
 
       if (fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
         vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
-        Log.sinfoln(FPSTR(S_SENSORS_OUTDOOR), F("New temp: %f"), this->filteredOutdoorTemp);
+        Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), this->filteredOutdoorTemp);
       }
     }
 
@@ -226,7 +222,7 @@ protected:
       this->indoorSensor->requestTemperatures();
       this->startIndoorConversionTime = millis();
       
-      Log.serrorln(FPSTR(S_SENSORS_INDOOR), F("Could not read temperature data (no response)"));
+      Log.serrorln(FPSTR(L_SENSORS_INDOOR), F("Could not read temperature data (no response)"));
     }
 
     if (!completed) {
@@ -235,10 +231,10 @@ protected:
 
     float rawTemp = this->indoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
-      Log.serrorln(FPSTR(S_SENSORS_INDOOR), F("Could not read temperature data (not connected)"));
+      Log.serrorln(FPSTR(L_SENSORS_INDOOR), F("Could not read temperature data (not connected)"));
 
     } else {
-      Log.straceln(FPSTR(S_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
+      Log.straceln(FPSTR(L_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
 
       if (this->emptyIndoorTemp) {
         this->filteredIndoorTemp = rawTemp;
@@ -252,7 +248,7 @@ protected:
 
       if (fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
         vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
-        Log.sinfoln(FPSTR(S_SENSORS_INDOOR), F("New temp: %f"), this->filteredIndoorTemp);
+        Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), this->filteredIndoorTemp);
       }
     }
 

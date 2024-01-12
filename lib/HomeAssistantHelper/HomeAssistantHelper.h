@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include "strings.h"
 
 class HomeAssistantHelper {
 public:
@@ -57,7 +58,7 @@ public:
     if (this->deviceManufacturer != nullptr) {
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_MANUFACTURER)] = this->deviceManufacturer;
     }
-    
+
     if (this->deviceModel != nullptr) {
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_MODEL)] = this->deviceModel;
     }
@@ -65,7 +66,7 @@ public:
     if (this->deviceName != nullptr) {
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_NAME)] = this->deviceName;
     }
-    
+
     if (this->deviceConfigUrl != nullptr) {
       doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = this->deviceConfigUrl;
     }
@@ -95,7 +96,8 @@ public:
     return result;
   }
 
-  String getTopic(const char* category, const char* name, char nameSeparator = '/') {
+  template <class T>
+  String getTopic(T category, T name, char nameSeparator = '/') {
     String topic = "";
     topic.concat(this->prefix);
     topic.concat('/');
@@ -107,8 +109,9 @@ public:
     topic.concat("/config");
     return topic;
   }
-  
-  template <class T> String getDeviceTopic(T value, char separator = '/') {
+
+  template <class T> 
+  String getDeviceTopic(T value, char separator = '/') {
     String topic = "";
     topic.concat(this->devicePrefix);
     topic.concat(separator);
@@ -116,7 +119,8 @@ public:
     return topic;
   }
 
-  template <class T> String getObjectId(T value, char separator = '_') {
+  template <class T> 
+  String getObjectId(T value, char separator = '_') {
     String topic = "";
     topic.concat(this->devicePrefix);
     topic.concat(separator);

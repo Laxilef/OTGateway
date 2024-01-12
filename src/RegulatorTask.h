@@ -38,7 +38,7 @@ protected:
       if (settings.heating.turbo) {
         settings.heating.turbo = false;
 
-        Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
+        Log.sinfoln(FPSTR(L_REGULATOR), F("Turbo mode auto disabled"));
       }
 
       newTemp = getEmergencyModeTemp();
@@ -48,7 +48,7 @@ protected:
         if (settings.heating.turbo) {
           settings.heating.turbo = false;
 
-          Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
+          Log.sinfoln(FPSTR(L_REGULATOR), F("Turbo mode auto disabled"));
         }
 
         newTemp = getTuningModeTemp();
@@ -62,7 +62,7 @@ protected:
         if (settings.heating.turbo && (fabs(settings.heating.target - vars.temperatures.indoor) < 1 || !settings.heating.enable || (settings.equitherm.enable && settings.pid.enable))) {
           settings.heating.turbo = false;
 
-          Log.sinfoln("REGULATOR", F("Turbo mode auto disabled"));
+          Log.sinfoln(FPSTR(L_REGULATOR), F("Turbo mode auto disabled"));
         }
 
         newTemp = getNormalModeTemp();
@@ -91,7 +91,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", F("New emergency result: %hhu (%.2f)"), (uint8_t) round(etResult), etResult);
+        Log.sinfoln(FPSTR(L_REGULATOR_EQUITHERM), F("New emergency result: %hhu (%.2f)"), (uint8_t) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -108,7 +108,7 @@ protected:
           prevPidResult = pidResult;
           newTemp += pidResult;
 
-          Log.sinfoln("REGULATOR.PID", F("New emergency result: %hhu (%.2f)"), (uint8_t) round(pidResult), pidResult);
+          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("New emergency result: %hhu (%.2f)"), (uint8_t) round(pidResult), pidResult);
 
         } else {
           newTemp += prevPidResult;
@@ -131,11 +131,11 @@ protected:
 
     if (fabs(prevHeatingTarget - settings.heating.target) > 0.0001) {
       prevHeatingTarget = settings.heating.target;
-      Log.sinfoln("REGULATOR", F("New target: %.2f"), settings.heating.target);
+      Log.sinfoln(FPSTR(L_REGULATOR), F("New target: %.2f"), settings.heating.target);
 
       if (settings.equitherm.enable && settings.pid.enable) {
         pidRegulator.integral = 0;
-        Log.sinfoln("REGULATOR.PID", F("Integral sum has been reset"));
+        Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
       }
     }
 
@@ -147,7 +147,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln("REGULATOR.EQUITHERM", F("New result: %hhu (%.2f)"), (uint8_t) round(etResult), etResult);
+        Log.sinfoln(FPSTR(L_REGULATOR_EQUITHERM), F("New result: %hhu (%.2f)"), (uint8_t) round(etResult), etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -166,7 +166,7 @@ protected:
           prevPidResult = pidResult;
           newTemp += pidResult;
 
-          Log.sinfoln("REGULATOR.PID", F("New result: %hhd (%.2f)"), (int8_t) round(pidResult), pidResult);
+          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("New result: %hhd (%.2f)"), (int8_t) round(pidResult), pidResult);
 
         } else {
           newTemp += prevPidResult;
