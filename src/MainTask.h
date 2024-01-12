@@ -1,9 +1,9 @@
 #include <Blinker.h>
 
+extern NetworkTask* tNetwork;
 extern MqttTask* tMqtt;
-extern SensorsTask* tSensors;
 extern OpenThermTask* tOt;
-extern EEManager eeSettings;
+extern FileData fsSettings, fsNetworkSettings;
 #if USE_TELNET
   extern ESPTelnetStream TelnetStream;
 #endif
@@ -29,7 +29,6 @@ protected:
   bool blinkerInitialized = false;
   unsigned long firstFailConnect = 0;
   unsigned long lastHeapInfo = 0;
-  unsigned int heapSize = 0;
   unsigned int minFreeHeapSize = 0;
   unsigned int minMaxFreeHeapBlockSize = 0;
   unsigned long restartSignalTime = 0;
@@ -37,6 +36,9 @@ protected:
   unsigned long heatingDisabledTime = 0;
   byte externalPumpStartReason;
   unsigned long externalPumpStartTime = 0;
+#if USE_TELNET
+  bool telnetStarted = false;
+#endif
 
   const char* getTaskName() {
     return "Main";
@@ -61,29 +63,29 @@ protected:
       digitalWrite(settings.externalPump.pin, false);
     }
 
-    #if defined(ARDUINO_ARCH_ESP32)
-      this->heapSize = ESP.getHeapSize();
-    #elif defined(ARDUINO_ARCH_ESP8266)
-      this->heapSize = 81920;
-    #else
-      this->heapSize = 99999;
-    #endif
-    this->minFreeHeapSize = heapSize;
-    this->minMaxFreeHeapBlockSize = heapSize;
+    this->minFreeHeapSize = getTotalHeap();
+    this->minMaxFreeHeapBlockSize = getTotalHeap();
   }
 
   void loop() {
-    if (eeSettings.tick()) {
-      Log.sinfoln("MAIN", F("Settings updated (EEPROM)"));
+    if (fsSettings.tick() == FD_WRITE) {
+      Log.sinfoln(FPSTR(L_SETTINGS), F("Updated"));
+    }
+
+    if (fsNetworkSettings.tick() == FD_WRITE) {
+      Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Updated"));
     }
 
     #if USE_TELNET
+    if (this->telnetStarted) {
       TelnetStream.loop();
+    }
     #endif
 
     if (vars.actions.restart) {
-      Log.sinfoln("MAIN", F("Restart signal received. Restart after 10 sec."));
-      eeSettings.updateNow();
+      Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
+      fsSettings.updateNow();
+      fsNetworkSettings.updateNow();
       this->restartSignalTime = millis();
       vars.actions.restart = false;
     }
@@ -92,7 +94,14 @@ protected:
       tOt->enable();
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (tNetwork->isConnected()) {
+      #if USE_TELNET
+      if (!this->telnetStarted) {
+        TelnetStream.begin(23, false);
+        this->telnetStarted = true;
+      }
+      #endif
+
       vars.sensors.rssi = WiFi.RSSI();
 
       if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
@@ -111,6 +120,13 @@ protected:
       }
 
     } else {
+      #if USE_TELNET
+      if (this->telnetStarted) {
+        TelnetStream.stop();
+        this->telnetStarted = false;
+      }
+      #endif
+
       if (tMqtt->isEnabled()) {
         tMqtt->disable();
       }
@@ -122,7 +138,7 @@ protected:
 
         if (millis() - this->firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
-          Log.sinfoln("MAIN", F("Emergency mode enabled"));
+          Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode enabled"));
         }
       }
     }
@@ -150,7 +166,7 @@ protected:
   }
 
   void heap() {
-    unsigned int freeHeapSize = ESP.getFreeHeap();
+    unsigned int freeHeapSize = getFreeHeap();
     #if defined(ARDUINO_ARCH_ESP32)
       unsigned int maxFreeBlockSize = ESP.getMaxAllocHeap();
     #else
@@ -189,9 +205,9 @@ protected:
     uint8_t heapFrag = 100 - maxFreeBlockSize * 100.0 / freeHeapSize;
     if (millis() - this->lastHeapInfo > 20000 || minFreeHeapSizeDiff > 0 || minMaxFreeBlockSizeDiff > 0) {
       Log.sverboseln(
-        "MAIN",
+        FPSTR(L_MAIN),
         F("Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu%%)"),
-        freeHeapSize, this->heapSize, this->minFreeHeapSize, minFreeHeapSizeDiff, maxFreeBlockSize, this->minMaxFreeHeapBlockSize, minMaxFreeBlockSizeDiff, heapFrag
+        freeHeapSize, getTotalHeap(), this->minFreeHeapSize, minFreeHeapSizeDiff, maxFreeBlockSize, this->minMaxFreeHeapBlockSize, minMaxFreeBlockSizeDiff, heapFrag
       );
       this->lastHeapInfo = millis();
     }
@@ -209,7 +225,7 @@ protected:
       this->blinkerInitialized = true;
     }
 
-    if (WiFi.status() != WL_CONNECTED) {
+    if (!tNetwork->isConnected()) {
       errors[errCount++] = 2;
     }
 
@@ -270,13 +286,13 @@ protected:
     }
     
     if (!settings.externalPump.use || settings.externalPump.pin == 0) {
-      if (vars.externalPump.enable) {
+      if (vars.states.externalPump) {
         if (settings.externalPump.pin != 0) {
           digitalWrite(settings.externalPump.pin, false);
         }
 
-        vars.externalPump.enable = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.states.externalPump = false;
+        vars.parameters.extPumpLastEnableTime = millis();
 
         Log.sinfoln("EXTPUMP", F("Disabled: use = off"));
       }
@@ -284,29 +300,29 @@ protected:
       return;
     }
 
-    if (vars.externalPump.enable && !this->heatingEnabled) {
+    if (vars.states.externalPump && !this->heatingEnabled) {
       if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > ((unsigned int) settings.externalPump.postCirculationTime * 1000)) {
         digitalWrite(settings.externalPump.pin, false);
 
-        vars.externalPump.enable = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.states.externalPump = false;
+        vars.parameters.extPumpLastEnableTime = millis();
 
         Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
 
       } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= ((unsigned int) settings.externalPump.antiStuckTime * 1000)) {
         digitalWrite(settings.externalPump.pin, false);
 
-        vars.externalPump.enable = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.states.externalPump = false;
+        vars.parameters.extPumpLastEnableTime = millis();
 
         Log.sinfoln("EXTPUMP", F("Disabled: expired anti stuck time"));
       }
 
-    } else if (vars.externalPump.enable && this->heatingEnabled && this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK) {
+    } else if (vars.states.externalPump && this->heatingEnabled && this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK) {
       this->externalPumpStartReason = MainTask::REASON_PUMP_START_HEATING;
 
-    } else if (!vars.externalPump.enable && this->heatingEnabled) {
-      vars.externalPump.enable = true;
+    } else if (!vars.states.externalPump && this->heatingEnabled) {
+      vars.states.externalPump = true;
       this->externalPumpStartTime = millis();
       this->externalPumpStartReason = MainTask::REASON_PUMP_START_HEATING;
 
@@ -314,8 +330,8 @@ protected:
 
       Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
 
-    } else if (!vars.externalPump.enable && (vars.externalPump.lastEnableTime == 0 || millis() - vars.externalPump.lastEnableTime >= ((unsigned long) settings.externalPump.antiStuckInterval * 1000))) {
-      vars.externalPump.enable = true;
+    } else if (!vars.states.externalPump && (vars.parameters.extPumpLastEnableTime == 0 || millis() - vars.parameters.extPumpLastEnableTime >= ((unsigned long) settings.externalPump.antiStuckInterval * 1000))) {
+      vars.states.externalPump = true;
       this->externalPumpStartTime = millis();
       this->externalPumpStartReason = MainTask::REASON_PUMP_START_ANTISTUCK;
 

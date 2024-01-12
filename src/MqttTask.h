@@ -1,16 +1,15 @@
-#include <PubSubClient.h>
+#include <MqttClient.h>
 #include <MqttWiFiClient.h>
 #include <MqttWriter.h>
 #include "HaHelper.h"
 
-extern EEManager eeSettings;
-
+extern FileData fsSettings;
 
 class MqttTask : public Task {
 public:
   MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
     this->wifiClient = new MqttWiFiClient();
-    this->client = new PubSubClient();
+    this->client = new MqttClient(this->wifiClient);
     this->writer = new MqttWriter(this->client, 256);
     this->haHelper = new HaHelper();
   }
@@ -22,7 +21,7 @@ public:
 
     if (this->client != nullptr) {
       if (this->client->connected()) {
-        this->client->disconnect();
+        this->client->stop();
       }
 
       delete this->client;
@@ -37,9 +36,27 @@ public:
     }
   }
 
+  void disable() {
+    this->client->stop();
+    this->wifiClient->stop();
+    Task::disable();
+
+    Log.sinfoln(FPSTR(L_MQTT), F("Disabled"));
+  }
+
+  void enable() {
+    Task::enable();
+
+    Log.sinfoln(FPSTR(L_MQTT), F("Enabled"));
+  }
+
+  bool isConnected() {
+    return this->connected;
+  }
+
 protected:
   MqttWiFiClient* wifiClient = nullptr;
-  PubSubClient* client = nullptr;
+  MqttClient* client = nullptr;
   HaHelper* haHelper = nullptr;
   MqttWriter* writer = nullptr;
   unsigned short readyForSendTime = 15000;
@@ -68,7 +85,7 @@ protected:
   }
 
   void setup() {
-    Log.sinfoln("MQTT", F("Started"));
+    Log.sinfoln(FPSTR(L_MQTT), F("Started"));
 
     // wificlient settings
     #ifdef ARDUINO_ARCH_ESP8266
@@ -77,19 +94,27 @@ protected:
     #endif
 
     // client settings
-    this->client->setClient(*this->wifiClient);
-    this->client->setKeepAlive(15);
-
+    //this->client->setClient(*this->wifiClient);
+    this->client->setKeepAliveInterval(15000);
+    this->client->setTxPayloadSize(256);
     #ifdef ARDUINO_ARCH_ESP8266
-    this->client->setSocketTimeout(1);
-    this->client->setBufferSize(768);
+    this->client->setConnectionTimeout(1000);
     #else
-    this->client->setSocketTimeout(3);
-    this->client->setBufferSize(1536);
+    this->client->setConnectionTimeout(3000);
     #endif
-    
-    this->client->setCallback([this] (char* topic, uint8_t* payload, unsigned int length) {
-      this->onMessage(topic, payload, length);
+
+    this->client->onMessage([this] (void*, size_t length) {
+      String topic = this->client->messageTopic();
+      if (!length || length > 2048 || !topic.length()) {
+        return;
+      }
+
+      uint8_t payload[length];
+      for (size_t i = 0; i < length && this->client->available(); i++) {
+        payload[i] = this->client->read();
+      }
+      
+      this->onMessage(topic.c_str(), payload, length);
     });
 
     // writer settings
@@ -100,13 +125,13 @@ protected:
     #endif
 
     this->writer->setEventPublishCallback([this] (const char* topic, size_t written, size_t length, bool result) {
-      Log.straceln("MQTT", F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
+      Log.straceln(FPSTR(L_MQTT), F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
 
       #ifdef ARDUINO_ARCH_ESP8266
       ::yield();
       #endif
 
-      this->client->loop();
+      //this->client->poll();
       this->delay(250);
     });
 
@@ -132,7 +157,7 @@ protected:
   void loop() {
     if (settings.mqtt.interval > 120) {
       settings.mqtt.interval = 5;
-      eeSettings.update();
+      fsSettings.update();
     }
 
     if (!this->client->connected() && this->connected) {
@@ -141,10 +166,11 @@ protected:
     }
     
     if (this->wifiClient == nullptr || (!this->client->connected() && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL)) {
-      Log.sinfoln("MQTT", F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
+      Log.sinfoln(FPSTR(L_MQTT), F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
 
-      this->client->setServer(settings.mqtt.server, settings.mqtt.port);
-      this->client->connect(settings.hostname, settings.mqtt.user, settings.mqtt.password);
+      this->client->setId(networkSettings.hostname);
+      this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
+      this->client->connect(settings.mqtt.server, settings.mqtt.port);
 
       this->lastReconnectTime = millis();
     }
@@ -158,7 +184,7 @@ protected:
       if (settings.emergency.enable && !vars.states.emergency) {
         if (millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
           vars.states.emergency = true;
-          Log.sinfoln("MQTT", F("Emergency mode enabled"));
+          Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode enabled"));
         }
       }
 
@@ -168,7 +194,8 @@ protected:
     #ifdef ARDUINO_ARCH_ESP8266
     ::yield();
     #endif
-    this->client->loop();
+
+    this->client->poll();
 
     // delay for publish data
     if (!this->isReadyForSend()) {
@@ -213,11 +240,11 @@ protected:
     this->connectedTime = millis();
     this->newConnection = true;
     unsigned long downtime = (millis() - this->disconnectedTime) / 1000;
-    Log.sinfoln("MQTT", F("Connected (downtime: %u s.)"), downtime);
+    Log.sinfoln(FPSTR(L_MQTT), F("Connected (downtime: %u s.)"), downtime);
 
     if (vars.states.emergency) {
       vars.states.emergency = false;
-      Log.sinfoln("MQTT", F("Emergency mode disabled"));
+      Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode disabled"));
     }
 
     this->client->subscribe(this->haHelper->getDeviceTopic("settings/set").c_str());
@@ -228,16 +255,16 @@ protected:
     this->disconnectedTime = millis();
 
     unsigned long uptime = (millis() - this->connectedTime) / 1000;
-    Log.swarningln("MQTT", F("Disconnected (reason: %d uptime: %u s.)"), this->client->state(), uptime);
+    Log.swarningln(FPSTR(L_MQTT), F("Disconnected (reason: %d uptime: %u s.)"), this->client->connectError(), uptime);
   }
 
-  void onMessage(char* topic, uint8_t* payload, unsigned int length) {
+  void onMessage(const char* topic, uint8_t* payload, size_t length) {
     if (!length) {
       return;
     }
 
     if (settings.debug) {
-      Log.strace("MQTT.MSG", F("Topic: %s\r\n>  "), topic);
+      Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic);
       if (Log.lock()) {
         for (size_t i = 0; i < length; i++) {
           if (payload[i] == 0) {
@@ -258,8 +285,12 @@ protected:
 
     JsonDocument doc;
     DeserializationError dErr = deserializeJson(doc, payload, length);
-    if (dErr != DeserializationError::Ok || doc.isNull()) {
-      Log.swarningln("MQTT.MSG", F("Error on deserialization: %s"), dErr.f_str());
+    if (dErr != DeserializationError::Ok) {
+      Log.swarningln(FPSTR(L_MQTT_MSG), F("Error on deserialization: %s"), dErr.f_str());
+      return;
+
+    } else if (doc.isNull() || !doc.size()) {
+      Log.swarningln(FPSTR(L_MQTT_MSG), F("Not valid json"));
       return;
     }
 
@@ -275,254 +306,13 @@ protected:
 
 
   bool updateSettings(JsonDocument& doc) {
-    bool flag = false;
-
-    if (!doc["debug"].isNull() && doc["debug"].is<bool>()) {
-      settings.debug = doc["debug"].as<bool>();
-      flag = true;
-    }
-
-
-    // emergency
-    if (!doc["emergency"]["enable"].isNull() && doc["emergency"]["enable"].is<bool>()) {
-      settings.emergency.enable = doc["emergency"]["enable"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["emergency"]["target"].isNull() && doc["emergency"]["target"].is<double>()) {
-      if (doc["emergency"]["target"].as<double>() > 0 && doc["emergency"]["target"].as<double>() < 100) {
-        settings.emergency.target = MqttTask::round(doc["emergency"]["target"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
-    if (!doc["emergency"]["useEquitherm"].isNull() && doc["emergency"]["useEquitherm"].is<bool>()) {
-      if (settings.sensors.outdoor.type != 1) {
-        settings.emergency.useEquitherm = doc["emergency"]["useEquitherm"].as<bool>();
-
-      } else {
-        settings.emergency.useEquitherm = false;
-      }
-
-      if (settings.emergency.useEquitherm && settings.emergency.usePid) {
-        settings.emergency.usePid = false;
-      }
-
-      flag = true;
-    }
-
-    if (!doc["emergency"]["usePid"].isNull() && doc["emergency"]["usePid"].is<bool>()) {
-      if (settings.sensors.indoor.type != 1) {
-        settings.emergency.usePid = doc["emergency"]["usePid"].as<bool>();
-
-      } else {
-        settings.emergency.usePid = false;
-      }
-
-      if (settings.emergency.usePid && settings.emergency.useEquitherm) {
-        settings.emergency.useEquitherm = false;
-      }
-
-      flag = true;
-    }
-
-
-    // heating
-    if (!doc["heating"]["enable"].isNull() && doc["heating"]["enable"].is<bool>()) {
-      settings.heating.enable = doc["heating"]["enable"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["heating"]["turbo"].isNull() && doc["heating"]["turbo"].is<bool>()) {
-      settings.heating.turbo = doc["heating"]["turbo"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["heating"]["target"].isNull() && doc["heating"]["target"].is<double>()) {
-      if (doc["heating"]["target"].as<double>() > 0 && doc["heating"]["target"].as<double>() < 100) {
-        settings.heating.target = MqttTask::round(doc["heating"]["target"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
-    if (!doc["heating"]["hysteresis"].isNull() && doc["heating"]["hysteresis"].is<double>()) {
-      if (doc["heating"]["hysteresis"].as<double>() >= 0 && doc["heating"]["hysteresis"].as<double>() <= 5) {
-        settings.heating.hysteresis = MqttTask::round(doc["heating"]["hysteresis"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
-    if (!doc["heating"]["maxModulation"].isNull() && doc["heating"]["maxModulation"].is<unsigned char>()) {
-      if (doc["heating"]["maxModulation"].as<unsigned char>() > 0 && doc["heating"]["maxModulation"].as<unsigned char>() <= 100) {
-        settings.heating.maxModulation = doc["heating"]["maxModulation"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    if (!doc["heating"]["maxTemp"].isNull() && doc["heating"]["maxTemp"].is<unsigned char>()) {
-      if (doc["heating"]["maxTemp"].as<unsigned char>() > 0 && doc["heating"]["maxTemp"].as<unsigned char>() <= 100) {
-        settings.heating.maxTemp = doc["heating"]["maxTemp"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    if (!doc["heating"]["minTemp"].isNull() && doc["heating"]["minTemp"].is<unsigned char>()) {
-      if (doc["heating"]["minTemp"].as<unsigned char>() >= 0 && doc["heating"]["minTemp"].as<unsigned char>() < 100) {
-        settings.heating.minTemp = doc["heating"]["minTemp"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-
-    // dhw
-    if (!doc["dhw"]["enable"].isNull() && doc["dhw"]["enable"].is<bool>()) {
-      settings.dhw.enable = doc["dhw"]["enable"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["dhw"]["target"].isNull() && doc["dhw"]["target"].is<unsigned char>()) {
-      if (doc["dhw"]["target"].as<unsigned char>() >= 0 && doc["dhw"]["target"].as<unsigned char>() < 100) {
-        settings.dhw.target = doc["dhw"]["target"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    if (!doc["dhw"]["maxTemp"].isNull() && doc["dhw"]["maxTemp"].is<unsigned char>()) {
-      if (doc["dhw"]["maxTemp"].as<unsigned char>() > 0 && doc["dhw"]["maxTemp"].as<unsigned char>() <= 100) {
-        settings.dhw.maxTemp = doc["dhw"]["maxTemp"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    if (!doc["dhw"]["minTemp"].isNull() && doc["dhw"]["minTemp"].is<unsigned char>()) {
-      if (doc["dhw"]["minTemp"].as<unsigned char>() >= 0 && doc["dhw"]["minTemp"].as<unsigned char>() < 100) {
-        settings.dhw.minTemp = doc["dhw"]["minTemp"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-
-    // pid
-    if (!doc["pid"]["enable"].isNull() && doc["pid"]["enable"].is<bool>()) {
-      settings.pid.enable = doc["pid"]["enable"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["pid"]["p_factor"].isNull() && doc["pid"]["p_factor"].is<double>()) {
-      if (doc["pid"]["p_factor"].as<double>() > 0 && doc["pid"]["p_factor"].as<double>() <= 1000) {
-        settings.pid.p_factor = MqttTask::round(doc["pid"]["p_factor"].as<double>(), 3);
-        flag = true;
-      }
-    }
-
-    if (!doc["pid"]["i_factor"].isNull() && doc["pid"]["i_factor"].is<double>()) {
-      if (doc["pid"]["i_factor"].as<double>() >= 0 && doc["pid"]["i_factor"].as<double>() <= 100) {
-        settings.pid.i_factor = MqttTask::round(doc["pid"]["i_factor"].as<double>(), 3);
-        flag = true;
-      }
-    }
-
-    if (!doc["pid"]["d_factor"].isNull() && doc["pid"]["d_factor"].is<double>()) {
-      if (doc["pid"]["d_factor"].as<double>() >= 0 && doc["pid"]["d_factor"].as<double>() <= 100000) {
-        settings.pid.d_factor = MqttTask::round(doc["pid"]["d_factor"].as<double>(), 1);
-        flag = true;
-      }
-    }
-
-    if (!doc["pid"]["dt"].isNull() && doc["pid"]["dt"].is<double>()) {
-      if (doc["pid"]["dt"].as<unsigned short>() >= 30 && doc["pid"]["dt"].as<unsigned short>() <= 600) {
-        settings.pid.dt = doc["pid"]["dt"].as<unsigned short>();
-        flag = true;
-      }
-    }
-
-    if (!doc["pid"]["maxTemp"].isNull() && doc["pid"]["maxTemp"].is<unsigned char>()) {
-      if (doc["pid"]["maxTemp"].as<unsigned char>() > 0 && doc["pid"]["maxTemp"].as<unsigned char>() <= 100 && doc["pid"]["maxTemp"].as<unsigned char>() > settings.pid.minTemp) {
-        settings.pid.maxTemp = doc["pid"]["maxTemp"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    if (!doc["pid"]["minTemp"].isNull() && doc["pid"]["minTemp"].is<unsigned char>()) {
-      if (doc["pid"]["minTemp"].as<unsigned char>() >= 0 && doc["pid"]["minTemp"].as<unsigned char>() < 100 && doc["pid"]["minTemp"].as<unsigned char>() < settings.pid.maxTemp) {
-        settings.pid.minTemp = doc["pid"]["minTemp"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    // equitherm
-    if (!doc["equitherm"]["enable"].isNull() && doc["equitherm"]["enable"].is<bool>()) {
-      settings.equitherm.enable = doc["equitherm"]["enable"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["equitherm"]["n_factor"].isNull() && doc["equitherm"]["n_factor"].is<double>()) {
-      if (doc["equitherm"]["n_factor"].as<double>() > 0 && doc["equitherm"]["n_factor"].as<double>() <= 10) {
-        settings.equitherm.n_factor = MqttTask::round(doc["equitherm"]["n_factor"].as<double>(), 3);
-        flag = true;
-      }
-    }
-
-    if (!doc["equitherm"]["k_factor"].isNull() && doc["equitherm"]["k_factor"].is<double>()) {
-      if (doc["equitherm"]["k_factor"].as<double>() >= 0 && doc["equitherm"]["k_factor"].as<double>() <= 10) {
-        settings.equitherm.k_factor = MqttTask::round(doc["equitherm"]["k_factor"].as<double>(), 3);
-        flag = true;
-      }
-    }
-
-    if (!doc["equitherm"]["t_factor"].isNull() && doc["equitherm"]["t_factor"].is<double>()) {
-      if (doc["equitherm"]["t_factor"].as<double>() >= 0 && doc["equitherm"]["t_factor"].as<double>() <= 10) {
-        settings.equitherm.t_factor = MqttTask::round(doc["equitherm"]["t_factor"].as<double>(), 3);
-        flag = true;
-      }
-    }
-
-
-    // sensors
-    if (!doc["sensors"]["outdoor"]["type"].isNull() && doc["sensors"]["outdoor"]["type"].is<unsigned char>()) {
-      if (doc["sensors"]["outdoor"]["type"].as<unsigned char>() >= 0 && doc["sensors"]["outdoor"]["type"].as<unsigned char>() <= 2) {
-        settings.sensors.outdoor.type = doc["sensors"]["outdoor"]["type"].as<unsigned char>();
-
-        if (settings.sensors.outdoor.type == 1) {
-          settings.emergency.useEquitherm = false;
-        }
-
-        flag = true;
-      }
-    }
-
-    if (!doc["sensors"]["outdoor"]["offset"].isNull() && doc["sensors"]["outdoor"]["offset"].is<double>()) {
-      if (doc["sensors"]["outdoor"]["offset"].as<double>() >= -10 && doc["sensors"]["outdoor"]["offset"].as<double>() <= 10) {
-        settings.sensors.outdoor.offset = MqttTask::round(doc["sensors"]["outdoor"]["offset"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
-    if (!doc["sensors"]["indoor"]["type"].isNull() && doc["sensors"]["indoor"]["type"].is<unsigned char>()) {
-      if (doc["sensors"]["indoor"]["type"].as<unsigned char>() >= 1 && doc["sensors"]["indoor"]["type"].as<unsigned char>() <= 3) {
-        settings.sensors.indoor.type = doc["sensors"]["indoor"]["type"].as<unsigned char>();
-
-        if (settings.sensors.indoor.type == 1) {
-          settings.emergency.usePid = false;
-        }
-
-        flag = true;
-      }
-    }
-
-    if (!doc["sensors"]["indoor"]["offset"].isNull() && doc["sensors"]["indoor"]["offset"].is<double>()) {
-      if (doc["sensors"]["indoor"]["offset"].as<double>() >= -10 && doc["sensors"]["indoor"]["offset"].as<double>() <= 10) {
-        settings.sensors.indoor.offset = MqttTask::round(doc["sensors"]["indoor"]["offset"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
+    bool changed = safeJsonToSettings(doc, settings);
     doc.clear();
     doc.shrinkToFit();
 
-    if (flag) {
+    if (changed) {
       this->prevPubSettingsTime = 0;
-      eeSettings.update();
+      fsSettings.update();
       return true;
     }
 
@@ -530,54 +320,11 @@ protected:
   }
 
   bool updateVariables(JsonDocument& doc) {
-    bool flag = false;
-
-    if (!doc["ping"].isNull() && doc["ping"]) {
-      flag = true;
-    }
-
-    if (!doc["tuning"]["enable"].isNull() && doc["tuning"]["enable"].is<bool>()) {
-      vars.tuning.enable = doc["tuning"]["enable"].as<bool>();
-      flag = true;
-    }
-
-    if (!doc["tuning"]["regulator"].isNull() && doc["tuning"]["regulator"].is<unsigned char>()) {
-      if (doc["tuning"]["regulator"].as<unsigned char>() >= 0 && doc["tuning"]["regulator"].as<unsigned char>() <= 1) {
-        vars.tuning.regulator = doc["tuning"]["regulator"].as<unsigned char>();
-        flag = true;
-      }
-    }
-
-    if (!doc["temperatures"]["indoor"].isNull() && doc["temperatures"]["indoor"].is<double>()) {
-      if (settings.sensors.indoor.type == 1 && doc["temperatures"]["indoor"].as<double>() > -100 && doc["temperatures"]["indoor"].as<double>() < 100) {
-        vars.temperatures.indoor = MqttTask::round(doc["temperatures"]["indoor"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
-    if (!doc["temperatures"]["outdoor"].isNull() && doc["temperatures"]["outdoor"].is<double>()) {
-      if (settings.sensors.outdoor.type == 1 && doc["temperatures"]["outdoor"].as<double>() > -100 && doc["temperatures"]["outdoor"].as<double>() < 100) {
-        vars.temperatures.outdoor = MqttTask::round(doc["temperatures"]["outdoor"].as<double>(), 2);
-        flag = true;
-      }
-    }
-
-    if (!doc["actions"]["restart"].isNull() && doc["actions"]["restart"].is<bool>() && doc["actions"]["restart"].as<bool>()) {
-      vars.actions.restart = true;
-    }
-
-    if (!doc["actions"]["resetFault"].isNull() && doc["actions"]["resetFault"].is<bool>() && doc["actions"]["resetFault"].as<bool>()) {
-      vars.actions.resetFault = true;
-    }
-
-    if (!doc["actions"]["resetDiagnostic"].isNull() && doc["actions"]["resetDiagnostic"].is<bool>() && doc["actions"]["resetDiagnostic"].as<bool>()) {
-      vars.actions.resetDiagnostic = true;
-    }
-
+    bool changed = jsonToVars(doc, vars);
     doc.clear();
     doc.shrinkToFit();
 
-    if (flag) {
+    if (changed) {
       this->prevPubVarsTime = 0;
       return true;
     }
@@ -766,97 +513,15 @@ protected:
 
   bool publishSettings(const char* topic) {
     JsonDocument doc;
-    doc["debug"] = settings.debug;
-
-    doc["emergency"]["enable"] = settings.emergency.enable;
-    doc["emergency"]["target"] = MqttTask::round(settings.emergency.target, 2);
-    doc["emergency"]["useEquitherm"] = settings.emergency.useEquitherm;
-    doc["emergency"]["usePid"] = settings.emergency.usePid;
-
-    doc["heating"]["enable"] = settings.heating.enable;
-    doc["heating"]["turbo"] = settings.heating.turbo;
-    doc["heating"]["target"] = MqttTask::round(settings.heating.target, 2);
-    doc["heating"]["hysteresis"] = MqttTask::round(settings.heating.hysteresis, 2);
-    doc["heating"]["minTemp"] = settings.heating.minTemp;
-    doc["heating"]["maxTemp"] = settings.heating.maxTemp;
-    doc["heating"]["maxModulation"] = settings.heating.maxModulation;
-
-    doc["dhw"]["enable"] = settings.dhw.enable;
-    doc["dhw"]["target"] = settings.dhw.target;
-    doc["dhw"]["minTemp"] = settings.dhw.minTemp;
-    doc["dhw"]["maxTemp"] = settings.dhw.maxTemp;
-
-    doc["pid"]["enable"] = settings.pid.enable;
-    doc["pid"]["p_factor"] = MqttTask::round(settings.pid.p_factor, 3);
-    doc["pid"]["i_factor"] = MqttTask::round(settings.pid.i_factor, 3);
-    doc["pid"]["d_factor"] = MqttTask::round(settings.pid.d_factor, 1);
-    doc["pid"]["dt"] = settings.pid.dt;
-    doc["pid"]["minTemp"] = settings.pid.minTemp;
-    doc["pid"]["maxTemp"] = settings.pid.maxTemp;
-
-    doc["equitherm"]["enable"] = settings.equitherm.enable;
-    doc["equitherm"]["n_factor"] = MqttTask::round(settings.equitherm.n_factor, 3);
-    doc["equitherm"]["k_factor"] = MqttTask::round(settings.equitherm.k_factor, 3);
-    doc["equitherm"]["t_factor"] = MqttTask::round(settings.equitherm.t_factor, 3);
-
-    doc["sensors"]["outdoor"]["type"] = settings.sensors.outdoor.type;
-    doc["sensors"]["outdoor"]["offset"] = MqttTask::round(settings.sensors.outdoor.offset, 2);
-
-    doc["sensors"]["indoor"]["type"] = settings.sensors.indoor.type;
-    doc["sensors"]["indoor"]["offset"] = MqttTask::round(settings.sensors.indoor.offset, 2);
-
-    doc.shrinkToFit();
+    safeSettingsToJson(settings, doc);
 
     return this->writer->publish(topic, doc, true);
   }
 
   bool publishVariables(const char* topic) {
     JsonDocument doc;
-
-    doc["tuning"]["enable"] = vars.tuning.enable;
-    doc["tuning"]["regulator"] = vars.tuning.regulator;
-
-    doc["states"]["otStatus"] = vars.states.otStatus;
-    doc["states"]["heating"] = vars.states.heating;
-    doc["states"]["dhw"] = vars.states.dhw;
-    doc["states"]["flame"] = vars.states.flame;
-    doc["states"]["fault"] = vars.states.fault;
-    doc["states"]["diagnostic"] = vars.states.diagnostic;
-
-    doc["sensors"]["modulation"] = MqttTask::round(vars.sensors.modulation, 2);
-    doc["sensors"]["pressure"] = MqttTask::round(vars.sensors.pressure, 2);
-    doc["sensors"]["dhwFlowRate"] = vars.sensors.dhwFlowRate;
-    doc["sensors"]["faultCode"] = vars.sensors.faultCode;
-    doc["sensors"]["rssi"] = vars.sensors.rssi;
-    doc["sensors"]["uptime"] = millis() / 1000ul;
-
-    doc["temperatures"]["indoor"] = MqttTask::round(vars.temperatures.indoor, 2);
-    doc["temperatures"]["outdoor"] = MqttTask::round(vars.temperatures.outdoor, 2);
-    doc["temperatures"]["heating"] = MqttTask::round(vars.temperatures.heating, 2);
-    doc["temperatures"]["dhw"] = MqttTask::round(vars.temperatures.dhw, 2);
-
-    doc["parameters"]["heatingEnabled"] = vars.parameters.heatingEnabled;
-    doc["parameters"]["heatingMinTemp"] = vars.parameters.heatingMinTemp;
-    doc["parameters"]["heatingMaxTemp"] = vars.parameters.heatingMaxTemp;
-    doc["parameters"]["heatingSetpoint"] = vars.parameters.heatingSetpoint;
-    doc["parameters"]["dhwMinTemp"] = vars.parameters.dhwMinTemp;
-    doc["parameters"]["dhwMaxTemp"] = vars.parameters.dhwMaxTemp;
-
-    doc.shrinkToFit();
+    varsToJson(vars, doc);
 
     return this->writer->publish(topic, doc, true);
-  }
-
-  static double round(double value, uint8_t decimals = 2) {
-    if (decimals == 0) {
-      return (int)(value + 0.001);
-
-    } else if (abs(value) < 0.00000001) {
-      return 0.0;
-    }
-
-    double multiplier = pow10(decimals);
-    value += 0.5 / multiplier * (value < 0 ? -1 : 1);
-    return (int)(value * multiplier) / multiplier;
   }
 };

@@ -3,6 +3,15 @@
   #define PROGMEM 
 #endif
 
+const char HA_ENTITY_BINARY_SENSOR[]            PROGMEM = "binary_sensor";
+const char HA_ENTITY_BUTTON[]                   PROGMEM = "button";
+const char HA_ENTITY_FAN[]                      PROGMEM = "fan";
+const char HA_ENTITY_CLIMATE[]                  PROGMEM = "climate";
+const char HA_ENTITY_NUMBER[]                   PROGMEM = "number";
+const char HA_ENTITY_SELECT[]                   PROGMEM = "select";
+const char HA_ENTITY_SENSOR[]                   PROGMEM = "sensor";
+const char HA_ENTITY_SWITCH[]                   PROGMEM = "switch";
+
 const char HA_DEVICE[]                          PROGMEM = "device";
 const char HA_IDENTIFIERS[]                     PROGMEM = "identifiers";
 const char HA_SW_VERSION[]                      PROGMEM = "sw_version";

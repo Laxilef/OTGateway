@@ -1,0 +1,64 @@
+@media (min-width: 1280px) {
+	.container {
+		max-width: 1000px;
+	}
+}
+
+@media (min-width: 1536px) {
+	.container {
+		max-width: 1000px;
+	}
+}
+
+.hidden {
+	display: none !important;
+}
+
+header,
+main,
+footer {
+	padding-top: 1.5em !important;
+	padding-bottom: 1.5em !important;
+}
+
+article {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+footer {
+	text-align: center;
+}
+
+button.success {
+	background-color: var(--pico-form-element-valid-border-color);
+	border-color: var(--pico-form-element-valid-border-color);
+}
+
+button.failed {
+	background-color: var(--pico-form-element-invalid-border-color);
+	border-color: var(--pico-form-element-invalid-border-color);
+}
+
+tr.network:hover {
+	--pico-background-color: var(--pico-primary-focus);
+	cursor: pointer;
+}
+
+.greatSignal {
+	background-color: var(--pico-form-element-valid-border-color);
+}
+
+.normalSignal {
+	background-color: #e48500;
+}
+
+.badSignal {
+	background-color: var(--pico-form-element-invalid-border-color);
+}
+
+.primary {
+	border: 0.25em solid var(--pico-form-element-invalid-border-color);
+	padding: 1em;
+	margin-bottom: 1em;
+}

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settings - OpenTherm Gateway</title>
+  <link rel="stylesheet" href="/static/pico.min.css">
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+
+<body>
+  <header class="container">
+    <nav>
+      <ul>
+        <li><a href="/"><kbd>OpenTherm Gateway</kbd></a></li>
+      </ul>
+      <ul>
+        <li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article>
+      <div>
+        <hgroup>
+          <h2>Portal settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="portal-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="portal-settings" class="hidden">
+          <div class="grid">
+            <label for="portal-login">
+              Login
+              <input type="text" class="portal-login" name="portal[login]" maxlength="12" required>
+            </label>
+            <label for="portal-password">
+              Password
+              <input type="password" class="portal-password" name="portal[password]" maxlength="32" required>
+            </label>
+          </div>
+          
+          <label for="portal-use-auth">
+            <input type="checkbox" class="portal-use-auth" name="portal[useAuth]" value="true">
+            Use auth
+          </label>
+          <br>
+
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
+
+    <article>
+      <div>
+        <hgroup>
+          <h2>OpenTherm settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="opentherm-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="opentherm-settings" class="hidden">
+          <div class="grid">
+            <label for="opentherm-in-pin">
+              IN gpio
+              <input type="number" class="opentherm-in-pin" name="opentherm[inPin]" maxlength="2" required>
+            </label>
+            <label for="opentherm-in-pin">
+              OUT gpio
+              <input type="number" class="opentherm-out-pin" name="opentherm[outPin]" maxlength="2" required>
+            </label>
+            <label for="opentherm-member-id-code">
+              Master MemberID code
+              <input type="number" class="opentherm-member-id-code" name="opentherm[memberIdCode]" maxlength="2" required>
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>Options</legend>
+            <label for="opentherm-dhw-present">
+              <input type="checkbox" class="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
+              DHW present
+            </label>
+            <label for="opentherm-sw-mode">
+              <input type="checkbox" class="opentherm-sw-mode" name="opentherm[summerWinterMode]" value="true">
+              Summer/winter mode
+            </label>
+            <label for="opentherm-heating-ch2-enabled">
+              <input type="checkbox" class="opentherm-heating-ch2-enabled" name="opentherm[heatingCh2Enabled]" value="true">
+              Heating CH2 always enabled
+            </label>
+            <label for="opentherm-heating-ch1-to-ch2">
+              <input type="checkbox" class="opentherm-heating-ch1-to-ch2" name="opentherm[heatingCh1ToCh2]" value="true">
+              Duplicate heating CH1 to CH2
+            </label>
+            <label for="opentherm-dhw-to-ch2">
+              <input type="checkbox" class="opentherm-dhw-to-ch2" name="opentherm[dhwToCh2]" value="true">
+              Duplicate DHW to CH2
+            </label>
+            <label for="opentherm-dhw-blocking">
+              <input type="checkbox" class="opentherm-dhw-blocking" name="opentherm[dhwBlocking]" value="true">
+              DHW blocking
+            </label>
+            <label for="opentherm-sync-modulation-with-heating">
+              <input type="checkbox" class="opentherm-sync-modulation-with-heating" name="opentherm[modulationSyncWithHeating]" value="true">
+              Sync modulation with heating
+            </label>
+          </fieldset>
+
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
+
+    <article>
+      <div>
+        <hgroup>
+          <h2>MQTT settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="mqtt-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="mqtt-settings" class="hidden">
+          <div class="grid">
+            <label for="mqtt-server">
+              Server
+              <input type="text" class="mqtt-server" name="mqtt[server]" maxlength="80" required>
+            </label>
+            <label for="mqtt-port">
+              Port
+              <input type="number" class="mqtt-port" name="mqtt[port]" maxlength="5" required>
+            </label>
+          </div>
+
+          <div class="grid">
+            <label for="mqtt-user">
+              User
+              <input type="text" class="mqtt-user" name="mqtt[user]" maxlength="32" required>
+            </label>
+            <label for="mqtt-password">
+              Password
+              <input type="password" class="mqtt-password" name="mqtt[password]" maxlength="32">
+            </label>
+          </div>
+
+          <div class="grid">
+            <label for="mqtt-prefix">
+              Prefix
+              <input type="text" class="mqtt-prefix" name="mqtt[prefix]" maxlength="32" required>
+            </label>
+            <label for="mqtt-interval">
+              Publish interval <small>(sec)</small>
+              <input type="number" class="mqtt-interval" name="mqtt[interval]" maxlength="2" required>
+            </label>
+          </div>
+
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
+
+    <article>
+      <div>
+        <hgroup>
+          <h2>Sensor settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="sensors-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="sensors-settings" class="hidden">
+          <div class="grid">
+            <label for="sensors-outdoor-pin">
+              Outdoor GPIO
+              <input type="number" class="sensors-outdoor-pin" name="sensors[outdoor][pin]" maxlength="2" required>
+            </label>
+            <label for="sensors-outdoor-offset">
+              Outdoor offset
+              <input type="number" class="sensors-outdoor-offset" name="sensors[outdoor][offset]" maxlength="2" required>
+            </label>
+          </div>
+          <hr><br>
+
+          <div class="grid">
+            <label for="sensors-indoor-pin">
+              Indoor GPIO
+              <input type="number" class="sensors-indoor-pin" name="sensors[indoor][pin]" maxlength="2" required>
+            </label>
+            <label for="sensors-indoor-offset">
+              Indoor offset
+              <input type="number" class="sensors-indoor-offset" name="sensors[indoor][offset]" maxlength="2" required>
+            </label>
+          </div>
+
+          <label for="sensors-indoor-ble-addresss">
+            BLE addresss
+            <input type="text" class="sensors-indoor-ble-addresss" name="sensors[indoor][bleAddresss]" maxlength="17">
+            <small>ONLY for ESP32</small>
+          </label>
+          
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
+
+    <article>
+      <div>
+        <hgroup>
+          <h2>External pump settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="extpump-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="extpump-settings" class="hidden">
+          <label for="extpump-use">
+            <input type="checkbox" class="extpump-use" name="externalPump[use]" value="true">
+            Use external pump
+          </label>
+          <br>
+
+          <div class="grid">
+            <label for="extpump-pin">
+              Relay GPIO
+              <input type="number" class="extpump-pin" name="externalPump[pin]" maxlength="2" required>
+            </label>
+            <label for="extpump-pc-time">
+              Post circulation time <small>(min)</small>
+              <input type="number" class="extpump-pc-time" name="externalPump[postCirculationTime]" maxlength="2" required>
+            </label>
+          </div>
+
+          <div class="grid">
+            <label for="extpump-as-interval">
+              Anti stuck interval <small>(days)</small>
+              <input type="number" class="extpump-as-interval" name="externalPump[antiStuckInterval]" maxlength="3" required>
+            </label>
+            <label for="extpump-as-time">
+              Anti stuck time <small>(min)</small>
+              <input type="number" class="extpump-as-time" name="externalPump[antiStuckTime]" maxlength="2" required>
+            </label>
+          </div>
+          
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
+  </main>
+
+  <footer class="container">
+    <small>
+      <b>Made by Laxilef</b>
+      • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary">License</a>
+      • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary">Source code</a>
+      • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary">Help</a>
+      • <a href="https://github.com/Laxilef/OTGateway/issue" target="_blank" class="secondary">Issue & questions</a>
+      • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary">Releases</a>
+    </small>
+  </footer>
+
+  <script src="/static/app.js"></script>
+  <script>
+    window.onload = async function () {
+      await loadSettings();
+
+      setupForm('#portal-settings');
+      setupForm('#opentherm-settings');
+      setupForm('#mqtt-settings');
+      setupForm('#sensors-settings');
+      setupForm('#extpump-settings');
+    };
+  </script>
+</body>
+
+</html>

@@ -1,6 +1,35 @@
+struct NetworkSettings {
+  char hostname[25] = HOSTNAME_DEFAULT;
+  bool useDhcp = true;
+
+  struct {
+    char ip[16] = "192.168.0.100";
+    char gateway[16] = "192.168.0.1";
+    char subnet[16] = "255.255.255.0";
+    char dns[16] = "192.168.0.1";
+  } staticConfig;
+
+  struct {
+    char ssid[33] = AP_SSID_DEFAULT;
+    char password[65] = AP_PASSWORD_DEFAULT;
+    byte channel = 1;
+  } ap;
+
+  struct {
+    char ssid[33] = STA_SSID_DEFAULT;
+    char password[65] = STA_PASSWORD_DEFAULT;
+    byte channel = 0;
+  } sta;
+} networkSettings;
+
 struct Settings {
   bool debug = DEBUG_BY_DEFAULT;
-  char hostname[80] = "opentherm";
+
+  struct {
+    bool useAuth = false;
+    char login[13] = PORTAL_LOGIN_DEFAULT;
+    char password[33] = PORTAL_PASSWORD_DEFAULT;
+  } portal;
 
   struct {
     byte inPin = OT_IN_PIN_DEFAULT;
@@ -16,11 +45,11 @@ struct Settings {
   } opentherm;
 
   struct {
-    char server[80];
-    unsigned short port = 1883;
-    char user[32];
-    char password[32];
-    char prefix[80] = "opentherm";
+    char server[81] = MQTT_SERVER_DEFAULT;
+    unsigned short port = MQTT_PORT_DEFAULT;
+    char user[33] = MQTT_USER_DEFAULT;
+    char password[33] = MQTT_PASSWORD_DEFAULT;
+    char prefix[33] = MQTT_PREFIX_DEFAULT;
     unsigned short interval = 5;
   } mqtt;
 
@@ -107,6 +136,7 @@ struct Variables {
     bool flame = false;
     bool fault = false;
     bool diagnostic = false;
+    bool externalPump = false;
   } states;
 
   struct {
@@ -125,15 +155,11 @@ struct Variables {
   } temperatures;
 
   struct {
-    bool enable = false;
-    unsigned long lastEnableTime = 0;
-  } externalPump;
-
-  struct {
     bool heatingEnabled = false;
     byte heatingMinTemp = DEFAULT_HEATING_MIN_TEMP;
     byte heatingMaxTemp = DEFAULT_HEATING_MAX_TEMP;
     byte heatingSetpoint = 0;
+    unsigned long extPumpLastEnableTime = 0;
     byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
     byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;
     byte maxModulation;

@@ -1,9 +1,12 @@
 #include <Arduino.h>
 #include "defines.h"
+#include "strings.h"
 #include <ArduinoJson.h>
-#include <EEManager.h>
+#include <FileData.h>
+#include <LittleFS.h>
 #include <TinyLogger.h>
 #include "Settings.h"
+#include <utils.h>
 
 #if USE_TELNET
   #include "ESPTelnetStream.h"
@@ -19,29 +22,34 @@
 
 #include <Task.h>
 #include <LeanTask.h>
-#include "WifiManagerTask.h"
+#include "NetworkTask.h"
 #include "MqttTask.h"
 #include "OpenThermTask.h"
 #include "SensorsTask.h"
 #include "RegulatorTask.h"
+#include "PortalTask.h"
 #include "MainTask.h"
 
 // Vars
-EEManager eeSettings(settings, 60000);
+FileData fsNetworkSettings(&LittleFS, "/network.conf", 'n', &networkSettings, sizeof(networkSettings), 1000);
+FileData fsSettings(&LittleFS, "/settings.conf", 's', &settings, sizeof(settings), 60000);
 #if USE_TELNET
-  ESPTelnetStream TelnetStream;
+ESPTelnetStream TelnetStream;
 #endif
 
 // Tasks
-WifiManagerTask* tWm;
+NetworkTask* tNetwork;
 MqttTask* tMqtt;
 OpenThermTask* tOt;
 SensorsTask* tSensors;
 RegulatorTask* tRegulator;
+PortalTask* tPortal;
 MainTask* tMain;
 
 
 void setup() {
+  LittleFS.begin();
+
   Log.setLevel(TinyLogger::Level::VERBOSE);
   Log.setServiceTemplate("\033[1m[%s]\033[22m");
   Log.setLevelTemplate("\033[1m[%s]\033[22m");
@@ -52,46 +60,87 @@ void setup() {
     int sec = time % 60;
     int min = time % 3600 / 60;
     int hour = time / 3600;
-    
+
     return tm{sec, min, hour};
   });
-  
+
   #if USE_SERIAL
-    Serial.begin(115200);
-    Serial.println("\n\n");
-    Log.addStream(&Serial);
+  Serial.begin(115200);
+  Log.addStream(&Serial);
   #endif
 
   #if USE_TELNET
-    TelnetStream.setKeepAliveInterval(500);
-    Log.addStream(&TelnetStream);
+  TelnetStream.setKeepAliveInterval(500);
+  Log.addStream(&TelnetStream);
   #endif
 
-  EEPROM.begin(eeSettings.blockSize());
-  uint8_t eeSettingsResult = eeSettings.begin(0, 's');
-  if (eeSettingsResult == 0) {
-    Log.sinfoln("MAIN", F("Settings loaded"));
+  Log.print("\n\n\r");
 
-    if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
-      Log.swarningln("MAIN", F("Settings not valid, reset and restart..."));
-      eeSettings.reset();
-      delay(5000);
-      ESP.restart();
-    }
+  // network settings
+  switch (fsNetworkSettings.read()) {
+    case FD_FS_ERR:
+      Log.swarningln(FPSTR(L_NETWORK_SETTINGS), F("Filesystem error, load default"));
+      break;
+    case FD_FILE_ERR:
+      Log.swarningln(FPSTR(L_NETWORK_SETTINGS), F("Bad data, load default"));
+      break;
+    case FD_WRITE:
+      Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Not found, load default"));
+      break;
+    case FD_ADD:
+    case FD_READ:
+      Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Loaded"));
+      break;
+    default:
+      break;
+  }
 
-  } else if (eeSettingsResult == 1) {
-    Log.sinfoln("MAIN", F("Settings NOT loaded, first start"));
+  // settings
+  switch (fsSettings.read()) {
+    case FD_FS_ERR:
+      Log.swarningln(FPSTR(L_SETTINGS), F("Filesystem error, load default"));
+      break;
+    case FD_FILE_ERR:
+      Log.swarningln(FPSTR(L_SETTINGS), F("Bad data, load default"));
+      break;
+    case FD_WRITE:
+      Log.sinfoln(FPSTR(L_SETTINGS), F("Not found, load default"));
+      break;
+    case FD_ADD:
+    case FD_READ:
+      Log.sinfoln(FPSTR(L_SETTINGS), F("Loaded"));
 
-  } else if (eeSettingsResult == 2) {
-    Log.serrorln("MAIN", F("Settings NOT loaded (error)"));
+      if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
+        Log.swarningln(FPSTR(L_SETTINGS), F("Not valid, set default and restart..."));
+        fsSettings.reset();
+        delay(5000);
+        ESP.restart();
+      }
+      break;
+    default:
+      break;
   }
 
   Log.setLevel(settings.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
-  
-  tWm = new WifiManagerTask(true, 0);
-  Scheduler.start(tWm);
 
-  tMqtt = new MqttTask(false, 100);
+  tNetwork = (new NetworkTask(true, 500))
+    ->setHostname(networkSettings.hostname)
+    ->setStaCredentials(
+    #ifdef WOKWI
+      "Wokwi-GUEST", nullptr, 6
+    #else
+      strlen(networkSettings.sta.ssid) ? networkSettings.sta.ssid : nullptr,
+      strlen(networkSettings.sta.password) ? networkSettings.sta.password : nullptr,
+      networkSettings.sta.channel
+    #endif
+    )->setApCredentials(
+      strlen(networkSettings.ap.ssid) ? networkSettings.ap.ssid : nullptr,
+      strlen(networkSettings.ap.password) ? networkSettings.ap.password : nullptr,
+      networkSettings.ap.channel
+    );
+  Scheduler.start(tNetwork);
+
+  tMqtt = new MqttTask(false, 500);
   Scheduler.start(tMqtt);
 
   tOt = new OpenThermTask(false, 1000);
@@ -103,21 +152,17 @@ void setup() {
   tRegulator = new RegulatorTask(true, 10000);
   Scheduler.start(tRegulator);
 
+  tPortal = new PortalTask(true, 0);
+  Scheduler.start(tPortal);
+
   tMain = new MainTask(true, 100);
   Scheduler.start(tMain);
 
-  tWm
-    ->addTaskForDisable(tMain)
-    ->addTaskForDisable(tMqtt)
-    ->addTaskForDisable(tOt)
-    ->addTaskForDisable(tSensors)
-    ->addTaskForDisable(tRegulator);
-    
   Scheduler.begin();
 }
 
 void loop() {
-  #if defined(ARDUINO_ARCH_ESP32)
-    vTaskDelete(NULL);
-  #endif
+#if defined(ARDUINO_ARCH_ESP32)
+  vTaskDelete(NULL);
+#endif
 }

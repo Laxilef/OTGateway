@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include <PubSubClient.h>
+#include <MqttClient.h>
 #ifdef ARDUINO_ARCH_ESP32
 #include <mutex>
 #endif
@@ -8,7 +8,7 @@
 
 class MqttWriter {
 public:
-  MqttWriter(PubSubClient* client, size_t bufferSize = 64) {
+  MqttWriter(MqttClient* client, size_t bufferSize = 64) {
     this->client = client;
     this->bufferSize = bufferSize;
     this->buffer = (uint8_t*) malloc(bufferSize * sizeof(*this->buffer));
@@ -94,9 +94,10 @@ public:
     this->bufferPos = 0;
     size_t docSize = measureJson(doc);
     size_t written = 0;
-    if (this->client->beginPublish(topic, docSize, retained)) {
+    if (this->client->beginMessage(topic, docSize, retained)) {
       serializeJson(doc, *this);
       this->flush();
+      this->client->endMessage();
       
       written = this->writeAfterLock;
     }
@@ -110,7 +111,7 @@ public:
   }
 
   bool publish(const char* topic, const char* buffer, bool retained = false) {
-    return this->publish(topic, (uint8_t*) buffer, strlen(buffer), retained);
+    return this->publish(topic, (const uint8_t*) buffer, strlen(buffer), retained);
   }
 
   bool publish(const char* topic, const uint8_t* buffer, size_t length, bool retained = false) {
@@ -128,12 +129,13 @@ public:
     this->bufferPos = 0;
     size_t written = 0;
     bool result = false;
-    if (length == 0) {
-      result = this->client->publish(topic, nullptr, 0, retained);
+    if (!length || buffer == nullptr) {
+      result = this->client->beginMessage(topic, 0, retained) && this->client->endMessage();
 
-    } else if (this->client->beginPublish(topic, length, retained)) {
+    } else if (this->client->beginMessage(topic, length, retained)) {
       this->write(buffer, length);
       this->flush();
+      this->client->endMessage();
       
       written = this->writeAfterLock;
       result = written == length;
@@ -204,7 +206,7 @@ public:
   }
 
 protected:
-  PubSubClient* client;
+  MqttClient* client;
   uint8_t* buffer;
   size_t bufferSize = 64;
   size_t bufferPos = 0;

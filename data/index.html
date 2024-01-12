@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenTherm Gateway</title>
+    <link rel="stylesheet" href="/static/pico.min.css">
+    <link rel="stylesheet" href="/static/app.css"/>
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a href="/"><kbd>OpenTherm Gateway</kbd></a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <div>
+          <hgroup>
+            <h2>Network</h2>
+            <p></p>
+          </hgroup>
+
+          <div class="main-busy" aria-busy="true"></div>
+          <table class="main-table hidden">
+            <tbody>
+              <tr>
+                <th scope="row">Hostname:</th>
+                <td><b class="network-hostname"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">MAC:</th>
+                <td><b class="network-mac"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Connected:</th>
+                <td><input type="radio" class="network-connected" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">SSID:</th>
+                <td><b class="network-ssid"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Signal:</th>
+                <td><b class="network-signal"></b> %</td>
+              </tr>
+              <tr>
+                <th scope="row">IP:</th>
+                <td><b class="network-ip"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Subnet:</th>
+                <td><b class="network-subnet"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Gateway:</th>
+                <td><b class="network-gateway"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">DNS:</th>
+                <td><b class="network-dns"></b></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="grid">
+            <a href="/network.html" role="button">Network settings</a>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div>
+          <hgroup>
+            <h2>System</h2>
+            <p></p>
+          </hgroup>
+
+          <div class="system-busy" aria-busy="true"></div>
+          <table class="system-table hidden">
+            <tbody>
+              <tr>
+                <th scope="row">Version:</th>
+                <td><b class="version"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Build date:</th>
+                <td><b class="build-date"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Uptime:</th>
+                <td><b class="uptime"></b> sec.</td>
+              </tr>
+              <tr>
+                <th scope="row">Free memory:</th>
+                <td><b class="free-heap"></b> of <b class="total-heap"></b> bytes, max block: <b class="max-free-block-heap"></b> bytes</td>
+              </tr>
+              <tr>
+                <th scope="row">Last reset reason:</th>
+                <td><b class="reset-reason"></b></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="grid">
+            <a href="/settings.html" role="button">Settings</a>
+            <a href="/upgrade.html" role="button">Upgrade</a>
+            <a href="/restart.html" role="button" class="secondary restart">Restart</a>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div>
+          <hgroup>
+            <h2>States and sensors</h2>
+            <p>More information and settings can be found in your home assistant after setting up network and MQTT</p>
+          </hgroup>
+
+          <div class="ot-busy" aria-busy="true"></div>
+          <table class="ot-table hidden">
+            <tbody>
+              <tr>
+                <th scope="row">OpenTherm connected:</th>
+                <td><input type="radio" class="ot-connected" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">MQTT connected:</th>
+                <td><input type="radio" class="mqtt-connected" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">Emergency:</th>
+                <td><input type="radio" class="ot-emergency" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">Heating:</th>
+                <td><input type="radio" class="ot-heating" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">DHW:</th>
+                <td><input type="radio" class="ot-dhw" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">Flame:</th>
+                <td><input type="radio" class="ot-flame" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">Fault:</th>
+                <td><input type="radio" class="ot-fault" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">Diagnostic:</th>
+                <td><input type="radio" class="ot-diagnostic" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">External pump:</th>
+                <td><input type="radio" class="ot-external-pump" aria-invalid="false" checked disabled /></td>
+              </tr>
+              <tr>
+                <th scope="row">Modulation:</th>
+                <td><b class="ot-modulation"></b> %</td>
+              </tr>
+              <tr>
+                <th scope="row">Pressure:</th>
+                <td><b class="ot-pressure"></b> bar</td>
+              </tr>
+              <tr>
+                <th scope="row">DHW flow rate:</th>
+                <td><b class="ot-dhw-flow-rate"></b> l/min</td>
+              </tr>
+              <tr>
+                <th scope="row">Fault code:</th>
+                <td><b class="ot-fault-code"></b></td>
+              </tr>
+              <tr>
+                <th scope="row">Indoor temp:</th>
+                <td><b class="indoor-temp"></b> C</td>
+              </tr>
+              <tr>
+                <th scope="row">Outdoor temp:</th>
+                <td><b class="outdoor-temp"></b> C</td>
+              </tr>
+              <tr>
+                <th scope="row">Heating temp:</th>
+                <td><b class="heating-temp"></b> C</td>
+              </tr>
+              <tr>
+                <th scope="row">Heating setpoint temp:</th>
+                <td><b class="heating-setpoint-temp"></b> C</td>
+              </tr>
+              <tr>
+                <th scope="row">DHW temp:</th>
+                <td><b class="dhw-temp"></b> C</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary">License</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary">Source code</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary">Help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issue" target="_blank" class="secondary">Issue & questions</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary">Releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script>
+      window.onload = async function () {
+        setTimeout(async function onLoadPage() {
+          await loadNetworkStatus();
+          await loadVars();
+
+          setTimeout(onLoadPage, 10000);
+        }, 1000);
+      };
+    </script>
+  </body>
+</html>

@@ -1,13 +1,7 @@
-#include <new>
 #include <CustomOpenTherm.h>
 
 CustomOpenTherm* ot;
-extern EEManager eeSettings;
-
-const char S_OT[]         PROGMEM = "OT";
-const char S_OT_DHW[]     PROGMEM = "OT.DHW";
-const char S_OT_HEATING[] PROGMEM = "OT.HEATING";
-
+extern FileData fsSettings;
 
 class OpenThermTask : public Task {
 public:
@@ -46,7 +40,7 @@ protected:
   }
 
   void setup() {
-    Log.sinfoln(FPSTR(S_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
+    Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
 
     ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
     ot->setYieldCallback([](void* self) {
@@ -66,32 +60,32 @@ protected:
 
     // Not all boilers support these, only try once when the boiler becomes connected
     if (updateSlaveVersion()) {
-      Log.straceln(FPSTR(S_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
+      Log.straceln(FPSTR(L_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
 
     } else {
-      Log.swarningln(FPSTR(S_OT), F("Get slave version failed"));
+      Log.swarningln(FPSTR(L_OT), F("Get slave version failed"));
     }
 
     // 0x013F
     if (setMasterVersion(0x3F, 0x01)) {
-      Log.straceln(FPSTR(S_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
+      Log.straceln(FPSTR(L_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
       
     } else {
-      Log.swarningln(FPSTR(S_OT), F("Set master version failed"));
+      Log.swarningln(FPSTR(L_OT), F("Set master version failed"));
     }
 
     if (updateSlaveConfig()) {
-      Log.straceln(FPSTR(S_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
+      Log.straceln(FPSTR(L_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
 
     } else {
-      Log.swarningln(FPSTR(S_OT), F("Get slave config failed"));
+      Log.swarningln(FPSTR(L_OT), F("Get slave config failed"));
     }
 
     if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
-      Log.straceln(FPSTR(S_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
+      Log.straceln(FPSTR(L_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
       
     } else {
-      Log.swarningln(FPSTR(S_OT), F("Set master config failed"));
+      Log.swarningln(FPSTR(L_OT), F("Set master config failed"));
     }
   }
 
@@ -119,18 +113,18 @@ protected:
     );
 
     if (!ot->isValidResponse(localResponse)) {
-      Log.swarningln(FPSTR(S_OT), F("Invalid response after setBoilerStatus: %s"), ot->statusToString(ot->getLastResponseStatus()));
+      Log.swarningln(FPSTR(L_OT), F("Invalid response after setBoilerStatus: %s"), ot->statusToString(ot->getLastResponseStatus()));
     }
 
     if (vars.states.otStatus && !this->prevOtStatus) {
       this->prevOtStatus = vars.states.otStatus;
       
-      Log.sinfoln(FPSTR(S_OT), F("Connected. Initializing"));
+      Log.sinfoln(FPSTR(L_OT), F("Connected. Initializing"));
       this->initBoiler();
       
     } else if (!vars.states.otStatus && this->prevOtStatus) {
       this->prevOtStatus = vars.states.otStatus;
-      Log.swarningln(FPSTR(S_OT), F("Disconnected"));
+      Log.swarningln(FPSTR(L_OT), F("Disconnected"));
     }
 
     if (!vars.states.otStatus) {
@@ -141,7 +135,7 @@ protected:
     if (vars.parameters.heatingEnabled != heatingEnabled) {
       this->prevUpdateNonEssentialVars = 0;
       vars.parameters.heatingEnabled = heatingEnabled;
-      Log.sinfoln(FPSTR(S_OT_HEATING), "%s", heatingEnabled ? F("Enabled") : F("Disabled"));
+      Log.sinfoln(FPSTR(L_OT_HEATING), "%s", heatingEnabled ? F("Enabled") : F("Disabled"));
     }
 
     vars.states.heating = ot->isCentralHeatingActive(localResponse);
@@ -154,18 +148,18 @@ protected:
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
       if (!heatingEnabled && settings.opentherm.modulationSyncWithHeating) {
         if (setMaxModulationLevel(0)) {
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation 0% (off)"));
+          Log.snoticeln(FPSTR(L_OT_HEATING), F("Set max modulation 0% (off)"));
 
         } else {
-          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation 0% (off)"));
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max modulation 0% (off)"));
         }
 
       } else {
         if (setMaxModulationLevel(settings.heating.maxModulation)) {
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Set max modulation %hhu%%"), settings.heating.maxModulation);
+          Log.snoticeln(FPSTR(L_OT_HEATING), F("Set max modulation %hhu%%"), settings.heating.maxModulation);
 
         } else {
-          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set max modulation %hhu%%"), settings.heating.maxModulation);
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max modulation %hhu%%"), settings.heating.maxModulation);
         }
       }
 
@@ -174,24 +168,24 @@ protected:
         if (updateMinMaxDhwTemp()) {
           if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
-            eeSettings.update();
-            Log.snoticeln(FPSTR(S_OT_DHW), F("Updated min temp: %hhu"), settings.dhw.minTemp);
+            fsSettings.update();
+            Log.snoticeln(FPSTR(L_OT_DHW), F("Updated min temp: %hhu"), settings.dhw.minTemp);
           }
 
           if (settings.dhw.maxTemp > vars.parameters.dhwMaxTemp) {
             settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
-            eeSettings.update();
-            Log.snoticeln(FPSTR(S_OT_DHW), F("Updated max temp: %hhu"), settings.dhw.maxTemp);
+            fsSettings.update();
+            Log.snoticeln(FPSTR(L_OT_DHW), F("Updated max temp: %hhu"), settings.dhw.maxTemp);
           }
 
         } else {
-          Log.swarningln(FPSTR(S_OT_DHW), F("Failed get min/max temp"));
+          Log.swarningln(FPSTR(L_OT_DHW), F("Failed get min/max temp"));
         }
 
         if (settings.dhw.minTemp >= settings.dhw.maxTemp) {
           settings.dhw.minTemp = 30;
           settings.dhw.maxTemp = 60;
-          eeSettings.update();
+          fsSettings.update();
         }
       }
 
@@ -200,24 +194,24 @@ protected:
       if (updateMinMaxHeatingTemp()) {
         if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
           settings.heating.minTemp = vars.parameters.heatingMinTemp;
-          eeSettings.update();
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Updated min temp: %hhu"), settings.heating.minTemp);
+          fsSettings.update();
+          Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated min temp: %hhu"), settings.heating.minTemp);
         }
 
         if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
           settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
-          eeSettings.update();
-          Log.snoticeln(FPSTR(S_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
+          fsSettings.update();
+          Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
         }
 
       } else {
-        Log.swarningln(FPSTR(S_OT_HEATING), F("Failed get min/max temp"));
+        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
       }
 
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
         settings.heating.minTemp = 20;
         settings.heating.maxTemp = 90;
-        eeSettings.update();
+        fsSettings.update();
       }
 
       // force set max CH temp
@@ -258,10 +252,10 @@ protected:
     if (vars.actions.resetFault) {
       if (vars.states.fault) {
         if (ot->sendBoilerReset()) {
-          Log.sinfoln(FPSTR(S_OT), F("Boiler fault reset successfully"));
+          Log.sinfoln(FPSTR(L_OT), F("Boiler fault reset successfully"));
 
         } else {
-          Log.serrorln(FPSTR(S_OT), F("Boiler fault reset failed"));
+          Log.serrorln(FPSTR(L_OT), F("Boiler fault reset failed"));
         }
       }
 
@@ -272,10 +266,10 @@ protected:
     if (vars.actions.resetDiagnostic) {
       if (vars.states.diagnostic) {
         if (ot->sendServiceReset()) {
-          Log.sinfoln(FPSTR(S_OT), F("Boiler diagnostic reset successfully"));
+          Log.sinfoln(FPSTR(L_OT), F("Boiler diagnostic reset successfully"));
           
         } else {
-          Log.serrorln(FPSTR(S_OT), F("Boiler diagnostic reset failed"));
+          Log.serrorln(FPSTR(L_OT), F("Boiler diagnostic reset failed"));
         }
       }
 
@@ -290,7 +284,7 @@ protected:
         newDhwTemp = constrain(newDhwTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
       }
 
-      Log.sinfoln(FPSTR(S_OT_DHW), F("Set temp = %u"), newDhwTemp);
+      Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp = %u"), newDhwTemp);
 
       // Записываем заданную температуру ГВС
       if (ot->setDhwTemp(newDhwTemp)) {
@@ -298,12 +292,12 @@ protected:
         this->dhwSetTempTime = millis();
 
       } else {
-        Log.swarningln(FPSTR(S_OT_DHW), F("Failed set temp"));
+        Log.swarningln(FPSTR(L_OT_DHW), F("Failed set temp"));
       }
 
       if (settings.opentherm.dhwToCh2) {
         if (!ot->setHeatingCh2Temp(newDhwTemp)) {
-          Log.swarningln(FPSTR(S_OT_DHW), F("Failed set ch2 temp"));
+          Log.swarningln(FPSTR(L_OT_DHW), F("Failed set ch2 temp"));
         }
       }
     }
@@ -311,7 +305,7 @@ protected:
     //
     // Температура отопления
     if (heatingEnabled && (needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
-      Log.sinfoln(FPSTR(S_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
+      Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
 
       // Записываем заданную температуру
       if (ot->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
@@ -319,12 +313,12 @@ protected:
         this->heatingSetTempTime = millis();
 
       } else {
-        Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set temp"));
+        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set temp"));
       }
 
       if (settings.opentherm.heatingCh1ToCh2) {
         if (!ot->setHeatingCh2Temp(vars.parameters.heatingSetpoint)) {
-          Log.swarningln(FPSTR(S_OT_HEATING), F("Failed set ch2 temp"));
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set ch2 temp"));
         }
       }
     }
@@ -394,7 +388,7 @@ protected:
   }
 
   static void printRequestDetail(OpenThermMessageID id, OpenThermResponseStatus status, unsigned long request, unsigned long response, byte attempt) {
-    Log.straceln(FPSTR(S_OT), F("OT REQUEST ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"), id, request, response, attempt, ot->statusToString(status));
+    Log.straceln(FPSTR(L_OT), F("OT REQUEST ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"), id, request, response, attempt, ot->statusToString(status));
   }
 
   bool updateSlaveConfig() {

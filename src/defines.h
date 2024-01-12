@@ -1,8 +1,6 @@
 #define PROJECT_NAME                "OpenTherm Gateway"
-#define PROJECT_VERSION             "1.4.0-rc.5"
+#define PROJECT_VERSION             "1.4.0-rc.9"
 #define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
-#define AP_SSID                     "OpenTherm Gateway"
-#define AP_PASSWORD                 "otgateway123456"
 
 #define EMERGENCY_TIME_TRESHOLD     120000
 #define MQTT_RECONNECT_INTERVAL     15000
@@ -38,8 +36,56 @@
   #define USE_BLE false
 #endif
 
+#ifndef HOSTNAME_DEFAULT
+  #define HOSTNAME_DEFAULT "opentherm"
+#endif
+
+#ifndef AP_SSID_DEFAULT
+  #define AP_SSID_DEFAULT "OpenTherm Gateway"
+#endif
+
+#ifndef AP_PASSWORD_DEFAULT
+  #define AP_PASSWORD_DEFAULT "otgateway123456"
+#endif
+
+#ifndef STA_SSID_DEFAULT
+  #define STA_SSID_DEFAULT ""
+#endif
+
+#ifndef STA_PASSWORD_DEFAULT
+  #define STA_PASSWORD_DEFAULT ""
+#endif
+
 #ifndef DEBUG_BY_DEFAULT
   #define DEBUG_BY_DEFAULT false
+#endif
+
+#ifndef PORTAL_LOGIN_DEFAULT
+  #define PORTAL_LOGIN_DEFAULT ""
+#endif
+
+#ifndef PORTAL_PASSWORD_DEFAULT
+  #define PORTAL_PASSWORD_DEFAULT ""
+#endif
+
+#ifndef MQTT_SERVER_DEFAULT
+  #define MQTT_SERVER_DEFAULT ""
+#endif
+
+#ifndef MQTT_PORT_DEFAULT
+  #define MQTT_PORT_DEFAULT 1883
+#endif
+
+#ifndef MQTT_USER_DEFAULT
+  #define MQTT_USER_DEFAULT ""
+#endif
+
+#ifndef MQTT_PASSWORD_DEFAULT
+  #define MQTT_PASSWORD_DEFAULT ""
+#endif
+
+#ifndef MQTT_PREFIX_DEFAULT
+  #define MQTT_PREFIX_DEFAULT "opentherm"
 #endif
 
 #ifndef OT_IN_PIN_DEFAULT
