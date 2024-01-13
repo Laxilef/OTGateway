@@ -17,9 +17,11 @@ public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
     this->oneWireOutdoorSensor = new OneWire();
     this->outdoorSensor = new DallasTemperature(this->oneWireOutdoorSensor);
+    this->outdoorSensor->setWaitForConversion(false);
 
     this->oneWireIndoorSensor = new OneWire();
     this->indoorSensor = new DallasTemperature(this->oneWireIndoorSensor);
+    this->indoorSensor->setWaitForConversion(false);
   }
 
   ~SensorsTask() {
@@ -144,14 +146,29 @@ protected:
 
   void outdoorTemperatureSensor() {
     if (!this->initOutdoorSensor) {
+      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on gpio %hhu..."), settings.sensors.outdoor.pin);
+
       this->oneWireOutdoorSensor->begin(settings.sensors.outdoor.pin);
       this->outdoorSensor->begin();
-      this->outdoorSensor->setResolution(12);
-      this->outdoorSensor->setWaitForConversion(false);
-      this->outdoorSensor->requestTemperatures();
-      this->startOutdoorConversionTime = millis();
 
-      this->initOutdoorSensor = true;
+      Log.straceln(
+        FPSTR(L_SENSORS_OUTDOOR),
+        F("Devices on bus: %hhu, DS18* devices: %hhu"),
+        this->outdoorSensor->getDeviceCount(),
+        this->outdoorSensor->getDS18Count()
+      );
+
+      if (this->outdoorSensor->getDeviceCount() > 0) {
+        this->initOutdoorSensor = true;
+        this->outdoorSensor->setResolution(12);
+        this->outdoorSensor->requestTemperatures();
+        this->startOutdoorConversionTime = millis();
+
+        Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Started"));
+
+      } else {
+        return;
+      }
     }
 
     unsigned long estimateConversionTime = millis() - this->startOutdoorConversionTime;
@@ -161,9 +178,7 @@ protected:
 
     bool completed = this->outdoorSensor->isConversionComplete();
     if (!completed && estimateConversionTime >= 1000) {
-      // fail, retry
-      this->outdoorSensor->requestTemperatures();
-      this->startOutdoorConversionTime = millis();
+      this->initOutdoorSensor = false;
 
       Log.serrorln(FPSTR(L_SENSORS_OUTDOOR), F("Could not read temperature data (no response)"));
     }
@@ -174,6 +189,8 @@ protected:
 
     float rawTemp = this->outdoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
+      this->initOutdoorSensor = false;
+
       Log.serrorln(FPSTR(L_SENSORS_OUTDOOR), F("Could not read temperature data (not connected)"));
 
     } else {
@@ -193,22 +210,37 @@ protected:
         vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
         Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), this->filteredOutdoorTemp);
       }
-    }
 
-    this->outdoorSensor->requestTemperatures();
-    this->startOutdoorConversionTime = millis();
+      this->outdoorSensor->requestTemperatures();
+      this->startOutdoorConversionTime = millis();
+    }
   }
 
   void indoorTemperatureSensor() {
     if (!this->initIndoorSensor) {
+      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on gpio %hhu..."), settings.sensors.indoor.pin);
+
       this->oneWireIndoorSensor->begin(settings.sensors.indoor.pin);
       this->indoorSensor->begin();
-      this->indoorSensor->setResolution(12);
-      this->indoorSensor->setWaitForConversion(false);
-      this->indoorSensor->requestTemperatures();
-      this->startIndoorConversionTime = millis();
 
-      this->initIndoorSensor = true;
+      Log.straceln(
+        FPSTR(L_SENSORS_INDOOR),
+        F("Devices on bus: %hhu, DS18* devices: %hhu"),
+        this->indoorSensor->getDeviceCount(),
+        this->indoorSensor->getDS18Count()
+      );
+
+      if (this->indoorSensor->getDeviceCount() > 0) {
+        this->initIndoorSensor = true;
+        this->indoorSensor->setResolution(12);
+        this->indoorSensor->requestTemperatures();
+        this->startIndoorConversionTime = millis();
+
+        Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Started"));
+
+      } else {
+        return;
+      }
     }
 
     unsigned long estimateConversionTime = millis() - this->startIndoorConversionTime;
@@ -218,10 +250,8 @@ protected:
 
     bool completed = this->indoorSensor->isConversionComplete();
     if (!completed && estimateConversionTime >= 1000) {
-      // fail, retry
-      this->indoorSensor->requestTemperatures();
-      this->startIndoorConversionTime = millis();
-      
+      this->initIndoorSensor = false;
+
       Log.serrorln(FPSTR(L_SENSORS_INDOOR), F("Could not read temperature data (no response)"));
     }
 
@@ -231,6 +261,8 @@ protected:
 
     float rawTemp = this->indoorSensor->getTempCByIndex(0);
     if (rawTemp == DEVICE_DISCONNECTED_C) {
+      this->initIndoorSensor = false;
+
       Log.serrorln(FPSTR(L_SENSORS_INDOOR), F("Could not read temperature data (not connected)"));
 
     } else {
@@ -250,9 +282,9 @@ protected:
         vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
         Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), this->filteredIndoorTemp);
       }
-    }
 
-    this->indoorSensor->requestTemperatures();
-    this->startIndoorConversionTime = millis();
+      this->indoorSensor->requestTemperatures();
+      this->startIndoorConversionTime = millis();
+    }
   }
 };
