@@ -10,17 +10,9 @@ function setupForm(formSelector) {
 
   if (button) {
     defaultText = button.textContent;
-    button.onmouseout = function (event) {
-      if (button.hasAttribute('aria-busy')) {
-        return;
-      }
-
-      button.classList.remove('success', 'failed');
-      button.textContent = defaultText;
-    };
   }
 
-  form.addEventListener('submit', async function (event) {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (button) {
@@ -29,24 +21,33 @@ function setupForm(formSelector) {
       button.setAttribute('aria-busy', true);
     }
 
-    const onSuccess = function (response) {
+    const onSuccess = (response) => {
       if (button) {
         button.textContent = 'Saved';
-        button.removeAttribute('disabled');
         button.classList.add('success');
         button.removeAttribute('aria-busy');
 
+        setTimeout(() => {
+          button.removeAttribute('disabled');
+          button.classList.remove('success', 'failed');
+          button.textContent = defaultText;
+        }, 5000);
       }
-    }
+    };
 
-    const onFailed = function (response) {
+    const onFailed = (response) => {
       if (button) {
         button.textContent = 'Error';
-        button.removeAttribute('disabled');
         button.classList.add('failed');
         button.removeAttribute('aria-busy');
+
+        setTimeout(() => {
+          button.removeAttribute('disabled');
+          button.classList.remove('success', 'failed');
+          button.textContent = defaultText;
+        }, 5000);
       }
-    }
+    };
 
     try {
       let fd = new FormData(form);
@@ -92,7 +93,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
     defaultText = button.innerHTML;
   }
 
-  const onSubmitFn = async function (event) {
+  const onSubmitFn = async (event) => {
     if (event) {
       event.preventDefault();
     }
@@ -109,7 +110,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
       return;
     }
 
-    const onSuccess = async function (response) {
+    const onSuccess = async (response) => {
       let result = await response.json();
       console.log('networks: ', result);
 
@@ -158,9 +159,9 @@ function setupNetworkScanForm(formSelector, tableSelector) {
         button.removeAttribute('disabled');
         button.removeAttribute('aria-busy');
       }
-    }
+    };
 
-    const onFailed = async function (response) {
+    const onFailed = async (response) => {
       table.classList.remove('hidden');
 
       if (button) {
@@ -168,10 +169,10 @@ function setupNetworkScanForm(formSelector, tableSelector) {
         button.removeAttribute('disabled');
         button.removeAttribute('aria-busy');
       }
-    }
+    };
 
     let attempts = 5;
-    let timer = setInterval(async function () {
+    let timer = setInterval(async () => {
       attempts--;
 
       try {
@@ -208,17 +209,9 @@ function setupRestoreBackupForm(formSelector) {
 
   if (button) {
     defaultText = button.textContent;
-    button.onmouseout = function (event) {
-      if (button.hasAttribute('aria-busy')) {
-        return;
-      }
-
-      button.classList.remove('success', 'failed');
-      button.textContent = defaultText;
-    };
   }
 
-  form.addEventListener('submit', async function (event) {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (button) {
@@ -227,23 +220,33 @@ function setupRestoreBackupForm(formSelector) {
       button.setAttribute('aria-busy', true);
     }
 
-    const onSuccess = function (response) {
+    const onSuccess = (response) => {
       if (button) {
         button.textContent = 'Restored';
-        button.removeAttribute('disabled');
         button.classList.add('success');
         button.removeAttribute('aria-busy');
-      }
-    }
 
-    const onFailed = function (response) {
+        setTimeout(() => {
+          button.removeAttribute('disabled');
+          button.classList.remove('success', 'failed');
+          button.textContent = defaultText;
+        }, 5000);
+      }
+    };
+
+    const onFailed = (response) => {
       if (button) {
         button.textContent = 'Error';
-        button.removeAttribute('disabled');
         button.classList.add('failed');
         button.removeAttribute('aria-busy');
+
+        setTimeout(() => {
+          button.removeAttribute('disabled');
+          button.classList.remove('success', 'failed');
+          button.textContent = defaultText;
+        }, 5000);
       }
-    }
+    };
 
     const files = form.querySelector('#restore-file').files;
     if (files.length <= 0) {
@@ -253,7 +256,7 @@ function setupRestoreBackupForm(formSelector) {
 
     let reader = new FileReader();
     reader.readAsText(files[0]);
-    reader.onload = async function() {
+    reader.onload = async function () {
       try {
         let response = await fetch(url, {
           method: 'POST',
@@ -263,19 +266,19 @@ function setupRestoreBackupForm(formSelector) {
           },
           body: reader.result
         });
-  
+
         if (response.ok) {
           onSuccess(response);
-  
+
         } else {
           onFailed(response);
         }
-  
+
       } catch (err) {
         onFailed(false);
       }
     };
-    reader.onerror = function() {
+    reader.onerror = function () {
       console.log(reader.error);
     };
   });
@@ -293,17 +296,9 @@ function setupUpgradeForm(formSelector) {
 
   if (button) {
     defaultText = button.textContent;
-    button.onmouseout = function (event) {
-      if (button.hasAttribute('aria-busy')) {
-        return;
-      }
-
-      button.classList.remove('success', 'failed');
-      button.textContent = defaultText;
-    };
   }
 
-  const statusToText = function (status) {
+  const statusToText = (status) => {
     switch (status) {
       case 0:
         return "None";
@@ -324,9 +319,9 @@ function setupUpgradeForm(formSelector) {
       default:
         return "Unknown";
     }
-  }
+  };
 
-  const onResult = async function (response) {
+  const onResult = async (response) => {
     if (!response) {
       return;
     }
@@ -368,28 +363,38 @@ function setupUpgradeForm(formSelector) {
         }
       }
     }
-  }
+  };
 
-  const onSuccess = function (response) {
+  const onSuccess = (response) => {
     onResult(response);
 
     if (button) {
       button.textContent = defaultText;
-      button.removeAttribute('disabled');
       button.removeAttribute('aria-busy');
-    }
-  }
 
-  const onFailed = function (response) {
+      setTimeout(() => {
+        button.removeAttribute('disabled');
+        button.classList.remove('success', 'failed');
+        button.textContent = defaultText;
+      }, 5000);
+    }
+  };
+
+  const onFailed = (response) => {
     if (button) {
       button.textContent = 'Error';
-      button.removeAttribute('disabled');
       button.classList.add('failed');
       button.removeAttribute('aria-busy');
-    }
-  }
 
-  form.addEventListener('submit', async function (event) {
+      setTimeout(() => {
+        button.removeAttribute('disabled');
+        button.classList.remove('success', 'failed');
+        button.textContent = defaultText;
+      }, 5000);
+    }
+  };
+
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (button) {
@@ -532,6 +537,10 @@ async function loadVars() {
   setValue('.version', result.system.version);
   setValue('.build-date', result.system.buildDate);
   setValue('.uptime', result.system.uptime);
+  setValue('.uptime-days', Math.floor(result.system.uptime / 86400));
+  setValue('.uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
+  setValue('.uptime-min', Math.floor(result.system.uptime % 3600 / 60));
+  setValue('.uptime-sec', Math.floor(result.system.uptime % 60));
   setValue('.free-heap', result.system.freeHeap);
   setValue('.total-heap', result.system.totalHeap);
   setValue('.max-free-block-heap', result.system.maxFreeBlockHeap);
@@ -602,7 +611,7 @@ function form2json(data) {
     let value = pair[1];
     if (value === 'true' || value === 'false') {
       value = value === 'true';
-    } else if (typeof(value) === 'string' && value.trim() !== '' && !isNaN(value)) {
+    } else if (typeof (value) === 'string' && value.trim() !== '' && !isNaN(value)) {
       value = parseFloat(value);
     }
 
