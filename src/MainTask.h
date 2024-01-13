@@ -173,7 +173,7 @@ protected:
       unsigned int maxFreeBlockSize = ESP.getMaxFreeBlockSize();
     #endif
 
-    if (freeHeapSize < 1024 || maxFreeBlockSize < 1024) {
+    if (!vars.actions.restart && (freeHeapSize < 2048 || maxFreeBlockSize < 2048)) {
       vars.actions.restart = true;
       return;
     }
