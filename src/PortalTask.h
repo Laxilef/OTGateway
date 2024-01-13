@@ -206,7 +206,7 @@ protected:
       String plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/backup/restore %d bytes: %s"), plain.length(), plain.c_str());
 
-      if (plain.length() < 2) {
+      if (plain.length() < 5) {
         this->webServer->send(406);
         return;
 
@@ -271,7 +271,7 @@ protected:
       String plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/network/settings %d bytes: %s"), plain.length(), plain.c_str());
 
-      if (plain.length() < 2) {
+      if (plain.length() < 5) {
         this->webServer->send(406);
         return;
 
@@ -393,7 +393,7 @@ protected:
       String plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/settings %d bytes: %s"), plain.length(), plain.c_str());
 
-      if (plain.length() < 2) {
+      if (plain.length() < 5) {
         this->webServer->send(406);
         return;
 
@@ -449,7 +449,7 @@ protected:
       String plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/vars %d bytes: %s"), plain.length(), plain.c_str());
 
-      if (plain.length() < 2) {
+      if (plain.length() < 5) {
         this->webServer->send(406);
         return;
 
@@ -480,7 +480,11 @@ protected:
     this->webServer->onNotFound([this]() {
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Page not found, uri: %s"), this->webServer->uri().c_str());
 
-      if (tNetwork->isApEnabled()) {
+      const String uri = this->webServer->uri();
+      if (uri.equals("/")) {
+        this->webServer->send(200, "text/plain", F("The file system is not flashed!"));
+
+      } else if (tNetwork->isApEnabled()) {
         this->onCaptivePortal();
 
       } else {
