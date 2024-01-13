@@ -78,6 +78,10 @@
           </div>
 
           <fieldset>
+            <mark>After changing GPIO, the ESP must be restarted for the changes to take effect.</mark>
+          </div>
+
+          <fieldset>
             <legend>Options</legend>
             <label for="opentherm-dhw-present">
               <input type="checkbox" class="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
@@ -196,9 +200,9 @@
           <label for="sensors-indoor-ble-addresss">
             BLE addresss
             <input type="text" class="sensors-indoor-ble-addresss" name="sensors[indoor][bleAddresss]" maxlength="17">
-            <small>ONLY for ESP32</small>
+            <small>ONLY for some ESP32 which support BLE</small>
           </label>
-          
+
           <button type="submit">Save</button>
         </form>
       </div>
@@ -240,7 +244,7 @@
               <input type="number" class="extpump-as-time" name="externalPump[antiStuckTime]" maxlength="2" required>
             </label>
           </div>
-          
+
           <button type="submit">Save</button>
         </form>
       </div>
