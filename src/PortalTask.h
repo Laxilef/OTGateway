@@ -226,6 +226,7 @@ protected:
 
       bool changed = false;
       if (doc["settings"] && jsonToSettings(doc["settings"], settings)) {
+        vars.actions.restart = true;
         fsSettings.update();
         changed = true;
       }
