@@ -234,9 +234,11 @@ bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
 }
 
 void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
-  dst["debug"] = src.debug;
-
   if (!safe) {
+    dst["system"]["debug"] = src.system.debug;
+    dst["system"]["useSerial"] = src.system.useSerial;
+    dst["system"]["useTelnet"] = src.system.useTelnet;
+
     dst["portal"]["useAuth"] = src.portal.useAuth;
     dst["portal"]["login"] = src.portal.login;
     dst["portal"]["password"] = src.portal.password;
@@ -318,13 +320,24 @@ void safeSettingsToJson(const Settings& src, JsonVariant dst) {
 bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false) {
   bool changed = false;
 
-  if (src["debug"].is<bool>()) {
-    dst.debug = src["debug"].as<bool>();
-    changed = true;
-  }
-
-
   if (!safe) {
+    // system
+    if (src["system"]["debug"].is<bool>()) {
+      dst.system.debug = src["system"]["debug"].as<bool>();
+      changed = true;
+    }
+
+    if (src["system"]["useSerial"].is<bool>()) {
+      dst.system.useSerial = src["system"]["useSerial"].as<bool>();
+      changed = true;
+    }
+
+    if (src["system"]["useTelnet"].is<bool>()) {
+      dst.system.useTelnet = src["system"]["useTelnet"].as<bool>();
+      changed = true;
+    }
+
+
     // portal
     if (src["portal"]["useAuth"].is<bool>()) {
       dst.portal.useAuth = src["portal"]["useAuth"].as<bool>();

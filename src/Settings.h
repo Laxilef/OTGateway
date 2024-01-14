@@ -23,7 +23,11 @@ struct NetworkSettings {
 } networkSettings;
 
 struct Settings {
-  bool debug = DEBUG_BY_DEFAULT;
+  struct {
+    bool debug = DEBUG_BY_DEFAULT;
+    bool useSerial = USE_SERIAL;
+    bool useTelnet = USE_TELNET;
+  } system;
 
   struct {
     bool useAuth = false;

@@ -62,3 +62,16 @@ tr.network:hover {
 	padding: 1em;
 	margin-bottom: 1em;
 }
+
+.logo {
+	display: inline-block;
+	padding: .5rem;
+	vertical-align: baseline;
+	line-height: initial;
+	background-color: var(--pico-code-kbd-background-color);
+	border-radius: var(--pico-border-radius);
+  color: var(--pico-code-kbd-color);
+  font-weight: bolder;
+	font-size: 1.5em;
+  font-family: var(--pico-font-family-monospace);
+}

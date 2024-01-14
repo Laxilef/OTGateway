@@ -5,56 +5,6 @@ class HaHelper : public HomeAssistantHelper {
 public:
   static const byte TEMP_SOURCE_HEATING = 0;
   static const byte TEMP_SOURCE_INDOOR = 1;
-  
-  bool publishSelectOutdoorSensorType(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"outdoor\": {\"type\": {% if value == 'Boiler' %}0{% elif value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}}}");
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_sensor_type"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_sensor_type"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Outdoor temperature source");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{% if value_json.sensors.outdoor.type == 0 %}Boiler{% elif value_json.sensors.outdoor.type == 1 %}Manual{% elif value_json.sensors.outdoor.type == 2 %}External{% endif %}");
-    doc[FPSTR(HA_OPTIONS)][0] = F("Boiler");
-    doc[FPSTR(HA_OPTIONS)][1] = F("Manual");
-    doc[FPSTR(HA_OPTIONS)][2] = F("External");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SELECT), F("outdoor_sensor_type")).c_str(), doc);
-  }
-
-  bool publishSelectIndoorSensorType(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-#if USE_BLE
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"indoor\": {\"type\": {% if value == 'Manual' %}1{% elif value == 'External' %}2{% elif value == 'Bluetooth' %}3{% endif %}}}}");
-#else
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"indoor\": {\"type\": {% if value == 'Manual' %}1{% elif value == 'External' %}2{% endif %}}}}");
-#endif
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_sensor_type"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_sensor_type"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Indoor temperature source");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-#if USE_BLE
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{% if value_json.sensors.indoor.type == 1 %}Manual{% elif value_json.sensors.indoor.type == 2 %}External{% elif value_json.sensors.indoor.type == 3 %}Bluetooth{% endif %}");
-#else
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{% if value_json.sensors.indoor.type == 1 %}Manual{% elif value_json.sensors.indoor.type == 2 %}External{% endif %}");
-#endif
-    doc[FPSTR(HA_OPTIONS)][0] = F("Manual");
-    doc[FPSTR(HA_OPTIONS)][1] = F("External");
-#if USE_BLE
-    doc[FPSTR(HA_OPTIONS)][2] = F("Bluetooth");
-#endif
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SELECT), F("indoor_sensor_type")).c_str(), doc);
-  }
 
   bool publishNumberOutdoorSensorOffset(bool enabledByDefault = true) {
     JsonDocument doc;
@@ -106,28 +56,6 @@ public:
     doc.shrinkToFit();
 
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("indoor_sensor_offset")).c_str(), doc);
-  }
-
-
-  bool publishSwitchDebug(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("debug"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("debug"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Debug");
-    doc[FPSTR(HA_ICON)] = F("mdi:code-braces");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_STATE_ON)] = true;
-    doc[FPSTR(HA_STATE_OFF)] = false;
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.debug }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"debug\": true}");
-    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"debug\": false}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("debug")).c_str(), doc);
   }
 
 

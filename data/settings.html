@@ -13,7 +13,7 @@
   <header class="container">
     <nav>
       <ul>
-        <li><a href="/"><kbd>OpenTherm Gateway</kbd></a></li>
+        <li><a href="/"><div class="logo">OpenTherm Gateway</div></a></li>
       </ul>
       <ul>
         <li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>
@@ -64,11 +64,11 @@
         <form action="/api/settings" id="opentherm-settings" class="hidden">
           <div class="grid">
             <label for="opentherm-in-pin">
-              IN gpio
+              In GPIO
               <input type="number" class="opentherm-in-pin" name="opentherm[inPin]" maxlength="2" required>
             </label>
             <label for="opentherm-in-pin">
-              OUT gpio
+              Out GPIO
               <input type="number" class="opentherm-out-pin" name="opentherm[outPin]" maxlength="2" required>
             </label>
             <label for="opentherm-member-id-code">
@@ -168,40 +168,83 @@
     <article>
       <div>
         <hgroup>
-          <h2>Sensor settings</h2>
+          <h2>Outdoor sensor settings</h2>
           <p></p>
         </hgroup>
 
-        <div id="sensors-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="sensors-settings" class="hidden">
-          <div class="grid">
-            <label for="sensors-outdoor-pin">
-              Outdoor GPIO
-              <input type="number" class="sensors-outdoor-pin" name="sensors[outdoor][pin]" maxlength="2" required>
+        <div id="outdoor-sensor-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="outdoor-sensor-settings" class="hidden">
+          <fieldset>
+            <legend>Source type</legend>
+            <label>
+              <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
+              From boiler via OpenTherm
             </label>
-            <label for="sensors-outdoor-offset">
-              Outdoor offset
-              <input type="number" class="sensors-outdoor-offset" name="sensors[outdoor][offset]" maxlength="2" required>
+            <label>
+              <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
+              Manual via MQTT/API
             </label>
-          </div>
-          <hr><br>
+            <label>
+              <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
+              External (DS18B20)
+            </label>
+          </fieldset>
 
-          <div class="grid">
-            <label for="sensors-indoor-pin">
-              Indoor GPIO
-              <input type="number" class="sensors-indoor-pin" name="sensors[indoor][pin]" maxlength="2" required>
-            </label>
-            <label for="sensors-indoor-offset">
-              Indoor offset
-              <input type="number" class="sensors-indoor-offset" name="sensors[indoor][offset]" maxlength="2" required>
-            </label>
-          </div>
-
-          <label for="sensors-indoor-ble-addresss">
-            BLE addresss
-            <input type="text" class="sensors-indoor-ble-addresss" name="sensors[indoor][bleAddresss]" maxlength="17">
-            <small>ONLY for some ESP32 which support BLE</small>
+          <label for="outdoor-sensor-pin">
+            GPIO
+            <input type="number" class="outdoor-sensor-pin" name="sensors[outdoor][pin]" maxlength="2" required>
           </label>
+          <label for="outdoor-sensor-offset">
+            Temp offset (calibration)
+            <input type="number" class="outdoor-sensor-offset" name="sensors[outdoor][offset]" maxlength="2" required>
+          </label>
+
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
+
+    <article>
+      <div>
+        <hgroup>
+          <h2>Indoor sensor settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="indoor-sensor-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="indoor-sensor-settings" class="hidden">
+          <fieldset>
+            <legend>Source type</legend>
+            <label>
+              <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
+              Manual via MQTT/API
+            </label>
+            <label>
+              <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
+              External (DS18B20)
+            </label>
+            <label>
+              <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
+              BLE device <i>(ONLY for some ESP32 which support BLE)</i>
+            </label>
+          </fieldset>
+
+          <label for="indoor-sensor-pin">
+            GPIO
+            <input type="number" class="indoor-sensor-pin" name="sensors[indoor][pin]" maxlength="2" required>
+          </label>
+
+          <div class="grid">
+            <label for="indoor-sensor-offset">
+              Temp offset (calibration)
+              <input type="number" class="indoor-sensor-offset" name="sensors[indoor][offset]" maxlength="2" required>
+            </label>
+            <label for="indoor-sensor-ble-addresss">
+              BLE addresss
+              <input type="text" class="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" maxlength="17">
+              <small>ONLY for some ESP32 which support BLE</small>
+            </label>
+          </div>
 
           <button type="submit">Save</button>
         </form>
@@ -249,6 +292,39 @@
         </form>
       </div>
     </article>
+
+    <article>
+      <div>
+        <hgroup>
+          <h2>System settings</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="system-settings-busy" aria-busy="true"></div>
+        <form action="/api/settings" id="system-settings" class="hidden">
+          <fieldset>
+            <label for="system-debug">
+              <input type="checkbox" class="system-debug" name="system[debug]" value="true">
+              Debug mode
+            </label>
+            <label for="system-use-serial">
+              <input type="checkbox" class="system-use-serial" name="system[useSerial]" value="true">
+              Enable serial port
+            </label>
+            <label for="system-use-telnet">
+              <input type="checkbox" class="system-use-telnet" name="system[useTelnet]" value="true">
+              Enable telnet
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <mark>After changing this settings, the ESP must be restarted for the changes to take effect.</mark>
+          </fieldset>
+
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </article>
   </main>
 
   <footer class="container">
@@ -270,8 +346,10 @@
       setupForm('#portal-settings');
       setupForm('#opentherm-settings');
       setupForm('#mqtt-settings');
-      setupForm('#sensors-settings');
+      setupForm('#outdoor-sensor-settings');
+      setupForm('#indoor-sensor-settings');
       setupForm('#extpump-settings');
+      setupForm('#system-settings');
     };
   </script>
 </body>

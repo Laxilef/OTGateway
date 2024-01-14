@@ -4,13 +4,10 @@
 #include <ArduinoJson.h>
 #include <FileData.h>
 #include <LittleFS.h>
+#include "ESPTelnetStream.h"
 #include <TinyLogger.h>
 #include "Settings.h"
 #include <utils.h>
-
-#if USE_TELNET
-  #include "ESPTelnetStream.h"
-#endif
 
 #if defined(ARDUINO_ARCH_ESP32)
   #include <ESP32Scheduler.h>
@@ -33,9 +30,7 @@
 // Vars
 FileData fsNetworkSettings(&LittleFS, "/network.conf", 'n', &networkSettings, sizeof(networkSettings), 1000);
 FileData fsSettings(&LittleFS, "/settings.conf", 's', &settings, sizeof(settings), 60000);
-#if USE_TELNET
-ESPTelnetStream TelnetStream;
-#endif
+ESPTelnetStream* telnetStream = nullptr;
 
 // Tasks
 NetworkTask* tNetwork;
@@ -63,17 +58,9 @@ void setup() {
 
     return tm{sec, min, hour};
   });
-
-  #if USE_SERIAL
+  
   Serial.begin(115200);
   Log.addStream(&Serial);
-  #endif
-
-  #if USE_TELNET
-  TelnetStream.setKeepAliveInterval(500);
-  Log.addStream(&TelnetStream);
-  #endif
-
   Log.print("\n\n\r");
 
   // network settings
@@ -121,8 +108,21 @@ void setup() {
       break;
   }
 
-  Log.setLevel(settings.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
+  // logs
+  if (!settings.system.useSerial) {
+    Log.clearStreams();
+    Serial.end();
+  }
 
+  if (settings.system.useTelnet) {
+    telnetStream = new ESPTelnetStream;
+    telnetStream->setKeepAliveInterval(500);
+    Log.addStream(telnetStream);
+  }
+
+  Log.setLevel(settings.system.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
+
+  // tasks
   tNetwork = (new NetworkTask(true, 500))
     ->setHostname(networkSettings.hostname)
     ->setStaCredentials(

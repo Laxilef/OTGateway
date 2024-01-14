@@ -1,5 +1,5 @@
 #define PORTAL_CACHE_TIME "" //"max-age=86400"
-#define PORTAL_CACHE settings.debug ? nullptr : PORTAL_CACHE_TIME
+#define PORTAL_CACHE settings.system.debug ? nullptr : PORTAL_CACHE_TIME
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266WebServer.h>
 #include <Updater.h>

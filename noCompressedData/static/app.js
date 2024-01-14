@@ -468,6 +468,11 @@ async function loadSettings() {
   let response = await fetch('/api/settings', { cache: 'no-cache' });
   let result = await response.json();
 
+  setCheckboxValue('.system-debug', result.system.debug);
+  setCheckboxValue('.system-use-serial', result.system.useSerial);
+  setCheckboxValue('.system-use-telnet', result.system.useTelnet);
+  setBusy('#system-settings-busy', '#system-settings', false);
+
   setCheckboxValue('.portal-use-auth', result.portal.useAuth);
   setInputValue('.portal-login', result.portal.login);
   setInputValue('.portal-password', result.portal.password);
@@ -493,12 +498,16 @@ async function loadSettings() {
   setInputValue('.mqtt-interval', result.mqtt.interval);
   setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
 
-  setInputValue('.sensors-outdoor-pin', result.sensors.outdoor.pin);
-  setInputValue('.sensors-outdoor-offset', result.sensors.outdoor.offset);
-  setInputValue('.sensors-indoor-pin', result.sensors.indoor.pin);
-  setInputValue('.sensors-indoor-offset', result.sensors.indoor.offset);
-  setInputValue('.sensors-indoor-ble-addresss', result.sensors.indoor.bleAddresss);
-  setBusy('#sensors-settings-busy', '#sensors-settings', false);
+  setRadioValue('.outdoor-sensor-type', result.sensors.outdoor.type);
+  setInputValue('.outdoor-sensor-pin', result.sensors.outdoor.pin);
+  setInputValue('.outdoor-sensor-offset', result.sensors.outdoor.offset);
+  setBusy('#outdoor-sensor-settings-busy', '#outdoor-sensor-settings', false);
+
+  setRadioValue('.indoor-sensor-type', result.sensors.indoor.type);
+  setInputValue('.indoor-sensor-pin', result.sensors.indoor.pin);
+  setInputValue('.indoor-sensor-offset', result.sensors.indoor.offset);
+  setInputValue('.indoor-sensor-ble-addresss', result.sensors.indoor.bleAddresss);
+  setBusy('#indoor-sensor-settings-busy', '#indoor-sensor-settings', false);
 
   setCheckboxValue('.extpump-use', result.externalPump.use);
   setInputValue('.extpump-pin', result.externalPump.pin);
@@ -592,6 +601,17 @@ function setCheckboxValue(selector, value) {
   }
 
   item.checked = value;
+}
+
+function setRadioValue(selector, value) {
+  let items = document.querySelectorAll(selector);
+  if (!items.length) {
+    return;
+  }
+
+  for (let item of items) {
+    item.checked = item.value == value;
+  }
 }
 
 function setInputValue(selector, value) {

@@ -257,7 +257,7 @@ protected:
       return;
     }
 
-    if (settings.debug) {
+    if (settings.system.debug) {
       Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic);
       if (Log.lock()) {
         for (size_t i = 0; i < length; i++) {
@@ -328,11 +328,8 @@ protected:
 
   void publishHaEntities() {
     // main
-    this->haHelper->publishSelectOutdoorSensorType();
-    this->haHelper->publishSelectIndoorSensorType();
     this->haHelper->publishNumberOutdoorSensorOffset(false);
     this->haHelper->publishNumberIndoorSensorOffset(false);
-    this->haHelper->publishSwitchDebug(false);
 
     // emergency
     this->haHelper->publishSwitchEmergency();

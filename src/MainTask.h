@@ -4,9 +4,7 @@ extern NetworkTask* tNetwork;
 extern MqttTask* tMqtt;
 extern OpenThermTask* tOt;
 extern FileData fsSettings, fsNetworkSettings;
-#if USE_TELNET
-  extern ESPTelnetStream TelnetStream;
-#endif
+extern ESPTelnetStream* telnetStream;
 
 
 class MainTask : public Task {
@@ -36,9 +34,7 @@ protected:
   unsigned long heatingDisabledTime = 0;
   byte externalPumpStartReason;
   unsigned long externalPumpStartTime = 0;
-#if USE_TELNET
   bool telnetStarted = false;
-#endif
 
   const char* getTaskName() {
     return "Main";
@@ -76,11 +72,9 @@ protected:
       Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Updated"));
     }
 
-    #if USE_TELNET
     if (this->telnetStarted) {
-      TelnetStream.loop();
+      telnetStream->loop();
     }
-    #endif
 
     if (vars.actions.restart) {
       Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
@@ -95,12 +89,10 @@ protected:
     }
 
     if (tNetwork->isConnected()) {
-      #if USE_TELNET
-      if (!this->telnetStarted) {
-        TelnetStream.begin(23, false);
+      if (!this->telnetStarted && telnetStream != nullptr) {
+        telnetStream->begin(23, false);
         this->telnetStarted = true;
       }
-      #endif
 
       vars.sensors.rssi = WiFi.RSSI();
 
@@ -112,20 +104,18 @@ protected:
         this->firstFailConnect = 0;
       }
 
-      if ( Log.getLevel() != TinyLogger::Level::INFO && !settings.debug ) {
+      if ( Log.getLevel() != TinyLogger::Level::INFO && !settings.system.debug ) {
         Log.setLevel(TinyLogger::Level::INFO);
 
-      } else if ( Log.getLevel() != TinyLogger::Level::VERBOSE && settings.debug ) {
+      } else if ( Log.getLevel() != TinyLogger::Level::VERBOSE && settings.system.debug ) {
         Log.setLevel(TinyLogger::Level::VERBOSE);
       }
 
     } else {
-      #if USE_TELNET
       if (this->telnetStarted) {
-        TelnetStream.stop();
+        telnetStream->stop();
         this->telnetStarted = false;
       }
-      #endif
 
       if (tMqtt->isEnabled()) {
         tMqtt->disable();
@@ -178,7 +168,7 @@ protected:
       return;
     }
 
-    if (!settings.debug) {
+    if (!settings.system.debug) {
       return;
     }
 
