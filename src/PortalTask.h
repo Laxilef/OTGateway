@@ -580,10 +580,11 @@ protected:
     }
 
     this->webServer->begin();
+    #ifdef ARDUINO_ARCH_ESP8266
+    this->webServer->getServer().setNoDelay(true);
+    #endif
     this->webServerEnabled = true;
     this->webServerChangeState = millis();
-
-    ::yield();
   }
 
   void stopWebServer() {
@@ -595,8 +596,6 @@ protected:
     this->webServer->stop();
     this->webServerEnabled = false;
     this->webServerChangeState = millis();
-
-    ::yield();
   }
 
   bool stateDnsServer() {
@@ -611,8 +610,6 @@ protected:
     this->dnsServer->start(53, "*", tNetwork->getApIp());
     this->dnsServerEnabled = true;
     this->dnsServerChangeState = millis();
-
-    ::yield();
   }
 
   void stopDnsServer() {
@@ -624,7 +621,5 @@ protected:
     this->dnsServer->stop();
     this->dnsServerEnabled = false;
     this->dnsServerChangeState = millis();
-
-    ::yield();
   }
 };
