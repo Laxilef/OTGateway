@@ -165,7 +165,7 @@ protected:
       this->onDisconnect();
     }
     
-    if (this->wifiClient == nullptr || (!this->client->connected() && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL)) {
+    if (this->wifiClient == nullptr || (!this->connected && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL)) {
       Log.sinfoln(FPSTR(L_MQTT), F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
 
       this->client->setId(networkSettings.hostname);
@@ -180,14 +180,16 @@ protected:
       this->onConnect();
     }
 
-    if (!this->client->connected()) {
-      if (settings.emergency.enable && !vars.states.emergency) {
-        if (millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
-          vars.states.emergency = true;
-          Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode enabled"));
-        }
-      }
+    if (!this->connected && settings.emergency.enable && !vars.states.emergency && millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
+      vars.states.emergency = true;
+      Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode enabled"));
 
+    } else if (this->connected && vars.states.emergency && millis() - this->connectedTime > 10000) {
+      vars.states.emergency = false;
+      Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode disabled"));
+    }
+
+    if (!this->connected) {
       return;
     }
 
@@ -241,11 +243,6 @@ protected:
     this->newConnection = true;
     unsigned long downtime = (millis() - this->disconnectedTime) / 1000;
     Log.sinfoln(FPSTR(L_MQTT), F("Connected (downtime: %u s.)"), downtime);
-
-    if (vars.states.emergency) {
-      vars.states.emergency = false;
-      Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode disabled"));
-    }
 
     this->client->subscribe(this->haHelper->getDeviceTopic("settings/set").c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic("state/set").c_str());
