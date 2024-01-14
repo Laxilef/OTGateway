@@ -160,22 +160,19 @@ protected:
       fsSettings.update();
     }
 
-    if (!this->client->connected() && this->connected) {
+    if (this->connected && !this->client->connected()) {
       this->connected = false;
       this->onDisconnect();
-    }
-    
-    if (this->wifiClient == nullptr || (!this->connected && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL)) {
+
+    } else if (!this->connected && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL) {
       Log.sinfoln(FPSTR(L_MQTT), F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
 
       this->client->setId(networkSettings.hostname);
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
       this->client->connect(settings.mqtt.server, settings.mqtt.port);
-
       this->lastReconnectTime = millis();
-    }
 
-    if (this->client->connected() && !this->connected) {
+    } else if (!this->connected && this->client->connected()) {
       this->connected = true;
       this->onConnect();
     }
