@@ -505,6 +505,7 @@ protected:
   bool publishSettings(const char* topic) {
     JsonDocument doc;
     safeSettingsToJson(settings, doc);
+    doc.shrinkToFit();
 
     return this->writer->publish(topic, doc, true);
   }
@@ -512,6 +513,7 @@ protected:
   bool publishVariables(const char* topic) {
     JsonDocument doc;
     varsToJson(vars, doc);
+    doc.shrinkToFit();
 
     return this->writer->publish(topic, doc, true);
   }

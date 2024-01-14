@@ -1,4 +1,4 @@
-#define PORTAL_CACHE_TIME "" //"max-age=86400"
+#define PORTAL_CACHE_TIME "max-age=86400"
 #define PORTAL_CACHE settings.system.debug ? nullptr : PORTAL_CACHE_TIME
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266WebServer.h>
@@ -72,7 +72,6 @@ protected:
     this->dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
     #ifdef ARDUINO_ARCH_ESP8266
     this->webServer->enableETag(true);
-    //this->webServer->getServer().setNoDelay(true);
     #endif
 
     // index page
@@ -183,11 +182,13 @@ protected:
 
       JsonDocument networkSettingsDoc;
       networkSettingsToJson(networkSettings, networkSettingsDoc);
+      networkSettingsDoc.shrinkToFit();
 
       JsonDocument settingsDoc;
       settingsToJson(settings, settingsDoc);
-      JsonDocument doc;
+      settingsDoc.shrinkToFit();
 
+      JsonDocument doc;
       doc["network"] = networkSettingsDoc;
       doc["settings"] = settingsDoc;
       doc.shrinkToFit();
@@ -261,6 +262,8 @@ protected:
 
       JsonDocument doc;
       networkSettingsToJson(networkSettings, doc);
+      doc.shrinkToFit();
+
       this->bufferedWebServer->send(200, "application/json", doc);
     });
 
@@ -292,7 +295,11 @@ protected:
         return;
       }
 
-      if (jsonToNetworkSettings(doc, networkSettings)) {
+      bool changed = jsonToNetworkSettings(doc, networkSettings);
+      doc.clear();
+      doc.shrinkToFit();
+
+      if (changed) {
         this->webServer->send(201);
 
         fsNetworkSettings.update();
@@ -383,6 +390,8 @@ protected:
 
       JsonDocument doc;
       settingsToJson(settings, doc);
+      doc.shrinkToFit();
+      
       this->bufferedWebServer->send(200, "application/json", doc);
     });
 
@@ -414,7 +423,11 @@ protected:
         return;
       }
 
-      if (jsonToSettings(doc, settings)) {
+      bool changed = jsonToSettings(doc, settings);
+      doc.clear();
+      doc.shrinkToFit();
+
+      if (changed) {
         fsSettings.update();
         this->webServer->send(201);
 
@@ -470,7 +483,11 @@ protected:
         return;
       }
 
-      if (jsonToVars(doc, vars)) {
+      bool changed = jsonToVars(doc, vars);
+      doc.clear();
+      doc.shrinkToFit();
+
+      if (changed) {
         this->webServer->send(201);
 
       } else {

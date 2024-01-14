@@ -111,8 +111,6 @@ void networkSettingsToJson(const NetworkSettings& src, JsonVariant dst) {
   dst["sta"]["ssid"] = src.sta.ssid;
   dst["sta"]["password"] = src.sta.password;
   dst["sta"]["channel"] = src.sta.channel;
-
-  //dst.shrinkToFit();
 }
 
 bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
@@ -309,8 +307,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["externalPump"]["antiStuckInterval"] = roundd(src.externalPump.antiStuckInterval / 86400, 0);
     dst["externalPump"]["antiStuckTime"] = roundd(src.externalPump.antiStuckTime / 60, 0);
   }
-
-  //dst.shrinkToFit();
 }
 
 void safeSettingsToJson(const Settings& src, JsonVariant dst) {
@@ -893,8 +889,6 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["parameters"]["heatingSetpoint"] = src.parameters.heatingSetpoint;
   dst["parameters"]["dhwMinTemp"] = src.parameters.dhwMinTemp;
   dst["parameters"]["dhwMaxTemp"] = src.parameters.dhwMaxTemp;
-
-  //dst.shrinkToFit();
 }
 
 bool jsonToVars(const JsonVariantConst src, Variables& dst) {
