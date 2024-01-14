@@ -245,6 +245,9 @@ protected:
         changed = true;
       }
 
+      doc.clear();
+      doc.shrinkToFit();
+
       this->webServer->send(changed ? 201 : 200);
     });
 
