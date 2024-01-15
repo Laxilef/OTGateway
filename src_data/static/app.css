@@ -17,13 +17,13 @@
 header,
 main,
 footer {
-	padding-top: 1.5em !important;
-	padding-bottom: 1.5em !important;
+	padding-top: 1.5rem !important;
+	padding-bottom: 1.5rem !important;
 }
 
 article {
-	margin-top: 1em;
-	margin-bottom: 1em;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
 }
 
 footer {
@@ -58,20 +58,24 @@ tr.network:hover {
 }
 
 .primary {
-	border: 0.25em solid var(--pico-form-element-invalid-border-color);
-	padding: 1em;
-	margin-bottom: 1em;
+	border: 0.25rem solid var(--pico-form-element-invalid-border-color);
+	padding: 1rem;
+	margin-bottom: 1rem;
 }
 
 .logo {
 	display: inline-block;
-	padding: .5rem;
+	padding: calc(var(--pico-nav-link-spacing-vertical) - var(--pico-border-width) * 2) var(--pico-nav-link-spacing-horizontal);
 	vertical-align: baseline;
-	line-height: initial;
+	line-height: var(--pico-line-height);
 	background-color: var(--pico-code-kbd-background-color);
 	border-radius: var(--pico-border-radius);
   color: var(--pico-code-kbd-color);
   font-weight: bolder;
-	font-size: 1.5em;
+	font-size: 1.3rem;
   font-family: var(--pico-font-family-monospace);
+}
+
+nav li a:has(> div.logo) {
+	margin-bottom: 0;
 }
