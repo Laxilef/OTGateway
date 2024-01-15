@@ -77,11 +77,18 @@ protected:
     }
 
     if (vars.actions.restart) {
-      Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
-      fsSettings.updateNow();
-      fsNetworkSettings.updateNow();
-      this->restartSignalTime = millis();
       vars.actions.restart = false;
+      this->restartSignalTime = millis();
+
+      // save settings
+      fsSettings.updateNow();
+
+      // force save network settings
+      if (fsNetworkSettings.updateNow() == FD_FILE_ERR && LittleFS.begin()) {
+        fsNetworkSettings.write();
+      }
+
+      Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
     }
 
     if (!tOt->isEnabled() && settings.opentherm.inPin > 0 && settings.opentherm.outPin > 0 && settings.opentherm.inPin != settings.opentherm.outPin) {
