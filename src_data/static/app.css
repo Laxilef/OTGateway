@@ -17,12 +17,11 @@
 header,
 main,
 footer {
-	padding-top: 1.5rem !important;
-	padding-bottom: 1.5rem !important;
+	padding-top: 1rem !important;
+	padding-bottom: 1rem !important;
 }
 
 article {
-	margin-top: 1rem;
 	margin-bottom: 1rem;
 }
 
