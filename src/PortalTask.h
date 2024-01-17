@@ -447,9 +447,11 @@ protected:
       doc["system"]["version"] = PROJECT_VERSION;
       doc["system"]["buildDate"] = __DATE__ " " __TIME__;
       doc["system"]["uptime"] = millis() / 1000ul;
-      doc["system"]["freeHeap"] = getFreeHeap();
       doc["system"]["totalHeap"] = getTotalHeap();
+      doc["system"]["freeHeap"] = getFreeHeap();
+      doc["system"]["minFreeHeap"] = getFreeHeap(true);
       doc["system"]["maxFreeBlockHeap"] = getMaxFreeBlockHeap();
+      doc["system"]["minMaxFreeBlockHeap"] = getMaxFreeBlockHeap(true);
       doc["system"]["resetReason"] = getResetReason();
       doc["system"]["mqttConnected"] = tMqtt->isConnected();
       doc.shrinkToFit();

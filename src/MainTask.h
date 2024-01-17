@@ -33,8 +33,8 @@ protected:
   bool blinkerInitialized = false;
   unsigned long firstFailConnect = 0;
   unsigned long lastHeapInfo = 0;
-  unsigned int minFreeHeapSize = 0;
-  unsigned int minMaxFreeHeapBlockSize = 0;
+  unsigned int minFreeHeap = 0;
+  unsigned int minMaxFreeBlockHeap = 0;
   unsigned long restartSignalTime = 0;
   bool heatingEnabled = false;
   unsigned long heatingDisabledTime = 0;
@@ -64,9 +64,6 @@ protected:
       pinMode(settings.externalPump.pin, OUTPUT);
       digitalWrite(settings.externalPump.pin, false);
     }
-
-    this->minFreeHeapSize = getTotalHeap();
-    this->minMaxFreeHeapBlockSize = getTotalHeap();
   }
 
   void loop() {
@@ -179,48 +176,36 @@ protected:
   }
 
   void heap() {
-    unsigned int freeHeapSize = getFreeHeap();
-    #if defined(ARDUINO_ARCH_ESP32)
-      unsigned int maxFreeBlockSize = ESP.getMaxAllocHeap();
-    #else
-      unsigned int maxFreeBlockSize = ESP.getMaxFreeBlockSize();
-    #endif
+    unsigned int freeHeap = getFreeHeap();
+    unsigned int maxFreeBlockHeap = getMaxFreeBlockHeap();
 
-    if (!vars.actions.restart && (freeHeapSize < 2048 || maxFreeBlockSize < 2048)) {
+    if (!vars.actions.restart && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
       vars.actions.restart = true;
-      return;
     }
 
     if (!settings.system.debug) {
       return;
     }
 
-    unsigned int minFreeHeapSizeDiff = 0;
-    #if defined(ARDUINO_ARCH_ESP32)
-    unsigned int currentMinFreeHeapSize = ESP.getMinFreeHeap();
-    if (currentMinFreeHeapSize < this->minFreeHeapSize) {
-      minFreeHeapSizeDiff = this->minFreeHeapSize - currentMinFreeHeapSize;
-      this->minFreeHeapSize = currentMinFreeHeapSize;
+    size_t minFreeHeap = getFreeHeap(true);
+    size_t minFreeHeapDiff = 0;
+    if (minFreeHeap < this->minFreeHeap || this->minFreeHeap == 0) {
+      minFreeHeapDiff = this->minFreeHeap - minFreeHeap;
+      this->minFreeHeap = minFreeHeap;
     }
-    #else
-    if (freeHeapSize < this->minFreeHeapSize) {
-      minFreeHeapSizeDiff = this->minFreeHeapSize - freeHeapSize;
-      this->minFreeHeapSize = freeHeapSize;
-    }
-    #endif
-
-    unsigned int minMaxFreeBlockSizeDiff = 0;
-    if (maxFreeBlockSize < this->minMaxFreeHeapBlockSize) {
-      minMaxFreeBlockSizeDiff = this->minMaxFreeHeapBlockSize - maxFreeBlockSize;
-      this->minMaxFreeHeapBlockSize = maxFreeBlockSize;
+    
+    size_t minMaxFreeBlockHeap = getMaxFreeBlockHeap(true);
+    size_t minMaxFreeBlockHeapDiff = 0;
+    if (minMaxFreeBlockHeap < this->minMaxFreeBlockHeap || this->minMaxFreeBlockHeap == 0) {
+      minMaxFreeBlockHeapDiff = this->minMaxFreeBlockHeap - minMaxFreeBlockHeap;
+      this->minMaxFreeBlockHeap = minMaxFreeBlockHeap;
     }
 
-    uint8_t heapFrag = 100 - maxFreeBlockSize * 100.0 / freeHeapSize;
-    if (millis() - this->lastHeapInfo > 20000 || minFreeHeapSizeDiff > 0 || minMaxFreeBlockSizeDiff > 0) {
+    if (millis() - this->lastHeapInfo > 20000 || minFreeHeapDiff > 0 || minMaxFreeBlockHeapDiff > 0) {
       Log.sverboseln(
         FPSTR(L_MAIN),
         F("Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu%%)"),
-        freeHeapSize, getTotalHeap(), this->minFreeHeapSize, minFreeHeapSizeDiff, maxFreeBlockSize, this->minMaxFreeHeapBlockSize, minMaxFreeBlockSizeDiff, heapFrag
+        freeHeap, getTotalHeap(), this->minFreeHeap, minFreeHeapDiff, maxFreeBlockHeap, this->minMaxFreeBlockHeap, minMaxFreeBlockHeapDiff, getHeapFrag()
       );
       this->lastHeapInfo = millis();
     }

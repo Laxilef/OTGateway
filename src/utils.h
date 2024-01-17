@@ -13,26 +13,58 @@ double roundd(double value, uint8_t decimals = 2) {
   return (int)(value * multiplier) / multiplier;
 }
 
-size_t getFreeHeap() {
-  return ESP.getFreeHeap();
-}
-
 size_t getTotalHeap() {
   #if defined(ARDUINO_ARCH_ESP32)
-    return ESP.getHeapSize();
+  return ESP.getHeapSize();
   #elif defined(ARDUINO_ARCH_ESP8266)
-    return 81920;
+  return 81920;
   #else
-    return 99999;
+  return 99999;
   #endif
 }
 
-size_t getMaxFreeBlockHeap() {
+size_t getFreeHeap(bool getMinValue = false) {
   #if defined(ARDUINO_ARCH_ESP32)
-    return ESP.getMaxAllocHeap();
+    return getMinValue ? ESP.getMinFreeHeap() : ESP.getFreeHeap();
+    
+  #elif defined(ARDUINO_ARCH_ESP8266)
+    static size_t minValue = 0;
+    size_t value = ESP.getFreeHeap();
+    
+    if (value < minValue || minValue == 0) {
+      minValue = value;
+    }
+
+    return getMinValue ? minValue : value;
   #else
-    return ESP.getMaxFreeBlockSize();
+    return 0;
   #endif
+}
+
+size_t getMaxFreeBlockHeap(bool getMinValue = false) {
+  static size_t minValue = 0;
+  size_t value = 0;
+  
+  #if defined(ARDUINO_ARCH_ESP32)
+  value = ESP.getMaxAllocHeap();
+
+  size_t minHeapValue = getFreeHeap(true);
+  if (minHeapValue < minValue || minValue == 0) {
+    minValue = minHeapValue;
+  }
+  #elif defined(ARDUINO_ARCH_ESP8266)
+  value = ESP.getMaxFreeBlockSize();
+  #endif
+
+  if (value < minValue || minValue == 0) {
+    minValue = value;
+  }
+
+  return getMinValue ? minValue : value;
+}
+
+uint8_t getHeapFrag() {
+  return 100 - getMaxFreeBlockHeap() * 100.0 / getFreeHeap();
 }
 
 String getResetReason() {

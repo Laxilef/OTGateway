@@ -550,9 +550,11 @@ async function loadVars() {
   setValue('.uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
   setValue('.uptime-min', Math.floor(result.system.uptime % 3600 / 60));
   setValue('.uptime-sec', Math.floor(result.system.uptime % 60));
-  setValue('.free-heap', result.system.freeHeap);
   setValue('.total-heap', result.system.totalHeap);
+  setValue('.free-heap', result.system.freeHeap);
+  setValue('.min-free-heap', result.system.minFreeHeap);
   setValue('.max-free-block-heap', result.system.maxFreeBlockHeap);
+  setValue('.min-max-free-block-heap', result.system.minMaxFreeBlockHeap);
   setValue('.reset-reason', result.system.resetReason);
   setState('.mqtt-connected', result.system.mqttConnected);
 
