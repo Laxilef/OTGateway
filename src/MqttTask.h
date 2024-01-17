@@ -124,7 +124,7 @@ protected:
     });
     #endif
 
-    this->writer->setEventPublishCallback([this] (const char* topic, size_t written, size_t length, bool result) {
+    this->writer->setPublishEventCallback([this] (const char* topic, size_t written, size_t length, bool result) {
       Log.straceln(FPSTR(L_MQTT), F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
 
       #ifdef ARDUINO_ARCH_ESP8266
@@ -136,7 +136,7 @@ protected:
     });
 
     #ifdef ARDUINO_ARCH_ESP8266
-    this->writer->setEventFlushCallback([this] (size_t, size_t) {
+    this->writer->setFlushEventCallback([this] (size_t, size_t) {
       this->client->flush();
       this->wifiClient->flush();
       ::yield();

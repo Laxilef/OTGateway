@@ -6,6 +6,7 @@
 #include <LittleFS.h>
 #include "ESPTelnetStream.h"
 #include <TinyLogger.h>
+#include <NetworkManager.h>
 #include "Settings.h"
 #include <utils.h>
 
@@ -19,7 +20,6 @@
 
 #include <Task.h>
 #include <LeanTask.h>
-#include "NetworkTask.h"
 #include "MqttTask.h"
 #include "OpenThermTask.h"
 #include "SensorsTask.h"
@@ -31,9 +31,9 @@
 FileData fsNetworkSettings(&LittleFS, "/network.conf", 'n', &networkSettings, sizeof(networkSettings), 1000);
 FileData fsSettings(&LittleFS, "/settings.conf", 's', &settings, sizeof(settings), 60000);
 ESPTelnetStream* telnetStream = nullptr;
+Network::Manager* network = nullptr;
 
 // Tasks
-NetworkTask* tNetwork;
 MqttTask* tMqtt;
 OpenThermTask* tOt;
 SensorsTask* tSensors;
@@ -122,8 +122,8 @@ void setup() {
 
   Log.setLevel(settings.system.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
 
-  // tasks
-  tNetwork = (new NetworkTask(true, 500))
+  // network
+  network = (new Network::Manager)
     ->setHostname(networkSettings.hostname)
     ->setStaCredentials(
     #ifdef WOKWI
@@ -138,8 +138,8 @@ void setup() {
       strlen(networkSettings.ap.password) ? networkSettings.ap.password : nullptr,
       networkSettings.ap.channel
     );
-  Scheduler.start(tNetwork);
 
+  // tasks
   tMqtt = new MqttTask(false, 500);
   Scheduler.start(tMqtt);
 

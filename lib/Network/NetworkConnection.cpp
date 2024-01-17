@@ -1,4 +1,5 @@
-#include "Connection.h"
+#include "NetworkConnection.h"
+using namespace Network;
 
 void Connection::setup(bool useDhcp) {
   setUseDhcp(useDhcp);
@@ -8,6 +9,11 @@ void Connection::setup(bool useDhcp) {
   #elif defined(ARDUINO_ARCH_ESP32)
   WiFi.onEvent(Connection::onEvent);
   #endif
+}
+
+void Connection::reset() {
+  status = Status::NONE;
+  disconnectReason = DisconnectReason::NONE;
 }
 
 void Connection::setUseDhcp(bool value) {
@@ -23,8 +29,8 @@ Connection::DisconnectReason Connection::getDisconnectReason() {
 }
 
 #if defined(ARDUINO_ARCH_ESP8266)
-void Connection::onEvent(System_Event_t *evt) {
-  switch (evt->event) {
+void Connection::onEvent(System_Event_t *event) {
+  switch (event->event) {
     case EVENT_STAMODE_CONNECTED:
       status = useDhcp ? Status::CONNECTING : Status::CONNECTED;
       disconnectReason = DisconnectReason::NONE;
@@ -43,8 +49,25 @@ void Connection::onEvent(System_Event_t *evt) {
 
     case EVENT_STAMODE_DISCONNECTED:
       status = Status::DISCONNECTED;
-      disconnectReason = convertDisconnectReason(evt->event_info.disconnected.reason);
+      disconnectReason = convertDisconnectReason(event->event_info.disconnected.reason);
 
+      // https://github.com/esp8266/Arduino/blob/d5eb265f78bff9deb7063d10030a02d021c8c66c/libraries/ESP8266WiFi/src/ESP8266WiFiGeneric.cpp#L231
+      if ((wifi_station_get_connect_status() == STATION_GOT_IP) && !wifi_station_get_reconnect_policy()) {
+        wifi_station_disconnect();
+      }
+      break;
+
+    case EVENT_STAMODE_AUTHMODE_CHANGE:
+      // https://github.com/esp8266/Arduino/blob/d5eb265f78bff9deb7063d10030a02d021c8c66c/libraries/ESP8266WiFi/src/ESP8266WiFiGeneric.cpp#L241
+      {
+        auto& src = event->event_info.auth_change;
+        if ((src.old_mode != AUTH_OPEN) && (src.new_mode == AUTH_OPEN)) {
+          status = Status::DISCONNECTED;
+          disconnectReason = DisconnectReason::OTHER;
+
+          wifi_station_disconnect();
+        }
+      }
       break;
     
     default:
@@ -80,8 +103,6 @@ void Connection::onEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
     default:
       break;
   }
-
-  //Serial.printf("SYS EVENT: %d, reason: %d\n\r", evt->event, disconnectReason);
 }
 #endif
 
@@ -125,5 +146,5 @@ Connection::DisconnectReason Connection::convertDisconnectReason(uint8_t reason)
 }
 
 bool Connection::useDhcp = false;
-Connection::Status Connection::status = Status::DISCONNECTED;
+Connection::Status Connection::status = Status::NONE;
 Connection::DisconnectReason Connection::disconnectReason = DisconnectReason::NONE;

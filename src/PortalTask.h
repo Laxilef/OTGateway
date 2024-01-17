@@ -14,7 +14,7 @@ using WebServer = ESP8266WebServer;
 #include <UpgradeHandler.h>
 #include <DNSServer.h>
 
-extern NetworkTask* tNetwork;
+extern Network::Manager* network;
 extern FileData fsSettings, fsNetworkSettings;
 extern MqttTask* tMqtt;
 
@@ -76,7 +76,7 @@ protected:
 
     // index page
     /*auto indexPage = (new DynamicPage("/", &LittleFS, "/index.html"))
-      ->setTemplateFunction([](const char* var) -> String {
+      ->setTemplateCallback([](const char* var) -> String {
         String result;
 
         if (strcmp(var, "ver") == 0) {
@@ -104,7 +104,7 @@ protected:
 
     // network settings page
     auto networkPage = (new StaticPage("/network.html", &LittleFS, "/network.html", PORTAL_CACHE))
-      ->setBeforeSendFunction([this]() {
+      ->setBeforeSendCallback([this]() {
         if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
           return false;
@@ -116,7 +116,7 @@ protected:
 
     // settings page
     auto settingsPage = (new StaticPage("/settings.html", &LittleFS, "/settings.html", PORTAL_CACHE))
-      ->setBeforeSendFunction([this]() {
+      ->setBeforeSendCallback([this]() {
         if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
           return false;
@@ -128,7 +128,7 @@ protected:
 
     // upgrade page
     auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, "/upgrade.html", PORTAL_CACHE))
-      ->setBeforeSendFunction([this]() {
+      ->setBeforeSendCallback([this]() {
         if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
           return false;
@@ -139,7 +139,7 @@ protected:
     this->webServer->addHandler(upgradePage);
 
     // OTA
-    auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadFunction([this](const String& uri) {
+    auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadCallback([this](const String& uri) {
       if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
         this->webServer->sendHeader("Connection", "close");
         this->webServer->send(401);
@@ -147,9 +147,9 @@ protected:
       }
 
       return true;
-    })->setBeforeUpgradeFunction([](UpgradeHandler::UpgradeType type) -> bool {
+    })->setBeforeUpgradeCallback([](UpgradeHandler::UpgradeType type) -> bool {
       return true;
-    })->setAfterUpgradeFunction([this](const UpgradeHandler::UpgradeResult& fwResult, const UpgradeHandler::UpgradeResult& fsResult) {
+    })->setAfterUpgradeCallback([this](const UpgradeHandler::UpgradeResult& fwResult, const UpgradeHandler::UpgradeResult& fsResult) {
       unsigned short status = 200;
       if (fwResult.status == UpgradeHandler::UpgradeStatus::SUCCESS || fsResult.status == UpgradeHandler::UpgradeStatus::SUCCESS) {
         vars.actions.restart = true;
@@ -234,15 +234,16 @@ protected:
 
       if (doc["network"] && jsonToNetworkSettings(doc["network"], networkSettings)) {
         fsNetworkSettings.update();
-        tNetwork->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel);
-        tNetwork->setUseDhcp(networkSettings.useDhcp);
-        tNetwork->setStaticConfig(
-          networkSettings.staticConfig.ip,
-          networkSettings.staticConfig.gateway,
-          networkSettings.staticConfig.subnet,
-          networkSettings.staticConfig.dns
-        );
-        tNetwork->reconnect();
+        network->setHostname(networkSettings.hostname)
+          ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
+          ->setUseDhcp(networkSettings.useDhcp)
+          ->setStaticConfig(
+            networkSettings.staticConfig.ip,
+            networkSettings.staticConfig.gateway,
+            networkSettings.staticConfig.subnet,
+            networkSettings.staticConfig.dns
+          )
+          ->reconnect();
         changed = true;
       }
 
@@ -303,15 +304,16 @@ protected:
         this->webServer->send(201);
 
         fsNetworkSettings.update();
-        tNetwork->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel);
-        tNetwork->setUseDhcp(networkSettings.useDhcp);
-        tNetwork->setStaticConfig(
-          networkSettings.staticConfig.ip,
-          networkSettings.staticConfig.gateway,
-          networkSettings.staticConfig.subnet,
-          networkSettings.staticConfig.dns
-        );
-        tNetwork->reconnect();
+        network->setHostname(networkSettings.hostname)
+          ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
+          ->setUseDhcp(networkSettings.useDhcp)
+          ->setStaticConfig(
+            networkSettings.staticConfig.ip,
+            networkSettings.staticConfig.gateway,
+            networkSettings.staticConfig.subnet,
+            networkSettings.staticConfig.dns
+          )
+          ->reconnect();
 
       } else {
         this->webServer->send(200);
@@ -319,19 +321,19 @@ protected:
     });
 
     this->webServer->on("/api/network/status", HTTP_GET, [this]() {
-      bool isConnected = tNetwork->isConnected();
+      bool isConnected = network->isConnected();
 
       JsonDocument doc;
       doc["hostname"] = networkSettings.hostname;
-      doc["mac"] = tNetwork->getStaMac();
+      doc["mac"] = network->getStaMac();
       doc["isConnected"] = isConnected;
-      doc["ssid"] = tNetwork->getStaSsid();
-      doc["signalQuality"] = isConnected ? NetworkTask::rssiToSignalQuality(tNetwork->getRssi()) : 0;
-      doc["channel"] = isConnected ? tNetwork->getStaChannel() : 0;
-      doc["ip"] = isConnected ? tNetwork->getStaIp().toString() : "";
-      doc["subnet"] = isConnected ? tNetwork->getStaSubnet().toString() : "";
-      doc["gateway"] = isConnected ? tNetwork->getStaGateway().toString() : "";
-      doc["dns"] = isConnected ? tNetwork->getStaDns().toString() : "";
+      doc["ssid"] = network->getStaSsid();
+      doc["signalQuality"] = isConnected ? Network::Manager::rssiToSignalQuality(network->getRssi()) : 0;
+      doc["channel"] = isConnected ? network->getStaChannel() : 0;
+      doc["ip"] = isConnected ? network->getStaIp().toString() : "";
+      doc["subnet"] = isConnected ? network->getStaSubnet().toString() : "";
+      doc["gateway"] = isConnected ? network->getStaGateway().toString() : "";
+      doc["dns"] = isConnected ? network->getStaDns().toString() : "";
       doc.shrinkToFit();
 
       this->bufferedWebServer->send(200, "application/json", doc);
@@ -367,16 +369,16 @@ protected:
       for (short int i = 0; i < apCount; i++) {
         String ssid = WiFi.SSID(i);
         doc[i]["ssid"] = ssid;
-        doc[i]["signalQuality"] = NetworkTask::rssiToSignalQuality(WiFi.RSSI(i));
+        doc[i]["signalQuality"] = Network::Manager::rssiToSignalQuality(WiFi.RSSI(i));
         doc[i]["channel"] = WiFi.channel(i);
         doc[i]["hidden"] = !ssid.length();
         doc[i]["encryptionType"] = WiFi.encryptionType(i);
       }
+
+      WiFi.scanDelete();
       doc.shrinkToFit();
 
       this->bufferedWebServer->send(200, "application/json", doc);
-
-      WiFi.scanNetworks(true, true);
     });
 
 
@@ -504,7 +506,7 @@ protected:
       if (uri.equals("/")) {
         this->webServer->send(200, "text/plain", F("The file system is not flashed!"));
 
-      } else if (tNetwork->isApEnabled()) {
+      } else if (network->isApEnabled()) {
         this->onCaptivePortal();
 
       } else {
@@ -528,7 +530,7 @@ protected:
     }
 
     // dns server
-    if (!this->stateDnsServer() && this->stateWebServer() && tNetwork->isApEnabled() && tNetwork->hasApClients() && millis() - this->dnsServerChangeState >= this->changeStateInterval) {
+    if (!this->stateDnsServer() && this->stateWebServer() && network->isApEnabled() && network->hasApClients() && millis() - this->dnsServerChangeState >= this->changeStateInterval) {
       this->startDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
       
@@ -536,7 +538,7 @@ protected:
       ::esp_yield();
       #endif
 
-    } else if (this->stateDnsServer() && (!tNetwork->isApEnabled() || !this->stateWebServer()) && millis() - this->dnsServerChangeState >= this->changeStateInterval) {
+    } else if (this->stateDnsServer() && (!network->isApEnabled() || !this->stateWebServer()) && millis() - this->dnsServerChangeState >= this->changeStateInterval) {
       this->stopDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down"));
 
@@ -558,7 +560,7 @@ protected:
   }
 
   bool isNeedAuth() {
-    return !tNetwork->isApEnabled() && settings.portal.useAuth && strlen(settings.portal.password);
+    return !network->isApEnabled() && settings.portal.useAuth && strlen(settings.portal.password);
   }
 
   void onCaptivePortal() {
@@ -581,7 +583,7 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 200 code"));
 
     } else {
-      String portalUrl = "http://" + tNetwork->getApIp().toString() + '/';
+      String portalUrl = "http://" + network->getApIp().toString() + '/';
 
       this->webServer->sendHeader("Location", portalUrl.c_str());
       this->webServer->send(302);
@@ -627,7 +629,7 @@ protected:
       return;
     }
 
-    this->dnsServer->start(53, "*", tNetwork->getApIp());
+    this->dnsServer->start(53, "*", network->getApIp());
     this->dnsServerEnabled = true;
     this->dnsServerChangeState = millis();
   }

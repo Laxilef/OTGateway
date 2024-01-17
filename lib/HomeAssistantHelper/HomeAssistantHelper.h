@@ -4,6 +4,8 @@
 
 class HomeAssistantHelper {
 public:
+  typedef std::function<void(const char*, bool)> PublishEventCallback;
+
   HomeAssistantHelper() {}
 
   void setWriter() {
@@ -14,12 +16,8 @@ public:
     this->writer = writer;
   }
 
-  void setEventPublishCallback(std::function<void(const char*, bool)> callback) {
-    this->eventPublishCallback = callback;
-  }
-
-  void setEventPublishCallback() {
-    this->eventPublishCallback = nullptr;
+  void setPublishEventCallback(PublishEventCallback callback) {
+    this->publishEventCallback = callback;
   }
 
   void setDevicePrefix(const char* value) {
@@ -48,7 +46,10 @@ public:
 
   bool publish(const char* topic, JsonDocument& doc) {
     if (this->writer == nullptr) {
-      this->eventPublishCallback(topic, false);
+      if (this->publishEventCallback) {
+        this->publishEventCallback(topic, false);
+      }
+      
       return false;
     }
 
@@ -75,8 +76,8 @@ public:
     doc.clear();
     doc.shrinkToFit();
 
-    if (this->eventPublishCallback) {
-      this->eventPublishCallback(topic, result);
+    if (this->publishEventCallback) {
+      this->publishEventCallback(topic, result);
     }
 
     return result;
@@ -84,13 +85,16 @@ public:
 
   bool publish(const char* topic) {
     if (this->writer == nullptr) {
-      this->eventPublishCallback(topic, false);
+      if (this->publishEventCallback) {
+        this->publishEventCallback(topic, false);
+      }
+
       return false;
     }
 
     bool result = writer->publish(topic, nullptr, 0, true);
-    if (this->eventPublishCallback) {
-      this->eventPublishCallback(topic, result);
+    if (this->publishEventCallback) {
+      this->publishEventCallback(topic, result);
     }
 
     return result;
@@ -129,7 +133,7 @@ public:
   }
 
 protected:
-  std::function<void(const char*, bool)> eventPublishCallback = nullptr;
+  PublishEventCallback publishEventCallback;
   MqttWriter* writer = nullptr;
   const char* prefix = "homeassistant";
   const char* devicePrefix = "";

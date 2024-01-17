@@ -2,8 +2,8 @@
 
 class StaticPage : public RequestHandler {
 public:
-  typedef std::function<bool(HTTPMethod, const String&)> canHandleFunction;
-  typedef std::function<bool()> beforeSendFunction;
+  typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
+  typedef std::function<bool()> BeforeSendCallback;
   
   StaticPage(const char* uri, FS* fs, const char* path, const char* cacheHeader = nullptr) {
     this->uri = uri;
@@ -12,14 +12,14 @@ public:
     this->cacheHeader = cacheHeader;
   }
 
-  StaticPage* setCanHandleFunction(canHandleFunction val = nullptr) {
-    this->canHandleFn = val;
+  StaticPage* setCanHandleCallback(CanHandleCallback callback = nullptr) {
+    this->canHandleCallback = callback;
 
     return this;
   }
 
-  StaticPage* setBeforeSendFunction(beforeSendFunction val = nullptr) {
-    this->beforeSendFn = val;
+  StaticPage* setBeforeSendCallback(BeforeSendCallback callback = nullptr) {
+    this->beforeSendCallback = callback;
 
     return this;
   }
@@ -29,7 +29,7 @@ public:
   #else
   bool canHandle(HTTPMethod method, const String& uri) override {
   #endif
-    return method == HTTP_GET && uri.equals(this->uri) && (!this->canHandleFn || this->canHandleFn(method, uri));
+    return method == HTTP_GET && uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
@@ -41,7 +41,7 @@ public:
       return false;
     }
 
-    if (this->beforeSendFn && !this->beforeSendFn()) {
+    if (this->beforeSendCallback && !this->beforeSendCallback()) {
       return true;
     }
 
@@ -87,8 +87,8 @@ public:
 
 protected:
   FS* fs = nullptr;
-  canHandleFunction canHandleFn;
-  beforeSendFunction beforeSendFn;
+  CanHandleCallback canHandleCallback;
+  BeforeSendCallback beforeSendCallback;
   String eTag;
   const char* uri = nullptr;
   const char* path = nullptr;

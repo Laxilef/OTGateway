@@ -8,6 +8,10 @@
 
 class MqttWriter {
 public:
+  typedef std::function<void()> YieldCallback;
+  typedef std::function<void(const char*, size_t, size_t, bool)> PublishEventCallback;
+  typedef std::function<void(size_t, size_t)> FlushEventCallback;
+
   MqttWriter(MqttClient* client, size_t bufferSize = 64) {
     this->client = client;
     this->bufferSize = bufferSize;
@@ -26,28 +30,22 @@ public:
 #endif
   }
 
-  void setYieldCallback(std::function<void()> callback) {
+  MqttWriter* setYieldCallback(YieldCallback callback = nullptr) {
     this->yieldCallback = callback;
+
+    return this;
   }
 
-  void setYieldCallback() {
-    this->yieldCallback = nullptr;
+  MqttWriter* setPublishEventCallback(PublishEventCallback callback) {
+    this->publishEventCallback = callback;
+
+    return this;
   }
 
-  void setEventPublishCallback(std::function<void(const char*, size_t, size_t, bool)> callback) {
-    this->eventPublishCallback = callback;
-  }
+  MqttWriter* setFlushEventCallback(FlushEventCallback callback) {
+    this->flushEventCallback = callback;
 
-  void setEventPublishCallback() {
-    this->eventPublishCallback = nullptr;
-  }
-
-  void setEventFlushCallback(std::function<void(size_t, size_t)> callback) {
-    this->eventFlushCallback = callback;
-  }
-
-  void setEventFlushCallback() {
-    this->eventFlushCallback = nullptr;
+    return this;
   }
 
   bool lock() {
@@ -103,8 +101,8 @@ public:
     }
     this->unlock();
 
-    if (this->eventPublishCallback) {
-      this->eventPublishCallback(topic, written, docSize, written == docSize);
+    if (this->publishEventCallback) {
+      this->publishEventCallback(topic, written, docSize, written == docSize);
     }
 
     return written == docSize;
@@ -142,8 +140,8 @@ public:
     }
     this->unlock();
 
-    if (this->eventPublishCallback) {
-      this->eventPublishCallback(topic, written, length, result);
+    if (this->publishEventCallback) {
+      this->publishEventCallback(topic, written, length, result);
     }
 
     return result;
@@ -198,14 +196,17 @@ public:
       this->writeAfterLock += written;
     }
 
-    if (this->eventFlushCallback) {
-      this->eventFlushCallback(written, length);
+    if (this->flushEventCallback) {
+      this->flushEventCallback(written, length);
     }
 
     return written == length;
   }
 
 protected:
+  YieldCallback yieldCallback;
+  PublishEventCallback publishEventCallback;
+  FlushEventCallback flushEventCallback;
   MqttClient* client;
   uint8_t* buffer;
   size_t bufferSize = 64;
@@ -216,7 +217,4 @@ protected:
 #endif
   unsigned long lockedTime = 0;
   size_t writeAfterLock = 0;
-  std::function<void()> yieldCallback = nullptr;
-  std::function<void(const char*, size_t, size_t, bool)> eventPublishCallback = nullptr;
-  std::function<void(size_t, size_t)> eventFlushCallback = nullptr;
 };

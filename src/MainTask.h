@@ -1,6 +1,6 @@
 #include <Blinker.h>
 
-extern NetworkTask* tNetwork;
+extern Network::Manager* network;
 extern MqttTask* tMqtt;
 extern OpenThermTask* tOt;
 extern FileData fsSettings, fsNetworkSettings;
@@ -11,6 +11,12 @@ class MainTask : public Task {
 public:
   MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
     this->blinker = new Blinker();
+
+    network->setDelayCallback([this](unsigned int time) {
+      this->delay(time);
+    })->setYieldCallback([this]() {
+      this->yield();
+    });
   }
 
   ~MainTask() {
@@ -64,16 +70,14 @@ protected:
   }
 
   void loop() {
+    network->loop();
+
     if (fsSettings.tick() == FD_WRITE) {
       Log.sinfoln(FPSTR(L_SETTINGS), F("Updated"));
     }
 
     if (fsNetworkSettings.tick() == FD_WRITE) {
       Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Updated"));
-    }
-
-    if (this->telnetStarted) {
-      telnetStream->loop();
     }
 
     if (vars.actions.restart) {
@@ -95,7 +99,7 @@ protected:
       tOt->enable();
     }
 
-    if (tNetwork->isConnected()) {
+    if (network->isConnected()) {
       if (!this->telnetStarted && telnetStream != nullptr) {
         telnetStream->begin(23, false);
         this->telnetStarted = true;
@@ -139,23 +143,35 @@ protected:
         }
       }
     }
+    this->yield();
 
-    yield();
+
     #ifdef LED_STATUS_PIN
-      ledStatus(LED_STATUS_PIN);
+      this->ledStatus(LED_STATUS_PIN);
     #endif
-    externalPump();
+    this->externalPump();
+    this->yield();
+
+
+    // telnet
+    if (this->telnetStarted) {
+      telnetStream->loop();
+      this->yield();
+    }
+
 
     // anti memory leak
-    yield();
     for (Stream* stream : Log.getStreams()) {
       while (stream->available() > 0) {
         stream->read();
       }
     }
 
-    heap();
-    
+    // heap info
+    this->heap();
+
+
+    // restart
     if (this->restartSignalTime > 0 && millis() - this->restartSignalTime > 10000) {
       this->restartSignalTime = 0;
       ESP.restart();
@@ -222,7 +238,7 @@ protected:
       this->blinkerInitialized = true;
     }
 
-    if (!tNetwork->isConnected()) {
+    if (!network->isConnected()) {
       errors[errCount++] = 2;
     }
 

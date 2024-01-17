@@ -3,9 +3,9 @@
 
 class DynamicPage : public RequestHandler {
 public:
-  typedef std::function<bool(HTTPMethod, const String&)> canHandleFunction;
-  typedef std::function<bool()> beforeSendFunction;
-  typedef std::function<String(const char*)> templateFunction;
+  typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
+  typedef std::function<bool()> BeforeSendCallback;
+  typedef std::function<String(const char*)> TemplateCallback;
   
   DynamicPage(const char* uri, FS* fs, const char* path, const char* cacheHeader = nullptr) {
     this->uri = uri;
@@ -14,20 +14,20 @@ public:
     this->cacheHeader = cacheHeader;
   }
 
-  DynamicPage* setCanHandleFunction(canHandleFunction val = nullptr) {
-    this->canHandleFn = val;
+  DynamicPage* setCanHandleCallback(CanHandleCallback callback = nullptr) {
+    this->canHandleCallback = callback;
 
     return this;
   }
 
-  DynamicPage* setBeforeSendFunction(beforeSendFunction val = nullptr) {
-    this->beforeSendFn = val;
+  DynamicPage* setBeforeSendCallback(BeforeSendCallback callback = nullptr) {
+    this->beforeSendCallback = callback;
 
     return this;
   }
 
-  DynamicPage* setTemplateFunction(templateFunction val = nullptr) {
-    this->templateFn = val;
+  DynamicPage* setTemplateCallback(TemplateCallback callback = nullptr) {
+    this->templateCallback = callback;
 
     return this;
   }
@@ -37,7 +37,7 @@ public:
   #else
   bool canHandle(HTTPMethod method, const String& uri) override {
   #endif
-    return uri.equals(this->uri) && (!this->canHandleFn || this->canHandleFn(method, uri));
+    return uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
@@ -49,7 +49,7 @@ public:
       return false;
     }
 
-    if (this->beforeSendFn && !this->beforeSendFn()) {
+    if (this->beforeSendCallback && !this->beforeSendCallback()) {
       return true;
     }
 
@@ -98,7 +98,7 @@ public:
             argName[fullSizeArgName] = '\0';
 
             // send arg value
-            String argValue = this->templateFn((const char*) argName);
+            String argValue = this->templateCallback((const char*) argName);
             if (argValue.length()) {
               server.sendContent(argValue.c_str());
 
@@ -159,7 +159,7 @@ public:
           argName[sizeArgName] = '\0';
 
           // send arg value
-          String argValue = this->templateFn((const char*) argName);
+          String argValue = this->templateCallback((const char*) argName);
           if (argValue.length()) {
             // send content before var
             if (argStartPos - buf > 0) {
@@ -217,9 +217,9 @@ public:
 
 protected:
   FS* fs = nullptr;
-  canHandleFunction canHandleFn;
-  beforeSendFunction beforeSendFn;
-  templateFunction templateFn;
+  CanHandleCallback canHandleCallback;
+  BeforeSendCallback beforeSendCallback;
+  TemplateCallback templateCallback;
   String eTag;
   const char* uri = nullptr;
   const char* path = nullptr;

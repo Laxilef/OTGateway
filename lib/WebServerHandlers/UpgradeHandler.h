@@ -24,35 +24,35 @@ public:
     String error;
   } UpgradeResult;
 
-  typedef std::function<bool(HTTPMethod, const String&)> CanHandleFunction;
-  typedef std::function<bool(const String&)> CanUploadFunction;
-  typedef std::function<bool(UpgradeType)> BeforeUpgradeFunction;
-  typedef std::function<void(const UpgradeResult&, const UpgradeResult&)> AfterUpgradeFunction;
+  typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
+  typedef std::function<bool(const String&)> CanUploadCallback;
+  typedef std::function<bool(UpgradeType)> BeforeUpgradeCallback;
+  typedef std::function<void(const UpgradeResult&, const UpgradeResult&)> AfterUpgradeCallback;
   
   UpgradeHandler(const char* uri) {
     this->uri = uri;
   }
 
-  UpgradeHandler* setCanHandleFunction(CanHandleFunction val = nullptr) {
-    this->canHandleFn = val;
+  UpgradeHandler* setCanHandleCallback(CanHandleCallback callback = nullptr) {
+    this->canHandleCallback = callback;
 
     return this;
   }
 
-  UpgradeHandler* setCanUploadFunction(CanUploadFunction val = nullptr) {
-    this->canUploadFn = val;
+  UpgradeHandler* setCanUploadCallback(CanUploadCallback callback = nullptr) {
+    this->canUploadCallback = callback;
 
     return this;
   }
 
-  UpgradeHandler* setBeforeUpgradeFunction(BeforeUpgradeFunction val = nullptr) {
-    this->beforeUpgradeFn = val;
+  UpgradeHandler* setBeforeUpgradeCallback(BeforeUpgradeCallback callback = nullptr) {
+    this->beforeUpgradeCallback = callback;
 
     return this;
   }
 
-  UpgradeHandler* setAfterUpgradeFunction(AfterUpgradeFunction val = nullptr) {
-    this->afterUpgradeFn = val;
+  UpgradeHandler* setAfterUpgradeCallback(AfterUpgradeCallback callback = nullptr) {
+    this->afterUpgradeCallback = callback;
 
     return this;
   }
@@ -62,7 +62,7 @@ public:
   #else
   bool canHandle(HTTPMethod method, const String& uri) override {
   #endif
-    return method == HTTP_POST && uri.equals(this->uri) && (!this->canHandleFn || this->canHandleFn(method, uri));
+    return method == HTTP_POST && uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
@@ -70,7 +70,7 @@ public:
   #else
   bool canUpload(const String& uri) override {
   #endif
-    return uri.equals(this->uri) && (!this->canUploadFn || this->canUploadFn(uri));
+    return uri.equals(this->uri) && (!this->canUploadCallback || this->canUploadCallback(uri));
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
@@ -78,8 +78,8 @@ public:
   #else
   bool handle(WebServer& server, HTTPMethod method, const String& uri) override {
   #endif
-    if (this->afterUpgradeFn) {
-      this->afterUpgradeFn(this->firmwareResult, this->filesystemResult);
+    if (this->afterUpgradeCallback) {
+      this->afterUpgradeCallback(this->firmwareResult, this->filesystemResult);
     }
 
     this->firmwareResult.status = UpgradeStatus::NONE;
@@ -109,7 +109,7 @@ public:
       return;
     }
 
-    if (this->beforeUpgradeFn && !this->beforeUpgradeFn(result->type)) {
+    if (this->beforeUpgradeCallback && !this->beforeUpgradeCallback(result->type)) {
       result->status = UpgradeStatus::PROHIBITED;
       return;
     }
@@ -207,10 +207,10 @@ public:
   }
 
 protected:
-  CanHandleFunction canHandleFn;
-  CanUploadFunction canUploadFn;
-  BeforeUpgradeFunction beforeUpgradeFn;
-  AfterUpgradeFunction afterUpgradeFn;
+  CanHandleCallback canHandleCallback;
+  CanUploadCallback canUploadCallback;
+  BeforeUpgradeCallback beforeUpgradeCallback;
+  AfterUpgradeCallback afterUpgradeCallback;
   const char* uri = nullptr;
 
   UpgradeResult firmwareResult{UpgradeType::FIRMWARE, UpgradeStatus::NONE};
