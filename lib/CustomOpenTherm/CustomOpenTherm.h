@@ -2,35 +2,37 @@
 #include <OpenTherm.h>
 
 class CustomOpenTherm : public OpenTherm {
-private:
-  unsigned long prevRequestTime = 0;
-  void(*handleSendRequestCallback)(unsigned long, unsigned long, OpenThermResponseStatus status, byte attempt) = nullptr;
-  void(*yieldCallback)(void*) = nullptr;
-  void* yieldArg = nullptr;
-
 public:
+  typedef std::function<void()> YieldCallback;
+  typedef std::function<void(unsigned long, byte)> BeforeSendRequestCallback;
+  typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, byte)> AfterSendRequestCallback;
+
   CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
-  void setHandleSendRequestCallback(void(*handleSendRequestCallback)(unsigned long, unsigned long, OpenThermResponseStatus status, byte attempt)) {
-    this->handleSendRequestCallback = handleSendRequestCallback;
+
+  CustomOpenTherm* setYieldCallback(YieldCallback callback = nullptr) {
+    this->yieldCallback = callback;
+
+    return this;
   }
 
-  void setYieldCallback(void(*yieldCallback)(void*)) {
-    this->yieldCallback = yieldCallback;
-    this->yieldArg = nullptr;
+  CustomOpenTherm* setBeforeSendRequestCallback(BeforeSendRequestCallback callback = nullptr) {
+    this->beforeSendRequestCallback = callback;
+
+    return this;
   }
 
-  void setYieldCallback(void(*yieldCallback)(void*), void* arg) {
-    this->yieldCallback = yieldCallback;
-    this->yieldArg = arg;
+  CustomOpenTherm* setAfterSendRequestCallback(AfterSendRequestCallback callback = nullptr) {
+    this->afterSendRequestCallback = callback;
+
+    return this;
   }
 
   unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
     _attempt++;
     bool antiFreeze = true;
     while (antiFreeze || (this->prevRequestTime > 0 && millis() - this->prevRequestTime <= 200)) {
-      if (this->yieldCallback != nullptr) {
-        this->yieldCallback(yieldArg);
-
+      if (this->yieldCallback) {
+        this->yieldCallback();
       } else {
         ::yield();
       }
@@ -38,6 +40,10 @@ public:
       if (antiFreeze) {
         antiFreeze = false;
       }
+    }
+
+    if (this->beforeSendRequestCallback) {
+      this->beforeSendRequestCallback(request, _attempt);
     }
 
     unsigned long _response;
@@ -52,9 +58,8 @@ public:
           break;
         }
 
-        if (this->yieldCallback != nullptr) {
-          this->yieldCallback(yieldArg);
-
+        if (this->yieldCallback) {
+          this->yieldCallback();
         } else {
           ::yield();
         }
@@ -65,8 +70,8 @@ public:
     this->prevRequestTime = millis();
 
     OpenThermResponseStatus _responseStatus = getLastResponseStatus();
-    if (this->handleSendRequestCallback != nullptr) {
-      this->handleSendRequestCallback(request, _response, _responseStatus, _attempt);
+    if (this->afterSendRequestCallback) {
+      this->afterSendRequestCallback(request, _response, _responseStatus, _attempt);
     }
 
     if (_responseStatus == OpenThermResponseStatus::SUCCESS || _responseStatus == OpenThermResponseStatus::INVALID || _attempt >= attempts) {
@@ -146,4 +151,10 @@ public:
     int16_t value = valueHB;
     return ((value << 8) + valueLB);
   }
+
+protected:
+  YieldCallback yieldCallback;
+  BeforeSendRequestCallback beforeSendRequestCallback;
+  AfterSendRequestCallback afterSendRequestCallback;
+  unsigned long prevRequestTime = 0;
 };

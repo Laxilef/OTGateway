@@ -42,10 +42,10 @@ protected:
   void setup() {
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
 
-    ot->setHandleSendRequestCallback(OpenThermTask::sendRequestCallback);
-    ot->setYieldCallback([](void* self) {
-      static_cast<OpenThermTask*>(self)->delay(25);
-    }, this);
+    ot->setAfterSendRequestCallback(OpenThermTask::sendRequestCallback);
+    ot->setYieldCallback([this]() {
+      this->delay(25);
+    });
     ot->begin(OpenThermTask::handleInterrupt, OpenThermTask::responseCallback);
 
     #ifdef LED_OT_RX_PIN
@@ -589,7 +589,12 @@ protected:
       return false;
     }
 
-    vars.temperatures.heating = ot->getFloat(response);
+    float value = ot->getFloat(response);
+    if (value <= 0) {
+      return false;
+    }
+
+    vars.temperatures.heating = value;
     return true;
   }
 
@@ -600,7 +605,12 @@ protected:
       return false;
     }
 
-    vars.temperatures.dhw = ot->getFloat(response);
+    float value = ot->getFloat(response);
+    if (value <= 0) {
+      return false;
+    }
+
+    vars.temperatures.dhw = value;
     return true;
   }
 
