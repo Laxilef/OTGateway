@@ -72,7 +72,8 @@ public:
       return true;
     }
     #else
-    server.send(200, F("text/html"), "");
+    server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+    server.send(200, "text/html", emptyString);
     #endif
 
     uint8_t* argStartPos = nullptr;
@@ -209,7 +210,7 @@ public:
     #ifdef ARDUINO_ARCH_ESP8266
     server.chunkedResponseFinalize();
     #else
-    server.sendContent("");
+    server.sendContent(emptyString);
     #endif
 
     return true;

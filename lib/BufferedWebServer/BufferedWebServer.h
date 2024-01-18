@@ -16,18 +16,21 @@ public:
       this->webServer->send(505, F("text/html"), F("HTTP1.1 required"));
       return;
     }
-    #else
-    this->webServer->send(code, contentType, "");
-    #endif
 
     this->webServer->setContentLength(measureJson(content));
+    #else
+    this->webServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    this->webServer->sendHeader(F("Content-Length"), String(measureJson(content)));
+    this->webServer->send(code, contentType, emptyString);
+    #endif
+
     serializeJson(content, *this);
     this->flush();
 
     #ifdef ARDUINO_ARCH_ESP8266
     this->webServer->chunkedResponseFinalize();
     #else
-    this->webServer->sendContent("");
+    this->webServer->sendContent(emptyString);
     #endif
   }
 

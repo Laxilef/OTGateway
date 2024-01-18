@@ -171,26 +171,33 @@ function setupNetworkScanForm(formSelector, tableSelector) {
       }
     };
 
-    let attempts = 5;
-    let timer = setInterval(async () => {
+    let attempts = 6;
+    let attemptFn = async () => {
       attempts--;
 
       try {
         let response = await fetch(url, { cache: 'no-cache' });
 
         if (response.status == 200) {
-          clearInterval(timer);
           await onSuccess(response);
 
         } else if (attempts <= 0) {
           await onFailed(response);
+
+        } else {
+          setTimeout(attemptFn, 5000);
         }
 
       } catch (err) {
-        clearInterval(timer);
-        onFailed(err);
+        if (attempts <= 0) {
+          onFailed(err);
+
+        } else {
+          setTimeout(attemptFn, 10000);
+        }
       }
-    }, 2000);
+    };
+    attemptFn();
   };
 
   form.addEventListener('submit', onSubmitFn);

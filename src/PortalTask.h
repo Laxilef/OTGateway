@@ -349,19 +349,11 @@ protected:
 
       auto apCount = WiFi.scanComplete();
       if (apCount <= 0) {
-        WiFi.scanNetworks(true, true);
-        
-        if (apCount == WIFI_SCAN_RUNNING || apCount == WIFI_SCAN_FAILED) {
-          this->webServer->send(202);
-
-        } else if (apCount == 0) {
-          this->webServer->send(200, "application/json", "[]");
-
-        } else {
-          this->webServer->send(500);
+        if (apCount != WIFI_SCAN_RUNNING) {
+          WiFi.scanNetworks(true, true);
         }
-
         
+        this->webServer->send(404);
         return;
       }
       
@@ -374,11 +366,11 @@ protected:
         doc[i]["hidden"] = !ssid.length();
         doc[i]["encryptionType"] = WiFi.encryptionType(i);
       }
-
-      WiFi.scanDelete();
       doc.shrinkToFit();
 
       this->bufferedWebServer->send(200, "application/json", doc);
+
+      WiFi.scanDelete();
     });
 
 
@@ -522,7 +514,7 @@ protected:
 
   void loop() {
     // web server
-    if (!this->stateWebServer()) {
+    if (!this->stateWebServer() && (network->isApEnabled() || network->isStaEnabled())) {
       this->startWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started"));
 
