@@ -167,6 +167,8 @@ protected:
     } else if (!this->connected && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL) {
       Log.sinfoln(FPSTR(L_MQTT), F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
 
+      this->haHelper->setDevicePrefix(settings.mqtt.prefix);
+      this->client->stop();
       this->client->setId(networkSettings.hostname);
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
       this->client->connect(settings.mqtt.server, settings.mqtt.port);
