@@ -241,7 +241,7 @@
             </label>
             <label for="indoor-sensor-ble-addresss">
               BLE addresss
-              <input type="text" class="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" maxlength="17">
+              <input type="text" class="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
               <small>ONLY for some ESP32 which support BLE</small>
             </label>
           </div>
