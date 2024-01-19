@@ -65,15 +65,15 @@
           <div class="grid">
             <label for="opentherm-in-pin">
               In GPIO
-              <input type="number" class="opentherm-in-pin" name="opentherm[inPin]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="opentherm-in-pin" name="opentherm[inPin]" min="0" max="99" step="1" required>
             </label>
             <label for="opentherm-in-pin">
               Out GPIO
-              <input type="number" class="opentherm-out-pin" name="opentherm[outPin]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="opentherm-out-pin" name="opentherm[outPin]" min="0" max="99" step="1" required>
             </label>
             <label for="opentherm-member-id-code">
               Master MemberID code
-              <input type="number" class="opentherm-member-id-code" name="opentherm[memberIdCode]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
             </label>
           </div>
 
@@ -134,7 +134,7 @@
             </label>
             <label for="mqtt-port">
               Port
-              <input type="number" class="mqtt-port" name="mqtt[port]" maxlength="5" required>
+              <input type="number" inputmode="numeric" class="mqtt-port" name="mqtt[port]" min="1" max="65535" step="1" required>
             </label>
           </div>
 
@@ -156,7 +156,7 @@
             </label>
             <label for="mqtt-interval">
               Publish interval <small>(sec)</small>
-              <input type="number" class="mqtt-interval" name="mqtt[interval]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="mqtt-interval" name="mqtt[interval]" min="3" max="60" step="1" required>
             </label>
           </div>
 
@@ -192,11 +192,11 @@
 
           <label for="outdoor-sensor-pin">
             GPIO
-            <input type="number" class="outdoor-sensor-pin" name="sensors[outdoor][pin]" maxlength="2" required>
+            <input type="number" inputmode="numeric" class="outdoor-sensor-pin" name="sensors[outdoor][pin]" min="0" max="99" step="1" required>
           </label>
           <label for="outdoor-sensor-offset">
             Temp offset (calibration)
-            <input type="number" class="outdoor-sensor-offset" name="sensors[outdoor][offset]" maxlength="2" required>
+            <input type="number" inputmode="numeric" class="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-20" max="20" step="0.01" required>
           </label>
 
           <button type="submit">Save</button>
@@ -231,13 +231,13 @@
 
           <label for="indoor-sensor-pin">
             GPIO
-            <input type="number" class="indoor-sensor-pin" name="sensors[indoor][pin]" maxlength="2" required>
+            <input type="number" inputmode="numeric" class="indoor-sensor-pin" name="sensors[indoor][pin]" min="0" max="99" step="1" required>
           </label>
 
           <div class="grid">
             <label for="indoor-sensor-offset">
               Temp offset (calibration)
-              <input type="number" class="indoor-sensor-offset" name="sensors[indoor][offset]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="indoor-sensor-offset" name="sensors[indoor][offset]" min="-20" max="20" step="0.01" required>
             </label>
             <label for="indoor-sensor-ble-addresss">
               BLE addresss
@@ -269,22 +269,22 @@
           <div class="grid">
             <label for="extpump-pin">
               Relay GPIO
-              <input type="number" class="extpump-pin" name="externalPump[pin]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="extpump-pin" name="externalPump[pin]" min="0" max="99" step="1" required>
             </label>
             <label for="extpump-pc-time">
               Post circulation time <small>(min)</small>
-              <input type="number" class="extpump-pc-time" name="externalPump[postCirculationTime]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="extpump-pc-time" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
             </label>
           </div>
 
           <div class="grid">
             <label for="extpump-as-interval">
               Anti stuck interval <small>(days)</small>
-              <input type="number" class="extpump-as-interval" name="externalPump[antiStuckInterval]" maxlength="3" required>
+              <input type="number" inputmode="numeric" class="extpump-as-interval" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
             </label>
             <label for="extpump-as-time">
               Anti stuck time <small>(min)</small>
-              <input type="number" class="extpump-as-time" name="externalPump[antiStuckTime]" maxlength="2" required>
+              <input type="number" inputmode="numeric" class="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
             </label>
           </div>
 

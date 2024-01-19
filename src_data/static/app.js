@@ -4,6 +4,12 @@ function setupForm(formSelector) {
     return;
   }
 
+  form.querySelectorAll('input').forEach(item => {
+    item.addEventListener('change', (e) => {
+      e.target.setAttribute('aria-invalid', !e.target.checkValidity());
+    })
+  });
+
   const url = form.action;
   let button = form.querySelector('button[type="submit"]');
   let defaultText;
