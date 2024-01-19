@@ -42,6 +42,7 @@ protected:
   void setup() {
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
 
+    ot->setMinWaitTimeForStartBit(19000); // 20ms - 5%
     ot->setAfterSendRequestCallback(OpenThermTask::sendRequestCallback);
     ot->setYieldCallback([this]() {
       this->delay(25);
