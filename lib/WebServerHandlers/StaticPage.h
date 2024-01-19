@@ -78,9 +78,11 @@ public:
     if (server._eTagEnabled && this->eTag.length() > 0) {
       server.sendHeader("ETag", this->eTag);
     }
-    #endif
-
+    
     server.streamFile(file, F("text/html"), method);
+    #else
+    server.streamFile(file, F("text/html"), 200);
+    #endif
 
     return true;
   }
