@@ -3,7 +3,7 @@
 #include <PIDtuner.h>
 
 Equitherm etRegulator;
-GyverPID<float, unsigned long> pidRegulator(0, 0, 0);
+GyverPID pidRegulator(0, 0, 0);
 PIDtuner pidTuner;
 
 
