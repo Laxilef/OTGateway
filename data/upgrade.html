@@ -34,7 +34,7 @@
         <form action="/api/backup/restore" id="restore">
           <label for="restore-file">
             Settings file:
-            <input type="file" name="settings" id="restore-file" accept="application/JSON">
+            <input type="file" name="settings" id="restore-file" accept=".json">
           </label>
           
           <div class="grid">
@@ -60,7 +60,7 @@
             <label for="firmware-file">
               Firmware:
               <div class="grid">
-                <input type="file" name="firmware" id="firmware-file" accept="application/x-binary">
+                <input type="file" name="firmware" id="firmware-file" accept=".bin">
                 <button type="button" class="upgrade-firmware-result hidden" disabled></button>
               </div>
             </label>
@@ -68,7 +68,7 @@
             <label for="filesystem-file">
               Filesystem:
               <div class="grid">
-                <input type="file" name="filesystem" id="filesystem-file" accept="application/x-binary">
+                <input type="file" name="filesystem" id="filesystem-file" accept=".bin">
                 <button type="button" class="upgrade-filesystem-result hidden" disabled></button>
               </div>
             </label>
