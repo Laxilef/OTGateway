@@ -41,6 +41,8 @@ All available information and instructions can be found in the wiki:
 
 * [Home](https://github.com/Laxilef/OTGateway/wiki)
    * [Quick Start](https://github.com/Laxilef/OTGateway/wiki#quick-start)
+   * [Build firmware](https://github.com/Laxilef/OTGateway/wiki#build-firmware)
+   * [Flash firmware via ESP Flash Download Tool](https://github.com/Laxilef/OTGateway/wiki#flash-firmware-via-esp-flash-download-tool)
    * [HomeAsssistant settings](https://github.com/Laxilef/OTGateway/wiki#homeasssistant-settings)
       * [External temperature sensors](https://github.com/Laxilef/OTGateway/wiki#external-temperature-sensors)
       * [Reporting indoor/outdoor temperature from any Home Assistant sensor](https://github.com/Laxilef/OTGateway/wiki#reporting-indooroutdoor-temperature-from-any-home-assistant-sensor)
@@ -70,13 +72,13 @@ All available information and instructions can be found in the wiki:
 - [ESP32Scheduler](https://github.com/laxilef/ESP32Scheduler) (for ESP32)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
-- [PubSubClient](https://github.com/knolleary/pubsubclient)
+- [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient) /
 - [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet)
-- [EEManager](https://github.com/GyverLibs/EEManager)
+- [FileData](https://github.com/GyverLibs/FileData)
 - [GyverPID](https://github.com/GyverLibs/GyverPID)
 - [GyverBlinker](https://github.com/GyverLibs/GyverBlinker)
 - [DallasTemperature](https://github.com/milesburton/Arduino-Temperature-Control-Library)
-- [WiFiManager](https://github.com/tzapu/WiFiManager)
+- [TinyLogger](https://github.com/laxilef/TinyLogger)
 
 ## Debug
 To display DEBUG messages you must enable debug in settings (switch is disabled by default).
