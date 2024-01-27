@@ -33,7 +33,7 @@
         <form action="/api/network/settings" id="network-settings" class="hidden">
           <label for="hostname">
             Hostname
-            <input type="text" class="network-hostname" name="hostname" maxlength="24" pattern="^[A-Za-z0-9]+[A-Za-z0-9\-]*[A-Za-z0-9]+$" required>
+            <input type="text" class="network-hostname" name="hostname" maxlength="24" pattern="[A-Za-z0-9]+[A-Za-z0-9\-]+[A-Za-z0-9]+" required>
           </label>
           <label for="network-use-dhcp">
             <input type="checkbox" class="network-use-dhcp" name="useDhcp" value="true">
