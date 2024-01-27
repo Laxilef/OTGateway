@@ -29,17 +29,15 @@ public:
 
   unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
     _attempt++;
-    bool antiFreeze = true;
-    while (antiFreeze || (this->prevRequestTime > 0 && millis() - this->prevRequestTime <= 200)) {
+
+    while (!this->isReady()) {
       if (this->yieldCallback) {
         this->yieldCallback();
       } else {
         ::yield();
       }
 
-      if (antiFreeze) {
-        antiFreeze = false;
-      }
+      this->process();
     }
 
     if (this->beforeSendRequestCallback) {
@@ -47,29 +45,27 @@ public:
     }
 
     unsigned long _response;
-    if (!sendRequestAync(request)) {
+    OpenThermResponseStatus _responseStatus = OpenThermResponseStatus::NONE;
+    if (!this->sendRequestAync(request)) {
       _response = 0;
-      
+
     } else {
       while (true) {
-        process();
+        this->process();
 
-        if (isReady()) {
+        if (this->status == OpenThermStatus::READY || this->status == OpenThermStatus::DELAY) {
           break;
-        }
-
-        if (this->yieldCallback) {
+        } else if (this->yieldCallback) {
           this->yieldCallback();
         } else {
           ::yield();
         }
       }
 
-      _response = getLastResponse();
+      _response = this->getLastResponse();
+      _responseStatus = this->getLastResponseStatus();
     }
-    this->prevRequestTime = millis();
 
-    OpenThermResponseStatus _responseStatus = getLastResponseStatus();
     if (this->afterSendRequestCallback) {
       this->afterSendRequestCallback(request, _response, _responseStatus, _attempt);
     }
@@ -78,56 +74,90 @@ public:
       return _response;
 
     } else {
-      return sendRequest(request, attempts, _attempt);
+      return this->sendRequest(request, attempts, _attempt);
     }
   }
 
   unsigned long setBoilerStatus(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2, bool summerWinterMode, bool dhwBlocking) {
-    return sendRequest(buildSetBoilerStatusRequest(enableCentralHeating, enableHotWater, enableCooling, enableOutsideTemperatureCompensation, enableCentralHeating2, summerWinterMode, dhwBlocking));
-  }
-
-  unsigned long buildSetBoilerStatusRequest(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2, bool summerWinterMode, bool dhwBlocking) {
-    unsigned int data = enableCentralHeating | (enableHotWater << 1) | (enableCooling << 2) | (enableOutsideTemperatureCompensation << 3) | (enableCentralHeating2 << 4) | (summerWinterMode << 5) | (dhwBlocking << 6);
+    unsigned int data = enableCentralHeating
+      | (enableHotWater << 1)
+      | (enableCooling << 2)
+      | (enableOutsideTemperatureCompensation << 3)
+      | (enableCentralHeating2 << 4)
+      | (summerWinterMode << 5)
+      | (dhwBlocking << 6);
     data <<= 8;
-    return buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::Status, data);
+
+    return this->sendRequest(this->buildRequest(
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Status,
+      data
+    ));
   }
 
   bool setHeatingCh1Temp(float temperature) {
-    unsigned int data = temperatureToData(temperature);
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TSet, data));
+    unsigned long response = this->sendRequest(this->buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TSet,
+      this->temperatureToData(temperature)
+    ));
+
     return isValidResponse(response);
   }
 
   bool setHeatingCh2Temp(float temperature) {
-    unsigned int data = temperatureToData(temperature);
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TsetCH2, data));
+    unsigned long response = this->sendRequest(this->buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TsetCH2,
+      this->temperatureToData(temperature)
+    ));
+
     return isValidResponse(response);
   }
 
   bool setDhwTemp(float temperature) {
-    unsigned int data = temperatureToData(temperature);
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TdhwSet, data));
+    unsigned long response = this->sendRequest(this->buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TdhwSet,
+      this->temperatureToData(temperature)
+    ));
+
     return isValidResponse(response);
   }
 
   bool sendBoilerReset() {
     unsigned int data = 1;
     data <<= 8;
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::Command, data));
+    unsigned long response = this->sendRequest(this->buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::Command,
+      data
+    ));
+
     return isValidResponse(response);
   }
 
   bool sendServiceReset() {
     unsigned int data = 10;
     data <<= 8;
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::Command, data));
+    unsigned long response = this->sendRequest(this->buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::Command,
+      data
+    ));
+
     return isValidResponse(response);
   }
 
   bool sendWaterFilling() {
     unsigned int data = 2;
     data <<= 8;
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::Command, data));
+    unsigned long response = this->sendRequest(this->buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::Command,
+      data
+    ));
+
     return isValidResponse(response);
   }
 
@@ -136,12 +166,12 @@ public:
     const byte valueLB = response & 0xFF;
     const byte valueHB = (response >> 8) & 0xFF;
 
-    float value = (int8_t) valueHB;
-    return value + (float) valueLB / 256.0;
+    float value = (int8_t)valueHB;
+    return value + (float)valueLB / 256.0;
   }
 
   template <class T> unsigned int toF88(T val) {
-    return (unsigned int) (val * 256);
+    return (unsigned int)(val * 256);
   }
 
   int16_t fromS16(unsigned long response) {
@@ -156,5 +186,4 @@ protected:
   YieldCallback yieldCallback;
   BeforeSendRequestCallback beforeSendRequestCallback;
   AfterSendRequestCallback afterSendRequestCallback;
-  unsigned long prevRequestTime = 0;
 };
