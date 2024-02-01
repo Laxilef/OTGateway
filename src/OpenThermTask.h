@@ -66,7 +66,7 @@ protected:
       this->delay(25);
     });
 
-    ot->setMinWaitTimeForStartBit(19500);
+    ot->setMinWaitTimeForStartBit(20000);
     ot->begin(OpenThermTask::handleInterrupt);
 
     #ifdef LED_OT_RX_PIN
