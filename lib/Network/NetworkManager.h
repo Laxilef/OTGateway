@@ -3,6 +3,7 @@
 #include "lwip/etharp.h"
 #elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
+#include <esp_wifi.h>
 #endif
 #include <NetworkConnection.h>
 
@@ -144,27 +145,41 @@ namespace Network {
     }
 
     bool resetWifi() {
+      // set policy manual for work 13 ch
+      {
+        wifi_country_t country = {"CN", 1, 13, WIFI_COUNTRY_POLICY_MANUAL};
+        #ifdef ARDUINO_ARCH_ESP8266
+        wifi_set_country(&country);
+        #elif defined(ARDUINO_ARCH_ESP32)
+        esp_wifi_set_country(&country);
+        #endif
+      }
+
       WiFi.persistent(false);
       WiFi.setAutoConnect(false);
       WiFi.setAutoReconnect(false);
 
       #ifdef ARDUINO_ARCH_ESP8266
       WiFi.setSleepMode(WIFI_NONE_SLEEP);
-
-      /*if (wifi_softap_dhcps_status() == DHCP_STARTED) {
-        wifi_softap_dhcps_stop();
-      }*/
       #elif defined(ARDUINO_ARCH_ESP32)
       WiFi.setSleep(WIFI_PS_NONE);
       #endif
-      WiFi.softAPdisconnect();
 
-      /*#ifdef ARDUINO_ARCH_ESP8266
-      if (wifi_station_dhcpc_status() == DHCP_STARTED) {
-        wifi_station_dhcpc_stop();
-      }
-      #endif*/
+      WiFi.softAPdisconnect();
+      #ifdef ARDUINO_ARCH_ESP8266
+      /*if (wifi_softap_dhcps_status() == DHCP_STARTED) {
+        wifi_softap_dhcps_stop();
+      }*/
+      #endif
+
       WiFi.disconnect(false, true);
+      #ifdef ARDUINO_ARCH_ESP8266
+      /*if (wifi_station_dhcpc_status() == DHCP_STARTED) {
+        wifi_station_dhcpc_stop();
+      }*/
+
+      wifi_station_dhcpc_set_maxtry(5);
+      #endif
 
       return WiFi.mode(WIFI_OFF);
     }
@@ -246,6 +261,8 @@ namespace Network {
       if (this->isConnected() && !this->hasStaCredentials()) {
         Log.sinfoln(FPSTR(L_NETWORK), F("Reset"));
         this->resetWifi();
+        Connection::reset();
+        this->delayCallback(200);
 
       } else if (this->isConnected() && !this->reconnectFlag) {
         if (!this->connected) {
@@ -303,6 +320,8 @@ namespace Network {
         } else if (this->isConnecting() && millis() - this->prevReconnectingTime > this->resetConnectionTimeout) {
           Log.swarningln(FPSTR(L_NETWORK), F("Connection timeout, reset wifi..."));
           this->resetWifi();
+          Connection::reset();
+          this->delayCallback(200);
 
         } else if (!this->isConnecting() && this->hasStaCredentials() && (!this->prevReconnectingTime || millis() - this->prevReconnectingTime > this->reconnectInterval)) {
           Log.sinfoln(FPSTR(L_NETWORK), F("Try connect..."));
@@ -324,9 +343,9 @@ namespace Network {
 
   protected:
     const unsigned int reconnectInterval = 5000;
-    const unsigned int failedConnectTimeout = 30000; // 120000
+    const unsigned int failedConnectTimeout = 120000;
     const unsigned int connectionTimeout = 15000;
-    const unsigned int resetConnectionTimeout = 60000;
+    const unsigned int resetConnectionTimeout = 30000;
 
     YieldCallback yieldCallback = []() {
       ::yield();
