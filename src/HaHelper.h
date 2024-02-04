@@ -1030,7 +1030,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_flow_rate"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_flow_rate"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("volume");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("volume_flow_rate");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
     doc[FPSTR(HA_NAME)] = F("DHW flow rate");
