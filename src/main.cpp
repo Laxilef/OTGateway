@@ -100,7 +100,7 @@ void setup() {
       if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
         Log.swarningln(FPSTR(L_SETTINGS), F("Not valid, set default and restart..."));
         fsSettings.reset();
-        delay(5000);
+        ::delay(5000);
         ESP.restart();
       }
       break;

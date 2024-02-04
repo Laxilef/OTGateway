@@ -73,7 +73,7 @@ public:
     this->webServer->sendContent((const char*)this->buffer, this->bufferPos);
     this->bufferPos = 0;
     #ifdef ARDUINO_ARCH_ESP8266
-    ::yield();
+    ::delay(0);
     #endif
   }
 

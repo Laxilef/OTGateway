@@ -97,12 +97,12 @@ protected:
     }
 
     if (network->isConnected()) {
+      vars.sensors.rssi = WiFi.RSSI();
+
       if (!this->telnetStarted && telnetStream != nullptr) {
         telnetStream->begin(23, false);
         this->telnetStarted = true;
       }
-
-      vars.sensors.rssi = WiFi.RSSI();
 
       if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
         tMqtt->enable();
@@ -161,6 +161,9 @@ protected:
     for (Stream* stream : Log.getStreams()) {
       while (stream->available() > 0) {
         stream->read();
+        #ifdef ARDUINO_ARCH_ESP8266
+        ::delay(0);
+        #endif
       }
     }
 
@@ -179,8 +182,8 @@ protected:
     unsigned int freeHeap = getFreeHeap();
     unsigned int maxFreeBlockHeap = getMaxFreeBlockHeap();
 
-    if (!vars.actions.restart && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
-      vars.actions.restart = true;
+    if (!this->restartSignalTime && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
+      this->restartSignalTime = millis();
     }
 
     if (!settings.system.debug) {
@@ -299,7 +302,7 @@ protected:
     }
 
     if (vars.states.externalPump && !this->heatingEnabled) {
-      if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > ((unsigned int) settings.externalPump.postCirculationTime * 1000)) {
+      if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
         digitalWrite(settings.externalPump.pin, false);
 
         vars.states.externalPump = false;
@@ -307,7 +310,7 @@ protected:
 
         Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
 
-      } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= ((unsigned int) settings.externalPump.antiStuckTime * 1000)) {
+      } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
         digitalWrite(settings.externalPump.pin, false);
 
         vars.states.externalPump = false;
@@ -328,7 +331,7 @@ protected:
 
       Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
 
-    } else if (!vars.states.externalPump && (vars.parameters.extPumpLastEnableTime == 0 || millis() - vars.parameters.extPumpLastEnableTime >= ((unsigned long) settings.externalPump.antiStuckInterval * 1000))) {
+    } else if (!vars.states.externalPump && (vars.parameters.extPumpLastEnableTime == 0 || millis() - vars.parameters.extPumpLastEnableTime >= (settings.externalPump.antiStuckInterval * 1000ul))) {
       vars.states.externalPump = true;
       this->externalPumpStartTime = millis();
       this->externalPumpStartReason = MainTask::REASON_PUMP_START_ANTISTUCK;

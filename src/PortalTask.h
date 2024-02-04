@@ -44,7 +44,7 @@ public:
   }
 
 protected:
-  const unsigned int changeStateInterval = 1000;
+  const unsigned int changeStateInterval = 5000;
 
   WebServer* webServer = nullptr;
   BufferedWebServer* bufferedWebServer = nullptr;
@@ -514,12 +514,20 @@ protected:
 
   void loop() {
     // web server
-    if (!this->stateWebServer() && (network->isApEnabled() || network->isStaEnabled())) {
+    if (!this->stateWebServer() && (network->isApEnabled() || network->isConnected()) && millis() - this->webServerChangeState >= this->changeStateInterval) {
       this->startWebServer();
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started"));
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::esp_yield();
+      ::delay(0);
+      #endif
+
+    } else if (this->stateWebServer() && !network->isApEnabled() && !network->isStaEnabled()) {
+      this->stopWebServer();
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
+
+      #ifdef ARDUINO_ARCH_ESP8266
+      ::delay(0);
       #endif
     }
 
@@ -529,22 +537,22 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
       
       #ifdef ARDUINO_ARCH_ESP8266
-      ::esp_yield();
+      ::delay(0);
       #endif
 
-    } else if (this->stateDnsServer() && (!network->isApEnabled() || !this->stateWebServer()) && millis() - this->dnsServerChangeState >= this->changeStateInterval) {
+    } else if (this->stateDnsServer() && (!network->isApEnabled() || !this->stateWebServer())) {
       this->stopDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down"));
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::esp_yield();
+      ::delay(0);
       #endif
     }
 
     if (this->stateDnsServer()) {
       this->dnsServer->processNextRequest();
       #ifdef ARDUINO_ARCH_ESP8266
-      ::esp_yield();
+      ::delay(0);
       #endif
     }
 

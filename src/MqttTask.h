@@ -38,7 +38,6 @@ public:
 
   void disable() {
     this->client->stop();
-    this->wifiClient->stop();
     Task::disable();
 
     Log.sinfoln(FPSTR(L_MQTT), F("Disabled"));
@@ -90,11 +89,10 @@ protected:
     // wificlient settings
     #ifdef ARDUINO_ARCH_ESP8266
     this->wifiClient->setSync(true);
-    this->wifiClient->setTimeout(1000);
+    this->wifiClient->setNoDelay(true);
     #endif
 
     // client settings
-    //this->client->setClient(*this->wifiClient);
     this->client->setKeepAliveInterval(15000);
     this->client->setTxPayloadSize(256);
     #ifdef ARDUINO_ARCH_ESP8266
@@ -128,7 +126,7 @@ protected:
       Log.straceln(FPSTR(L_MQTT), F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::yield();
+      ::delay(0);
       #endif
 
       //this->client->poll();
@@ -137,9 +135,13 @@ protected:
 
     #ifdef ARDUINO_ARCH_ESP8266
     this->writer->setFlushEventCallback([this] (size_t, size_t) {
-      this->client->flush();
-      this->wifiClient->flush();
-      ::yield();
+      ::delay(0);
+
+      if (this->wifiClient->connected()) {
+        this->wifiClient->flush();
+      }
+
+      ::delay(0);
     });
     #endif
 
@@ -173,6 +175,7 @@ protected:
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
       this->client->connect(settings.mqtt.server, settings.mqtt.port);
       this->lastReconnectTime = millis();
+      this->yield();
 
     } else if (!this->connected && this->client->connected()) {
       this->connected = true;
@@ -192,10 +195,6 @@ protected:
       return;
     }
 
-    #ifdef ARDUINO_ARCH_ESP8266
-    ::yield();
-    #endif
-
     this->client->poll();
 
     // delay for publish data
@@ -204,11 +203,11 @@ protected:
     }
 
     #ifdef ARDUINO_ARCH_ESP8266
-    ::yield();
+    ::delay(0);
     #endif
 
     // publish variables and status
-    if (this->newConnection || millis() - this->prevPubVarsTime > ((unsigned int) settings.mqtt.interval * 1000)) {
+    if (this->newConnection || millis() - this->prevPubVarsTime > (settings.mqtt.interval * 1000u)) {
       this->writer->publish(
         this->haHelper->getDeviceTopic("status").c_str(),
         !vars.states.otStatus ? "offline" : vars.states.fault ? "fault" : "online",
@@ -220,7 +219,7 @@ protected:
     }
 
     // publish settings
-    if (this->newConnection || millis() - this->prevPubSettingsTime > ((unsigned int) settings.mqtt.interval * 10000)) {
+    if (this->newConnection || millis() - this->prevPubSettingsTime > (settings.mqtt.interval * 10000u)) {
       this->publishSettings(this->haHelper->getDeviceTopic("settings").c_str());
       this->prevPubSettingsTime = millis();
     }
