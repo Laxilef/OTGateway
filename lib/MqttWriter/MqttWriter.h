@@ -128,7 +128,7 @@ public:
     size_t written = 0;
     bool result = false;
     if (!length || buffer == nullptr) {
-      result = this->client->beginMessage(topic, 0, retained) && this->client->endMessage();
+      result = this->client->beginMessage(topic, retained) && this->client->endMessage();
 
     } else if (this->client->beginMessage(topic, length, retained)) {
       this->write(buffer, length);
