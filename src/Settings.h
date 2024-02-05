@@ -12,7 +12,7 @@ struct NetworkSettings {
   struct {
     char ssid[33] = AP_SSID_DEFAULT;
     char password[65] = AP_PASSWORD_DEFAULT;
-    byte channel = 1;
+    byte channel = 6;
   } ap;
 
   struct {
