@@ -162,7 +162,7 @@ namespace Network {
       #ifdef ARDUINO_ARCH_ESP8266
       WiFi.setSleepMode(WIFI_NONE_SLEEP);
       #elif defined(ARDUINO_ARCH_ESP32)
-      WiFi.setSleep(WIFI_PS_NONE);
+      WiFi.setSleep(USE_BLE ? WIFI_PS_MIN_MODEM : WIFI_PS_NONE);
       #endif
 
       WiFi.softAPdisconnect();
@@ -309,12 +309,14 @@ namespace Network {
           Log.sinfoln(FPSTR(L_NETWORK), F("No STA credentials, start AP"));
 
           WiFi.mode(WIFI_AP_STA);
+          this->delayCallback(250);
           WiFi.softAP(this->apName, this->apPassword, this->apChannel);
 
         } else if (!this->isApEnabled() && millis() - this->disconnectedTime > this->failedConnectTimeout) {
           Log.sinfoln(FPSTR(L_NETWORK), F("Disconnected for a long time, start AP"));
 
           WiFi.mode(WIFI_AP_STA);
+          this->delayCallback(250);
           WiFi.softAP(this->apName, this->apPassword, this->apChannel);
 
         } else if (this->isConnecting() && millis() - this->prevReconnectingTime > this->resetConnectionTimeout) {
