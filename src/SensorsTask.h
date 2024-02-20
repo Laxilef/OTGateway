@@ -3,13 +3,6 @@
 
 #if USE_BLE
   #include <NimBLEDevice.h>
-
-  // BLE services and characterstics that we are interested in
-  const uint16_t bleUuidServiceBattery = 0x180F;
-  const uint16_t bleUuidServiceEnvironment = 0x181AU;
-  const uint16_t bleUuidCharacteristicBatteryLevel = 0x2A19;
-  const uint16_t bleUuidCharacteristicTemperature = 0x2A6E;
-  const uint16_t bleUuidCharacteristicHumidity = 0x2A6F;
 #endif
 
 class SensorsTask : public LeanTask {
@@ -25,21 +18,10 @@ public:
   }
 
   ~SensorsTask() {
-    if (this->outdoorSensor != nullptr) {
-      delete this->outdoorSensor;
-    }
-
-    if (this->oneWireOutdoorSensor != nullptr) {
-      delete this->oneWireOutdoorSensor;
-    }
-
-    if (this->indoorSensor != nullptr) {
-      delete this->indoorSensor;
-    }
-
-    if (this->oneWireIndoorSensor != nullptr) {
-      delete this->oneWireIndoorSensor;
-    }
+    delete this->outdoorSensor;
+    delete this->oneWireOutdoorSensor;
+    delete this->indoorSensor;
+    delete this->oneWireIndoorSensor;
   }
 
 protected:
@@ -61,9 +43,8 @@ protected:
 
 #if USE_BLE
   BLEClient* pBleClient = nullptr;
-  BLERemoteService* pBleServiceBattery = nullptr;
-  BLERemoteService* pBleServiceEnvironment = nullptr;
   bool initBleSensor = false;
+  bool initBleNotify = false;
 #endif
 
   const char* getTaskName() {
@@ -88,58 +69,135 @@ protected:
     }
 
 #if USE_BLE
-    if (settings.sensors.indoor.type == 3 && strlen(settings.sensors.indoor.bleAddresss)) {
+    if (settings.sensors.indoor.type == 3) {
       bluetoothSensor();
     }
 #endif
+
+    if (fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
+      vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
+      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
+    }
+
+    if (fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
+      vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
+      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
+    }
   }
 
 #if USE_BLE
   void bluetoothSensor() {
+    static bool initBleNotify = false;
     if (!initBleSensor && millis() > 5000) {
-      Log.sinfoln(FPSTR(L_SENSORS_BLE), "Init BLE. Free heap %u bytes", ESP.getFreeHeap());
+      Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Init BLE"));
       BLEDevice::init("");
 
-      pBleClient = BLEDevice::createClient();   
+      pBleClient = BLEDevice::createClient();
+      pBleClient->setConnectTimeout(5); 
 
-      // Connect to the remote BLE Server.
-      BLEAddress bleServerAddress(std::string(settings.sensors.indoor.bleAddresss));
-      if (pBleClient->connect(bleServerAddress)) {
-        Log.sinfoln(FPSTR(L_SENSORS_BLE), "Connected to BLE device at %s", bleServerAddress.toString().c_str());
-        // Obtain a reference to the services we are interested in
-        pBleServiceBattery = pBleClient->getService(BLEUUID(bleUuidServiceBattery));
-        if (pBleServiceBattery == nullptr) {
-          Log.sinfoln(FPSTR(L_SENSORS_BLE), "Failed to find battery service");
-        }
-        pBleServiceEnvironment = pBleClient->getService(BLEUUID(bleUuidServiceEnvironment));
-        if (pBleServiceEnvironment == nullptr) {
-          Log.sinfoln(FPSTR(L_SENSORS_BLE), "Failed to find environmental service");
-        }
-
-      } else {
-        Log.swarningln(FPSTR(L_SENSORS_BLE), "Error connecting to BLE device at %s", bleServerAddress.toString().c_str());
-      }
-      
       initBleSensor = true;
     }
 
-    if (pBleClient && pBleClient->isConnected()) {
-      Log.straceln(FPSTR(L_SENSORS_BLE), "Connected. Free heap %u bytes", ESP.getFreeHeap());
-      if (pBleServiceBattery) {
-        uint8_t batteryLevel = *reinterpret_cast<const uint8_t *>(pBleServiceBattery->getValue(bleUuidCharacteristicBatteryLevel).data());
-        Log.straceln(FPSTR(L_SENSORS_BLE), "Battery: %d", batteryLevel);
-      }
+    if (!initBleSensor || pBleClient->isConnected()) {
+      return;
+    }
+    
+    // Reset init notify flag
+    this->initBleNotify = false;
 
-      if (pBleServiceEnvironment) {
-        float temperature = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicTemperature).data()) / 100.0f;
-        Log.straceln(FPSTR(L_SENSORS_BLE), "Temperature: %.2f", temperature);
-        float humidity = *reinterpret_cast<const int16_t *>(pBleServiceEnvironment->getValue(bleUuidCharacteristicHumidity).data()) / 100.0f;
-        Log.straceln(FPSTR(L_SENSORS_BLE), "Humidity: %.2f", humidity);
+    // Connect to the remote BLE Server.
+    BLEAddress bleServerAddress(settings.sensors.indoor.bleAddresss);
+    if (!pBleClient->connect(bleServerAddress)) {
+      Log.swarningln(FPSTR(L_SENSORS_BLE), "Failed connecting to device at %s", bleServerAddress.toString().c_str());
+      return;
+    }
 
-        vars.temperatures.indoor = temperature + settings.sensors.indoor.offset;
+    Log.sinfoln(FPSTR(L_SENSORS_BLE), "Connected to device at %s", bleServerAddress.toString().c_str());
+
+    NimBLEUUID serviceUUID((uint16_t) 0x181AU);
+    BLERemoteService* pRemoteService = pBleClient->getService(serviceUUID);
+    if (!pRemoteService) {
+      Log.straceln(FPSTR(L_SENSORS_BLE), F("Failed to find service UUID: %s"), serviceUUID.toString().c_str());
+      return;
+    }
+
+    Log.straceln(FPSTR(L_SENSORS_BLE), F("Found service UUID: %s"), serviceUUID.toString().c_str());
+
+    // 0x2A6E - Notify temperature x0.01C (pvvx)
+    if (!this->initBleNotify) {
+      NimBLEUUID charUUID((uint16_t) 0x2A6E);
+      BLERemoteCharacteristic* pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+      if (pRemoteCharacteristic && pRemoteCharacteristic->canNotify()) {
+        Log.straceln(FPSTR(L_SENSORS_BLE), F("Found characteristic UUID: %s"), charUUID.toString().c_str());
+
+        this->initBleNotify = pRemoteCharacteristic->subscribe(true, [this](NimBLERemoteCharacteristic*, uint8_t* pData, size_t length, bool isNotify) {
+          if (length != 2) {
+            Log.swarningln(FPSTR(L_SENSORS_BLE), F("Invalid notification data"));
+            return;
+          }
+
+          float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.01);
+          Log.straceln(FPSTR(L_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
+
+          if (this->emptyIndoorTemp) {
+            this->filteredIndoorTemp = rawTemp;
+            this->emptyIndoorTemp = false;
+
+          } else {
+            this->filteredIndoorTemp += (rawTemp - this->filteredIndoorTemp) * EXT_SENSORS_FILTER_K;
+          }
+
+          this->filteredIndoorTemp = floor(this->filteredIndoorTemp * 100) / 100;
+        });
+
+        if (this->initBleNotify) {
+          Log.straceln(FPSTR(L_SENSORS_BLE), F("Subscribed to characteristic UUID: %s"), charUUID.toString().c_str());
+
+        } else {
+          Log.swarningln(FPSTR(L_SENSORS_BLE), F("Failed to subscribe to characteristic UUID: %s"), charUUID.toString().c_str());
+        }
       }
-    } else {
-      Log.straceln(FPSTR(L_SENSORS_BLE), "Not connected");
+    }
+
+    // 0x2A1F - Notify temperature x0.1C (atc1441/pvvx)
+    if (!this->initBleNotify) {
+      NimBLEUUID charUUID((uint16_t) 0x2A1F);
+      BLERemoteCharacteristic* pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+      if (pRemoteCharacteristic && pRemoteCharacteristic->canNotify()) {
+        Log.straceln(FPSTR(L_SENSORS_BLE), F("Found characteristic UUID: %s"), charUUID.toString().c_str());
+
+        this->initBleNotify = pRemoteCharacteristic->subscribe(true, [this](NimBLERemoteCharacteristic*, uint8_t* pData, size_t length, bool isNotify) {
+          if (length != 2) {
+            Log.swarningln(FPSTR(L_SENSORS_BLE), F("Invalid notification data"));
+            return;
+          }
+
+          float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.1);
+          Log.straceln(FPSTR(L_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
+
+          if (this->emptyIndoorTemp) {
+            this->filteredIndoorTemp = rawTemp;
+            this->emptyIndoorTemp = false;
+
+          } else {
+            this->filteredIndoorTemp += (rawTemp - this->filteredIndoorTemp) * EXT_SENSORS_FILTER_K;
+          }
+
+          this->filteredIndoorTemp = floor(this->filteredIndoorTemp * 100) / 100;
+        });
+
+        if (this->initBleNotify) {
+          Log.straceln(FPSTR(L_SENSORS_BLE), F("Subscribed to characteristic UUID: %s"), charUUID.toString().c_str());
+          
+        } else {
+          Log.swarningln(FPSTR(L_SENSORS_BLE), F("Failed to subscribe to characteristic UUID: %s"), charUUID.toString().c_str());
+        }
+      }
+    }
+
+    if (!this->initBleNotify) {
+      Log.swarningln(FPSTR(L_SENSORS_BLE), F("Not found supported characteristics"));
+      pBleClient->disconnect();
     }
   }
 #endif
@@ -205,12 +263,6 @@ protected:
       }
 
       this->filteredOutdoorTemp = floor(this->filteredOutdoorTemp * 100) / 100;
-
-      if (fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
-        vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
-        Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), this->filteredOutdoorTemp);
-      }
-
       this->outdoorSensor->requestTemperatures();
       this->startOutdoorConversionTime = millis();
     }
@@ -277,12 +329,6 @@ protected:
       }
 
       this->filteredIndoorTemp = floor(this->filteredIndoorTemp * 100) / 100;
-
-      if (fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
-        vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
-        Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), this->filteredIndoorTemp);
-      }
-
       this->indoorSensor->requestTemperatures();
       this->startIndoorConversionTime = millis();
     }
