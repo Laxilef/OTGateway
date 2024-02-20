@@ -28,9 +28,7 @@ public:
   }
 
   ~PortalTask() {
-    if (this->bufferedWebServer != nullptr) {
-      delete this->bufferedWebServer;
-    }
+    delete this->bufferedWebServer;
 
     if (this->webServer != nullptr) {
       this->stopWebServer();

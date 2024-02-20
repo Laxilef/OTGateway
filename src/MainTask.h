@@ -20,14 +20,11 @@ public:
   }
 
   ~MainTask() {
-    if (this->blinker != nullptr) {
-      delete this->blinker;
-    }
+    delete this->blinker;
   }
 
 protected:
-  const static byte REASON_PUMP_START_HEATING = 1;
-  const static byte REASON_PUMP_START_ANTISTUCK = 2;
+  enum class PumpStartReason {NONE, HEATING, ANTISTUCK};
 
   Blinker* blinker = nullptr;
   bool blinkerInitialized = false;
@@ -38,7 +35,7 @@ protected:
   unsigned long restartSignalTime = 0;
   bool heatingEnabled = false;
   unsigned long heatingDisabledTime = 0;
-  byte externalPumpStartReason;
+  PumpStartReason extPumpStartReason = PumpStartReason::NONE;
   unsigned long externalPumpStartTime = 0;
   bool telnetStarted = false;
 
@@ -57,12 +54,12 @@ protected:
   void setup() {
     #ifdef LED_STATUS_PIN
       pinMode(LED_STATUS_PIN, OUTPUT);
-      digitalWrite(LED_STATUS_PIN, false);
+      digitalWrite(LED_STATUS_PIN, LOW);
     #endif
 
     if (settings.externalPump.pin != 0) {
       pinMode(settings.externalPump.pin, OUTPUT);
-      digitalWrite(settings.externalPump.pin, false);
+      digitalWrite(settings.externalPump.pin, LOW);
     }
   }
 
@@ -250,14 +247,14 @@ protected:
     if (!this->blinker->running() && millis() - endBlinkTime >= 5000) {
       if (errCount == 0) {
         if (!ledOn) {
-          digitalWrite(ledPin, true);
+          digitalWrite(ledPin, HIGH);
           ledOn = true;
         }
 
         return;
 
       } else if (ledOn) {
-        digitalWrite(ledPin, false);
+        digitalWrite(ledPin, LOW);
         ledOn = false;
         endBlinkTime = millis();
         return;
@@ -289,7 +286,7 @@ protected:
     if (!settings.externalPump.use || settings.externalPump.pin == 0) {
       if (vars.states.externalPump) {
         if (settings.externalPump.pin != 0) {
-          digitalWrite(settings.externalPump.pin, false);
+          digitalWrite(settings.externalPump.pin, LOW);
         }
 
         vars.states.externalPump = false;
@@ -302,16 +299,16 @@ protected:
     }
 
     if (vars.states.externalPump && !this->heatingEnabled) {
-      if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
-        digitalWrite(settings.externalPump.pin, false);
+      if (this->extPumpStartReason == MainTask::PumpStartReason::HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
+        digitalWrite(settings.externalPump.pin, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
 
         Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
 
-      } else if (this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
-        digitalWrite(settings.externalPump.pin, false);
+      } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
+        digitalWrite(settings.externalPump.pin, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
@@ -319,24 +316,24 @@ protected:
         Log.sinfoln("EXTPUMP", F("Disabled: expired anti stuck time"));
       }
 
-    } else if (vars.states.externalPump && this->heatingEnabled && this->externalPumpStartReason == MainTask::REASON_PUMP_START_ANTISTUCK) {
-      this->externalPumpStartReason = MainTask::REASON_PUMP_START_HEATING;
+    } else if (vars.states.externalPump && this->heatingEnabled && this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK) {
+      this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
     } else if (!vars.states.externalPump && this->heatingEnabled) {
       vars.states.externalPump = true;
       this->externalPumpStartTime = millis();
-      this->externalPumpStartReason = MainTask::REASON_PUMP_START_HEATING;
+      this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
-      digitalWrite(settings.externalPump.pin, true);
+      digitalWrite(settings.externalPump.pin, HIGH);
 
       Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
 
     } else if (!vars.states.externalPump && (vars.parameters.extPumpLastEnableTime == 0 || millis() - vars.parameters.extPumpLastEnableTime >= (settings.externalPump.antiStuckInterval * 1000ul))) {
       vars.states.externalPump = true;
       this->externalPumpStartTime = millis();
-      this->externalPumpStartReason = MainTask::REASON_PUMP_START_ANTISTUCK;
+      this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;
 
-      digitalWrite(settings.externalPump.pin, true);
+      digitalWrite(settings.externalPump.pin, HIGH);
 
       Log.sinfoln("EXTPUMP", F("Enabled: anti stuck"));
     }

@@ -159,7 +159,7 @@ protected:
       if (vars.parameters.heatingEnabled) {
         float pidResult = getPidTemp(
           settings.equitherm.enable ? (settings.pid.maxTemp * -1) : settings.pid.minTemp,
-          settings.equitherm.enable ? settings.pid.maxTemp : settings.pid.maxTemp
+          settings.pid.maxTemp
         );
 
         if (fabs(prevPidResult - pidResult) + 0.0001 >= 0.5) {

@@ -232,7 +232,7 @@ bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
   }
 
 
-  // ap
+  // sta
   if (!src["sta"]["ssid"].isNull()) {
     String value = src["sta"]["ssid"].as<String>();
 
@@ -329,7 +329,19 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   dst["sensors"]["indoor"]["type"] = src.sensors.indoor.type;
   dst["sensors"]["indoor"]["pin"] = src.sensors.indoor.pin;
-  dst["sensors"]["indoor"]["bleAddresss"] = src.sensors.indoor.bleAddresss;
+
+  char bleAddress[18];
+  sprintf(
+    bleAddress,
+    "%02x:%02x:%02x:%02x:%02x:%02x",
+    src.sensors.indoor.bleAddresss[0],
+    src.sensors.indoor.bleAddresss[1],
+    src.sensors.indoor.bleAddresss[2],
+    src.sensors.indoor.bleAddresss[3],
+    src.sensors.indoor.bleAddresss[4],
+    src.sensors.indoor.bleAddresss[5]
+  );
+  dst["sensors"]["indoor"]["bleAddresss"] = String(bleAddress);
   dst["sensors"]["indoor"]["offset"] = roundd(src.sensors.indoor.offset, 2);
 
   if (!safe) {
@@ -486,7 +498,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["mqtt"]["port"].isNull()) {
       unsigned short value = src["mqtt"]["port"].as<unsigned short>();
 
-      if (value >= 0 && value <= 65536) {
+      if (value > 0 && value <= 65535) {
         dst.mqtt.port = value;
         changed = true;
       }
@@ -821,9 +833,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   #if USE_BLE
   if (!src["sensors"]["indoor"]["bleAddresss"].isNull()) {
     String value = src["sensors"]["indoor"]["bleAddresss"].as<String>();
+    int tmp[6];
+    if(sscanf(value.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) == 6) {
+      for(uint8_t i = 0; i < 6; i++) {
+        dst.sensors.indoor.bleAddresss[i] = (uint8_t) tmp[i];
+      }
 
-    if (value.length() < sizeof(dst.sensors.indoor.bleAddresss)) {
-      strcpy(dst.sensors.indoor.bleAddresss, value.c_str());
       changed = true;
     }
   }

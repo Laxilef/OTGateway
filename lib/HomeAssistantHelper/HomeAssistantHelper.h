@@ -6,7 +6,7 @@ class HomeAssistantHelper {
 public:
   typedef std::function<void(const char*, bool)> PublishEventCallback;
 
-  HomeAssistantHelper() {}
+  HomeAssistantHelper() = default;
 
   void setWriter() {
     this->writer = nullptr;

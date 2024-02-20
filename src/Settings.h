@@ -110,7 +110,7 @@ struct Settings {
       // 1 - manual, 2 - ds18b20, 3 - ble
       byte type = 1;
       byte pin = SENSOR_INDOOR_PIN_DEFAULT;
-      char bleAddresss[18] = "00:00:00:00:00:00";
+      uint8_t bleAddresss[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       float offset = 0.0f;
     } indoor;
   } sensors;
@@ -166,17 +166,17 @@ struct Variables {
     unsigned long extPumpLastEnableTime = 0;
     byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
     byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;
-    byte maxModulation;
-    uint8_t slaveMemberId;
-    uint8_t slaveFlags;
-    uint8_t slaveType;
-    uint8_t slaveVersion;
-    float slaveOtVersion;
-    uint8_t masterMemberId;
-    uint8_t masterFlags;
-    uint8_t masterType;
-    uint8_t masterVersion;
-    float masterOtVersion;
+    byte maxModulation = 0;
+    uint8_t slaveMemberId = 0;
+    uint8_t slaveFlags = 0;
+    uint8_t slaveType = 0;
+    uint8_t slaveVersion = 0;
+    float slaveOtVersion = 0.0f;
+    uint8_t masterMemberId = 0;
+    uint8_t masterFlags = 0;
+    uint8_t masterType = 0;
+    uint8_t masterVersion = 0;
+    float masterOtVersion = 0;
   } parameters;
 
   struct {

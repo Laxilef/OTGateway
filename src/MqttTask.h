@@ -15,9 +15,7 @@ public:
   }
 
   ~MqttTask() {
-    if (this->haHelper != nullptr) {
-      delete this->haHelper;
-    }
+    delete this->haHelper;
 
     if (this->client != nullptr) {
       if (this->client->connected()) {
@@ -27,13 +25,8 @@ public:
       delete this->client;
     }
 
-    if (this->writer != nullptr) {
-      delete this->writer;
-    }
-
-    if (this->wifiClient != nullptr) {
-      delete this->wifiClient;
-    }
+    delete this->writer;
+    delete this->wifiClient;
   }
 
   void disable() {

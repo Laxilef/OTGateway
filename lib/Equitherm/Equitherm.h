@@ -17,7 +17,7 @@ public:
   float Kk = 0.0;
   float Kt = 0.0;
 
-  Equitherm() {}
+  Equitherm() = default;
 
   // kn, kk, kt
   Equitherm(float new_kn, float new_kk, float new_kt) {

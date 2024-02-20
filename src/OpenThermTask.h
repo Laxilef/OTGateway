@@ -54,9 +54,9 @@ protected:
 
         #ifdef LED_OT_RX_PIN
         {
-          digitalWrite(LED_OT_RX_PIN, true);
+          digitalWrite(LED_OT_RX_PIN, HIGH);
           delayMicroseconds(2000);
-          digitalWrite(LED_OT_RX_PIN, false);
+          digitalWrite(LED_OT_RX_PIN, LOW);
         }
         #endif
       }
@@ -71,7 +71,7 @@ protected:
 
     #ifdef LED_OT_RX_PIN
       pinMode(LED_OT_RX_PIN, OUTPUT);
-      digitalWrite(LED_OT_RX_PIN, false);
+      digitalWrite(LED_OT_RX_PIN, LOW);
     #endif
   }
 

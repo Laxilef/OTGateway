@@ -415,7 +415,7 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"target\" : {{ value|int(0) }}}}");
     doc[FPSTR(HA_MIN)] = minTemp;
-    doc[FPSTR(HA_MAX)] = maxTemp <= minTemp ? maxTemp : maxTemp;
+    doc[FPSTR(HA_MAX)] = maxTemp > minTemp ? maxTemp : minTemp;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;

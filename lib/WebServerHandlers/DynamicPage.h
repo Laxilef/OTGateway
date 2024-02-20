@@ -177,7 +177,6 @@ public:
 
         } else {
           sizeArgName = length - size_t(argStartPos - currentBuf) - 1;
-          Serial.printf("sizeArgName: %d\r\n", sizeArgName);
 
           // send all content if arg len > space
           if (sizeArgName >= sizeof(argName)) {
