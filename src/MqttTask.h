@@ -201,12 +201,7 @@ protected:
 
     // publish variables and status
     if (this->newConnection || millis() - this->prevPubVarsTime > (settings.mqtt.interval * 1000u)) {
-      this->writer->publish(
-        this->haHelper->getDeviceTopic("status").c_str(),
-        !vars.states.otStatus ? "offline" : vars.states.fault ? "fault" : "online",
-        true
-      );
-
+      this->writer->publish(this->haHelper->getDeviceTopic("status").c_str(), "online", false);
       this->publishVariables(this->haHelper->getDeviceTopic("state").c_str());
       this->prevPubVarsTime = millis();
     }
@@ -321,10 +316,6 @@ protected:
   }
 
   void publishHaEntities() {
-    // main
-    this->haHelper->publishNumberOutdoorSensorOffset(false);
-    this->haHelper->publishNumberIndoorSensorOffset(false);
-
     // emergency
     this->haHelper->publishSwitchEmergency();
     this->haHelper->publishNumberEmergencyTarget();

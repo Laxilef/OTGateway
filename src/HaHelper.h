@@ -6,59 +6,6 @@ public:
   static const byte TEMP_SOURCE_HEATING = 0;
   static const byte TEMP_SOURCE_INDOOR = 1;
 
-  bool publishNumberOutdoorSensorOffset(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.outdoor.type != 1, 'online', 'offline') }}");
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_sensor_offset"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_sensor_offset"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
-    doc[FPSTR(HA_NAME)] = F("Outdoor sensor offset");
-    doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.outdoor.offset|float(0)|round(2) }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"outdoor\" : {\"offset\" : {{ value }}}}}");
-    doc[FPSTR(HA_MIN)] = -10;
-    doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.1;
-    doc[FPSTR(HA_MODE)] = "box";
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("outdoor_sensor_offset")).c_str(), doc);
-  }
-
-  bool publishNumberIndoorSensorOffset(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.indoor.type != 1, 'online', 'offline') }}");
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_sensor_offset"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_sensor_offset"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
-    doc[FPSTR(HA_NAME)] = F("Indoor sensor offset");
-    doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.indoor.offset|float(0)|round(2) }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"sensors\": {\"indoor\" : {\"offset\" : {{ value }}}}}");
-    doc[FPSTR(HA_MIN)] = -10;
-    doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.1;
-    doc[FPSTR(HA_MODE)] = "box";
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("indoor_sensor_offset")).c_str(), doc);
-  }
-
-
   bool publishSwitchEmergency(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -266,7 +213,10 @@ public:
 
   bool publishSensorBoilerHeatingMinTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("boiler_heating_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("boiler_heating_min_temp"));
@@ -286,7 +236,10 @@ public:
 
   bool publishSensorBoilerHeatingMaxTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("boiler_heating_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("boiler_heating_max_temp"));
@@ -426,7 +379,10 @@ public:
 
   bool publishSensorBoilerDhwMinTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("boiler_dhw_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("boiler_dhw_min_temp"));
@@ -446,7 +402,10 @@ public:
 
   bool publishSensorBoilerDhwMaxTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("boiler_dhw_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("boiler_dhw_max_temp"));
@@ -780,7 +739,6 @@ public:
   bool publishSelectTuningRegulator(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"tuning\": {\"regulator\": {% if value == 'Equitherm' %}0{% elif value == 'PID' %}1{% endif %}}}");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -835,7 +793,10 @@ public:
 
   bool publishBinSensorHeating(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating"));
@@ -853,7 +814,10 @@ public:
 
   bool publishBinSensorDhw(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw"));
@@ -871,7 +835,10 @@ public:
 
   bool publishBinSensorFlame(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("flame"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("flame"));
@@ -889,8 +856,10 @@ public:
 
   bool publishBinSensorFault(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("fault"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("fault"));
@@ -908,7 +877,10 @@ public:
 
   bool publishBinSensorDiagnostic(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("diagnostic"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("diagnostic"));
@@ -926,8 +898,10 @@ public:
 
   bool publishSensorFaultCode(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.fault, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus and value_json.states.fault, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("fault_code"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("fault_code"));
@@ -985,7 +959,10 @@ public:
 
   bool publishSensorModulation(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("modulation_level"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("modulation_level"));
@@ -1005,7 +982,10 @@ public:
 
   bool publishSensorPressure(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pressure"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pressure"));
@@ -1025,7 +1005,10 @@ public:
 
   bool publishSensorDhwFlowRate(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_flow_rate"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_flow_rate"));
@@ -1069,8 +1052,7 @@ public:
 
   bool publishSensorIndoorTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("any");
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_temp"));
@@ -1113,8 +1095,7 @@ public:
 
   bool publishSensorOutdoorTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("any");
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_temp"));
@@ -1134,7 +1115,10 @@ public:
 
   bool publishSensorHeatingTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_temp"));
@@ -1154,7 +1138,10 @@ public:
 
   bool publishSensorDhwTemp(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_temp"));
