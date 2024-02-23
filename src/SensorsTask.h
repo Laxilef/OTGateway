@@ -60,26 +60,32 @@ protected:
   }
 
   void loop() {
+    bool needUpdateIndoorTemp = false;
+    bool needUpdateOutdoorTemp = false;
+
     if (settings.sensors.outdoor.type == 2 && settings.sensors.outdoor.pin) {
       outdoorTemperatureSensor();
+      needUpdateOutdoorTemp = true;
     }
 
     if (settings.sensors.indoor.type == 2 && settings.sensors.indoor.pin) {
       indoorTemperatureSensor();
+      needUpdateIndoorTemp = true;
     }
 
 #if USE_BLE
     if (settings.sensors.indoor.type == 3) {
       bluetoothSensor();
+      needUpdateIndoorTemp = true;
     }
 #endif
 
-    if (fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
+    if (needUpdateOutdoorTemp && fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
       vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
       Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
     }
 
-    if (fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
+    if (needUpdateIndoorTemp && fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
       vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
       Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
     }
