@@ -16,7 +16,7 @@
    - PID
    - Equithermic curves - adjusts the temperature based on indoor and outdoor temperatures
 - Hysteresis setting (for accurate maintenance of room temperature)
-- Ability to connect an external sensors to monitor outdoor and indoor temperature ([compatible sensors](#compatible-temperature-sensors))
+- Ability to connect an external sensors to monitor outdoor and indoor temperature ([compatible sensors](https://github.com/Laxilef/OTGateway/wiki/Compatibility#temperature-sensors))
 - Emergency mode. If the Wi-Fi connection is lost or the gateway cannot connect to the MQTT server, the mode will turn on. This mode will automatically maintain the set temperature and prevent your home from freezing. In this mode it is also possible to use equithermal curves (weather-compensated control).
 - Automatic error reset (not with all boilers)
 - Diagnostics:
@@ -72,7 +72,7 @@ All available information and instructions can be found in the wiki:
 - [ESP32Scheduler](https://github.com/laxilef/ESP32Scheduler) (for ESP32)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library)
-- [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient) /
+- [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient)
 - [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet)
 - [FileData](https://github.com/GyverLibs/FileData)
 - [GyverPID](https://github.com/GyverLibs/GyverPID)
