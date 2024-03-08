@@ -69,7 +69,7 @@ protected:
   }*/
 
   int getTaskPriority() {
-    return 1;
+    return 2;
   }
 
   bool isReadyForSend() {

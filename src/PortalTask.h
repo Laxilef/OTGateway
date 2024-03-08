@@ -62,7 +62,7 @@ protected:
   }*/
 
   int getTaskPriority() {
-    return 0;
+    return 1;
   }
 
   void setup() {

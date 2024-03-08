@@ -9,10 +9,6 @@ public:
     ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
   }
 
-  static void IRAM_ATTR handleInterrupt() {
-    ot->handleInterrupt();
-  }
-
 protected:
   unsigned short readyTime = 60000;
   unsigned short dhwSetTempInterval = 60000;
@@ -36,7 +32,7 @@ protected:
   }
 
   int getTaskPriority() {
-    return 2;
+    return 5;
   }
 
   void setup() {
@@ -46,7 +42,7 @@ protected:
       Log.straceln(
         FPSTR(L_OT),
         F("ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"),
-        ot->getDataID(request), request, response, attempt, ot->statusToString(status)
+        CustomOpenTherm::getDataID(request), request, response, attempt, CustomOpenTherm::statusToString(status)
       );
 
       if (status == OpenThermResponseStatus::SUCCESS) {
@@ -66,8 +62,7 @@ protected:
       this->delay(25);
     });
 
-    ot->setMinWaitTimeForStartBit(20000);
-    ot->begin(OpenThermTask::handleInterrupt);
+    ot->begin();
 
     #ifdef LED_OT_RX_PIN
       pinMode(LED_OT_RX_PIN, OUTPUT);
@@ -133,8 +128,8 @@ protected:
       settings.opentherm.dhwBlocking
     );
 
-    if (!ot->isValidResponse(localResponse)) {
-      Log.swarningln(FPSTR(L_OT), F("Invalid response after setBoilerStatus: %s"), ot->statusToString(ot->getLastResponseStatus()));
+    if (!CustomOpenTherm::isValidResponse(localResponse)) {
+      Log.swarningln(FPSTR(L_OT), F("Invalid response after setBoilerStatus: %s"), CustomOpenTherm::statusToString(ot->getLastResponseStatus()));
     }
 
     if (!vars.states.otStatus && millis() - this->lastSuccessResponse < 1150) {
@@ -166,11 +161,11 @@ protected:
       Log.sinfoln(FPSTR(L_OT_HEATING), "%s", heatingEnabled ? F("Enabled") : F("Disabled"));
     }
 
-    vars.states.heating = ot->isCentralHeatingActive(localResponse);
-    vars.states.dhw = settings.opentherm.dhwPresent ? ot->isHotWaterActive(localResponse) : false;
-    vars.states.flame = ot->isFlameOn(localResponse);
-    vars.states.fault = ot->isFault(localResponse);
-    vars.states.diagnostic = ot->isDiagnostic(localResponse);
+    vars.states.heating = CustomOpenTherm::isCentralHeatingActive(localResponse);
+    vars.states.dhw = settings.opentherm.dhwPresent ? CustomOpenTherm::isHotWaterActive(localResponse) : false;
+    vars.states.flame = CustomOpenTherm::isFlameOn(localResponse);
+    vars.states.fault = CustomOpenTherm::isFault(localResponse);
+    vars.states.diagnostic = CustomOpenTherm::isDiagnostic(localResponse);
 
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
@@ -391,13 +386,13 @@ protected:
   }
 
   bool updateSlaveConfig() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::SConfigSMemberIDcode,
       0
     ));
     
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -452,23 +447,23 @@ protected:
       return true;
     }
 
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MConfigMMemberIDcode,
       request
     ));
 
-    return ot->isValidResponse(response);
+    return CustomOpenTherm::isValidResponse(response);
   }
 
   bool setMaxModulationLevel(byte value) {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MaxRelModLevelSetting,
       ot->toF88(value)
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -477,28 +472,28 @@ protected:
   }
 
   bool updateSlaveOtVersion() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::OpenThermVersionSlave,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    vars.parameters.slaveOtVersion = ot->getFloat(response);
+    vars.parameters.slaveOtVersion = CustomOpenTherm::getFloat(response);
     return true;
   }
 
   bool setMasterOtVersion(float version) {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::OpenThermVersionMaster,
       ot->toF88(version)
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -508,13 +503,13 @@ protected:
   }
 
   bool updateSlaveVersion() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::SlaveVersion,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -525,13 +520,13 @@ protected:
   }
 
   bool setMasterVersion(uint8_t version, uint8_t type) {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MasterVersion,
       (unsigned int) version | (unsigned int) type << 8
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -542,13 +537,13 @@ protected:
   }
 
   bool updateMinMaxDhwTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::TdhwSetUBTdhwSetLB,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -566,13 +561,13 @@ protected:
   }
 
   bool updateMinMaxHeatingTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::MaxTSetUBMaxTSetLB,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -589,42 +584,42 @@ protected:
   }
 
   bool setMaxHeatingTemp(byte value) {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::MaxTSet,
-      ot->temperatureToData(value)
+      CustomOpenTherm::temperatureToData(value)
     ));
 
-    return ot->isValidResponse(response);
+    return CustomOpenTherm::isValidResponse(response);
   }
 
   bool updateOutsideTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::Toutside,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    vars.temperatures.outdoor = ot->getFloat(response) + settings.sensors.outdoor.offset;
+    vars.temperatures.outdoor = CustomOpenTherm::getFloat(response) + settings.sensors.outdoor.offset;
     return true;
   }
 
   bool updateHeatingTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::Tboiler,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    float value = ot->getFloat(response);
+    float value = CustomOpenTherm::getFloat(response);
     if (value <= 0) {
       return false;
     }
@@ -635,17 +630,17 @@ protected:
 
 
   bool updateDhwTemp() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::Tdhw,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    float value = ot->getFloat(response);
+    float value = CustomOpenTherm::getFloat(response);
     if (value <= 0) {
       return false;
     }
@@ -655,17 +650,17 @@ protected:
   }
 
   bool updateDhwFlowRate() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::DHWFlowRate,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
     
-    float value = ot->getFloat(response);
+    float value = CustomOpenTherm::getFloat(response);
     if (value > 16 && this->dhwFlowRateMultiplier != 10) {
       this->dhwFlowRateMultiplier = 10;
     }
@@ -675,13 +670,13 @@ protected:
   }
 
   bool updateFaultCode() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::ASFflags,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -690,13 +685,13 @@ protected:
   }
 
   bool updateModulationLevel() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::RelModLevel,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
@@ -711,17 +706,17 @@ protected:
   }
 
   bool updatePressure() {
-    unsigned long response = ot->sendRequest(ot->buildRequest(
+    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::CHPressure,
       0
     ));
 
-    if (!ot->isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    float value = ot->getFloat(response);
+    float value = CustomOpenTherm::getFloat(response);
     if (value > 5 && this->pressureMultiplier != 10) {
       this->pressureMultiplier = 10;
     }

@@ -46,7 +46,7 @@ public:
 
     unsigned long _response;
     OpenThermResponseStatus _responseStatus = OpenThermResponseStatus::NONE;
-    if (!this->sendRequestAync(request)) {
+    if (!this->sendRequestAsync(request)) {
       _response = 0;
 
     } else {
@@ -88,7 +88,7 @@ public:
       | (dhwBlocking << 6);
     data <<= 8;
 
-    return this->sendRequest(this->buildRequest(
+    return this->sendRequest(buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::Status,
       data
@@ -96,30 +96,30 @@ public:
   }
 
   bool setHeatingCh1Temp(float temperature) {
-    unsigned long response = this->sendRequest(this->buildRequest(
+    unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::TSet,
-      this->temperatureToData(temperature)
+      temperatureToData(temperature)
     ));
 
     return isValidResponse(response);
   }
 
   bool setHeatingCh2Temp(float temperature) {
-    unsigned long response = this->sendRequest(this->buildRequest(
+    unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::TsetCH2,
-      this->temperatureToData(temperature)
+      temperatureToData(temperature)
     ));
 
     return isValidResponse(response);
   }
 
   bool setDhwTemp(float temperature) {
-    unsigned long response = this->sendRequest(this->buildRequest(
+    unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::TdhwSet,
-      this->temperatureToData(temperature)
+      temperatureToData(temperature)
     ));
 
     return isValidResponse(response);
@@ -128,9 +128,9 @@ public:
   bool sendBoilerReset() {
     unsigned int data = 1;
     data <<= 8;
-    unsigned long response = this->sendRequest(this->buildRequest(
+    unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::Command,
+      OpenThermMessageID::RemoteRequest,
       data
     ));
 
@@ -140,9 +140,9 @@ public:
   bool sendServiceReset() {
     unsigned int data = 10;
     data <<= 8;
-    unsigned long response = this->sendRequest(this->buildRequest(
+    unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::Command,
+      OpenThermMessageID::RemoteRequest,
       data
     ));
 
@@ -152,9 +152,9 @@ public:
   bool sendWaterFilling() {
     unsigned int data = 2;
     data <<= 8;
-    unsigned long response = this->sendRequest(this->buildRequest(
+    unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::Command,
+      OpenThermMessageID::RemoteRequest,
       data
     ));
 
