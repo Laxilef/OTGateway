@@ -273,8 +273,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["portal"]["login"] = src.portal.login;
     dst["portal"]["password"] = src.portal.password;
 
-    dst["opentherm"]["inPin"] = src.opentherm.inPin;
-    dst["opentherm"]["outPin"] = src.opentherm.outPin;
+    dst["opentherm"]["inGpio"] = src.opentherm.inGpio;
+    dst["opentherm"]["outGpio"] = src.opentherm.outGpio;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
     dst["opentherm"]["dhwPresent"] = src.opentherm.dhwPresent;
     dst["opentherm"]["summerWinterMode"] = src.opentherm.summerWinterMode;
@@ -324,11 +324,11 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dst["equitherm"]["t_factor"] = roundd(src.equitherm.t_factor, 3);
 
   dst["sensors"]["outdoor"]["type"] = src.sensors.outdoor.type;
-  dst["sensors"]["outdoor"]["pin"] = src.sensors.outdoor.pin;
+  dst["sensors"]["outdoor"]["gpio"] = src.sensors.outdoor.gpio;
   dst["sensors"]["outdoor"]["offset"] = roundd(src.sensors.outdoor.offset, 2);
 
   dst["sensors"]["indoor"]["type"] = src.sensors.indoor.type;
-  dst["sensors"]["indoor"]["pin"] = src.sensors.indoor.pin;
+  dst["sensors"]["indoor"]["gpio"] = src.sensors.indoor.gpio;
 
   char bleAddress[18];
   sprintf(
@@ -346,7 +346,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   if (!safe) {
     dst["externalPump"]["use"] = src.externalPump.use;
-    dst["externalPump"]["pin"] = src.externalPump.pin;
+    dst["externalPump"]["gpio"] = src.externalPump.gpio;
     dst["externalPump"]["postCirculationTime"] = roundd(src.externalPump.postCirculationTime / 60, 0);
     dst["externalPump"]["antiStuckInterval"] = roundd(src.externalPump.antiStuckInterval / 86400, 0);
     dst["externalPump"]["antiStuckTime"] = roundd(src.externalPump.antiStuckTime / 60, 0);
@@ -404,21 +404,37 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
 
     // opentherm
-    if (!src["opentherm"]["inPin"].isNull()) {
-      unsigned char value = src["opentherm"]["inPin"].as<unsigned char>();
+    if (!src["opentherm"]["inGpio"].isNull()) {
+      if (src["opentherm"]["inGpio"].is<JsonString>() && src["opentherm"]["inGpio"].as<JsonString>().size() == 0) {
+        if (dst.opentherm.inGpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.opentherm.inGpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["opentherm"]["inGpio"].as<unsigned char>();
 
-      if (value >= 0 && value < 50) {
-        dst.opentherm.inPin = value;
-        changed = true;
+        if (value >= 0 && value <= 254) {
+          dst.opentherm.inGpio = value;
+          changed = true;
+        }
       }
     }
     
-    if (!src["opentherm"]["outPin"].isNull()) {
-      unsigned char value = src["opentherm"]["outPin"].as<unsigned char>();
+    if (!src["opentherm"]["outGpio"].isNull()) {
+      if (src["opentherm"]["outGpio"].is<JsonString>() && src["opentherm"]["outGpio"].as<JsonString>().size() == 0) {
+        if (dst.opentherm.outGpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.opentherm.outGpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["opentherm"]["outGpio"].as<unsigned char>();
 
-      if (value >= 0 && value < 50) {
-        dst.opentherm.outPin = value;
-        changed = true;
+        if (value >= 0 && value <= 254) {
+          dst.opentherm.outGpio = value;
+          changed = true;
+        }
       }
     }
 
@@ -789,12 +805,20 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src["sensors"]["outdoor"]["pin"].isNull()) {
-    unsigned char value = src["sensors"]["outdoor"]["pin"].as<unsigned char>();
+  if (!src["sensors"]["outdoor"]["gpio"].isNull()) {
+    if (src["sensors"]["outdoor"]["gpio"].is<JsonString>() && src["sensors"]["outdoor"]["gpio"].as<JsonString>().size() == 0) {
+      if (dst.sensors.outdoor.gpio != GPIO_IS_NOT_CONFIGURED) {
+        dst.sensors.outdoor.gpio = GPIO_IS_NOT_CONFIGURED;
+        changed = true;
+      }
+      
+    } else {
+      unsigned char value = src["sensors"]["outdoor"]["gpio"].as<unsigned char>();
 
-    if (value >= 0 && value <= 50) {
-      dst.sensors.outdoor.pin = value;
-      changed = true;
+      if (value >= 0 && value <= 254) {
+        dst.sensors.outdoor.gpio = value;
+        changed = true;
+      }
     }
   }
 
@@ -821,12 +845,20 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src["sensors"]["indoor"]["pin"].isNull()) {
-    unsigned char value = src["sensors"]["indoor"]["pin"].as<unsigned char>();
-
-    if (value >= 0 && value <= 50) {
-      dst.sensors.indoor.pin = value;
-      changed = true;
+  if (!src["sensors"]["indoor"]["gpio"].isNull()) {
+    if (src["sensors"]["indoor"]["gpio"].is<JsonString>() && src["sensors"]["indoor"]["gpio"].as<JsonString>().size() == 0) {
+      if (dst.sensors.indoor.gpio != GPIO_IS_NOT_CONFIGURED) {
+        dst.sensors.indoor.gpio = GPIO_IS_NOT_CONFIGURED;
+        changed = true;
+      }
+      
+    } else {
+      unsigned char value = src["sensors"]["indoor"]["gpio"].as<unsigned char>();
+      
+      if (value >= 0 && value <= 254) {
+        dst.sensors.indoor.gpio = value;
+        changed = true;
+      }
     }
   }
 
@@ -861,12 +893,20 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       changed = true;
     }
 
-    if (!src["externalPump"]["pin"].isNull()) {
-      unsigned char value = src["externalPump"]["pin"].as<unsigned char>();
+    if (!src["externalPump"]["gpio"].isNull()) {
+      if (src["externalPump"]["gpio"].is<JsonString>() && src["externalPump"]["gpio"].as<JsonString>().size() == 0) {
+        if (dst.externalPump.gpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.externalPump.gpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["externalPump"]["gpio"].as<unsigned char>();
 
-      if (value >= 0 && value <= 50) {
-        dst.externalPump.pin = value;
-        changed = true;
+        if (value >= 0 && value <= 254) {
+          dst.externalPump.gpio = value;
+          changed = true;
+        }
       }
     }
 

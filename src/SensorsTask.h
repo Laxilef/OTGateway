@@ -60,39 +60,38 @@ protected:
   }
 
   void loop() {
-    bool needUpdateIndoorTemp = false;
-    bool needUpdateOutdoorTemp = false;
+    bool indoorTempUpdated = false;
+    bool outdoorTempUpdated = false;
 
-    if (settings.sensors.outdoor.type == 2 && settings.sensors.outdoor.pin) {
+    if (settings.sensors.outdoor.type == 2 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
       outdoorTemperatureSensor();
-      needUpdateOutdoorTemp = true;
+      outdoorTempUpdated = true;
     }
 
-    if (settings.sensors.indoor.type == 2 && settings.sensors.indoor.pin) {
+    if (settings.sensors.indoor.type == 2 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
       indoorTemperatureSensor();
-      needUpdateIndoorTemp = true;
+      indoorTempUpdated = true;
     }
-
 #if USE_BLE
-    if (settings.sensors.indoor.type == 3) {
-      bluetoothSensor();
-      needUpdateIndoorTemp = true;
+    else if (settings.sensors.indoor.type == 3) {
+      indoorTemperatureBluetoothSensor();
+      indoorTempUpdated = true;
     }
 #endif
 
-    if (needUpdateOutdoorTemp && fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
+    if (outdoorTempUpdated && fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
       vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
       Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
     }
 
-    if (needUpdateIndoorTemp && fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
+    if (indoorTempUpdated && fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
       vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
       Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
     }
   }
 
 #if USE_BLE
-  void bluetoothSensor() {
+  void indoorTemperatureBluetoothSensor() {
     static bool initBleNotify = false;
     if (!initBleSensor && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Init BLE"));
@@ -210,9 +209,9 @@ protected:
 
   void outdoorTemperatureSensor() {
     if (!this->initOutdoorSensor) {
-      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on gpio %hhu..."), settings.sensors.outdoor.pin);
+      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on gpio %hhu..."), settings.sensors.outdoor.gpio);
 
-      this->oneWireOutdoorSensor->begin(settings.sensors.outdoor.pin);
+      this->oneWireOutdoorSensor->begin(settings.sensors.outdoor.gpio);
       this->outdoorSensor->begin();
 
       Log.straceln(
@@ -276,9 +275,9 @@ protected:
 
   void indoorTemperatureSensor() {
     if (!this->initIndoorSensor) {
-      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on gpio %hhu..."), settings.sensors.indoor.pin);
+      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on gpio %hhu..."), settings.sensors.indoor.gpio);
 
-      this->oneWireIndoorSensor->begin(settings.sensors.indoor.pin);
+      this->oneWireIndoorSensor->begin(settings.sensors.indoor.gpio);
       this->indoorSensor->begin();
 
       Log.straceln(

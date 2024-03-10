@@ -143,7 +143,7 @@ void setup() {
   tMqtt = new MqttTask(false, 500);
   Scheduler.start(tMqtt);
 
-  tOt = new OpenThermTask(false, 750);
+  tOt = new OpenThermTask(true, 750);
   Scheduler.start(tOt);
 
   tSensors = new SensorsTask(true, EXT_SENSORS_INTERVAL);

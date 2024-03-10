@@ -8,6 +8,7 @@ public:
   typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, byte)> AfterSendRequestCallback;
 
   CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
+  ~CustomOpenTherm() {}
 
   CustomOpenTherm* setYieldCallback(YieldCallback callback = nullptr) {
     this->yieldCallback = callback;

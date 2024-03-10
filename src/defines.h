@@ -4,9 +4,6 @@
 
 #define EMERGENCY_TIME_TRESHOLD     120000
 #define MQTT_RECONNECT_INTERVAL     15000
-#define MQTT_KEEPALIVE              30
-
-#define OPENTHERM_OFFLINE_TRESHOLD  10
 
 #define EXT_SENSORS_INTERVAL        5000
 #define EXT_SENSORS_FILTER_K        0.15
@@ -14,15 +11,11 @@
 #define CONFIG_URL                  "http://%s/"
 #define SETTINGS_VALID_VALUE        "stvalid" // only 8 chars!
 
+#define GPIO_IS_NOT_CONFIGURED      0xff
 #define DEFAULT_HEATING_MIN_TEMP    20
 #define DEFAULT_HEATING_MAX_TEMP    90
 #define DEFAULT_DHW_MIN_TEMP        30
 #define DEFAULT_DHW_MAX_TEMP        60
-
-
-#ifndef WM_DEBUG_MODE
-  #define WM_DEBUG_MODE WM_DEBUG_NOTIFY
-#endif
 
 #ifndef USE_SERIAL
   #define USE_SERIAL true
@@ -36,80 +29,86 @@
   #define USE_BLE false
 #endif
 
-#ifndef HOSTNAME_DEFAULT
-  #define HOSTNAME_DEFAULT "opentherm"
+#ifndef DEFAULT_HOSTNAME
+  #define DEFAULT_HOSTNAME "opentherm"
 #endif
 
-#ifndef AP_SSID_DEFAULT
-  #define AP_SSID_DEFAULT "OpenTherm Gateway"
+#ifndef DEFAULT_AP_SSID
+  #define DEFAULT_AP_SSID "OpenTherm Gateway"
 #endif
 
-#ifndef AP_PASSWORD_DEFAULT
-  #define AP_PASSWORD_DEFAULT "otgateway123456"
+#ifndef DEFAULT_AP_PASSWORD
+  #define DEFAULT_AP_PASSWORD "otgateway123456"
 #endif
 
-#ifndef STA_SSID_DEFAULT
-  #define STA_SSID_DEFAULT ""
+#ifndef DEFAULT_STA_SSID
+  #define DEFAULT_STA_SSID ""
 #endif
 
-#ifndef STA_PASSWORD_DEFAULT
-  #define STA_PASSWORD_DEFAULT ""
+#ifndef DEFAULT_STA_PASSWORD
+  #define DEFAULT_STA_PASSWORD ""
 #endif
 
 #ifndef DEBUG_BY_DEFAULT
   #define DEBUG_BY_DEFAULT false
 #endif
 
-#ifndef PORTAL_LOGIN_DEFAULT
-  #define PORTAL_LOGIN_DEFAULT ""
+#ifndef DEFAULT_PORTAL_LOGIN
+  #define DEFAULT_PORTAL_LOGIN ""
 #endif
 
-#ifndef PORTAL_PASSWORD_DEFAULT
-  #define PORTAL_PASSWORD_DEFAULT ""
+#ifndef DEFAULT_PORTAL_PASSWORD
+  #define DEFAULT_PORTAL_PASSWORD ""
 #endif
 
-#ifndef MQTT_SERVER_DEFAULT
-  #define MQTT_SERVER_DEFAULT ""
+#ifndef DEFAULT_MQTT_SERVER
+  #define DEFAULT_MQTT_SERVER ""
 #endif
 
-#ifndef MQTT_PORT_DEFAULT
-  #define MQTT_PORT_DEFAULT 1883
+#ifndef DEFAULT_MQTT_PORT
+  #define DEFAULT_MQTT_PORT 1883
 #endif
 
-#ifndef MQTT_USER_DEFAULT
-  #define MQTT_USER_DEFAULT ""
+#ifndef DEFAULT_MQTT_USER
+  #define DEFAULT_MQTT_USER ""
 #endif
 
-#ifndef MQTT_PASSWORD_DEFAULT
-  #define MQTT_PASSWORD_DEFAULT ""
+#ifndef DEFAULT_MQTT_PASSWORD
+  #define DEFAULT_MQTT_PASSWORD ""
 #endif
 
-#ifndef MQTT_PREFIX_DEFAULT
-  #define MQTT_PREFIX_DEFAULT "opentherm"
+#ifndef DEFAULT_MQTT_PREFIX
+  #define DEFAULT_MQTT_PREFIX "opentherm"
 #endif
 
-#ifndef OT_IN_PIN_DEFAULT
-  #define OT_IN_PIN_DEFAULT 0
+#ifndef DEFAULT_OT_IN_GPIO
+  #define DEFAULT_OT_IN_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
-#ifndef OT_OUT_PIN_DEFAULT
-  #define OT_OUT_PIN_DEFAULT 0
+#ifndef DEFAULT_OT_OUT_GPIO
+  #define DEFAULT_OT_OUT_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
-#ifndef SENSOR_OUTDOOR_PIN_DEFAULT
-  #define SENSOR_OUTDOOR_PIN_DEFAULT 0
+#ifndef DEFAULT_SENSOR_OUTDOOR_GPIO
+  #define DEFAULT_SENSOR_OUTDOOR_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
-#ifndef SENSOR_INDOOR_PIN_DEFAULT
-  #define SENSOR_INDOOR_PIN_DEFAULT 0
+#ifndef DEFAULT_SENSOR_INDOOR_GPIO
+  #define DEFAULT_SENSOR_INDOOR_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
-#ifndef EXT_PUMP_PIN_DEFAULT
-  #define EXT_PUMP_PIN_DEFAULT 0
+#ifndef DEFAULT_EXT_PUMP_GPIO
+  #define DEFAULT_EXT_PUMP_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
 #ifndef PROGMEM
   #define PROGMEM 
 #endif
+
+#ifndef GPIO_IS_VALID_GPIO
+  #define GPIO_IS_VALID_GPIO(gpioNum) (gpioNum >= 0 && gpioNum <= 16)
+#endif
+
+#define GPIO_IS_VALID(gpioNum) (gpioNum != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_GPIO(gpioNum))
 
 char buffer[255];

@@ -1,27 +1,35 @@
 #include <CustomOpenTherm.h>
-
-CustomOpenTherm* ot;
 extern FileData fsSettings;
 
 class OpenThermTask : public Task {
 public:
-  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
-    ot = new CustomOpenTherm(settings.opentherm.inPin, settings.opentherm.outPin);
+  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+
+  ~OpenThermTask() {
+    delete this->instance;
   }
 
 protected:
-  unsigned short readyTime = 60000;
-  unsigned short dhwSetTempInterval = 60000;
-  unsigned short heatingSetTempInterval = 60000;
+  const unsigned short readyTime = 60000;
+  const unsigned short dhwSetTempInterval = 60000;
+  const unsigned short heatingSetTempInterval = 60000;
+  const unsigned int initializingInterval = 3600000;
 
+  CustomOpenTherm* instance = nullptr;
+  unsigned long instanceCreatedTime = 0;
+  byte instanceInGpio = 0;
+  byte instanceOutGpio = 0;
+  bool isInitialized = false;
+  unsigned long initializedTime = 0;
+  unsigned int initializedMemberIdCode = 0;
+  byte dhwFlowRateMultiplier = 1;
+  byte pressureMultiplier = 1;
   bool pump = true;
   unsigned long lastSuccessResponse = 0;
   unsigned long prevUpdateNonEssentialVars = 0;
-  unsigned long startupTime = millis();
   unsigned long dhwSetTempTime = 0;
   unsigned long heatingSetTempTime = 0;
-  byte dhwFlowRateMultiplier = 1;
-  byte pressureMultiplier = 1;
+
 
   const char* getTaskName() {
     return "OpenTherm";
@@ -36,9 +44,35 @@ protected:
   }
 
   void setup() {
-    Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inPin, settings.opentherm.outPin);
+    #ifdef LED_OT_RX_GPIO
+      pinMode(LED_OT_RX_GPIO, OUTPUT);
+      digitalWrite(LED_OT_RX_GPIO, LOW);
+    #endif
 
-    ot->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
+    // delete instance
+    if (this->instance != nullptr) {
+      delete this->instance;
+      this->instance = nullptr;
+      Log.sinfoln(FPSTR(L_OT), F("Stopped"));
+    }
+
+    if (!GPIO_IS_VALID(settings.opentherm.inGpio) || !GPIO_IS_VALID(settings.opentherm.outGpio)) {
+      Log.swarningln(FPSTR(L_OT), F("Not started. GPIO IN: %hhu or GPIO OUT: %hhu is not valid"), settings.opentherm.inGpio, settings.opentherm.outGpio);
+      return;
+    }
+
+    // create instance
+    this->instance = new CustomOpenTherm(settings.opentherm.inGpio, settings.opentherm.outGpio);
+
+    // flags
+    this->instanceCreatedTime = millis();
+    this->instanceInGpio = settings.opentherm.inGpio;
+    this->instanceOutGpio = settings.opentherm.outGpio;
+    this->isInitialized = false;
+
+    Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
+
+    this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
       Log.straceln(
         FPSTR(L_OT),
         F("ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"),
@@ -48,68 +82,39 @@ protected:
       if (status == OpenThermResponseStatus::SUCCESS) {
         this->lastSuccessResponse = millis();
 
-        #ifdef LED_OT_RX_PIN
+        #ifdef LED_OT_RX_GPIO
         {
-          digitalWrite(LED_OT_RX_PIN, HIGH);
+          digitalWrite(LED_OT_RX_GPIO, HIGH);
           delayMicroseconds(2000);
-          digitalWrite(LED_OT_RX_PIN, LOW);
+          digitalWrite(LED_OT_RX_GPIO, LOW);
         }
         #endif
       }
     });
 
-    ot->setYieldCallback([this]() {
+    this->instance->setYieldCallback([this]() {
       this->delay(25);
     });
 
-    ot->begin();
-
-    #ifdef LED_OT_RX_PIN
-      pinMode(LED_OT_RX_PIN, OUTPUT);
-      digitalWrite(LED_OT_RX_PIN, LOW);
-    #endif
-  }
-
-  void initBoiler() {
-    this->dhwFlowRateMultiplier = 1;
-    this->pressureMultiplier = 1;
-
-    // Not all boilers support these, only try once when the boiler becomes connected
-    if (updateSlaveVersion()) {
-      Log.straceln(FPSTR(L_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
-
-    } else {
-      Log.swarningln(FPSTR(L_OT), F("Get slave version failed"));
-    }
-
-    // 0x013F
-    if (setMasterVersion(0x3F, 0x01)) {
-      Log.straceln(FPSTR(L_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
-      
-    } else {
-      Log.swarningln(FPSTR(L_OT), F("Set master version failed"));
-    }
-
-    if (updateSlaveConfig()) {
-      Log.straceln(FPSTR(L_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
-
-    } else {
-      Log.swarningln(FPSTR(L_OT), F("Get slave config failed"));
-    }
-
-    if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
-      Log.straceln(FPSTR(L_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
-      
-    } else {
-      Log.swarningln(FPSTR(L_OT), F("Set master config failed"));
-    }
+    this->instance->begin();
   }
 
   void loop() {
     static byte currentHeatingTemp, currentDhwTemp = 0;
-    unsigned long localResponse;
 
-    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && isReady();
+    if (this->instanceInGpio != settings.opentherm.inGpio || this->instanceOutGpio != settings.opentherm.outGpio) {
+      this->setup();
+
+    } else if (this->initializedMemberIdCode != settings.opentherm.memberIdCode || millis() - this->initializedTime > this->initializingInterval) {
+      this->isInitialized = false; 
+    }
+
+    if (this->instance == nullptr) {
+      this->delay(5000);
+      return;
+    }
+
+    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && this->isReady();
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
       heatingCh2Enabled = heatingEnabled;
@@ -118,7 +123,7 @@ protected:
       heatingCh2Enabled = settings.opentherm.dhwPresent && settings.dhw.enable;
     }
 
-    localResponse = ot->setBoilerStatus(
+    unsigned long response = this->instance->setBoilerStatus(
       heatingEnabled,
       settings.opentherm.dhwPresent && settings.dhw.enable,
       false,
@@ -128,20 +133,20 @@ protected:
       settings.opentherm.dhwBlocking
     );
 
-    if (!CustomOpenTherm::isValidResponse(localResponse)) {
-      Log.swarningln(FPSTR(L_OT), F("Invalid response after setBoilerStatus: %s"), CustomOpenTherm::statusToString(ot->getLastResponseStatus()));
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      Log.swarningln(FPSTR(L_OT), F("Invalid response after setBoilerStatus: %s"), CustomOpenTherm::statusToString(this->instance->getLastResponseStatus()));
     }
 
     if (!vars.states.otStatus && millis() - this->lastSuccessResponse < 1150) {
-      Log.sinfoln(FPSTR(L_OT), F("Connected. Initializing"));
+      Log.sinfoln(FPSTR(L_OT), F("Connected"));
       
       vars.states.otStatus = true;
-      this->initBoiler();
       
     } else if (vars.states.otStatus && millis() - this->lastSuccessResponse > 1150) {
       Log.swarningln(FPSTR(L_OT), F("Disconnected"));
 
       vars.states.otStatus = false;
+      this->isInitialized = false;
     }
 
     // If boiler is disconnected, no need try setting other OT stuff
@@ -155,17 +160,27 @@ protected:
       return;
     }
 
+    if (!this->isInitialized) {
+      Log.sinfoln(FPSTR(L_OT), F("Initializing..."));
+      this->isInitialized = true;
+      this->initializedTime = millis();
+      this->initializedMemberIdCode = settings.opentherm.memberIdCode;
+      this->dhwFlowRateMultiplier = 1;
+      this->pressureMultiplier = 1;
+      this->initialize();
+    }
+
     if (vars.parameters.heatingEnabled != heatingEnabled) {
       this->prevUpdateNonEssentialVars = 0;
       vars.parameters.heatingEnabled = heatingEnabled;
       Log.sinfoln(FPSTR(L_OT_HEATING), "%s", heatingEnabled ? F("Enabled") : F("Disabled"));
     }
 
-    vars.states.heating = CustomOpenTherm::isCentralHeatingActive(localResponse);
-    vars.states.dhw = settings.opentherm.dhwPresent ? CustomOpenTherm::isHotWaterActive(localResponse) : false;
-    vars.states.flame = CustomOpenTherm::isFlameOn(localResponse);
-    vars.states.fault = CustomOpenTherm::isFault(localResponse);
-    vars.states.diagnostic = CustomOpenTherm::isDiagnostic(localResponse);
+    vars.states.heating = CustomOpenTherm::isCentralHeatingActive(response);
+    vars.states.dhw = settings.opentherm.dhwPresent ? CustomOpenTherm::isHotWaterActive(response) : false;
+    vars.states.flame = CustomOpenTherm::isFlameOn(response);
+    vars.states.fault = CustomOpenTherm::isFault(response);
+    vars.states.diagnostic = CustomOpenTherm::isDiagnostic(response);
 
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
@@ -282,7 +297,7 @@ protected:
     // Fault reset action
     if (vars.actions.resetFault) {
       if (vars.states.fault) {
-        if (ot->sendBoilerReset()) {
+        if (this->instance->sendBoilerReset()) {
           Log.sinfoln(FPSTR(L_OT), F("Boiler fault reset successfully"));
 
         } else {
@@ -296,7 +311,7 @@ protected:
     // Diag reset action
     if (vars.actions.resetDiagnostic) {
       if (vars.states.diagnostic) {
-        if (ot->sendServiceReset()) {
+        if (this->instance->sendServiceReset()) {
           Log.sinfoln(FPSTR(L_OT), F("Boiler diagnostic reset successfully"));
           
         } else {
@@ -318,7 +333,7 @@ protected:
       Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp = %u"), newDhwTemp);
 
       // Set DHW temp
-      if (ot->setDhwTemp(newDhwTemp)) {
+      if (this->instance->setDhwTemp(newDhwTemp)) {
         currentDhwTemp = newDhwTemp;
         this->dhwSetTempTime = millis();
 
@@ -328,7 +343,7 @@ protected:
 
       // Set DHW temp to CH2
       if (settings.opentherm.dhwToCh2) {
-        if (!ot->setHeatingCh2Temp(newDhwTemp)) {
+        if (!this->instance->setHeatingCh2Temp(newDhwTemp)) {
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed set ch2 temp"));
         }
       }
@@ -340,7 +355,7 @@ protected:
       Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
 
       // Set heating temp
-      if (ot->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
+      if (this->instance->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         this->heatingSetTempTime = millis();
 
@@ -350,7 +365,7 @@ protected:
 
       // Set heating temp to CH2
       if (settings.opentherm.heatingCh1ToCh2) {
-        if (!ot->setHeatingCh2Temp(vars.parameters.heatingSetpoint)) {
+        if (!this->instance->setHeatingCh2Temp(vars.parameters.heatingSetpoint)) {
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set ch2 temp"));
         }
       }
@@ -373,8 +388,40 @@ protected:
     }
   }
 
+  void initialize() {
+    // Not all boilers support these, only try once when the boiler becomes connected
+    if (updateSlaveVersion()) {
+      Log.straceln(FPSTR(L_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
+
+    } else {
+      Log.swarningln(FPSTR(L_OT), F("Get slave version failed"));
+    }
+
+    // 0x013F
+    if (setMasterVersion(0x3F, 0x01)) {
+      Log.straceln(FPSTR(L_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
+      
+    } else {
+      Log.swarningln(FPSTR(L_OT), F("Set master version failed"));
+    }
+
+    if (updateSlaveConfig()) {
+      Log.straceln(FPSTR(L_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
+
+    } else {
+      Log.swarningln(FPSTR(L_OT), F("Get slave config failed"));
+    }
+
+    if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
+      Log.straceln(FPSTR(L_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
+      
+    } else {
+      Log.swarningln(FPSTR(L_OT), F("Set master config failed"));
+    }
+  }
+
   bool isReady() {
-    return millis() - this->startupTime > this->readyTime;
+    return millis() - this->instanceCreatedTime > this->readyTime;
   }
 
   bool needSetDhwTemp() {
@@ -386,7 +433,7 @@ protected:
   }
 
   bool updateSlaveConfig() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::SConfigSMemberIDcode,
       0
@@ -447,7 +494,7 @@ protected:
       return true;
     }
 
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MConfigMMemberIDcode,
       request
@@ -457,22 +504,22 @@ protected:
   }
 
   bool setMaxModulationLevel(byte value) {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MaxRelModLevelSetting,
-      ot->toF88(value)
+      this->instance->toF88(value)
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    vars.parameters.maxModulation = ot->fromF88(response);
+    vars.parameters.maxModulation = this->instance->fromF88(response);
     return true;
   }
 
   bool updateSlaveOtVersion() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::OpenThermVersionSlave,
       0
@@ -487,23 +534,23 @@ protected:
   }
 
   bool setMasterOtVersion(float version) {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::OpenThermVersionMaster,
-      ot->toF88(version)
+      this->instance->toF88(version)
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    vars.parameters.masterOtVersion = ot->fromF88(response);
+    vars.parameters.masterOtVersion = this->instance->fromF88(response);
 
     return true;
   }
 
   bool updateSlaveVersion() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::SlaveVersion,
       0
@@ -520,7 +567,7 @@ protected:
   }
 
   bool setMasterVersion(uint8_t version, uint8_t type) {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MasterVersion,
       (unsigned int) version | (unsigned int) type << 8
@@ -537,7 +584,7 @@ protected:
   }
 
   bool updateMinMaxDhwTemp() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::TdhwSetUBTdhwSetLB,
       0
@@ -561,7 +608,7 @@ protected:
   }
 
   bool updateMinMaxHeatingTemp() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::MaxTSetUBMaxTSetLB,
       0
@@ -584,7 +631,7 @@ protected:
   }
 
   bool setMaxHeatingTemp(byte value) {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::MaxTSet,
       CustomOpenTherm::temperatureToData(value)
@@ -594,7 +641,7 @@ protected:
   }
 
   bool updateOutsideTemp() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::Toutside,
       0
@@ -609,7 +656,7 @@ protected:
   }
 
   bool updateHeatingTemp() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::Tboiler,
       0
@@ -630,7 +677,7 @@ protected:
 
 
   bool updateDhwTemp() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::Tdhw,
       0
@@ -650,7 +697,7 @@ protected:
   }
 
   bool updateDhwFlowRate() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
       OpenThermMessageID::DHWFlowRate,
       0
@@ -670,7 +717,7 @@ protected:
   }
 
   bool updateFaultCode() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::ASFflags,
       0
@@ -685,7 +732,7 @@ protected:
   }
 
   bool updateModulationLevel() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::RelModLevel,
       0
@@ -695,7 +742,7 @@ protected:
       return false;
     }
 
-    float modulation = ot->fromF88(response);
+    float modulation = this->instance->fromF88(response);
     if (!vars.states.flame) {
       vars.sensors.modulation = 0;
     } else {
@@ -706,7 +753,7 @@ protected:
   }
 
   bool updatePressure() {
-    unsigned long response = ot->sendRequest(CustomOpenTherm::buildRequest(
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::CHPressure,
       0

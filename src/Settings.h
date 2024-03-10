@@ -1,5 +1,5 @@
 struct NetworkSettings {
-  char hostname[25] = HOSTNAME_DEFAULT;
+  char hostname[25] = DEFAULT_HOSTNAME;
   bool useDhcp = true;
 
   struct {
@@ -10,14 +10,14 @@ struct NetworkSettings {
   } staticConfig;
 
   struct {
-    char ssid[33] = AP_SSID_DEFAULT;
-    char password[65] = AP_PASSWORD_DEFAULT;
+    char ssid[33] = DEFAULT_AP_SSID;
+    char password[65] = DEFAULT_AP_PASSWORD;
     byte channel = 6;
   } ap;
 
   struct {
-    char ssid[33] = STA_SSID_DEFAULT;
-    char password[65] = STA_PASSWORD_DEFAULT;
+    char ssid[33] = DEFAULT_STA_SSID;
+    char password[65] = DEFAULT_STA_PASSWORD;
     byte channel = 0;
   } sta;
 } networkSettings;
@@ -31,13 +31,13 @@ struct Settings {
 
   struct {
     bool useAuth = false;
-    char login[13] = PORTAL_LOGIN_DEFAULT;
-    char password[33] = PORTAL_PASSWORD_DEFAULT;
+    char login[13] = DEFAULT_PORTAL_LOGIN;
+    char password[33] = DEFAULT_PORTAL_PASSWORD;
   } portal;
 
   struct {
-    byte inPin = OT_IN_PIN_DEFAULT;
-    byte outPin = OT_OUT_PIN_DEFAULT;
+    byte inGpio = DEFAULT_OT_IN_GPIO;
+    byte outGpio = DEFAULT_OT_OUT_GPIO;
     unsigned int memberIdCode = 0;
     bool dhwPresent = true;
     bool summerWinterMode = false;
@@ -49,11 +49,11 @@ struct Settings {
   } opentherm;
 
   struct {
-    char server[81] = MQTT_SERVER_DEFAULT;
-    unsigned short port = MQTT_PORT_DEFAULT;
-    char user[33] = MQTT_USER_DEFAULT;
-    char password[33] = MQTT_PASSWORD_DEFAULT;
-    char prefix[33] = MQTT_PREFIX_DEFAULT;
+    char server[81] = DEFAULT_MQTT_SERVER;
+    unsigned short port = DEFAULT_MQTT_PORT;
+    char user[33] = DEFAULT_MQTT_USER;
+    char password[33] = DEFAULT_MQTT_PASSWORD;
+    char prefix[33] = DEFAULT_MQTT_PREFIX;
     unsigned short interval = 5;
   } mqtt;
 
@@ -102,14 +102,14 @@ struct Settings {
     struct {
       // 0 - boiler, 1 - manual, 2 - ds18b20
       byte type = 0;
-      byte pin = SENSOR_OUTDOOR_PIN_DEFAULT;
+      byte gpio = DEFAULT_SENSOR_OUTDOOR_GPIO;
       float offset = 0.0f;
     } outdoor;
 
     struct {
       // 1 - manual, 2 - ds18b20, 3 - ble
       byte type = 1;
-      byte pin = SENSOR_INDOOR_PIN_DEFAULT;
+      byte gpio = DEFAULT_SENSOR_INDOOR_GPIO;
       uint8_t bleAddresss[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       float offset = 0.0f;
     } indoor;
@@ -117,7 +117,7 @@ struct Settings {
 
   struct {
     bool use = false;
-    byte pin = EXT_PUMP_PIN_DEFAULT;
+    byte gpio = DEFAULT_EXT_PUMP_GPIO;
     unsigned short postCirculationTime = 600;
     unsigned int antiStuckInterval = 2592000;
     unsigned short antiStuckTime = 300;

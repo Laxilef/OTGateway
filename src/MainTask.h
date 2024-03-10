@@ -52,14 +52,14 @@ protected:
   }
 
   void setup() {
-    #ifdef LED_STATUS_PIN
-      pinMode(LED_STATUS_PIN, OUTPUT);
-      digitalWrite(LED_STATUS_PIN, LOW);
+    #ifdef LED_STATUS_GPIO
+      pinMode(LED_STATUS_GPIO, OUTPUT);
+      digitalWrite(LED_STATUS_GPIO, LOW);
     #endif
 
-    if (settings.externalPump.pin != 0) {
-      pinMode(settings.externalPump.pin, OUTPUT);
-      digitalWrite(settings.externalPump.pin, LOW);
+    if (GPIO_IS_VALID(settings.externalPump.gpio)) {
+      pinMode(settings.externalPump.gpio, OUTPUT);
+      digitalWrite(settings.externalPump.gpio, LOW);
     }
   }
 
@@ -87,10 +87,6 @@ protected:
       }
 
       Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
-    }
-
-    if (!tOt->isEnabled() && settings.opentherm.inPin > 0 && settings.opentherm.outPin > 0 && settings.opentherm.inPin != settings.opentherm.outPin) {
-      tOt->enable();
     }
 
     if (network->isConnected()) {
@@ -140,8 +136,8 @@ protected:
     this->yield();
 
 
-    #ifdef LED_STATUS_PIN
-      this->ledStatus(LED_STATUS_PIN);
+    #ifdef LED_STATUS_GPIO
+      this->ledStatus(LED_STATUS_GPIO);
     #endif
     this->externalPump();
     this->yield();
@@ -211,7 +207,7 @@ protected:
     }
   }
 
-  void ledStatus(uint8_t ledPin) {
+  void ledStatus(uint8_t gpio) {
     uint8_t errors[4];
     uint8_t errCount = 0;
     static uint8_t errPos = 0;
@@ -219,7 +215,7 @@ protected:
     static bool ledOn = false;
 
     if (!this->blinkerInitialized) {
-      this->blinker->init(ledPin);
+      this->blinker->init(gpio);
       this->blinkerInitialized = true;
     }
 
@@ -247,14 +243,14 @@ protected:
     if (!this->blinker->running() && millis() - endBlinkTime >= 5000) {
       if (errCount == 0) {
         if (!ledOn) {
-          digitalWrite(ledPin, HIGH);
+          digitalWrite(gpio, HIGH);
           ledOn = true;
         }
 
         return;
 
       } else if (ledOn) {
-        digitalWrite(ledPin, LOW);
+        digitalWrite(gpio, LOW);
         ledOn = false;
         endBlinkTime = millis();
         return;
@@ -283,10 +279,10 @@ protected:
       this->heatingEnabled = true;
     }
     
-    if (!settings.externalPump.use || settings.externalPump.pin == 0) {
+    if (!settings.externalPump.use || !GPIO_IS_VALID(settings.externalPump.gpio)) {
       if (vars.states.externalPump) {
-        if (settings.externalPump.pin != 0) {
-          digitalWrite(settings.externalPump.pin, LOW);
+        if (GPIO_IS_VALID(settings.externalPump.gpio)) {
+          digitalWrite(settings.externalPump.gpio, LOW);
         }
 
         vars.states.externalPump = false;
@@ -300,7 +296,7 @@ protected:
 
     if (vars.states.externalPump && !this->heatingEnabled) {
       if (this->extPumpStartReason == MainTask::PumpStartReason::HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
-        digitalWrite(settings.externalPump.pin, LOW);
+        digitalWrite(settings.externalPump.gpio, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
@@ -308,7 +304,7 @@ protected:
         Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
 
       } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
-        digitalWrite(settings.externalPump.pin, LOW);
+        digitalWrite(settings.externalPump.gpio, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
@@ -324,7 +320,7 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
-      digitalWrite(settings.externalPump.pin, HIGH);
+      digitalWrite(settings.externalPump.gpio, HIGH);
 
       Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
 
@@ -333,7 +329,7 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;
 
-      digitalWrite(settings.externalPump.pin, HIGH);
+      digitalWrite(settings.externalPump.gpio, HIGH);
 
       Log.sinfoln("EXTPUMP", F("Enabled: anti stuck"));
     }

@@ -63,23 +63,19 @@
         <div id="opentherm-settings-busy" aria-busy="true"></div>
         <form action="/api/settings" id="opentherm-settings" class="hidden">
           <div class="grid">
-            <label for="opentherm-in-pin">
+            <label for="opentherm-in-gpio">
               In GPIO
-              <input type="number" inputmode="numeric" class="opentherm-in-pin" name="opentherm[inPin]" min="0" max="99" step="1" required>
+              <input type="number" inputmode="numeric" class="opentherm-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
             </label>
-            <label for="opentherm-in-pin">
+            <label for="opentherm-in-gpio">
               Out GPIO
-              <input type="number" inputmode="numeric" class="opentherm-out-pin" name="opentherm[outPin]" min="0" max="99" step="1" required>
+              <input type="number" inputmode="numeric" class="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
             </label>
             <label for="opentherm-member-id-code">
               Master MemberID code
               <input type="number" inputmode="numeric" class="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
             </label>
           </div>
-
-          <fieldset>
-            <mark>After changing GPIO, the ESP must be restarted for the changes to take effect.</mark>
-          </fieldset>
 
           <fieldset>
             <legend>Options</legend>
@@ -190,9 +186,9 @@
             </label>
           </fieldset>
 
-          <label for="outdoor-sensor-pin">
+          <label for="outdoor-sensor-gpio">
             GPIO
-            <input type="number" inputmode="numeric" class="outdoor-sensor-pin" name="sensors[outdoor][pin]" min="0" max="99" step="1" required>
+            <input type="number" inputmode="numeric" class="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
           </label>
           <label for="outdoor-sensor-offset">
             Temp offset (calibration)
@@ -229,9 +225,9 @@
             </label>
           </fieldset>
 
-          <label for="indoor-sensor-pin">
+          <label for="indoor-sensor-gpio">
             GPIO
-            <input type="number" inputmode="numeric" class="indoor-sensor-pin" name="sensors[indoor][pin]" min="0" max="99" step="1" required>
+            <input type="number" inputmode="numeric" class="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
           </label>
 
           <div class="grid">
@@ -267,9 +263,9 @@
           <br>
 
           <div class="grid">
-            <label for="extpump-pin">
+            <label for="extpump-gpio">
               Relay GPIO
-              <input type="number" inputmode="numeric" class="extpump-pin" name="externalPump[pin]" min="0" max="99" step="1" required>
+              <input type="number" inputmode="numeric" class="extpump-gpio" name="externalPump[gpio]" min="0" max="254" step="1">
             </label>
             <label for="extpump-pc-time">
               Post circulation time <small>(min)</small>

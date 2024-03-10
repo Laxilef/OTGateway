@@ -491,8 +491,8 @@ async function loadSettings() {
   setInputValue('.portal-password', result.portal.password);
   setBusy('#portal-settings-busy', '#portal-settings', false);
 
-  setInputValue('.opentherm-in-pin', result.opentherm.inPin);
-  setInputValue('.opentherm-out-pin', result.opentherm.outPin);
+  setInputValue('.opentherm-in-gpio', result.opentherm.inGpio < 255 ? result.opentherm.inGpio : '');
+  setInputValue('.opentherm-out-gpio', result.opentherm.outGpio < 255 ? result.opentherm.outGpio : '');
   setInputValue('.opentherm-member-id-code', result.opentherm.memberIdCode);
   setCheckboxValue('.opentherm-dhw-present', result.opentherm.dhwPresent);
   setCheckboxValue('.opentherm-sw-mode', result.opentherm.summerWinterMode);
@@ -512,18 +512,18 @@ async function loadSettings() {
   setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
 
   setRadioValue('.outdoor-sensor-type', result.sensors.outdoor.type);
-  setInputValue('.outdoor-sensor-pin', result.sensors.outdoor.pin);
+  setInputValue('.outdoor-sensor-gpio', result.sensors.outdoor.gpio  < 255 ? result.sensors.outdoor.gpio : '');
   setInputValue('.outdoor-sensor-offset', result.sensors.outdoor.offset);
   setBusy('#outdoor-sensor-settings-busy', '#outdoor-sensor-settings', false);
 
   setRadioValue('.indoor-sensor-type', result.sensors.indoor.type);
-  setInputValue('.indoor-sensor-pin', result.sensors.indoor.pin);
+  setInputValue('.indoor-sensor-gpio', result.sensors.indoor.gpio < 255 ? result.sensors.indoor.gpio : '');
   setInputValue('.indoor-sensor-offset', result.sensors.indoor.offset);
   setInputValue('.indoor-sensor-ble-addresss', result.sensors.indoor.bleAddresss);
   setBusy('#indoor-sensor-settings-busy', '#indoor-sensor-settings', false);
 
   setCheckboxValue('.extpump-use', result.externalPump.use);
-  setInputValue('.extpump-pin', result.externalPump.pin);
+  setInputValue('.extpump-gpio', result.externalPump.gpio < 255 ? result.externalPump.gpio : '');
   setInputValue('.extpump-pc-time', result.externalPump.postCirculationTime);
   setInputValue('.extpump-as-interval', result.externalPump.antiStuckInterval);
   setInputValue('.extpump-as-time', result.externalPump.antiStuckTime);
