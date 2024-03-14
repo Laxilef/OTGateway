@@ -174,7 +174,7 @@ public:
         Log.serrorln(
           FPSTR(L_PORTAL_OTA),
           F("File '%s', on writing %d bytes: %s"),
-          upload.filename.c_str(), upload.totalSize, result->error
+          upload.filename.c_str(), upload.totalSize, result->error.c_str()
         );
 
       } else {

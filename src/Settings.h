@@ -100,15 +100,13 @@ struct Settings {
 
   struct {
     struct {
-      // 0 - boiler, 1 - manual, 2 - ds18b20
-      byte type = 0;
+      SensorType type = SensorType::BOILER;
       byte gpio = DEFAULT_SENSOR_OUTDOOR_GPIO;
       float offset = 0.0f;
     } outdoor;
 
     struct {
-      // 1 - manual, 2 - ds18b20, 3 - ble
-      byte type = 1;
+      SensorType type = SensorType::MANUAL;
       byte gpio = DEFAULT_SENSOR_INDOOR_GPIO;
       uint8_t bleAddresss[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       float offset = 0.0f;

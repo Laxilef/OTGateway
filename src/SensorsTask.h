@@ -63,21 +63,21 @@ protected:
     bool indoorTempUpdated = false;
     bool outdoorTempUpdated = false;
 
-    if (settings.sensors.outdoor.type == 2 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
+    if (settings.sensors.outdoor.type == SensorType::DS18B20 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
       outdoorTemperatureSensor();
       outdoorTempUpdated = true;
     }
 
-    if (settings.sensors.indoor.type == 2 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
+    if (settings.sensors.indoor.type == SensorType::DS18B20 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
       indoorTemperatureSensor();
       indoorTempUpdated = true;
     }
-#if USE_BLE
-    else if (settings.sensors.indoor.type == 3) {
+    #if USE_BLE
+    else if (settings.sensors.indoor.type == SensorType::BLUETOOTH) {
       indoorTemperatureBluetoothSensor();
       indoorTempUpdated = true;
     }
-#endif
+    #endif
 
     if (outdoorTempUpdated && fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
       vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;

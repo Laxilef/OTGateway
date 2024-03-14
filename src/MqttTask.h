@@ -385,8 +385,8 @@ protected:
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
     byte heatingMinTemp = isStupidMode ? settings.heating.minTemp : 10;
     byte heatingMaxTemp = isStupidMode ? settings.heating.maxTemp : 30;
-    bool editableOutdoorTemp = settings.sensors.outdoor.type == 1;
-    bool editableIndoorTemp = settings.sensors.indoor.type == 1;
+    bool editableOutdoorTemp = settings.sensors.outdoor.type == SensorType::MANUAL;
+    bool editableIndoorTemp = settings.sensors.indoor.type == SensorType::MANUAL;
 
     if (force || _dhwPresent != settings.opentherm.dhwPresent) {
       _dhwPresent = settings.opentherm.dhwPresent;

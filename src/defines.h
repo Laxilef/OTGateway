@@ -111,4 +111,11 @@
 
 #define GPIO_IS_VALID(gpioNum) (gpioNum != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_GPIO(gpioNum))
 
+enum class SensorType : byte {
+  BOILER,
+  MANUAL,
+  DS18B20,
+  BLUETOOTH
+};
+
 char buffer[255];

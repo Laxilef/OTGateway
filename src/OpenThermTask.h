@@ -257,7 +257,7 @@ protected:
       setMaxHeatingTemp(settings.heating.maxTemp);
 
       // Get outdoor temp (if necessary)
-      if (settings.sensors.outdoor.type == 0) {
+      if (settings.sensors.outdoor.type == SensorType::BOILER) {
         updateOutsideTemp();
       }
 

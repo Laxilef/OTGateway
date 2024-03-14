@@ -323,11 +323,11 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dst["equitherm"]["k_factor"] = roundd(src.equitherm.k_factor, 3);
   dst["equitherm"]["t_factor"] = roundd(src.equitherm.t_factor, 3);
 
-  dst["sensors"]["outdoor"]["type"] = src.sensors.outdoor.type;
+  dst["sensors"]["outdoor"]["type"] = static_cast<byte>(src.sensors.outdoor.type);
   dst["sensors"]["outdoor"]["gpio"] = src.sensors.outdoor.gpio;
   dst["sensors"]["outdoor"]["offset"] = roundd(src.sensors.outdoor.offset, 2);
 
-  dst["sensors"]["indoor"]["type"] = src.sensors.indoor.type;
+  dst["sensors"]["indoor"]["type"] = static_cast<byte>(src.sensors.indoor.type);
   dst["sensors"]["indoor"]["gpio"] = src.sensors.indoor.gpio;
 
   char bleAddress[18];
@@ -574,7 +574,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
   if (src["emergency"]["useEquitherm"].is<bool>()) {
-    if (dst.sensors.outdoor.type != 1) {
+    if (dst.sensors.outdoor.type != SensorType::MANUAL) {
       dst.emergency.useEquitherm = src["emergency"]["useEquitherm"].as<bool>();
 
     } else {
@@ -589,7 +589,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
   if (src["emergency"]["usePid"].is<bool>()) {
-    if (dst.sensors.indoor.type != 1) {
+    if (dst.sensors.indoor.type != SensorType::MANUAL) {
       dst.emergency.usePid = src["emergency"]["usePid"].as<bool>();
 
     } else {
@@ -792,16 +792,27 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // sensors
   if (!src["sensors"]["outdoor"]["type"].isNull()) {
-    unsigned char value = src["sensors"]["outdoor"]["type"].as<unsigned char>();
+    byte value = src["sensors"]["outdoor"]["type"].as<unsigned char>();
 
-    if (value >= 0 && value <= 2) {
-      dst.sensors.outdoor.type = value;
+    switch (value) {
+      case static_cast<byte>(SensorType::BOILER):
+        dst.sensors.outdoor.type = SensorType::BOILER;
+        changed = true;
+        break;
 
-      if (dst.sensors.outdoor.type == 1) {
+      case static_cast<byte>(SensorType::MANUAL):
+        dst.sensors.outdoor.type = SensorType::MANUAL;
         dst.emergency.useEquitherm = false;
-      }
+        changed = true;
+        break;
 
-      changed = true;
+      case static_cast<byte>(SensorType::DS18B20):
+        dst.sensors.outdoor.type = SensorType::DS18B20;
+        changed = true;
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -832,16 +843,35 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
   if (!src["sensors"]["indoor"]["type"].isNull()) {
-    unsigned char value = src["sensors"]["indoor"]["type"].as<unsigned char>();
+    byte value = src["sensors"]["indoor"]["type"].as<unsigned char>();
 
-    if (value >= 1 && value <= 3) {
-      dst.sensors.indoor.type = value;
 
-      if (dst.sensors.indoor.type == 1) {
-        dst.emergency.usePid = false;
-      }
+    switch (value) {
+      case static_cast<byte>(SensorType::BOILER):
+        dst.sensors.indoor.type = SensorType::BOILER;
+        changed = true;
+        break;
 
-      changed = true;
+      case static_cast<byte>(SensorType::MANUAL):
+        dst.sensors.indoor.type = SensorType::MANUAL;
+        dst.emergency.useEquitherm = false;
+        changed = true;
+        break;
+
+      case static_cast<byte>(SensorType::DS18B20):
+        dst.sensors.indoor.type = SensorType::DS18B20;
+        changed = true;
+        break;
+
+      #if USE_BLE
+      case static_cast<byte>(SensorType::BLUETOOTH):
+        dst.sensors.indoor.type = SensorType::BLUETOOTH;
+        changed = true;
+        break;
+      #endif
+
+      default:
+        break;
     }
   }
 
@@ -1001,7 +1031,7 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
   if (!src["temperatures"]["indoor"].isNull()) {
     double value = src["temperatures"]["indoor"].as<double>();
 
-    if (settings.sensors.indoor.type == 1 && value > -100 && value < 100) {
+    if (settings.sensors.indoor.type == SensorType::MANUAL && value > -100 && value < 100) {
       dst.temperatures.indoor = roundd(value, 2);
       changed = true;
     }
@@ -1010,7 +1040,7 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
   if (!src["temperatures"]["outdoor"].isNull()) {
     double value = src["temperatures"]["outdoor"].as<double>();
 
-    if (settings.sensors.outdoor.type == 1 && value > -100 && value < 100) {
+    if (settings.sensors.outdoor.type == SensorType::MANUAL && value > -100 && value < 100) {
       dst.temperatures.outdoor = roundd(value, 2);
       changed = true;
     }

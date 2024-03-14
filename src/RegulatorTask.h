@@ -84,7 +84,7 @@ protected:
     float newTemp = 0;
 
     // if use equitherm
-    if (settings.emergency.useEquitherm && settings.sensors.outdoor.type != 1) {
+    if (settings.emergency.useEquitherm && settings.sensors.outdoor.type != SensorType::MANUAL) {
       float etResult = getEquithermTemp(settings.heating.minTemp, settings.heating.maxTemp);
 
       if (fabs(prevEtResult - etResult) + 0.0001 >= 0.5) {
@@ -97,7 +97,7 @@ protected:
         newTemp += prevEtResult;
       }
 
-    } else if(settings.emergency.usePid && settings.sensors.indoor.type != 1) {
+    } else if(settings.emergency.usePid && settings.sensors.indoor.type != SensorType::MANUAL) {
       if (vars.parameters.heatingEnabled) {
         float pidResult = getPidTemp(
           settings.heating.minTemp,
