@@ -79,14 +79,34 @@ protected:
     }
     #endif
 
-    if (outdoorTempUpdated && fabs(vars.temperatures.outdoor - this->filteredOutdoorTemp) > 0.099) {
-      vars.temperatures.outdoor = this->filteredOutdoorTemp + settings.sensors.outdoor.offset;
-      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
+    if (outdoorTempUpdated) {
+      float newTemp = settings.sensors.outdoor.offset;
+      if (settings.system.unitSystem == UnitSystem::METRIC) {
+        newTemp += this->filteredOutdoorTemp;
+
+      } else if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
+        newTemp += c2f(this->filteredOutdoorTemp);
+      }
+
+      if (fabs(vars.temperatures.outdoor - newTemp) > 0.099) {
+        vars.temperatures.outdoor = newTemp;
+        Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
+      }
     }
 
-    if (indoorTempUpdated && fabs(vars.temperatures.indoor - this->filteredIndoorTemp) > 0.099) {
-      vars.temperatures.indoor = this->filteredIndoorTemp + settings.sensors.indoor.offset;
-      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
+    if (indoorTempUpdated) {
+      float newTemp = settings.sensors.indoor.offset;
+      if (settings.system.unitSystem == UnitSystem::METRIC) {
+        newTemp += this->filteredIndoorTemp;
+
+      } else if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
+        newTemp += c2f(this->filteredIndoorTemp);
+      }
+
+      if (fabs(vars.temperatures.indoor - newTemp) > 0.099) {
+        vars.temperatures.indoor = newTemp;
+        Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
+      }
     }
   }
 

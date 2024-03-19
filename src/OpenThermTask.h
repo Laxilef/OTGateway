@@ -325,7 +325,7 @@ protected:
 
     // Update DHW temp
     byte newDhwTemp = settings.dhw.target;
-    if (settings.opentherm.dhwPresent && settings.dhw.enable && (needSetDhwTemp() || newDhwTemp != currentDhwTemp)) {
+    if (settings.opentherm.dhwPresent && settings.dhw.enable && (this->needSetDhwTemp() || newDhwTemp != currentDhwTemp)) {
       if (newDhwTemp < settings.dhw.minTemp || newDhwTemp > settings.dhw.maxTemp) {
         newDhwTemp = constrain(newDhwTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
       }
@@ -333,7 +333,7 @@ protected:
       Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp = %u"), newDhwTemp);
 
       // Set DHW temp
-      if (this->instance->setDhwTemp(newDhwTemp)) {
+      if (this->instance->setDhwTemp(tempTo(newDhwTemp))) {
         currentDhwTemp = newDhwTemp;
         this->dhwSetTempTime = millis();
 
@@ -343,7 +343,7 @@ protected:
 
       // Set DHW temp to CH2
       if (settings.opentherm.dhwToCh2) {
-        if (!this->instance->setHeatingCh2Temp(newDhwTemp)) {
+        if (!this->instance->setHeatingCh2Temp(tempTo(newDhwTemp))) {
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed set ch2 temp"));
         }
       }
@@ -351,11 +351,11 @@ protected:
 
 
     // Update heating temp
-    if (heatingEnabled && (needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
+    if (heatingEnabled && (this->needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
       Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
 
       // Set heating temp
-      if (this->instance->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
+      if (this->instance->setHeatingCh1Temp(tempTo(vars.parameters.heatingSetpoint))) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         this->heatingSetTempTime = millis();
 
@@ -365,7 +365,7 @@ protected:
 
       // Set heating temp to CH2
       if (settings.opentherm.heatingCh1ToCh2) {
-        if (!this->instance->setHeatingCh2Temp(vars.parameters.heatingSetpoint)) {
+        if (!this->instance->setHeatingCh2Temp(tempTo(vars.parameters.heatingSetpoint))) {
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set ch2 temp"));
         }
       }
@@ -390,7 +390,7 @@ protected:
 
   void initialize() {
     // Not all boilers support these, only try once when the boiler becomes connected
-    if (updateSlaveVersion()) {
+    if (this->updateSlaveVersion()) {
       Log.straceln(FPSTR(L_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
 
     } else {
@@ -398,21 +398,21 @@ protected:
     }
 
     // 0x013F
-    if (setMasterVersion(0x3F, 0x01)) {
+    if (this->setMasterVersion(0x3F, 0x01)) {
       Log.straceln(FPSTR(L_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
       
     } else {
       Log.swarningln(FPSTR(L_OT), F("Set master version failed"));
     }
 
-    if (updateSlaveConfig()) {
+    if (this->updateSlaveConfig()) {
       Log.straceln(FPSTR(L_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
 
     } else {
       Log.swarningln(FPSTR(L_OT), F("Get slave config failed"));
     }
 
-    if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
+    if (this->setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
       Log.straceln(FPSTR(L_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
       
     } else {
@@ -598,8 +598,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.dhwMinTemp = minTemp;
-      vars.parameters.dhwMaxTemp = maxTemp;
+      vars.parameters.dhwMinTemp = tempFrom(minTemp);
+      vars.parameters.dhwMaxTemp = tempFrom(maxTemp);
 
       return true;
     }
@@ -622,8 +622,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.heatingMinTemp = minTemp;
-      vars.parameters.heatingMaxTemp = maxTemp;
+      vars.parameters.heatingMinTemp = tempFrom(minTemp);
+      vars.parameters.heatingMaxTemp = tempFrom(maxTemp);
       return true;
     }
 
@@ -634,7 +634,7 @@ protected:
     unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::MaxTSet,
-      CustomOpenTherm::temperatureToData(value)
+      CustomOpenTherm::temperatureToData(tempTo(value))
     ));
 
     return CustomOpenTherm::isValidResponse(response);
@@ -650,8 +650,10 @@ protected:
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
+    
+    float value = CustomOpenTherm::getFloat(response);
 
-    vars.temperatures.outdoor = CustomOpenTherm::getFloat(response) + settings.sensors.outdoor.offset;
+    vars.temperatures.outdoor = tempFrom(value) + settings.sensors.outdoor.offset;
     return true;
   }
 
@@ -671,7 +673,7 @@ protected:
       return false;
     }
 
-    vars.temperatures.heating = value;
+    vars.temperatures.heating = tempFrom(value);
     return true;
   }
 
@@ -692,7 +694,7 @@ protected:
       return false;
     }
 
-    vars.temperatures.dhw = value;
+    vars.temperatures.dhw = tempFrom(value);
     return true;
   }
 
@@ -770,5 +772,27 @@ protected:
     vars.sensors.pressure = this->pressureMultiplier == 1 ? value : value / this->pressureMultiplier;
 
     return true;
+  }
+
+  static float tempTo(float value) {
+    if (settings.system.unitSystem == UnitSystem::METRIC && settings.opentherm.unitSystem == UnitSystem::IMPERIAL) {
+      value = c2f(value);
+      
+    } else if (settings.system.unitSystem == UnitSystem::IMPERIAL && settings.opentherm.unitSystem == UnitSystem::METRIC) {
+      value = f2c(value);
+    }
+
+    return value;
+  }
+
+  static float tempFrom(float value) {
+    if (settings.system.unitSystem == UnitSystem::METRIC && settings.opentherm.unitSystem == UnitSystem::IMPERIAL) {
+      value = f2c(value);
+      
+    } else if (settings.system.unitSystem == UnitSystem::IMPERIAL && settings.opentherm.unitSystem == UnitSystem::METRIC) {
+      value = c2f(value);
+    }
+
+    return value;
   }
 };

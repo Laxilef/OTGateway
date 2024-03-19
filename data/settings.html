@@ -62,6 +62,18 @@
 
         <div id="opentherm-settings-busy" aria-busy="true"></div>
         <form action="/api/settings" id="opentherm-settings" class="hidden">
+          <fieldset>
+            <legend>Unit system</legend>
+            <label>
+              <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
+              Metric (celsius)
+            </label>
+            <label>
+              <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
+              Imperial (fahrenheit)
+            </label>
+          </fieldset>
+
           <div class="grid">
             <label for="opentherm-in-gpio">
               In GPIO
@@ -298,6 +310,18 @@
 
         <div id="system-settings-busy" aria-busy="true"></div>
         <form action="/api/settings" id="system-settings" class="hidden">
+          <fieldset>
+            <legend>Unit system</legend>
+            <label>
+              <input type="radio" class="system-unit-system" name="system[unitSystem]" value="0" />
+              Metric (celsius)
+            </label>
+            <label>
+              <input type="radio" class="system-unit-system" name="system[unitSystem]" value="1" />
+              Imperial (fahrenheit)
+            </label>
+          </fieldset>
+
           <fieldset>
             <label for="system-debug">
               <input type="checkbox" class="system-debug" name="system[debug]" value="true">

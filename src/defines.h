@@ -118,4 +118,9 @@ enum class SensorType : byte {
   BLUETOOTH
 };
 
+enum class UnitSystem : byte {
+  METRIC,
+  IMPERIAL
+};
+
 char buffer[255];

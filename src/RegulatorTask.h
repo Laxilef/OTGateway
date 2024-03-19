@@ -69,7 +69,7 @@ protected:
       }
     }
 
-    // Ограничиваем, если до этого не ограничило
+    // Limits
     if (newTemp < settings.heating.minTemp || newTemp > settings.heating.maxTemp) {
       newTemp = constrain(newTemp, settings.heating.minTemp, settings.heating.maxTemp);
     }
@@ -182,7 +182,6 @@ protected:
     }
 
     newTemp = round(newTemp);
-    newTemp = constrain(newTemp, 0, 100);
     return newTemp;
   }
 
@@ -273,16 +272,36 @@ protected:
     }
   }
 
+  /**
+   * @brief Get the Equitherm Temp
+   * Calculations in degrees C, conversion occurs when using F
+   * 
+   * @param minTemp 
+   * @param maxTemp 
+   * @return float 
+   */
   float getEquithermTemp(int minTemp, int maxTemp) {
+    float targetTemp = vars.states.emergency ? settings.emergency.target : settings.heating.target;
+    float indoorTemp = vars.temperatures.indoor;
+    float outdoorTemp = vars.temperatures.outdoor;
+
+    if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
+      minTemp = f2c(minTemp);
+      maxTemp = f2c(maxTemp);
+      targetTemp = f2c(targetTemp);
+      indoorTemp = f2c(indoorTemp);
+      outdoorTemp = f2c(outdoorTemp);
+    }
+
     if (vars.states.emergency) {
       etRegulator.Kt = 0;
       etRegulator.indoorTemp = 0;
-      etRegulator.outdoorTemp = vars.temperatures.outdoor;
+      etRegulator.outdoorTemp = outdoorTemp;
 
     } else if (settings.pid.enable) {
       etRegulator.Kt = 0;
-      etRegulator.indoorTemp = round(vars.temperatures.indoor);
-      etRegulator.outdoorTemp = round(vars.temperatures.outdoor);
+      etRegulator.indoorTemp = round(indoorTemp);
+      etRegulator.outdoorTemp = round(outdoorTemp);
 
     } else {
       if (settings.heating.turbo) {
@@ -290,17 +309,21 @@ protected:
       } else {
         etRegulator.Kt = settings.equitherm.t_factor;
       }
-      etRegulator.indoorTemp = vars.temperatures.indoor;
-      etRegulator.outdoorTemp = vars.temperatures.outdoor;
+      etRegulator.indoorTemp = indoorTemp;
+      etRegulator.outdoorTemp = outdoorTemp;
     }
 
     etRegulator.setLimits(minTemp, maxTemp);
     etRegulator.Kn = settings.equitherm.n_factor;
-    // etRegulator.Kn = tuneEquithermN(etRegulator.Kn, vars.temperatures.indoor, settings.heating.target, 300, 1800, 0.01, 1);
     etRegulator.Kk = settings.equitherm.k_factor;
-    etRegulator.targetTemp = vars.states.emergency ? settings.emergency.target : settings.heating.target;
+    etRegulator.targetTemp = targetTemp;
+    float result = etRegulator.getResult();
 
-    return etRegulator.getResult();
+    if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
+      result = c2f(result);
+    }
+
+    return result;
   }
 
   float getPidTemp(int minTemp, int maxTemp) {
