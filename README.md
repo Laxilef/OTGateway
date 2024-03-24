@@ -2,7 +2,7 @@
    
    ![logo](/assets/logo.svg)
    <br>
-   [![GitHub version](https://img.shields.io/github/release/Laxilef/OTGateway.svg)](https://github.com/Laxilef/OTGateway/releases)
+   [![GitHub version](https://img.shields.io/github/release/Laxilef/OTGateway.svg?include_prereleases)](https://github.com/Laxilef/OTGateway/releases)
    [![GitHub download](https://img.shields.io/github/downloads/Laxilef/OTGateway/total.svg)](https://github.com/Laxilef/OTGateway/releases/latest)
    [![License](https://img.shields.io/github/license/Laxilef/OTGateway.svg)](LICENSE.txt)
    [![Telegram](https://img.shields.io/badge/Telegram-Channel-33A8E3)](https://t.me/otgateway)
