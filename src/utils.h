@@ -998,7 +998,9 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["temperatures"]["indoor"] = roundd(src.temperatures.indoor, 2);
   dst["temperatures"]["outdoor"] = roundd(src.temperatures.outdoor, 2);
   dst["temperatures"]["heating"] = roundd(src.temperatures.heating, 2);
+  dst["temperatures"]["heatingReturn"] = roundd(src.temperatures.heatingReturn, 2);
   dst["temperatures"]["dhw"] = roundd(src.temperatures.dhw, 2);
+  dst["temperatures"]["exhaust"] = roundd(src.temperatures.exhaust, 2);
 
   dst["parameters"]["heatingEnabled"] = src.parameters.heatingEnabled;
   dst["parameters"]["heatingMinTemp"] = src.parameters.heatingMinTemp;

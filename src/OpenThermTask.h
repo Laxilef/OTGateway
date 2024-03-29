@@ -293,6 +293,12 @@ protected:
     // Get current heating temp
     updateHeatingTemp();
 
+    // Get heating return temp
+    updateHeatingReturnTemp();
+
+    // Get exhaust temp
+    updateExhaustTemp();
+
 
     // Fault reset action
     if (vars.actions.resetFault) {
@@ -655,6 +661,21 @@ protected:
     return true;
   }
 
+  bool updateExhaustTemp() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::Texhaust,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+    }
+
+    vars.temperatures.exhaust = CustomOpenTherm::getFloat(response);
+    return true;
+  }
+
   bool updateHeatingTemp() {
     unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
@@ -672,6 +693,21 @@ protected:
     }
 
     vars.temperatures.heating = value;
+    return true;
+  }
+
+  bool updateHeatingReturnTemp() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Tret,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+    }
+
+    vars.temperatures.heatingReturn = CustomOpenTherm::getFloat(response);
     return true;
   }
 
