@@ -253,9 +253,6 @@ protected:
         fsSettings.update();
       }
 
-      // Force set max heating temp
-      setMaxHeatingTemp(settings.heating.maxTemp);
-
       // Get outdoor temp (if necessary)
       if (settings.sensors.outdoor.type == SensorType::BOILER) {
         updateOutsideTemp();
@@ -361,7 +358,7 @@ protected:
       Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
 
       // Set heating temp
-      if (this->instance->setHeatingCh1Temp(vars.parameters.heatingSetpoint)) {
+      if (this->instance->setHeatingCh1Temp(vars.parameters.heatingSetpoint) || this->setMaxHeatingTemp(vars.parameters.heatingSetpoint)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         this->heatingSetTempTime = millis();
 
