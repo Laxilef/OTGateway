@@ -52,6 +52,7 @@ const char HA_TEMPERATURE_COMMAND_TOPIC[]       PROGMEM = "temperature_command_t
 const char HA_TEMPERATURE_COMMAND_TEMPLATE[]    PROGMEM = "temperature_command_template";
 const char HA_TEMPERATURE_STATE_TOPIC[]         PROGMEM = "temperature_state_topic";
 const char HA_TEMPERATURE_STATE_TEMPLATE[]      PROGMEM = "temperature_state_template";
+const char HA_TEMPERATURE_UNIT[]                PROGMEM = " temperature_unit";
 const char HA_MODE_COMMAND_TOPIC[]              PROGMEM = "mode_command_topic";
 const char HA_MODE_COMMAND_TEMPLATE[]           PROGMEM = "mode_command_template";
 const char HA_MODE_STATE_TOPIC[]                PROGMEM = "mode_state_topic";

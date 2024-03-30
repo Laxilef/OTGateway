@@ -37,9 +37,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 5;
+      doc[FPSTR(HA_MAX)] = 50;
 
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 41;
+      doc[FPSTR(HA_MAX)] = 122;
     }
     
     doc[FPSTR(HA_NAME)] = F("Emergency target temp");
@@ -48,8 +52,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.emergency.target|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"emergency\": {\"target\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 5;
-    doc[FPSTR(HA_MAX)] = 50;
     doc[FPSTR(HA_STEP)] = 0.5;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -309,9 +311,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 32;
+      doc[FPSTR(HA_MAX)] = 211;
     }
 
     doc[FPSTR(HA_NAME)] = F("Heating min temp");
@@ -320,8 +326,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.minTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -340,9 +344,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 100;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 33;
+      doc[FPSTR(HA_MAX)] = 212;
     }
 
     doc[FPSTR(HA_NAME)] = F("Heating max temp");
@@ -351,8 +359,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.maxTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -510,9 +516,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 32;
+      doc[FPSTR(HA_MAX)] = 211;
     }
 
     doc[FPSTR(HA_NAME)] = F("DHW min temp");
@@ -521,8 +531,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.minTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -541,9 +549,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 100;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 33;
+      doc[FPSTR(HA_MAX)] = 212;
     }
 
     doc[FPSTR(HA_NAME)] = F("DHW max temp");
@@ -552,8 +564,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.maxTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -680,9 +690,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 211;
     }
 
     doc[FPSTR(HA_NAME)] = F("PID min temp");
@@ -691,8 +705,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.minTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -711,9 +723,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+    doc[FPSTR(HA_MIN)] = 1;
+    doc[FPSTR(HA_MAX)] = 100;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 212;
     }
 
     doc[FPSTR(HA_NAME)] = F("PID max temp");
@@ -722,8 +738,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.maxTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -1141,9 +1155,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = -99;
+      doc[FPSTR(HA_MAX)] = 99;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = -147;
+      doc[FPSTR(HA_MAX)] = 211;
     }
 
     doc[FPSTR(HA_NAME)] = F("Indoor temperature");
@@ -1152,8 +1170,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"temperatures\": {\"indoor\":{{ value }}}}");
-    doc[FPSTR(HA_MIN)] = -99;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -1198,9 +1214,13 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = -99;
+      doc[FPSTR(HA_MAX)] = 99;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = -147;
+      doc[FPSTR(HA_MAX)] = 211;
     }
 
     doc[FPSTR(HA_NAME)] = F("Outdoor temperature");
@@ -1209,8 +1229,6 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.outdoor|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"temperatures\": {\"outdoor\":{{ value }}}}");
-    doc[FPSTR(HA_MIN)] = -99;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -1367,7 +1385,7 @@ public:
   }
 
 
-  bool publishClimateHeating(byte minTemp = 20, byte maxTemp = 90, byte currentTempSource = HaHelper::TEMP_SOURCE_HEATING, bool enabledByDefault = true) {
+  bool publishClimateHeating(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 20, byte maxTemp = 90, byte currentTempSource = HaHelper::TEMP_SOURCE_HEATING, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1392,6 +1410,13 @@ public:
 
     doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.heating.target|float(0)|round(1) }}");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
 
     doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'heat' %}{\"heating\": {\"enable\" : true}}"
@@ -1420,7 +1445,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_CLIMATE), F("heating"), '_').c_str(), doc);
   }
 
-  bool publishClimateDhw(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishClimateDhw(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1437,6 +1462,13 @@ public:
 
     doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.dhw.target|int(0) }}");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
 
     doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'heat' %}{\"dhw\": {\"enable\" : true}}"

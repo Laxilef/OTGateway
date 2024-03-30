@@ -8,7 +8,18 @@ inline float f2c(float value) {
   return (value - 32.0f) * (5.0f / 9.0f);
 }
 
-bool isValidTemp(float value, UnitSystem unit, float min = 0.1f, float max = 99.9f) {
+float convertTemp(float value, const UnitSystem unitFrom, const UnitSystem unitTo) {
+  if (unitFrom == UnitSystem::METRIC && unitTo == UnitSystem::IMPERIAL) {
+    value = c2f(value);
+    
+  } else if (unitFrom == UnitSystem::IMPERIAL && unitTo == UnitSystem::METRIC) {
+    value = f2c(value);
+  }
+
+  return value;
+}
+
+bool isValidTemp(const float value, UnitSystem unit, const float min = 0.1f, const float max = 99.9f) {
   if (unit == UnitSystem::METRIC) {
     return value >= min && value <= max;
 
@@ -401,6 +412,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
     if (!src["system"]["unitSystem"].isNull()) {
       byte value = src["system"]["unitSystem"].as<unsigned char>();
+      UnitSystem prevUnitSystem = dst.system.unitSystem;
 
       switch (value) {
         case static_cast<byte>(UnitSystem::METRIC):
@@ -415,6 +427,19 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
         default:
           break;
+      }
+
+      // convert temps
+      if (dst.system.unitSystem != prevUnitSystem) {
+        dst.emergency.target = convertTemp(dst.emergency.target, prevUnitSystem, dst.system.unitSystem);
+        dst.heating.target = convertTemp(dst.heating.target, prevUnitSystem, dst.system.unitSystem);
+        dst.heating.minTemp = convertTemp(dst.heating.minTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.heating.maxTemp = convertTemp(dst.heating.maxTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.dhw.target = convertTemp(dst.dhw.target, prevUnitSystem, dst.system.unitSystem);
+        dst.dhw.minTemp = convertTemp(dst.dhw.minTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.dhw.maxTemp = convertTemp(dst.dhw.maxTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.pid.minTemp = convertTemp(dst.pid.minTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.pid.maxTemp = convertTemp(dst.pid.maxTemp, prevUnitSystem, dst.system.unitSystem);
       }
     }
 
