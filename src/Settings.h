@@ -155,7 +155,9 @@ struct Variables {
     float indoor = 0.0f;
     float outdoor = 0.0f;
     float heating = 0.0f;
+    float heatingReturn = 0.0f;
     float dhw = 0.0f;
+    float exhaust = 0.0f;
   } temperatures;
 
   struct {

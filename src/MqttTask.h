@@ -370,6 +370,8 @@ protected:
     // temperatures
     this->haHelper->publishNumberIndoorTemp();
     this->haHelper->publishSensorHeatingTemp();
+    this->haHelper->publishSensorHeatingReturnTemp(settings.system.unitSystem, false);
+    this->haHelper->publishSensorExhaustTemp(settings.system.unitSystem, false);
 
     // buttons
     this->haHelper->publishButtonRestart(false);

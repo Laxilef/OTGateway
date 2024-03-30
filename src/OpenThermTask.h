@@ -253,9 +253,6 @@ protected:
         fsSettings.update();
       }
 
-      // Force set max heating temp
-      setMaxHeatingTemp(settings.heating.maxTemp);
-
       // Get outdoor temp (if necessary)
       if (settings.sensors.outdoor.type == SensorType::BOILER) {
         updateOutsideTemp();
@@ -292,6 +289,12 @@ protected:
 
     // Get current heating temp
     updateHeatingTemp();
+
+    // Get heating return temp
+    updateHeatingReturnTemp();
+
+    // Get exhaust temp
+    updateExhaustTemp();
 
 
     // Fault reset action
@@ -355,7 +358,7 @@ protected:
       Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
 
       // Set heating temp
-      if (this->instance->setHeatingCh1Temp(tempTo(vars.parameters.heatingSetpoint))) {
+      if (this->instance->setHeatingCh1Temp(tempTo(vars.parameters.heatingSetpoint)) || this->setMaxHeatingTemp(tempTo(vars.parameters.heatingSetpoint))) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         this->heatingSetTempTime = millis();
 
@@ -657,6 +660,21 @@ protected:
     return true;
   }
 
+  bool updateExhaustTemp() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::Texhaust,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+    }
+
+    vars.temperatures.exhaust = tempFrom(CustomOpenTherm::getFloat(response));
+    return true;
+  }
+
   bool updateHeatingTemp() {
     unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::READ_DATA,
@@ -674,6 +692,21 @@ protected:
     }
 
     vars.temperatures.heating = tempFrom(value);
+    return true;
+  }
+
+  bool updateHeatingReturnTemp() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Tret,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+    }
+
+    vars.temperatures.heatingReturn = tempFrom(CustomOpenTherm::getFloat(response));
     return true;
   }
 

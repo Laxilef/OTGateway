@@ -1276,6 +1276,36 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("heating_temp")).c_str(), doc);
   }
 
+  bool publishSensorHeatingReturnTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_return_temp"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_return_temp"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
+    doc[FPSTR(HA_NAME)] = F("Heating return temperature");
+    doc[FPSTR(HA_ICON)] = F("mdi:radiator");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.heatingReturn|float(0)|round(2) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("heating_return_temp")).c_str(), doc);
+  }
+
   bool publishSensorDhwTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
@@ -1304,6 +1334,36 @@ public:
     doc.shrinkToFit();
 
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("dhw_temp")).c_str(), doc);
+  }
+
+  bool publishSensorExhaustTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("exhaust_temp"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("exhaust_temp"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
+    doc[FPSTR(HA_NAME)] = F("Exhaust temperature");
+    doc[FPSTR(HA_ICON)] = F("mdi:smoke");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.exhaust|float(0)|round(2) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("exhaust_temp")).c_str(), doc);
   }
 
 
