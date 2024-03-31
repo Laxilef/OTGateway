@@ -484,6 +484,7 @@ async function loadSettings() {
   setCheckboxValue('.system-debug', result.system.debug);
   setCheckboxValue('.system-use-serial', result.system.useSerial);
   setCheckboxValue('.system-use-telnet', result.system.useTelnet);
+  setRadioValue('.system-unit-system', result.system.unitSystem);
   setBusy('#system-settings-busy', '#system-settings', false);
 
   setCheckboxValue('.portal-use-auth', result.portal.useAuth);
@@ -491,6 +492,7 @@ async function loadSettings() {
   setInputValue('.portal-password', result.portal.password);
   setBusy('#portal-settings-busy', '#portal-settings', false);
 
+  setRadioValue('.opentherm-unit-system', result.opentherm.unitSystem);
   setInputValue('.opentherm-in-gpio', result.opentherm.inGpio < 255 ? result.opentherm.inGpio : '');
   setInputValue('.opentherm-out-gpio', result.opentherm.outGpio < 255 ? result.opentherm.outGpio : '');
   setInputValue('.opentherm-member-id-code', result.opentherm.memberIdCode);
@@ -534,6 +536,21 @@ async function loadVars() {
   let response = await fetch('/api/vars');
   let result = await response.json();
 
+  let unitSystemStr;
+  switch (result.system.unitSystem) {
+    case 0:
+      unitSystemStr = 'C';
+      break;
+
+    case 1:
+      unitSystemStr = 'F';
+      break;
+
+    default:
+      unitSystemStr = '?';
+      break;
+  }
+
   setState('.ot-connected', result.states.otStatus);
   setState('.ot-emergency', result.states.emergency);
   setState('.ot-heating', result.states.heating);
@@ -552,10 +569,13 @@ async function loadVars() {
   setValue('.outdoor-temp', result.temperatures.outdoor);
   setValue('.heating-temp', result.temperatures.heating);
   setValue('.heating-setpoint-temp', result.parameters.heatingSetpoint);
+  setValue('.heating-return-temp', result.temperatures.heatingReturn);
   setValue('.dhw-temp', result.temperatures.dhw);
+  setValue('.exhaust-temp', result.temperatures.exhaust);
 
   setBusy('.ot-busy', '.ot-table', false);
 
+  setValue('.unit-system', unitSystemStr);
   setValue('.version', result.system.version);
   setValue('.build-date', result.system.buildDate);
   setValue('.uptime', result.system.uptime);
@@ -601,12 +621,14 @@ function setState(selector, value) {
 }
 
 function setValue(selector, value) {
-  let item = document.querySelector(selector);
-  if (!item) {
+  let items = document.querySelectorAll(selector);
+  if (!items.length) {
     return;
   }
 
-  item.innerHTML = value;
+  for (let item of items) {
+    item.innerHTML = value;
+  }
 }
 
 function setCheckboxValue(selector, value) {

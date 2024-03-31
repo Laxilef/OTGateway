@@ -387,7 +387,8 @@ protected:
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
-    byte heatingMinTemp, heatingMaxTemp = 0;
+    byte heatingMinTemp = 0;
+    byte heatingMaxTemp = 0;
     bool editableOutdoorTemp = settings.sensors.outdoor.type == SensorType::MANUAL;
     bool editableIndoorTemp = settings.sensors.indoor.type == SensorType::MANUAL;
 
