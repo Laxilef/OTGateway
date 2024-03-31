@@ -44,6 +44,13 @@ protected:
   }
 
   void setup() {
+    if (settings.system.unitSystem != UnitSystem::METRIC) {
+      vars.parameters.heatingMinTemp = convertTemp(vars.parameters.heatingMinTemp, UnitSystem::METRIC, settings.system.unitSystem);
+      vars.parameters.heatingMaxTemp = convertTemp(vars.parameters.heatingMaxTemp, UnitSystem::METRIC, settings.system.unitSystem);
+      vars.parameters.dhwMinTemp = convertTemp(vars.parameters.dhwMinTemp, UnitSystem::METRIC, settings.system.unitSystem);
+      vars.parameters.dhwMaxTemp = convertTemp(vars.parameters.dhwMaxTemp, UnitSystem::METRIC, settings.system.unitSystem);
+    }
+    
     #ifdef LED_OT_RX_GPIO
       pinMode(LED_OT_RX_GPIO, OUTPUT);
       digitalWrite(LED_OT_RX_GPIO, LOW);
@@ -218,12 +225,15 @@ protected:
           }
 
         } else {
+          vars.parameters.dhwMinTemp = convertTemp(DEFAULT_DHW_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+          vars.parameters.dhwMaxTemp = convertTemp(DEFAULT_DHW_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed get min/max temp"));
         }
 
         if (settings.dhw.minTemp >= settings.dhw.maxTemp) {
-          settings.dhw.minTemp = 30;
-          settings.dhw.maxTemp = 60;
+          settings.dhw.minTemp = vars.parameters.dhwMinTemp;
+          settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
           fsSettings.update();
         }
       }
@@ -244,12 +254,15 @@ protected:
         }
 
       } else {
+        vars.parameters.heatingMinTemp = convertTemp(DEFAULT_HEATING_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+        vars.parameters.heatingMaxTemp = convertTemp(DEFAULT_HEATING_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+
         Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
       }
 
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
-        settings.heating.minTemp = 20;
-        settings.heating.maxTemp = 90;
+        settings.heating.minTemp = vars.parameters.heatingMinTemp;
+        settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
         fsSettings.update();
       }
 

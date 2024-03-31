@@ -1412,10 +1412,10 @@ public:
     doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.heating.target|float(0)|round(1) }}");
 
     if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";
       
     } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "F";
     }
 
     doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
@@ -1464,10 +1464,10 @@ public:
     doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.dhw.target|int(0) }}");
 
     if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";
       
     } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_TEMPERATURE_UNIT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "F";
     }
 
     doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
