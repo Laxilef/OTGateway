@@ -669,7 +669,7 @@ protected:
       return false;
     }
 
-    vars.temperatures.exhaust = CustomOpenTherm::getFloat(response);
+    vars.temperatures.exhaust = this->instance->fromS16(response);
     return true;
   }
 
