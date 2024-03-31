@@ -270,7 +270,7 @@ protected:
 
 
     // Get current modulation level (if necessary)
-    if ((settings.opentherm.dhwPresent && settings.dhw.enable) || settings.heating.enable || heatingEnabled) {
+    if (vars.states.flame) {
       updateModulationLevel();
 
     } else {
@@ -510,14 +510,14 @@ protected:
     unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::MaxRelModLevelSetting,
-      this->instance->toF88(value)
+      CustomOpenTherm::toFloat(value)
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    vars.parameters.maxModulation = this->instance->fromF88(response);
+    vars.parameters.maxModulation = CustomOpenTherm::getFloat(response);
     return true;
   }
 
@@ -540,14 +540,14 @@ protected:
     unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::OpenThermVersionMaster,
-      this->instance->toF88(version)
+      CustomOpenTherm::toFloat(version)
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
 
-    vars.parameters.masterOtVersion = this->instance->fromF88(response);
+    vars.parameters.masterOtVersion = CustomOpenTherm::getFloat(response);
 
     return true;
   }
@@ -669,7 +669,9 @@ protected:
       return false;
     }
 
-    vars.temperatures.exhaust = this->instance->fromS16(response);
+    short value = CustomOpenTherm::getInt(response);
+    vars.temperatures.exhaust = (value >= -40 && value <= 500) ? (float)value : 0.0f;
+
     return true;
   }
 
@@ -775,12 +777,7 @@ protected:
       return false;
     }
 
-    float modulation = this->instance->fromF88(response);
-    if (!vars.states.flame) {
-      vars.sensors.modulation = 0;
-    } else {
-      vars.sensors.modulation = modulation;
-    }
+    vars.sensors.modulation = CustomOpenTherm::getFloat(response);
 
     return true;
   }

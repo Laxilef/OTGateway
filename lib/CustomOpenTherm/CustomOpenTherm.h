@@ -163,24 +163,13 @@ public:
   }
 
   // converters
-  float fromF88(unsigned long response) {
-    const byte valueLB = response & 0xFF;
-    const byte valueHB = (response >> 8) & 0xFF;
-
-    float value = (int8_t)valueHB;
-    return value + (float)valueLB / 256.0;
-  }
-
-  template <class T> unsigned int toF88(T val) {
+  template <class T>
+  static unsigned int toFloat(const T val) {
     return (unsigned int)(val * 256);
   }
 
-  int16_t fromS16(unsigned long response) {
-    const byte valueLB = response & 0xFF;
-    const byte valueHB = (response >> 8) & 0xFF;
-
-    int16_t value = valueHB;
-    return ((value << 8) + valueLB);
+  static short getInt(const unsigned long response) {
+    return response & 0xffff;
   }
 
 protected:
