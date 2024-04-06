@@ -67,7 +67,7 @@ namespace Network {
       return this;
     }
 
-    Manager* setStaticConfig(IPAddress &ip, IPAddress &gateway, IPAddress &subnet, IPAddress &dns) {
+    Manager* setStaticConfig(IPAddress& ip, IPAddress& gateway, IPAddress& subnet, IPAddress& dns) {
       this->staticIp = ip;
       this->staticGateway = gateway;
       this->staticSubnet = subnet;
@@ -181,7 +181,12 @@ namespace Network {
       wifi_station_dhcpc_set_maxtry(5);
       #endif
 
+      #ifdef ARDUINO_ARCH_ESP32
+      // Nothing. Because memory leaks when turn off WiFi on ESP32, bug?
+      return true;
+      #else
       return WiFi.mode(WIFI_OFF);
+      #endif
     }
 
     void reconnect() {
@@ -328,12 +333,12 @@ namespace Network {
         } else if (!this->isConnecting() && this->hasStaCredentials() && (!this->prevReconnectingTime || millis() - this->prevReconnectingTime > this->reconnectInterval)) {
           Log.sinfoln(FPSTR(L_NETWORK), F("Try connect..."));
 
-          this->reconnectFlag = false;        
+          this->reconnectFlag = false;
           Connection::reset();
           if (!this->connect(true, this->connectionTimeout)) {
             Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d"), Connection::getStatus(), Connection::getDisconnectReason());
           }
-          
+
           this->prevReconnectingTime = millis();
         }
       }
