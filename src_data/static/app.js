@@ -537,18 +537,24 @@ async function loadVars() {
   let response = await fetch('/api/vars');
   let result = await response.json();
 
-  let unitSystemStr;
+  let tempUnitStr, pressureUnitStr, volumeUnitStr;
   switch (result.system.unitSystem) {
     case 0:
-      unitSystemStr = 'C';
+      tempUnitStr = 'C';
+      pressureUnitStr = 'bar';
+      volumeUnitStr = 'L';
       break;
 
     case 1:
-      unitSystemStr = 'F';
+      tempUnitStr = 'F';
+      pressureUnitStr = 'psi';
+      volumeUnitStr = 'gal';
       break;
 
     default:
-      unitSystemStr = '?';
+      tempUnitStr = '?';
+      pressureUnitStr = '?';
+      volumeUnitStr = '?';
       break;
   }
 
@@ -576,7 +582,9 @@ async function loadVars() {
 
   setBusy('.ot-busy', '.ot-table', false);
 
-  setValue('.unit-system', unitSystemStr);
+  setValue('.temp-unit', tempUnitStr);
+  setValue('.pressure-unit', pressureUnitStr);
+  setValue('.volume-unit', volumeUnitStr);
   setValue('.version', result.system.version);
   setValue('.build-date', result.system.buildDate);
   setValue('.uptime', result.system.uptime);
