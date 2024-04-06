@@ -253,12 +253,13 @@ protected:
             fsSettings.update();
             Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
           }
+          
+        } else {
+          vars.parameters.heatingMinTemp = convertTemp(DEFAULT_HEATING_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+          vars.parameters.heatingMaxTemp = convertTemp(DEFAULT_HEATING_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
 
-      } else {
-        vars.parameters.heatingMinTemp = convertTemp(DEFAULT_HEATING_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
-        vars.parameters.heatingMaxTemp = convertTemp(DEFAULT_HEATING_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
-
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
+        }
       }
 
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
@@ -785,12 +786,17 @@ protected:
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
-    
+
     float value = CustomOpenTherm::getFloat(response);
-    if (value > 16 && this->dhwFlowRateMultiplier != 10) {
+    if (this->dhwFlowRateMultiplier != 10 && value > convertVolume(16, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
       this->dhwFlowRateMultiplier = 10;
     }
-    vars.sensors.dhwFlowRate = this->dhwFlowRateMultiplier == 1 ? value : value / this->dhwFlowRateMultiplier;
+
+    vars.sensors.dhwFlowRate = convertVolume(
+      value / this->dhwFlowRateMultiplier,
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
     
     return true;
   }
@@ -838,10 +844,15 @@ protected:
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (value > 5 && this->pressureMultiplier != 10) {
+    if (this->pressureMultiplier != 10 && value > convertPressure(5, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
       this->pressureMultiplier = 10;
     }
-    vars.sensors.pressure = this->pressureMultiplier == 1 ? value : value / this->pressureMultiplier;
+
+    vars.sensors.pressure = convertPressure(
+      value / this->pressureMultiplier,
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
 
     return true;
   }

@@ -364,7 +364,7 @@ protected:
 
     // sensors
     this->haHelper->publishSensorModulation(false);
-    this->haHelper->publishSensorPressure(false);
+    this->haHelper->publishSensorPressure(settings.system.unitSystem, false);
     this->haHelper->publishSensorFaultCode();
     this->haHelper->publishSensorRssi(false);
     this->haHelper->publishSensorUptime(false);
@@ -416,7 +416,7 @@ protected:
         this->haHelper->publishNumberDhwMaxTemp(settings.system.unitSystem, false);
         this->haHelper->publishBinSensorDhw();
         this->haHelper->publishSensorDhwTemp(settings.system.unitSystem);
-        this->haHelper->publishSensorDhwFlowRate(false);
+        this->haHelper->publishSensorDhwFlowRate(settings.system.unitSystem, false);
 
       } else {
         this->haHelper->deleteSwitchDhw();

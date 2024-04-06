@@ -1099,7 +1099,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("modulation")).c_str(), doc);
   }
 
-  bool publishSensorPressure(bool enabledByDefault = true) {
+  bool publishSensorPressure(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1111,7 +1111,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("pressure");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("bar");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("bar");
+
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("psi");
+    }
+
     doc[FPSTR(HA_NAME)] = F("Pressure");
     doc[FPSTR(HA_ICON)] = F("mdi:gauge");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1122,7 +1129,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("pressure")).c_str(), doc);
   }
 
-  bool publishSensorDhwFlowRate(bool enabledByDefault = true) {
+  bool publishSensorDhwFlowRate(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1134,7 +1141,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("volume_flow_rate");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
+
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("gal/min");
+    }
+
     doc[FPSTR(HA_NAME)] = F("DHW flow rate");
     doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));

@@ -1,5 +1,43 @@
 #include <Arduino.h>
 
+inline float liter2gallon(float value) {
+  return value / 4.546091879f;
+}
+
+inline float gallon2liter(float value) {
+  return value * 4.546091879f;
+}
+
+float convertVolume(float value, const UnitSystem unitFrom, const UnitSystem unitTo) {
+  if (unitFrom == UnitSystem::METRIC && unitTo == UnitSystem::IMPERIAL) {
+    value = liter2gallon(value);
+    
+  } else if (unitFrom == UnitSystem::IMPERIAL && unitTo == UnitSystem::METRIC) {
+    value = gallon2liter(value);
+  }
+
+  return value;
+}
+
+inline float bar2psi(float value) {
+  return value * 14.5038f;
+}
+
+inline float psi2bar(float value) {
+  return value / 14.5038f;
+}
+
+float convertPressure(float value, const UnitSystem unitFrom, const UnitSystem unitTo) {
+  if (unitFrom == UnitSystem::METRIC && unitTo == UnitSystem::IMPERIAL) {
+    value = bar2psi(value);
+    
+  } else if (unitFrom == UnitSystem::IMPERIAL && unitTo == UnitSystem::METRIC) {
+    value = psi2bar(value);
+  }
+
+  return value;
+}
+
 inline float c2f(float value) {
   return (9.0f / 5.0f) * value + 32.0f;
 }
