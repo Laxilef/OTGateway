@@ -501,6 +501,7 @@ async function loadSettings() {
   setCheckboxValue('.opentherm-dhw-to-ch2', result.opentherm.dhwToCh2);
   setCheckboxValue('.opentherm-dhw-blocking', result.opentherm.dhwBlocking);
   setCheckboxValue('.opentherm-sync-modulation-with-heating', result.opentherm.modulationSyncWithHeating);
+  setCheckboxValue('.opentherm-get-min-max-temp', result.opentherm.getMinMaxTemp);
   setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
 
   setInputValue('.mqtt-server', result.mqtt.server);

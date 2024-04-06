@@ -203,7 +203,7 @@ protected:
 
 
       // Get DHW min/max temp (if necessary)
-      if (settings.opentherm.dhwPresent) {
+      if (settings.opentherm.dhwPresent && settings.opentherm.getMinMaxTemp) {
         if (updateMinMaxDhwTemp()) {
           if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
@@ -230,27 +230,29 @@ protected:
 
 
       // Get heating min/max temp
-      if (updateMinMaxHeatingTemp()) {
-        if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
-          settings.heating.minTemp = vars.parameters.heatingMinTemp;
-          fsSettings.update();
-          Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated min temp: %hhu"), settings.heating.minTemp);
+      if (settings.opentherm.getMinMaxTemp) {
+        if (updateMinMaxHeatingTemp()) {
+          if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
+            settings.heating.minTemp = vars.parameters.heatingMinTemp;
+            fsSettings.update();
+            Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated min temp: %hhu"), settings.heating.minTemp);
+          }
+
+          if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
+            settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+            fsSettings.update();
+            Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
+          }
+
+        } else {
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
         }
 
-        if (settings.heating.maxTemp > vars.parameters.heatingMaxTemp) {
-          settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+        if (settings.heating.minTemp >= settings.heating.maxTemp) {
+          settings.heating.minTemp = 20;
+          settings.heating.maxTemp = 90;
           fsSettings.update();
-          Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
         }
-
-      } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
-      }
-
-      if (settings.heating.minTemp >= settings.heating.maxTemp) {
-        settings.heating.minTemp = 20;
-        settings.heating.maxTemp = 90;
-        fsSettings.update();
       }
 
       // Get outdoor temp (if necessary)

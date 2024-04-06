@@ -46,6 +46,7 @@ struct Settings {
     bool dhwToCh2 = false;
     bool dhwBlocking = false;
     bool modulationSyncWithHeating = false;
+    bool getMinMaxTemp = true;
   } opentherm;
 
   struct {
