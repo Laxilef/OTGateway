@@ -434,6 +434,7 @@ protected:
       JsonDocument doc;
       varsToJson(vars, doc);
 
+      doc["system"]["unitSystem"] = static_cast<byte>(settings.system.unitSystem);
       doc["system"]["version"] = PROJECT_VERSION;
       doc["system"]["buildDate"] = __DATE__ " " __TIME__;
       doc["system"]["uptime"] = millis() / 1000ul;

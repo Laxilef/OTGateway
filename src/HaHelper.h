@@ -27,22 +27,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("emergency")).c_str(), doc);
   }
 
-  bool publishNumberEmergencyTarget(bool enabledByDefault = true) {
+  bool publishNumberEmergencyTarget(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("emergency_target"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("emergency_target"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 5;
+      doc[FPSTR(HA_MAX)] = 50;
+
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 41;
+      doc[FPSTR(HA_MAX)] = 122;
+    }
+    
     doc[FPSTR(HA_NAME)] = F("Emergency target temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-alert");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.emergency.target|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"emergency\": {\"target\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 5;
-    doc[FPSTR(HA_MAX)] = 50;
     doc[FPSTR(HA_STEP)] = 0.5;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -142,7 +151,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("heating_turbo")).c_str(), doc);
   }
 
-  bool publishNumberHeatingTarget(byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
+  bool publishNumberHeatingTarget(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -150,7 +159,14 @@ public:
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_target"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating target");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
@@ -167,14 +183,21 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_target")).c_str(), doc);
   }
 
-  bool publishNumberHeatingHysteresis(bool enabledByDefault = true) {
+  bool publishNumberHeatingHysteresis(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_hysteresis"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_hysteresis"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating hysteresis");
     doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
@@ -191,7 +214,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_hysteresis")).c_str(), doc);
   }
 
-  bool publishSensorHeatingSetpoint(bool enabledByDefault = true) {
+  bool publishSensorHeatingSetpoint(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -200,7 +223,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating setpoint");
     doc[FPSTR(HA_ICON)] = F("mdi:coolant-temperature");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -211,7 +241,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("heating_setpoint")).c_str(), doc);
   }
 
-  bool publishSensorBoilerHeatingMinTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerHeatingMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -223,7 +253,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Boiler heating min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -234,7 +271,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_heating_min_temp")).c_str(), doc);
   }
 
-  bool publishSensorBoilerHeatingMaxTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerHeatingMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -246,7 +283,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Boiler heating max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -257,22 +301,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_heating_max_temp")).c_str(), doc);
   }
 
-  bool publishNumberHeatingMinTemp(bool enabledByDefault = true) {
+  bool publishNumberHeatingMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_min_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 32;
+      doc[FPSTR(HA_MAX)] = 211;
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.minTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -281,22 +334,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_min_temp")).c_str(), doc);
   }
 
-  bool publishNumberHeatingMaxTemp(bool enabledByDefault = true) {
+  bool publishNumberHeatingMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_max_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 100;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 33;
+      doc[FPSTR(HA_MAX)] = 212;
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.maxTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -352,7 +414,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("dhw")).c_str(), doc);
   }
 
-  bool publishNumberDhwTarget(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishNumberDhwTarget(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -360,7 +422,14 @@ public:
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_target"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("DHW target");
     doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
@@ -377,7 +446,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_target")).c_str(), doc);
   }
 
-  bool publishSensorBoilerDhwMinTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerDhwMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -389,7 +458,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Boiler DHW min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -400,7 +476,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_dhw_min_temp")).c_str(), doc);
   }
 
-  bool publishSensorBoilerDhwMaxTemp(bool enabledByDefault = true) {
+  bool publishSensorBoilerDhwMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -412,7 +488,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Boiler DHW max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -423,22 +506,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_dhw_max_temp")).c_str(), doc);
   }
 
-  bool publishNumberDhwMinTemp(bool enabledByDefault = true) {
+  bool publishNumberDhwMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_min_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 32;
+      doc[FPSTR(HA_MAX)] = 211;
+    }
+
     doc[FPSTR(HA_NAME)] = F("DHW min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.minTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -447,22 +539,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_min_temp")).c_str(), doc);
   }
 
-  bool publishNumberDhwMaxTemp(bool enabledByDefault = true) {
+  bool publishNumberDhwMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_max_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 100;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 33;
+      doc[FPSTR(HA_MAX)] = 212;
+    }
+
     doc[FPSTR(HA_NAME)] = F("DHW max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.maxTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -579,22 +680,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_dt")).c_str(), doc);
   }
 
-  bool publishNumberPidMinTemp(bool enabledByDefault = true) {
+  bool publishNumberPidMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pid_min_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 211;
+    }
+
     doc[FPSTR(HA_NAME)] = F("PID min temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.minTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -603,22 +713,31 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_min_temp")).c_str(), doc);
   }
 
-  bool publishNumberPidMaxTemp(bool enabledByDefault = true) {
+  bool publishNumberPidMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pid_max_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+    doc[FPSTR(HA_MIN)] = 1;
+    doc[FPSTR(HA_MAX)] = 100;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 212;
+    }
+
     doc[FPSTR(HA_NAME)] = F("PID max temp");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.maxTemp|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -1027,21 +1146,30 @@ public:
   }
 
 
-  bool publishNumberIndoorTemp(bool enabledByDefault = true) {
+  bool publishNumberIndoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = -99;
+      doc[FPSTR(HA_MAX)] = 99;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = -147;
+      doc[FPSTR(HA_MAX)] = 211;
+    }
+
     doc[FPSTR(HA_NAME)] = F("Indoor temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:home-thermometer");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"temperatures\": {\"indoor\":{{ value }}}}");
-    doc[FPSTR(HA_MIN)] = -99;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -1050,7 +1178,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("indoor_temp")).c_str(), doc);
   }
 
-  bool publishSensorIndoorTemp(bool enabledByDefault = true) {
+  bool publishSensorIndoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1059,7 +1187,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Indoor temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:home-thermometer");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1070,21 +1205,30 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("indoor_temp")).c_str(), doc);
   }
 
-  bool publishNumberOutdoorTemp(bool enabledByDefault = true) {
+  bool publishNumberOutdoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = -99;
+      doc[FPSTR(HA_MAX)] = 99;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = -147;
+      doc[FPSTR(HA_MAX)] = 211;
+    }
+
     doc[FPSTR(HA_NAME)] = F("Outdoor temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:home-thermometer-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.outdoor|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"temperatures\": {\"outdoor\":{{ value }}}}");
-    doc[FPSTR(HA_MIN)] = -99;
-    doc[FPSTR(HA_MAX)] = 99;
     doc[FPSTR(HA_STEP)] = 0.01;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
@@ -1093,7 +1237,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("outdoor_temp")).c_str(), doc);
   }
 
-  bool publishSensorOutdoorTemp(bool enabledByDefault = true) {
+  bool publishSensorOutdoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1102,7 +1246,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Outdoor temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:home-thermometer-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1113,7 +1264,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("outdoor_temp")).c_str(), doc);
   }
 
-  bool publishSensorHeatingTemp(bool enabledByDefault = true) {
+  bool publishSensorHeatingTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1125,7 +1276,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1136,7 +1294,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("heating_temp")).c_str(), doc);
   }
 
-  bool publishSensorHeatingReturnTemp(bool enabledByDefault = true) {
+  bool publishSensorHeatingReturnTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1148,7 +1306,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Heating return temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1159,7 +1324,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("heating_return_temp")).c_str(), doc);
   }
 
-  bool publishSensorDhwTemp(bool enabledByDefault = true) {
+  bool publishSensorDhwTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1171,7 +1336,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("DHW temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1182,7 +1354,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("dhw_temp")).c_str(), doc);
   }
 
-  bool publishSensorExhaustTemp(bool enabledByDefault = true) {
+  bool publishSensorExhaustTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1194,7 +1366,14 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
     doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("°C");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+    }
+
     doc[FPSTR(HA_NAME)] = F("Exhaust temperature");
     doc[FPSTR(HA_ICON)] = F("mdi:smoke");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -1206,7 +1385,7 @@ public:
   }
 
 
-  bool publishClimateHeating(byte minTemp = 20, byte maxTemp = 90, byte currentTempSource = HaHelper::TEMP_SOURCE_HEATING, bool enabledByDefault = true) {
+  bool publishClimateHeating(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 20, byte maxTemp = 90, byte currentTempSource = HaHelper::TEMP_SOURCE_HEATING, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1231,6 +1410,13 @@ public:
 
     doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.heating.target|float(0)|round(1) }}");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "F";
+    }
 
     doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'heat' %}{\"heating\": {\"enable\" : true}}"
@@ -1259,7 +1445,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_CLIMATE), F("heating"), '_').c_str(), doc);
   }
 
-  bool publishClimateDhw(byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishClimateDhw(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1276,6 +1462,13 @@ public:
 
     doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.dhw.target|int(0) }}");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_TEMPERATURE_UNIT)] = "F";
+    }
 
     doc[FPSTR(HA_MODE_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'heat' %}{\"dhw\": {\"enable\" : true}}"

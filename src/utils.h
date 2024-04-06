@@ -1,5 +1,36 @@
 #include <Arduino.h>
 
+inline float c2f(float value) {
+  return (9.0f / 5.0f) * value + 32.0f;
+}
+
+inline float f2c(float value) {
+  return (value - 32.0f) * (5.0f / 9.0f);
+}
+
+float convertTemp(float value, const UnitSystem unitFrom, const UnitSystem unitTo) {
+  if (unitFrom == UnitSystem::METRIC && unitTo == UnitSystem::IMPERIAL) {
+    value = c2f(value);
+    
+  } else if (unitFrom == UnitSystem::IMPERIAL && unitTo == UnitSystem::METRIC) {
+    value = f2c(value);
+  }
+
+  return value;
+}
+
+bool isValidTemp(const float value, UnitSystem unit, const float min = 0.1f, const float max = 99.9f) {
+  if (unit == UnitSystem::METRIC) {
+    return value >= min && value <= max;
+
+  } else if (unit == UnitSystem::IMPERIAL) {
+    return value >= c2f(min) && value <= c2f(max);
+
+  } else {
+    return false;
+  }
+}
+
 double roundd(double value, uint8_t decimals = 2) {
   if (decimals == 0) {
     return (int)(value + 0.5);
@@ -13,7 +44,7 @@ double roundd(double value, uint8_t decimals = 2) {
   return (int)(value * multiplier) / multiplier;
 }
 
-size_t getTotalHeap() {
+inline size_t getTotalHeap() {
   #if defined(ARDUINO_ARCH_ESP32)
   return ESP.getHeapSize();
   #elif defined(ARDUINO_ARCH_ESP8266)
@@ -63,7 +94,7 @@ size_t getMaxFreeBlockHeap(bool getMinValue = false) {
   return getMinValue ? minValue : value;
 }
 
-uint8_t getHeapFrag() {
+inline uint8_t getHeapFrag() {
   return 100 - getMaxFreeBlockHeap() * 100.0 / getFreeHeap();
 }
 
@@ -268,11 +299,13 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["system"]["debug"] = src.system.debug;
     dst["system"]["useSerial"] = src.system.useSerial;
     dst["system"]["useTelnet"] = src.system.useTelnet;
+    dst["system"]["unitSystem"] = static_cast<byte>(src.system.unitSystem);
 
     dst["portal"]["useAuth"] = src.portal.useAuth;
     dst["portal"]["login"] = src.portal.login;
     dst["portal"]["password"] = src.portal.password;
 
+    dst["opentherm"]["unitSystem"] = static_cast<byte>(src.opentherm.unitSystem);
     dst["opentherm"]["inGpio"] = src.opentherm.inGpio;
     dst["opentherm"]["outGpio"] = src.opentherm.outGpio;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
@@ -378,6 +411,39 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       changed = true;
     }
 
+    if (!src["system"]["unitSystem"].isNull()) {
+      byte value = src["system"]["unitSystem"].as<unsigned char>();
+      UnitSystem prevUnitSystem = dst.system.unitSystem;
+
+      switch (value) {
+        case static_cast<byte>(UnitSystem::METRIC):
+          dst.system.unitSystem = UnitSystem::METRIC;
+          changed = true;
+          break;
+
+        case static_cast<byte>(UnitSystem::IMPERIAL):
+          dst.system.unitSystem = UnitSystem::IMPERIAL;
+          changed = true;
+          break;
+
+        default:
+          break;
+      }
+
+      // convert temps
+      if (dst.system.unitSystem != prevUnitSystem) {
+        dst.emergency.target = convertTemp(dst.emergency.target, prevUnitSystem, dst.system.unitSystem);
+        dst.heating.target = convertTemp(dst.heating.target, prevUnitSystem, dst.system.unitSystem);
+        dst.heating.minTemp = convertTemp(dst.heating.minTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.heating.maxTemp = convertTemp(dst.heating.maxTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.dhw.target = convertTemp(dst.dhw.target, prevUnitSystem, dst.system.unitSystem);
+        dst.dhw.minTemp = convertTemp(dst.dhw.minTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.dhw.maxTemp = convertTemp(dst.dhw.maxTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.pid.minTemp = convertTemp(dst.pid.minTemp, prevUnitSystem, dst.system.unitSystem);
+        dst.pid.maxTemp = convertTemp(dst.pid.maxTemp, prevUnitSystem, dst.system.unitSystem);
+      }
+    }
+
 
     // portal
     if (src["portal"]["useAuth"].is<bool>()) {
@@ -405,6 +471,25 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
 
     // opentherm
+    if (!src["opentherm"]["unitSystem"].isNull()) {
+      byte value = src["opentherm"]["unitSystem"].as<unsigned char>();
+
+      switch (value) {
+        case static_cast<byte>(UnitSystem::METRIC):
+          dst.opentherm.unitSystem = UnitSystem::METRIC;
+          changed = true;
+          break;
+
+        case static_cast<byte>(UnitSystem::IMPERIAL):
+          dst.opentherm.unitSystem = UnitSystem::IMPERIAL;
+          changed = true;
+          break;
+
+        default:
+          break;
+      }
+    }
+
     if (!src["opentherm"]["inGpio"].isNull()) {
       if (src["opentherm"]["inGpio"].is<JsonString>() && src["opentherm"]["inGpio"].as<JsonString>().size() == 0) {
         if (dst.opentherm.inGpio != GPIO_IS_NOT_CONFIGURED) {
@@ -573,7 +658,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["emergency"]["target"].isNull()) {
     double value = src["emergency"]["target"].as<double>();
 
-    if (value > 0 && value < 100) {
+    if (isValidTemp(value, dst.system.unitSystem)) {
       dst.emergency.target = roundd(value, 2);
       changed = true;
     }
@@ -624,7 +709,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["heating"]["target"].isNull()) {
     double value = src["heating"]["target"].as<double>();
 
-    if (value > 0 && value < 100) {
+    if (isValidTemp(value, dst.system.unitSystem)) {
       dst.heating.target = roundd(value, 2);
       changed = true;
     }
@@ -676,7 +761,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["dhw"]["target"].isNull()) {
     unsigned char value = src["dhw"]["target"].as<unsigned char>();
 
-    if (value >= 0 && value < 100) {
+    if (isValidTemp(value, dst.system.unitSystem)) {
       dst.dhw.target = value;
       changed = true;
     }
@@ -746,7 +831,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["pid"]["maxTemp"].isNull()) {
     unsigned char value = src["pid"]["maxTemp"].as<unsigned char>();
 
-    if (value > 0 && value <= 100 && value > dst.pid.minTemp) {
+    if (isValidTemp(value, dst.system.unitSystem) && value > dst.pid.minTemp) {
       dst.pid.maxTemp = value;
       changed = true;
     }
@@ -755,7 +840,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["pid"]["minTemp"].isNull()) {
     unsigned char value = src["pid"]["minTemp"].as<unsigned char>();
 
-    if (value >= 0 && value < 100 && value < dst.pid.maxTemp) {
+    if (isValidTemp(value, dst.system.unitSystem) && value < dst.pid.maxTemp) {
       dst.pid.minTemp = value;
       changed = true;
     }
@@ -1039,7 +1124,7 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
   if (!src["temperatures"]["indoor"].isNull()) {
     double value = src["temperatures"]["indoor"].as<double>();
 
-    if (settings.sensors.indoor.type == SensorType::MANUAL && value > -100 && value < 100) {
+    if (settings.sensors.indoor.type == SensorType::MANUAL && isValidTemp(value, settings.system.unitSystem, -99.9f, 99.9f)) {
       dst.temperatures.indoor = roundd(value, 2);
       changed = true;
     }
@@ -1048,7 +1133,7 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
   if (!src["temperatures"]["outdoor"].isNull()) {
     double value = src["temperatures"]["outdoor"].as<double>();
 
-    if (settings.sensors.outdoor.type == SensorType::MANUAL && value > -100 && value < 100) {
+    if (settings.sensors.outdoor.type == SensorType::MANUAL && isValidTemp(value, settings.system.unitSystem, -99.9f, 99.9f)) {
       dst.temperatures.outdoor = roundd(value, 2);
       changed = true;
     }

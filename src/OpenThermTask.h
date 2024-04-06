@@ -44,6 +44,13 @@ protected:
   }
 
   void setup() {
+    if (settings.system.unitSystem != UnitSystem::METRIC) {
+      vars.parameters.heatingMinTemp = convertTemp(vars.parameters.heatingMinTemp, UnitSystem::METRIC, settings.system.unitSystem);
+      vars.parameters.heatingMaxTemp = convertTemp(vars.parameters.heatingMaxTemp, UnitSystem::METRIC, settings.system.unitSystem);
+      vars.parameters.dhwMinTemp = convertTemp(vars.parameters.dhwMinTemp, UnitSystem::METRIC, settings.system.unitSystem);
+      vars.parameters.dhwMaxTemp = convertTemp(vars.parameters.dhwMaxTemp, UnitSystem::METRIC, settings.system.unitSystem);
+    }
+    
     #ifdef LED_OT_RX_GPIO
       pinMode(LED_OT_RX_GPIO, OUTPUT);
       digitalWrite(LED_OT_RX_GPIO, LOW);
@@ -218,12 +225,15 @@ protected:
           }
 
         } else {
+          vars.parameters.dhwMinTemp = convertTemp(DEFAULT_DHW_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+          vars.parameters.dhwMaxTemp = convertTemp(DEFAULT_DHW_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed get min/max temp"));
         }
 
         if (settings.dhw.minTemp >= settings.dhw.maxTemp) {
-          settings.dhw.minTemp = 30;
-          settings.dhw.maxTemp = 60;
+          settings.dhw.minTemp = vars.parameters.dhwMinTemp;
+          settings.dhw.maxTemp = vars.parameters.dhwMaxTemp;
           fsSettings.update();
         }
       }
@@ -244,15 +254,17 @@ protected:
             Log.snoticeln(FPSTR(L_OT_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
           }
 
-        } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
-        }
+      } else {
+        vars.parameters.heatingMinTemp = convertTemp(DEFAULT_HEATING_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+        vars.parameters.heatingMaxTemp = convertTemp(DEFAULT_HEATING_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
 
-        if (settings.heating.minTemp >= settings.heating.maxTemp) {
-          settings.heating.minTemp = 20;
-          settings.heating.maxTemp = 90;
-          fsSettings.update();
-        }
+        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed get min/max temp"));
+      }
+
+      if (settings.heating.minTemp >= settings.heating.maxTemp) {
+        settings.heating.minTemp = vars.parameters.heatingMinTemp;
+        settings.heating.maxTemp = vars.parameters.heatingMaxTemp;
+        fsSettings.update();
       }
 
       // Get outdoor temp (if necessary)
@@ -330,15 +342,16 @@ protected:
 
     // Update DHW temp
     byte newDhwTemp = settings.dhw.target;
-    if (settings.opentherm.dhwPresent && settings.dhw.enable && (needSetDhwTemp() || newDhwTemp != currentDhwTemp)) {
+    if (settings.opentherm.dhwPresent && settings.dhw.enable && (this->needSetDhwTemp() || newDhwTemp != currentDhwTemp)) {
       if (newDhwTemp < settings.dhw.minTemp || newDhwTemp > settings.dhw.maxTemp) {
         newDhwTemp = constrain(newDhwTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
       }
 
-      Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp = %u"), newDhwTemp);
+      float convertedTemp = convertTemp(newDhwTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp: %u (converted: %.2f)"), newDhwTemp, convertedTemp);
 
       // Set DHW temp
-      if (this->instance->setDhwTemp(newDhwTemp)) {
+      if (this->instance->setDhwTemp(convertedTemp)) {
         currentDhwTemp = newDhwTemp;
         this->dhwSetTempTime = millis();
 
@@ -348,7 +361,7 @@ protected:
 
       // Set DHW temp to CH2
       if (settings.opentherm.dhwToCh2) {
-        if (!this->instance->setHeatingCh2Temp(newDhwTemp)) {
+        if (!this->instance->setHeatingCh2Temp(convertedTemp)) {
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed set ch2 temp"));
         }
       }
@@ -356,11 +369,12 @@ protected:
 
 
     // Update heating temp
-    if (heatingEnabled && (needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
-      Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp = %u"), vars.parameters.heatingSetpoint);
+    if (heatingEnabled && (this->needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
+      float convertedTemp = convertTemp(vars.parameters.heatingSetpoint, settings.system.unitSystem, settings.opentherm.unitSystem);
+      Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp: %u (converted: %.2f)"), vars.parameters.heatingSetpoint, convertedTemp);
 
       // Set heating temp
-      if (this->instance->setHeatingCh1Temp(vars.parameters.heatingSetpoint) || this->setMaxHeatingTemp(vars.parameters.heatingSetpoint)) {
+      if (this->instance->setHeatingCh1Temp(convertedTemp) || this->setMaxHeatingTemp(convertedTemp)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         this->heatingSetTempTime = millis();
 
@@ -370,7 +384,7 @@ protected:
 
       // Set heating temp to CH2
       if (settings.opentherm.heatingCh1ToCh2) {
-        if (!this->instance->setHeatingCh2Temp(vars.parameters.heatingSetpoint)) {
+        if (!this->instance->setHeatingCh2Temp(convertedTemp)) {
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set ch2 temp"));
         }
       }
@@ -395,7 +409,7 @@ protected:
 
   void initialize() {
     // Not all boilers support these, only try once when the boiler becomes connected
-    if (updateSlaveVersion()) {
+    if (this->updateSlaveVersion()) {
       Log.straceln(FPSTR(L_OT), F("Slave version: %u, type: %u"), vars.parameters.slaveVersion, vars.parameters.slaveType);
 
     } else {
@@ -403,21 +417,21 @@ protected:
     }
 
     // 0x013F
-    if (setMasterVersion(0x3F, 0x01)) {
+    if (this->setMasterVersion(0x3F, 0x01)) {
       Log.straceln(FPSTR(L_OT), F("Master version: %u, type: %u"), vars.parameters.masterVersion, vars.parameters.masterType);
       
     } else {
       Log.swarningln(FPSTR(L_OT), F("Set master version failed"));
     }
 
-    if (updateSlaveConfig()) {
+    if (this->updateSlaveConfig()) {
       Log.straceln(FPSTR(L_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
 
     } else {
       Log.swarningln(FPSTR(L_OT), F("Get slave config failed"));
     }
 
-    if (setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
+    if (this->setMasterConfig(settings.opentherm.memberIdCode & 0xFF, (settings.opentherm.memberIdCode & 0xFFFF) >> 8)) {
       Log.straceln(FPSTR(L_OT), F("Master member id: %u, flags: %u"), vars.parameters.masterMemberId, vars.parameters.masterFlags);
       
     } else {
@@ -603,8 +617,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.dhwMinTemp = minTemp;
-      vars.parameters.dhwMaxTemp = maxTemp;
+      vars.parameters.dhwMinTemp = convertTemp(minTemp, settings.opentherm.unitSystem, settings.system.unitSystem);
+      vars.parameters.dhwMaxTemp = convertTemp(maxTemp, settings.opentherm.unitSystem, settings.system.unitSystem);
 
       return true;
     }
@@ -627,8 +641,8 @@ protected:
     byte maxTemp = (response & 0xFFFF) >> 8;
 
     if (minTemp >= 0 && maxTemp > 0 && maxTemp > minTemp) {
-      vars.parameters.heatingMinTemp = minTemp;
-      vars.parameters.heatingMaxTemp = maxTemp;
+      vars.parameters.heatingMinTemp = convertTemp(minTemp, settings.opentherm.unitSystem, settings.system.unitSystem);
+      vars.parameters.heatingMaxTemp = convertTemp(maxTemp, settings.opentherm.unitSystem, settings.system.unitSystem);
       return true;
     }
 
@@ -655,8 +669,13 @@ protected:
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
     }
+    
+    vars.temperatures.outdoor = settings.sensors.outdoor.offset + convertTemp(
+      CustomOpenTherm::getFloat(response),
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
 
-    vars.temperatures.outdoor = CustomOpenTherm::getFloat(response) + settings.sensors.outdoor.offset;
     return true;
   }
 
@@ -671,8 +690,16 @@ protected:
       return false;
     }
 
-    short value = CustomOpenTherm::getInt(response);
-    vars.temperatures.exhaust = (value >= -40 && value <= 500) ? (float)value : 0.0f;
+    float value = (float) CustomOpenTherm::getInt(response);
+    if (!isValidTemp(value, settings.opentherm.unitSystem, -40, 500)) {
+      return false;
+    }
+
+    vars.temperatures.exhaust = convertTemp(
+      value,
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
 
     return true;
   }
@@ -693,7 +720,12 @@ protected:
       return false;
     }
 
-    vars.temperatures.heating = value;
+    vars.temperatures.heating = convertTemp(
+      value,
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
+
     return true;
   }
 
@@ -708,7 +740,12 @@ protected:
       return false;
     }
 
-    vars.temperatures.heatingReturn = CustomOpenTherm::getFloat(response);
+    vars.temperatures.heatingReturn = convertTemp(
+      CustomOpenTherm::getFloat(response),
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
+
     return true;
   }
 
@@ -729,7 +766,12 @@ protected:
       return false;
     }
 
-    vars.temperatures.dhw = value;
+    vars.temperatures.dhw = convertTemp(
+      value,
+      settings.opentherm.unitSystem,
+      settings.system.unitSystem
+    );
+
     return true;
   }
 

@@ -51,6 +51,7 @@ protected:
   MqttClient* client = nullptr;
   HaHelper* haHelper = nullptr;
   MqttWriter* writer = nullptr;
+  UnitSystem currentUnitSystem = UnitSystem::METRIC;
   unsigned short readyForSendTime = 15000;
   unsigned long lastReconnectTime = 0;
   unsigned long connectedTime = 0;
@@ -213,10 +214,11 @@ protected:
     }
 
     // publish ha entities if not published
-    if (this->newConnection) {
+    if (this->newConnection || this->currentUnitSystem != settings.system.unitSystem) {
       this->publishHaEntities();
       this->publishNonStaticHaEntities(true);
       this->newConnection = false;
+      this->currentUnitSystem = settings.system.unitSystem;
 
     } else {
       // publish non static ha entities
@@ -318,19 +320,19 @@ protected:
   void publishHaEntities() {
     // emergency
     this->haHelper->publishSwitchEmergency();
-    this->haHelper->publishNumberEmergencyTarget();
+    this->haHelper->publishNumberEmergencyTarget(settings.system.unitSystem);
     this->haHelper->publishSwitchEmergencyUseEquitherm();
     this->haHelper->publishSwitchEmergencyUsePid();
 
     // heating
     this->haHelper->publishSwitchHeating(false);
     this->haHelper->publishSwitchHeatingTurbo();
-    this->haHelper->publishNumberHeatingHysteresis();
-    this->haHelper->publishSensorHeatingSetpoint(false);
-    this->haHelper->publishSensorBoilerHeatingMinTemp(false);
-    this->haHelper->publishSensorBoilerHeatingMaxTemp(false);
-    this->haHelper->publishNumberHeatingMinTemp(false);
-    this->haHelper->publishNumberHeatingMaxTemp(false);
+    this->haHelper->publishNumberHeatingHysteresis(settings.system.unitSystem);
+    this->haHelper->publishSensorHeatingSetpoint(settings.system.unitSystem, false);
+    this->haHelper->publishSensorBoilerHeatingMinTemp(settings.system.unitSystem, false);
+    this->haHelper->publishSensorBoilerHeatingMaxTemp(settings.system.unitSystem, false);
+    this->haHelper->publishNumberHeatingMinTemp(settings.system.unitSystem, false);
+    this->haHelper->publishNumberHeatingMaxTemp(settings.system.unitSystem, false);
     this->haHelper->publishNumberHeatingMaxModulation(false);
 
     // pid
@@ -339,8 +341,8 @@ protected:
     this->haHelper->publishNumberPidFactorI();
     this->haHelper->publishNumberPidFactorD();
     this->haHelper->publishNumberPidDt(false);
-    this->haHelper->publishNumberPidMinTemp(false);
-    this->haHelper->publishNumberPidMaxTemp(false);
+    this->haHelper->publishNumberPidMinTemp(settings.system.unitSystem, false);
+    this->haHelper->publishNumberPidMaxTemp(settings.system.unitSystem, false);
 
     // equitherm
     this->haHelper->publishSwitchEquitherm();
@@ -368,10 +370,10 @@ protected:
     this->haHelper->publishSensorUptime(false);
 
     // temperatures
-    this->haHelper->publishNumberIndoorTemp();
-    this->haHelper->publishSensorHeatingTemp();
-    this->haHelper->publishSensorHeatingReturnTemp(false);
-    this->haHelper->publishSensorExhaustTemp(false);
+    this->haHelper->publishNumberIndoorTemp(settings.system.unitSystem);
+    this->haHelper->publishSensorHeatingTemp(settings.system.unitSystem);
+    this->haHelper->publishSensorHeatingReturnTemp(settings.system.unitSystem, false);
+    this->haHelper->publishSensorExhaustTemp(settings.system.unitSystem, false);
 
     // buttons
     this->haHelper->publishButtonRestart(false);
@@ -385,22 +387,35 @@ protected:
 
     bool published = false;
     bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
-    byte heatingMinTemp = isStupidMode ? settings.heating.minTemp : 10;
-    byte heatingMaxTemp = isStupidMode ? settings.heating.maxTemp : 30;
+    byte heatingMinTemp = 0;
+    byte heatingMaxTemp = 0;
     bool editableOutdoorTemp = settings.sensors.outdoor.type == SensorType::MANUAL;
     bool editableIndoorTemp = settings.sensors.indoor.type == SensorType::MANUAL;
+
+    if (isStupidMode) {
+      heatingMinTemp = settings.heating.minTemp;
+      heatingMaxTemp = settings.heating.maxTemp;
+
+    } else if (settings.system.unitSystem == UnitSystem::METRIC) {
+      heatingMinTemp = 5;
+      heatingMaxTemp = 30;
+
+    } else if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
+      heatingMinTemp = 41;
+      heatingMaxTemp = 86;
+    }
 
     if (force || _dhwPresent != settings.opentherm.dhwPresent) {
       _dhwPresent = settings.opentherm.dhwPresent;
 
       if (_dhwPresent) {
         this->haHelper->publishSwitchDhw(false);
-        this->haHelper->publishSensorBoilerDhwMinTemp(false);
-        this->haHelper->publishSensorBoilerDhwMaxTemp(false);
-        this->haHelper->publishNumberDhwMinTemp(false);
-        this->haHelper->publishNumberDhwMaxTemp(false);
+        this->haHelper->publishSensorBoilerDhwMinTemp(settings.system.unitSystem, false);
+        this->haHelper->publishSensorBoilerDhwMaxTemp(settings.system.unitSystem, false);
+        this->haHelper->publishNumberDhwMinTemp(settings.system.unitSystem, false);
+        this->haHelper->publishNumberDhwMaxTemp(settings.system.unitSystem, false);
         this->haHelper->publishBinSensorDhw();
-        this->haHelper->publishSensorDhwTemp();
+        this->haHelper->publishSensorDhwTemp(settings.system.unitSystem);
         this->haHelper->publishSensorDhwFlowRate(false);
 
       } else {
@@ -428,8 +443,9 @@ protected:
       _heatingMaxTemp = heatingMaxTemp;
       _isStupidMode = isStupidMode;
 
-      this->haHelper->publishNumberHeatingTarget(heatingMinTemp, heatingMaxTemp, false);
+      this->haHelper->publishNumberHeatingTarget(settings.system.unitSystem, heatingMinTemp, heatingMaxTemp, false);
       this->haHelper->publishClimateHeating(
+        settings.system.unitSystem,
         heatingMinTemp,
         heatingMaxTemp,
         isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
@@ -440,6 +456,7 @@ protected:
     } else if (_isStupidMode != isStupidMode) {
       _isStupidMode = isStupidMode;
       this->haHelper->publishClimateHeating(
+        settings.system.unitSystem,
         heatingMinTemp,
         heatingMaxTemp,
         isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
@@ -452,8 +469,8 @@ protected:
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
 
-      this->haHelper->publishNumberDhwTarget(settings.dhw.minTemp, settings.dhw.maxTemp, false);
-      this->haHelper->publishClimateDhw(settings.dhw.minTemp, settings.dhw.maxTemp);
+      this->haHelper->publishNumberDhwTarget(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp, false);
+      this->haHelper->publishClimateDhw(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
     }
@@ -463,10 +480,10 @@ protected:
 
       if (editableOutdoorTemp) {
         this->haHelper->deleteSensorOutdoorTemp();
-        this->haHelper->publishNumberOutdoorTemp();
+        this->haHelper->publishNumberOutdoorTemp(settings.system.unitSystem);
       } else {
         this->haHelper->deleteNumberOutdoorTemp();
-        this->haHelper->publishSensorOutdoorTemp();
+        this->haHelper->publishSensorOutdoorTemp(settings.system.unitSystem);
       }
 
       published = true;
@@ -477,10 +494,10 @@ protected:
 
       if (editableIndoorTemp) {
         this->haHelper->deleteSensorIndoorTemp();
-        this->haHelper->publishNumberIndoorTemp();
+        this->haHelper->publishNumberIndoorTemp(settings.system.unitSystem);
       } else {
         this->haHelper->deleteNumberIndoorTemp();
-        this->haHelper->publishSensorIndoorTemp();
+        this->haHelper->publishSensorIndoorTemp(settings.system.unitSystem);
       }
 
       published = true;

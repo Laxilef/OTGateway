@@ -27,6 +27,7 @@ struct Settings {
     bool debug = DEBUG_BY_DEFAULT;
     bool useSerial = USE_SERIAL;
     bool useTelnet = USE_TELNET;
+    UnitSystem unitSystem = UnitSystem::METRIC;
   } system;
 
   struct {
@@ -36,6 +37,7 @@ struct Settings {
   } portal;
 
   struct {
+    UnitSystem unitSystem = UnitSystem::METRIC;
     byte inGpio = DEFAULT_OT_IN_GPIO;
     byte outGpio = DEFAULT_OT_OUT_GPIO;
     unsigned int memberIdCode = 0;
