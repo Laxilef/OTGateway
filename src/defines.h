@@ -1,5 +1,5 @@
 #define PROJECT_NAME                "OpenTherm Gateway"
-#define PROJECT_VERSION             "1.4.0-rc.19"
+#define PROJECT_VERSION             "1.4.0-rc.20"
 #define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
 
 #define EMERGENCY_TIME_TRESHOLD     120000
