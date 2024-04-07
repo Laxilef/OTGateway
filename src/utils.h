@@ -1137,6 +1137,12 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["parameters"]["heatingSetpoint"] = src.parameters.heatingSetpoint;
   dst["parameters"]["dhwMinTemp"] = src.parameters.dhwMinTemp;
   dst["parameters"]["dhwMaxTemp"] = src.parameters.dhwMaxTemp;
+
+  dst["parameters"]["slaveMemberId"] = src.parameters.slaveMemberId;
+  dst["parameters"]["slaveFlags"] = src.parameters.slaveFlags;
+  dst["parameters"]["slaveType"] = src.parameters.slaveType;
+  dst["parameters"]["slaveVersion"] = src.parameters.slaveVersion;
+  dst["parameters"]["slaveOtVersion"] = src.parameters.slaveOtVersion;
 }
 
 bool jsonToVars(const JsonVariantConst src, Variables& dst) {

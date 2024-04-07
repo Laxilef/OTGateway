@@ -575,10 +575,23 @@ async function loadVars() {
   setValue('.indoor-temp', result.temperatures.indoor);
   setValue('.outdoor-temp', result.temperatures.outdoor);
   setValue('.heating-temp', result.temperatures.heating);
-  setValue('.heating-setpoint-temp', result.parameters.heatingSetpoint);
   setValue('.heating-return-temp', result.temperatures.heatingReturn);
   setValue('.dhw-temp', result.temperatures.dhw);
   setValue('.exhaust-temp', result.temperatures.exhaust);
+
+  setValue('.heating-min-temp', result.parameters.heatingMinTemp);
+  setValue('.heating-max-temp', result.parameters.heatingMaxTemp);
+  setValue('.heating-setpoint-temp', result.parameters.heatingSetpoint);
+  setValue('.dhw-min-temp', result.parameters.dhwMinTemp);
+  setValue('.dhw-max-temp', result.parameters.dhwMaxTemp);
+
+  setValue('.slave-member-id', result.parameters.slaveMemberId);
+  setValue('.slave-vendor', memberIdToVendor(result.parameters.slaveMemberId));
+  
+  setValue('.slave-flags', result.parameters.slaveFlags);
+  setValue('.slave-type', result.parameters.slaveType);
+  setValue('.slave-version', result.parameters.slaveVersion);
+  setValue('.slave-ot-version', result.parameters.slaveOtVersion);
 
   setBusy('.ot-busy', '.ot-table', false);
 
@@ -669,6 +682,36 @@ function setInputValue(selector, value) {
   item.value = value;
 }
 
+
+function memberIdToVendor(memberId) {
+  // https://github.com/Jeroen88/EasyOpenTherm/blob/main/src/EasyOpenTherm.h
+  // https://github.com/Evgen2/SmartTherm/blob/v0.7/src/Web.cpp
+  const vendorList = {
+    1:    "Baxi Fourtech/Luna 3",
+    2:    "AWB/Brink",
+    4:    "ATAG/Brötje/ELCO/GEMINOX",
+    5:    "Itho Daalderop",
+    6:    "IDEAL",
+    8:    "Buderus/Bosch/Hoval",
+    9:    "Ferroli",
+    11:   "Remeha/De Dietrich",
+    16:   "Unical",
+    24:   "Vaillant/Bulex",
+    27:   "Baxi",
+    29:   "Itho Daalderop",
+    33:   "Viessmann",
+    56:   "Baxi Luna Duo-Tec",
+    131:  "Nefit",
+    148:  "Navien",
+    173:  "Intergas",
+    247:  "Baxi Ampera",
+    248:  "Zota Lux-X"
+  };
+  
+  return (memberId in vendorList) 
+    ? vendorList[memberId] 
+    : "unknown vendor";
+}
 
 function form2json(data) {
   let method = function (object, pair) {
