@@ -1,3 +1,8 @@
+:root {
+	--pico-block-spacing-horizontal: calc(1rem * 2.25);
+	--pico-block-spacing-vertical: calc(1rem * 2.25)
+}
+
 @media (min-width: 1280px) {
 	.container {
 		max-width: 1000px;
