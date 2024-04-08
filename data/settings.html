@@ -23,331 +23,310 @@
 
   <main class="container">
     <article>
-      <div>
-        <hgroup>
-          <h2>Portal settings</h2>
-          <p></p>
-        </hgroup>
+      <hgroup>
+        <h2>Settings</h2>
+        <p></p>
+      </hgroup>
 
-        <div id="portal-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="portal-settings" class="hidden">
-          <div class="grid">
-            <label for="portal-login">
-              Login
-              <input type="text" class="portal-login" name="portal[login]" maxlength="12" required>
+      <details>
+        <summary role="button" class="secondary">Portal settings</summary>
+        <div>
+          <div id="portal-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="portal-settings" class="hidden">
+            <div class="grid">
+              <label for="portal-login">
+                Login
+                <input type="text" class="portal-login" name="portal[login]" maxlength="12" required>
+              </label>
+              <label for="portal-password">
+                Password
+                <input type="password" class="portal-password" name="portal[password]" maxlength="32" required>
+              </label>
+            </div>
+            
+            <label for="portal-use-auth">
+              <input type="checkbox" class="portal-use-auth" name="portal[useAuth]" value="true">
+              Use auth
             </label>
-            <label for="portal-password">
-              Password
-              <input type="password" class="portal-password" name="portal[password]" maxlength="32" required>
-            </label>
-          </div>
-          
-          <label for="portal-use-auth">
-            <input type="checkbox" class="portal-use-auth" name="portal[useAuth]" value="true">
-            Use auth
-          </label>
-          <br>
+            <br>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
 
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </article>
+      <details>
+        <summary role="button" class="secondary">System settings</summary>
+        <div>
+          <div id="system-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="system-settings" class="hidden">
+            <fieldset>
+              <legend>Unit system</legend>
+              <label>
+                <input type="radio" class="system-unit-system" name="system[unitSystem]" value="0" />
+                Metric (celsius)
+              </label>
+              <label>
+                <input type="radio" class="system-unit-system" name="system[unitSystem]" value="1" />
+                Imperial (fahrenheit)
+              </label>
+            </fieldset>
+  
+            <fieldset>
+              <label for="system-debug">
+                <input type="checkbox" class="system-debug" name="system[debug]" value="true">
+                Debug mode
+              </label>
+              <label for="system-use-serial">
+                <input type="checkbox" class="system-use-serial" name="system[useSerial]" value="true">
+                Enable serial port
+              </label>
+              <label for="system-use-telnet">
+                <input type="checkbox" class="system-use-telnet" name="system[useTelnet]" value="true">
+                Enable telnet
+              </label>
+            </fieldset>
+  
+            <fieldset>
+              <mark>After changing this settings, the ESP must be restarted for the changes to take effect.</mark>
+            </fieldset>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
 
-    <article>
-      <div>
-        <hgroup>
-          <h2>OpenTherm settings</h2>
-          <p></p>
-        </hgroup>
+      <details>
+        <summary role="button" class="secondary">OpenTherm settings</summary>
+        <div>
+          <div id="opentherm-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="opentherm-settings" class="hidden">
+            <fieldset>
+              <legend>Unit system</legend>
+              <label>
+                <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
+                Metric (celsius)
+              </label>
+              <label>
+                <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
+                Imperial (fahrenheit)
+              </label>
+            </fieldset>
+  
+            <div class="grid">
+              <label for="opentherm-in-gpio">
+                In GPIO
+                <input type="number" inputmode="numeric" class="opentherm-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
+              </label>
+              <label for="opentherm-in-gpio">
+                Out GPIO
+                <input type="number" inputmode="numeric" class="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
+              </label>
+              <label for="opentherm-member-id-code">
+                Master MemberID code
+                <input type="number" inputmode="numeric" class="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
+              </label>
+            </div>
+  
+            <fieldset>
+              <legend>Options</legend>
+              <label for="opentherm-dhw-present">
+                <input type="checkbox" class="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
+                DHW present
+              </label>
+              <label for="opentherm-sw-mode">
+                <input type="checkbox" class="opentherm-sw-mode" name="opentherm[summerWinterMode]" value="true">
+                Summer/winter mode
+              </label>
+              <label for="opentherm-heating-ch2-enabled">
+                <input type="checkbox" class="opentherm-heating-ch2-enabled" name="opentherm[heatingCh2Enabled]" value="true">
+                Heating CH2 always enabled
+              </label>
+              <label for="opentherm-heating-ch1-to-ch2">
+                <input type="checkbox" class="opentherm-heating-ch1-to-ch2" name="opentherm[heatingCh1ToCh2]" value="true">
+                Duplicate heating CH1 to CH2
+              </label>
+              <label for="opentherm-dhw-to-ch2">
+                <input type="checkbox" class="opentherm-dhw-to-ch2" name="opentherm[dhwToCh2]" value="true">
+                Duplicate DHW to CH2
+              </label>
+              <label for="opentherm-dhw-blocking">
+                <input type="checkbox" class="opentherm-dhw-blocking" name="opentherm[dhwBlocking]" value="true">
+                DHW blocking
+              </label>
+              <label for="opentherm-sync-modulation-with-heating">
+                <input type="checkbox" class="opentherm-sync-modulation-with-heating" name="opentherm[modulationSyncWithHeating]" value="true">
+                Sync modulation with heating
+              </label>
+              <label for="opentherm-get-min-max-temp">
+                <input type="checkbox" class="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
+                Get min/max temp from boiler
+              </label>
+            </fieldset>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
 
-        <div id="opentherm-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="opentherm-settings" class="hidden">
-          <fieldset>
-            <legend>Unit system</legend>
-            <label>
-              <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
-              Metric (celsius)
-            </label>
-            <label>
-              <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
-              Imperial (fahrenheit)
-            </label>
-          </fieldset>
+      <details>
+        <summary role="button" class="secondary">MQTT settings</summary>
+        <div>
+          <div id="mqtt-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="mqtt-settings" class="hidden">
+            <div class="grid">
+              <label for="mqtt-server">
+                Server
+                <input type="text" class="mqtt-server" name="mqtt[server]" maxlength="80" required>
+              </label>
+              <label for="mqtt-port">
+                Port
+                <input type="number" inputmode="numeric" class="mqtt-port" name="mqtt[port]" min="1" max="65535" step="1" required>
+              </label>
+            </div>
+  
+            <div class="grid">
+              <label for="mqtt-user">
+                User
+                <input type="text" class="mqtt-user" name="mqtt[user]" maxlength="32" required>
+              </label>
+              <label for="mqtt-password">
+                Password
+                <input type="password" class="mqtt-password" name="mqtt[password]" maxlength="32">
+              </label>
+            </div>
+  
+            <div class="grid">
+              <label for="mqtt-prefix">
+                Prefix
+                <input type="text" class="mqtt-prefix" name="mqtt[prefix]" maxlength="32" required>
+              </label>
+              <label for="mqtt-interval">
+                Publish interval <small>(sec)</small>
+                <input type="number" inputmode="numeric" class="mqtt-interval" name="mqtt[interval]" min="3" max="60" step="1" required>
+              </label>
+            </div>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
 
-          <div class="grid">
-            <label for="opentherm-in-gpio">
-              In GPIO
-              <input type="number" inputmode="numeric" class="opentherm-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
+      <details>
+        <summary role="button" class="secondary">Outdoor sensor settings</summary>
+        <div>
+          <div id="outdoor-sensor-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="outdoor-sensor-settings" class="hidden">
+            <fieldset>
+              <legend>Source type</legend>
+              <label>
+                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
+                From boiler via OpenTherm
+              </label>
+              <label>
+                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
+                Manual via MQTT/API
+              </label>
+              <label>
+                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
+                External (DS18B20)
+              </label>
+            </fieldset>
+  
+            <label for="outdoor-sensor-gpio">
+              GPIO
+              <input type="number" inputmode="numeric" class="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
             </label>
-            <label for="opentherm-in-gpio">
-              Out GPIO
-              <input type="number" inputmode="numeric" class="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
-            </label>
-            <label for="opentherm-member-id-code">
-              Master MemberID code
-              <input type="number" inputmode="numeric" class="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
-            </label>
-          </div>
-
-          <fieldset>
-            <legend>Options</legend>
-            <label for="opentherm-dhw-present">
-              <input type="checkbox" class="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
-              DHW present
-            </label>
-            <label for="opentherm-sw-mode">
-              <input type="checkbox" class="opentherm-sw-mode" name="opentherm[summerWinterMode]" value="true">
-              Summer/winter mode
-            </label>
-            <label for="opentherm-heating-ch2-enabled">
-              <input type="checkbox" class="opentherm-heating-ch2-enabled" name="opentherm[heatingCh2Enabled]" value="true">
-              Heating CH2 always enabled
-            </label>
-            <label for="opentherm-heating-ch1-to-ch2">
-              <input type="checkbox" class="opentherm-heating-ch1-to-ch2" name="opentherm[heatingCh1ToCh2]" value="true">
-              Duplicate heating CH1 to CH2
-            </label>
-            <label for="opentherm-dhw-to-ch2">
-              <input type="checkbox" class="opentherm-dhw-to-ch2" name="opentherm[dhwToCh2]" value="true">
-              Duplicate DHW to CH2
-            </label>
-            <label for="opentherm-dhw-blocking">
-              <input type="checkbox" class="opentherm-dhw-blocking" name="opentherm[dhwBlocking]" value="true">
-              DHW blocking
-            </label>
-            <label for="opentherm-sync-modulation-with-heating">
-              <input type="checkbox" class="opentherm-sync-modulation-with-heating" name="opentherm[modulationSyncWithHeating]" value="true">
-              Sync modulation with heating
-            </label>
-            <label for="opentherm-get-min-max-temp">
-              <input type="checkbox" class="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
-              Get min/max temp from boiler
-            </label>
-          </fieldset>
-
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </article>
-
-    <article>
-      <div>
-        <hgroup>
-          <h2>MQTT settings</h2>
-          <p></p>
-        </hgroup>
-
-        <div id="mqtt-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="mqtt-settings" class="hidden">
-          <div class="grid">
-            <label for="mqtt-server">
-              Server
-              <input type="text" class="mqtt-server" name="mqtt[server]" maxlength="80" required>
-            </label>
-            <label for="mqtt-port">
-              Port
-              <input type="number" inputmode="numeric" class="mqtt-port" name="mqtt[port]" min="1" max="65535" step="1" required>
-            </label>
-          </div>
-
-          <div class="grid">
-            <label for="mqtt-user">
-              User
-              <input type="text" class="mqtt-user" name="mqtt[user]" maxlength="32" required>
-            </label>
-            <label for="mqtt-password">
-              Password
-              <input type="password" class="mqtt-password" name="mqtt[password]" maxlength="32">
-            </label>
-          </div>
-
-          <div class="grid">
-            <label for="mqtt-prefix">
-              Prefix
-              <input type="text" class="mqtt-prefix" name="mqtt[prefix]" maxlength="32" required>
-            </label>
-            <label for="mqtt-interval">
-              Publish interval <small>(sec)</small>
-              <input type="number" inputmode="numeric" class="mqtt-interval" name="mqtt[interval]" min="3" max="60" step="1" required>
-            </label>
-          </div>
-
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </article>
-
-    <article>
-      <div>
-        <hgroup>
-          <h2>Outdoor sensor settings</h2>
-          <p></p>
-        </hgroup>
-
-        <div id="outdoor-sensor-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="outdoor-sensor-settings" class="hidden">
-          <fieldset>
-            <legend>Source type</legend>
-            <label>
-              <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
-              From boiler via OpenTherm
-            </label>
-            <label>
-              <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
-              Manual via MQTT/API
-            </label>
-            <label>
-              <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
-              External (DS18B20)
-            </label>
-          </fieldset>
-
-          <label for="outdoor-sensor-gpio">
-            GPIO
-            <input type="number" inputmode="numeric" class="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
-          </label>
-          <label for="outdoor-sensor-offset">
-            Temp offset (calibration)
-            <input type="number" inputmode="numeric" class="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-20" max="20" step="0.01" required>
-          </label>
-
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </article>
-
-    <article>
-      <div>
-        <hgroup>
-          <h2>Indoor sensor settings</h2>
-          <p></p>
-        </hgroup>
-
-        <div id="indoor-sensor-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="indoor-sensor-settings" class="hidden">
-          <fieldset>
-            <legend>Source type</legend>
-            <label>
-              <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
-              Manual via MQTT/API
-            </label>
-            <label>
-              <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
-              External (DS18B20)
-            </label>
-            <label>
-              <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
-              BLE device <i>(ONLY for some ESP32 which support BLE)</i>
-            </label>
-          </fieldset>
-
-          <label for="indoor-sensor-gpio">
-            GPIO
-            <input type="number" inputmode="numeric" class="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
-          </label>
-
-          <div class="grid">
-            <label for="indoor-sensor-offset">
+            <label for="outdoor-sensor-offset">
               Temp offset (calibration)
-              <input type="number" inputmode="numeric" class="indoor-sensor-offset" name="sensors[indoor][offset]" min="-20" max="20" step="0.01" required>
+              <input type="number" inputmode="numeric" class="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-20" max="20" step="0.01" required>
             </label>
-            <label for="indoor-sensor-ble-addresss">
-              BLE addresss
-              <input type="text" class="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
-              <small>ONLY for some ESP32 which support BLE</small>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <details>
+        <summary role="button" class="secondary">Indoor sensor settings</summary>
+        <div>
+          <div id="indoor-sensor-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="indoor-sensor-settings" class="hidden">
+            <fieldset>
+              <legend>Source type</legend>
+              <label>
+                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
+                Manual via MQTT/API
+              </label>
+              <label>
+                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
+                External (DS18B20)
+              </label>
+              <label>
+                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
+                BLE device <i>(ONLY for some ESP32 which support BLE)</i>
+              </label>
+            </fieldset>
+  
+            <label for="indoor-sensor-gpio">
+              GPIO
+              <input type="number" inputmode="numeric" class="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
             </label>
-          </div>
+  
+            <div class="grid">
+              <label for="indoor-sensor-offset">
+                Temp offset (calibration)
+                <input type="number" inputmode="numeric" class="indoor-sensor-offset" name="sensors[indoor][offset]" min="-20" max="20" step="0.01" required>
+              </label>
+              <label for="indoor-sensor-ble-addresss">
+                BLE addresss
+                <input type="text" class="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
+                <small>ONLY for some ESP32 which support BLE</small>
+              </label>
+            </div>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
 
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </article>
-
-    <article>
-      <div>
-        <hgroup>
-          <h2>External pump settings</h2>
-          <p></p>
-        </hgroup>
-
-        <div id="extpump-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="extpump-settings" class="hidden">
-          <label for="extpump-use">
-            <input type="checkbox" class="extpump-use" name="externalPump[use]" value="true">
-            Use external pump
-          </label>
-          <br>
-
-          <div class="grid">
-            <label for="extpump-gpio">
-              Relay GPIO
-              <input type="number" inputmode="numeric" class="extpump-gpio" name="externalPump[gpio]" min="0" max="254" step="1">
+      <details>
+        <summary role="button" class="secondary">External pump settings</summary>
+        <div>
+          <div id="extpump-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="extpump-settings" class="hidden">
+            <label for="extpump-use">
+              <input type="checkbox" class="extpump-use" name="externalPump[use]" value="true">
+              Use external pump
             </label>
-            <label for="extpump-pc-time">
-              Post circulation time <small>(min)</small>
-              <input type="number" inputmode="numeric" class="extpump-pc-time" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
-            </label>
-          </div>
-
-          <div class="grid">
-            <label for="extpump-as-interval">
-              Anti stuck interval <small>(days)</small>
-              <input type="number" inputmode="numeric" class="extpump-as-interval" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
-            </label>
-            <label for="extpump-as-time">
-              Anti stuck time <small>(min)</small>
-              <input type="number" inputmode="numeric" class="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
-            </label>
-          </div>
-
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </article>
-
-    <article>
-      <div>
-        <hgroup>
-          <h2>System settings</h2>
-          <p></p>
-        </hgroup>
-
-        <div id="system-settings-busy" aria-busy="true"></div>
-        <form action="/api/settings" id="system-settings" class="hidden">
-          <fieldset>
-            <legend>Unit system</legend>
-            <label>
-              <input type="radio" class="system-unit-system" name="system[unitSystem]" value="0" />
-              Metric (celsius)
-            </label>
-            <label>
-              <input type="radio" class="system-unit-system" name="system[unitSystem]" value="1" />
-              Imperial (fahrenheit)
-            </label>
-          </fieldset>
-
-          <fieldset>
-            <label for="system-debug">
-              <input type="checkbox" class="system-debug" name="system[debug]" value="true">
-              Debug mode
-            </label>
-            <label for="system-use-serial">
-              <input type="checkbox" class="system-use-serial" name="system[useSerial]" value="true">
-              Enable serial port
-            </label>
-            <label for="system-use-telnet">
-              <input type="checkbox" class="system-use-telnet" name="system[useTelnet]" value="true">
-              Enable telnet
-            </label>
-          </fieldset>
-
-          <fieldset>
-            <mark>After changing this settings, the ESP must be restarted for the changes to take effect.</mark>
-          </fieldset>
-
-          <button type="submit">Save</button>
-        </form>
-      </div>
+            <br>
+  
+            <div class="grid">
+              <label for="extpump-gpio">
+                Relay GPIO
+                <input type="number" inputmode="numeric" class="extpump-gpio" name="externalPump[gpio]" min="0" max="254" step="1">
+              </label>
+              <label for="extpump-pc-time">
+                Post circulation time <small>(min)</small>
+                <input type="number" inputmode="numeric" class="extpump-pc-time" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
+              </label>
+            </div>
+  
+            <div class="grid">
+              <label for="extpump-as-interval">
+                Anti stuck interval <small>(days)</small>
+                <input type="number" inputmode="numeric" class="extpump-as-interval" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
+              </label>
+              <label for="extpump-as-time">
+                Anti stuck time <small>(min)</small>
+                <input type="number" inputmode="numeric" class="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
+              </label>
+            </div>
+  
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
     </article>
   </main>
 

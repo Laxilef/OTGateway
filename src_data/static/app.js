@@ -593,7 +593,7 @@ async function loadVars() {
   setValue('.slave-version', result.parameters.slaveVersion);
   setValue('.slave-ot-version', result.parameters.slaveOtVersion);
 
-  setBusy('.ot-busy', '.ot-table', false);
+  setBusy('.vars-busy', '.vars-table', false);
 
   setValue('.temp-unit', tempUnitStr);
   setValue('.pressure-unit', pressureUnitStr);

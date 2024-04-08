@@ -1,15 +1,41 @@
-:root {
-	--pico-block-spacing-horizontal: calc(1rem * 2.25);
-	--pico-block-spacing-vertical: calc(1rem * 2.25)
+@media (min-width: 576px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 0.75);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 0.75);
+  }
+}
+
+@media (min-width: 768px) {
+  article {
+    --pico-block-spacing-vertical: var(--pico-spacing);
+    --pico-block-spacing-horizontal: var(--pico-spacing);
+  }
+}
+
+@media (min-width: 1024px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.25);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.25);
+  }
 }
 
 @media (min-width: 1280px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.5);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.5);
+  }
+
 	.container {
 		max-width: 1000px;
 	}
 }
 
 @media (min-width: 1536px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.75);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.75);
+  }
+
 	.container {
 		max-width: 1000px;
 	}
@@ -82,4 +108,12 @@ tr.network:hover {
 
 nav li a:has(> div.logo) {
 	margin-bottom: 0;
+}
+
+details > div {
+	padding: 0 var(--pico-form-element-spacing-horizontal);
+}
+
+pre {
+	padding: 0.5rem;
 }

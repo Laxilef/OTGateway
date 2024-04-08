@@ -117,101 +117,104 @@
       </article>
 
       <article>
-        <div>
+        <div class="vars-busy" aria-busy="true"></div>
+        <div class="vars-table hidden">
           <hgroup>
-            <h2>States and sensors</h2>
-            <p>More information and settings can be found in your home assistant after setting up network and MQTT</p>
+            <h2>Info</h2>
+            <p>More information and settings can be found in your Home Assistant after setting up network and MQTT</p>
           </hgroup>
 
-          <div class="ot-busy" aria-busy="true"></div>
-          <table class="ot-table hidden">
-            <tbody>
-              <tr>
-                <th scope="row">OpenTherm connected:</th>
-                <td><input type="radio" class="ot-connected" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">MQTT connected:</th>
-                <td><input type="radio" class="mqtt-connected" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">Emergency:</th>
-                <td><input type="radio" class="ot-emergency" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">Heating:</th>
-                <td><input type="radio" class="ot-heating" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">DHW:</th>
-                <td><input type="radio" class="ot-dhw" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">Flame:</th>
-                <td><input type="radio" class="ot-flame" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">Fault:</th>
-                <td><input type="radio" class="ot-fault" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">Diagnostic:</th>
-                <td><input type="radio" class="ot-diagnostic" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">External pump:</th>
-                <td><input type="radio" class="ot-external-pump" aria-invalid="false" checked disabled /></td>
-              </tr>
-              <tr>
-                <th scope="row">Modulation:</th>
-                <td><b class="ot-modulation"></b> %</td>
-              </tr>
-              <tr>
-                <th scope="row">Pressure:</th>
-                <td><b class="ot-pressure"></b> <span class="pressure-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">DHW flow rate:</th>
-                <td><b class="ot-dhw-flow-rate"></b> <span class="volume-unit"></span>/min</td>
-              </tr>
-              <tr>
-                <th scope="row">Fault code:</th>
-                <td><b class="ot-fault-code"></b></td>
-              </tr>
-              <tr>
-                <th scope="row">Indoor temp:</th>
-                <td><b class="indoor-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">Outdoor temp:</th>
-                <td><b class="outdoor-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">Heating temp:</th>
-                <td><b class="heating-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">Heating setpoint temp:</th>
-                <td><b class="heating-setpoint-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">Heating return temp:</th>
-                <td><b class="heating-return-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">DHW temp:</th>
-                <td><b class="dhw-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
-              <tr>
-                <th scope="row">Exhaust temp:</th>
-                <td><b class="exhaust-temp"></b> <span class="temp-unit"></span></td>
-              </tr>
+          <details>
+            <summary role="button" class="secondary">States and sensors</summary>
+            <table>
+              <tbody>
+                <tr>
+                  <th scope="row">OpenTherm connected:</th>
+                  <td><input type="radio" class="ot-connected" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">MQTT connected:</th>
+                  <td><input type="radio" class="mqtt-connected" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Emergency:</th>
+                  <td><input type="radio" class="ot-emergency" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating:</th>
+                  <td><input type="radio" class="ot-heating" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">DHW:</th>
+                  <td><input type="radio" class="ot-dhw" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Flame:</th>
+                  <td><input type="radio" class="ot-flame" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Fault:</th>
+                  <td><input type="radio" class="ot-fault" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Diagnostic:</th>
+                  <td><input type="radio" class="ot-diagnostic" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">External pump:</th>
+                  <td><input type="radio" class="ot-external-pump" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Modulation:</th>
+                  <td><b class="ot-modulation"></b> %</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pressure:</th>
+                  <td><b class="ot-pressure"></b> <span class="pressure-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">DHW flow rate:</th>
+                  <td><b class="ot-dhw-flow-rate"></b> <span class="volume-unit"></span>/min</td>
+                </tr>
+                <tr>
+                  <th scope="row">Fault code:</th>
+                  <td><b class="ot-fault-code"></b></td>
+                </tr>
+                <tr>
+                  <th scope="row">Indoor temp:</th>
+                  <td><b class="indoor-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Outdoor temp:</th>
+                  <td><b class="outdoor-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating temp:</th>
+                  <td><b class="heating-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating setpoint temp:</th>
+                  <td><b class="heating-setpoint-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating return temp:</th>
+                  <td><b class="heating-return-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">DHW temp:</th>
+                  <td><b class="dhw-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Exhaust temp:</th>
+                  <td><b class="exhaust-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
 
-              <!-- Diag -->
-              <tr>
-                <th scope="row">Slave parameters:</th>
-                <td>
-                  <pre><b>Vendor:</b>          <span class="slave-vendor"></span>
+          <details>
+            <summary role="button" class="secondary">OpenTherm diagnostic</summary>
+            <pre><b>Vendor:</b>          <span class="slave-vendor"></span>
 <b>Member ID:</b>       <span class="slave-member-id"></span>
 <b>Flags:</b>           <span class="slave-flags"></span>
 <b>Type:</b>            <span class="slave-type"></span>
@@ -219,10 +222,7 @@
 <b>OT version:</b>      <span class="slave-ot-version"></span>
 <b>Heating limits:</b>  <span class="heating-min-temp"></span>...<span class="heating-max-temp"></span> <span class="temp-unit"></span>
 <b>DHW limits:</b>      <span class="dhw-min-temp"></span>...<span class="dhw-max-temp"></span> <span class="temp-unit"></span></pre>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          </details>
         </div>
       </article>
     </main>
