@@ -584,6 +584,7 @@ function memberIdToVendor(memberId) {
     27:   "Baxi",
     29:   "Itho Daalderop",
     33:   "Viessmann",
+    41:   "Italtherm",
     56:   "Baxi Luna Duo-Tec",
     131:  "Nefit",
     148:  "Navien",
