@@ -89,16 +89,31 @@ protected:
       Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
     }
 
-    if (network->isConnected()) {
-      vars.sensors.rssi = WiFi.RSSI();
+    vars.states.mqtt = tMqtt->isConnected();
+    vars.sensors.rssi = network->isConnected() ? WiFi.RSSI() : 0;
 
+    if (vars.states.emergency && !settings.emergency.enable) {
+      vars.states.emergency = false;
+    }
+
+    if (network->isConnected()) {
       if (!this->telnetStarted && telnetStream != nullptr) {
         telnetStream->begin(23, false);
         this->telnetStarted = true;
       }
 
-      if (!tMqtt->isEnabled() && strlen(settings.mqtt.server) > 0) {
+      if (settings.mqtt.enable && !tMqtt->isEnabled()) {
         tMqtt->enable();
+
+      } else if (!settings.mqtt.enable && tMqtt->isEnabled()) {
+        tMqtt->disable();
+      }
+
+      if (!vars.states.emergency && settings.emergency.enable && settings.emergency.onMqttFault && !tMqtt->isEnabled()) {
+        vars.states.emergency = true;
+        
+      } else if (vars.states.emergency && !settings.emergency.onMqttFault) {
+        vars.states.emergency = false;
       }
 
       if (this->firstFailConnect != 0) {
@@ -122,7 +137,7 @@ protected:
         tMqtt->disable();
       }
 
-      if (settings.emergency.enable && !vars.states.emergency) {
+      if (!vars.states.emergency && settings.emergency.enable && settings.emergency.onNetworkFault) {
         if (this->firstFailConnect == 0) {
           this->firstFailConnect = millis();
         }

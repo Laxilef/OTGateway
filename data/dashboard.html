@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard - OpenTherm Gateway</title>
+    <link rel="stylesheet" href="/static/pico.min.css">
+    <link rel="stylesheet" href="/static/app.css"/>
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a href="/"><div class="logo">OpenTherm Gateway</div></a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <hgroup>
+          <h2>Dashboard</h2>
+          <p></p>
+        </hgroup>
+
+        <div id="dashboard-busy" aria-busy="true"></div>
+        <div id="dashboard-container" class="hidden">
+          <details open>
+            <summary><b>Control</b></summary>
+            <div class="grid">
+              <div class="thermostat" id="thermostat-heating">
+                <div class="thermostat-header">Heating</div>
+                <div class="thermostat-temp">
+                  <div class="thermostat-temp-target"><span id="thermostat-heating-target"></span> <span class="temp-unit"></span></div>
+                  <div class="thermostat-temp-current">Current: <span id="thermostat-heating-current"></span> <span class="temp-unit"></span></div>
+                </div>
+                <div class="thermostat-minus"><button id="thermostat-heating-minus" class="outline"><b>-</b></button></div>
+                <div class="thermostat-plus"><button id="thermostat-heating-plus" class="outline"><b>+</b></button></div>
+                <div class="thermostat-control">
+                  <input type="checkbox" role="switch" id="thermostat-heating-enabled" value="true">
+                  <label htmlFor="thermostat-heating-enabled">Enable</label>
+
+                  <input type="checkbox" role="switch" id="thermostat-heating-turbo" value="true">
+                  <label htmlFor="thermostat-heating-turbo">Turbo mode</label>
+                </div>
+              </div>
+
+              <div class="thermostat" id="thermostat-dhw">
+                <div class="thermostat-header">DHW</div>
+                <div class="thermostat-temp">
+                  <div class="thermostat-temp-target"><span id="thermostat-dhw-target"></span> <span class="temp-unit"></span></div>
+                  <div class="thermostat-temp-current">Current: <span id="thermostat-dhw-current"></span> <span class="temp-unit"></span></div>
+                </div>
+                <div class="thermostat-minus"><button class="outline" id="thermostat-dhw-minus"><b>-</b></button></div>
+                <div class="thermostat-plus"><button class="outline" id="thermostat-dhw-plus"><b>+</b></button></div>
+                <div class="thermostat-control">
+                  <input type="checkbox" role="switch" id="thermostat-dhw-enabled" value="true">
+                  <label htmlFor="thermostat-dhw-enabled">Enable</label>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <hr />
+
+          <details>
+            <summary><b>States and sensors</b></summary>
+            <table>
+              <tbody>
+                <tr>
+                  <th scope="row">OpenTherm connected:</th>
+                  <td><input type="radio" id="ot-connected" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">MQTT connected:</th>
+                  <td><input type="radio" id="mqtt-connected" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Emergency:</th>
+                  <td><input type="radio" id="ot-emergency" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating:</th>
+                  <td><input type="radio" id="ot-heating" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">DHW:</th>
+                  <td><input type="radio" id="ot-dhw" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Flame:</th>
+                  <td><input type="radio" id="ot-flame" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Fault:</th>
+                  <td><input type="radio" id="ot-fault" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Diagnostic:</th>
+                  <td><input type="radio" id="ot-diagnostic" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">External pump:</th>
+                  <td><input type="radio" id="ot-external-pump" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row">Modulation:</th>
+                  <td><b id="ot-modulation"></b> %</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pressure:</th>
+                  <td><b id="ot-pressure"></b> <span class="pressure-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">DHW flow rate:</th>
+                  <td><b id="ot-dhw-flow-rate"></b> <span class="volume-unit"></span>/min</td>
+                </tr>
+                <tr>
+                  <th scope="row">Fault code:</th>
+                  <td><b id="ot-fault-code"></b></td>
+                </tr>
+                <tr>
+                  <th scope="row">Indoor temp:</th>
+                  <td><b id="indoor-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Outdoor temp:</th>
+                  <td><b id="outdoor-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating temp:</th>
+                  <td><b id="heating-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating setpoint temp:</th>
+                  <td><b id="heating-setpoint-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Heating return temp:</th>
+                  <td><b id="heating-return-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">DHW temp:</th>
+                  <td><b id="dhw-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Exhaust temp:</th>
+                  <td><b id="exhaust-temp"></b> <span class="temp-unit"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <hr />
+
+          <details>
+            <summary><b>OpenTherm diagnostic</b></summary>
+            <pre><b>Vendor:</b>          <span id="slave-vendor"></span>
+<b>Member ID:</b>       <span id="slave-member-id"></span>
+<b>Flags:</b>           <span id="slave-flags"></span>
+<b>Type:</b>            <span id="slave-type"></span>
+<b>Version:</b>         <span id="slave-version"></span>
+<b>OT version:</b>      <span id="slave-ot-version"></span>
+<b>Heating limits:</b>  <span id="heating-min-temp"></span>...<span id="heating-max-temp"></span> <span class="temp-unit"></span>
+<b>DHW limits:</b>      <span id="dhw-min-temp"></span>...<span id="dhw-max-temp"></span> <span class="temp-unit"></span></pre>
+          </details>
+        </div>
+      </article>
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary">License</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary">Source code</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary">Help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary">Issue & questions</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary">Releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script>
+      let modifiedTime = null;
+      let noRegulators;
+      let prevSettings;
+      let newSettings = {
+        heating: {
+          enable: false,
+          turbo: false,
+          target: 0
+        },
+        dhw: {
+          enable: false,
+          target: 0
+        }
+      };
+
+      window.onload = async function () {
+        document.querySelector('#thermostat-heating-minus').addEventListener('click', (event) => {
+          newSettings.heating.target -= 0.5;
+          modifiedTime = Date.now();
+
+          const minTemp = noRegulators ? prevSettings.heating.minTemp : 5;
+          if (prevSettings && newSettings.heating.target < minTemp) {
+            newSettings.heating.target = minTemp;
+          }
+
+          setValue('#thermostat-heating-target', newSettings.heating.target);
+        });
+
+        document.querySelector('#thermostat-heating-plus').addEventListener('click', (event) => {
+          newSettings.heating.target += 0.5;
+          modifiedTime = Date.now();
+
+          const maxTemp = noRegulators ? prevSettings.heating.maxTemp : 30;
+          if (prevSettings && newSettings.heating.target > maxTemp) {
+            newSettings.heating.target = maxTemp;
+          }
+
+          setValue('#thermostat-heating-target', newSettings.heating.target);
+        });
+
+        document.querySelector('#thermostat-dhw-minus').addEventListener('click', (event) => {
+          newSettings.dhw.target -= 1;
+          modifiedTime = Date.now();
+
+          if (prevSettings && newSettings.dhw.target < prevSettings.dhw.minTemp) {
+            newSettings.dhw.target = prevSettings.dhw.minTemp;
+          }
+
+          setValue('#thermostat-dhw-target', newSettings.dhw.target);
+        });
+
+        document.querySelector('#thermostat-dhw-plus').addEventListener('click', (event) => {
+          newSettings.dhw.target += 1;
+          modifiedTime = Date.now();
+
+          if (prevSettings && newSettings.dhw.target > prevSettings.dhw.maxTemp) {
+            newSettings.dhw.target = prevSettings.dhw.maxTemp;
+          }
+
+          setValue('#thermostat-dhw-target', newSettings.dhw.target);
+        });
+
+        document.querySelector('#thermostat-heating-enabled').addEventListener('change', (event) => {
+          modifiedTime = Date.now();
+          newSettings.heating.enable = event.currentTarget.checked;
+        });
+
+        document.querySelector('#thermostat-heating-turbo').addEventListener('change', (event) => {
+          modifiedTime = Date.now();
+          newSettings.heating.turbo = event.currentTarget.checked;
+        });
+
+        document.querySelector('#thermostat-dhw-enabled').addEventListener('change', (event) => {
+          modifiedTime = Date.now();
+          newSettings.heating.dhw = event.currentTarget.checked;
+        });
+
+        setTimeout(async function onLoadPage() {
+          if (modifiedTime) {
+            if ((Date.now() - modifiedTime) < 5000) {
+              setTimeout(onLoadPage, 1000);
+              return;
+            }
+
+            modifiedTime = null;
+          }
+
+          // settings
+          try {
+            let modified = prevSettings && (
+              (prevSettings.heating.enable != newSettings.heating.enable)
+              || (prevSettings.heating.turbo != newSettings.heating.turbo)
+              || (prevSettings.heating.target != newSettings.heating.target)
+              || (prevSettings.opentherm.dhwPresent && prevSettings.dhw.enable != newSettings.dhw.enable)
+              || (prevSettings.opentherm.dhwPresent && prevSettings.dhw.target != newSettings.dhw.target)
+            );
+
+            if (modified) {
+              console.log(newSettings);
+            }
+
+            let parameters = {cache: 'no-cache'};
+            if (modified) {
+              parameters.method = "POST";
+              parameters.body = JSON.stringify(newSettings);
+            }
+
+            const response = await fetch('/api/settings', parameters);
+            if (!response.ok) {
+              throw new Error('Response not valid');
+            }
+
+            const result = await response.json();
+            noRegulators = !result.equitherm.enable && !result.pid.enable;
+            prevSettings = result;
+            newSettings.heating.enable = result.heating.enable;
+            newSettings.heating.turbo = result.heating.turbo;
+            newSettings.heating.target = result.heating.target;
+            newSettings.dhw.enable = result.dhw.enable;
+            newSettings.dhw.target = result.dhw.target;
+
+            if (result.opentherm.dhwPresent) {
+              show('#thermostat-dhw');
+            } else {
+              hide('#thermostat-dhw');
+            }
+
+            setCheckboxValue('#thermostat-heating-enabled', result.heating.enable);
+            setCheckboxValue('#thermostat-heating-turbo', result.heating.turbo);
+            setValue('#thermostat-heating-target', result.heating.target);
+
+            setCheckboxValue('#thermostat-dhw-enabled', result.dhw.enable);
+            setValue('#thermostat-dhw-target', result.dhw.target);
+
+            setValue('.temp-unit', temperatureUnit(result.system.unitSystem));
+            setValue('.pressure-unit', pressureUnit(result.system.unitSystem));
+            setValue('.volume-unit', volumeUnit(result.system.unitSystem));
+
+          } catch (error) {
+            console.log(error);
+          }
+
+          // vars
+          try {
+            const response = await fetch('/api/vars', { cache: 'no-cache' });
+            if (!response.ok) {
+              throw new Error('Response not valid');
+            }
+
+            const result = await response.json();
+            setValue('#thermostat-heating-current', noRegulators ? result.temperatures.heating : result.temperatures.indoor);
+            setValue('#thermostat-dhw-current', result.temperatures.dhw);
+
+            setState('#ot-connected', result.states.otStatus);
+            setState('#ot-emergency', result.states.emergency);
+            setState('#ot-heating', result.states.heating);
+            setState('#ot-dhw', result.states.dhw);
+            setState('#ot-flame', result.states.flame);
+            setState('#ot-fault', result.states.fault);
+            setState('#ot-diagnostic', result.states.diagnostic);
+            setState('#ot-external-pump', result.states.externalPump);
+            setState('#mqtt-connected', result.states.mqtt);
+
+            setValue('#ot-modulation', result.sensors.modulation);
+            setValue('#ot-pressure', result.sensors.pressure);
+            setValue('#ot-dhw-flow-rate', result.sensors.dhwFlowRate);
+            setValue('#ot-fault-code', result.sensors.faultCode ? ("E" + result.sensors.faultCode) : "-");
+
+            setValue('#indoor-temp', result.temperatures.indoor);
+            setValue('#outdoor-temp', result.temperatures.outdoor);
+            setValue('#heating-temp', result.temperatures.heating);
+            setValue('#heating-return-temp', result.temperatures.heatingReturn);
+            setValue('#dhw-temp', result.temperatures.dhw);
+            setValue('#exhaust-temp', result.temperatures.exhaust);
+
+            setValue('#heating-min-temp', result.parameters.heatingMinTemp);
+            setValue('#heating-max-temp', result.parameters.heatingMaxTemp);
+            setValue('#heating-setpoint-temp', result.parameters.heatingSetpoint);
+            setValue('#dhw-min-temp', result.parameters.dhwMinTemp);
+            setValue('#dhw-max-temp', result.parameters.dhwMaxTemp);
+
+            setValue('#slave-member-id', result.parameters.slaveMemberId);
+            setValue('#slave-vendor', memberIdToVendor(result.parameters.slaveMemberId));
+
+            setValue('#slave-flags', result.parameters.slaveFlags);
+            setValue('#slave-type', result.parameters.slaveType);
+            setValue('#slave-version', result.parameters.slaveVersion);
+            setValue('#slave-ot-version', result.parameters.slaveOtVersion);
+            setBusy('#dashboard-busy', '#dashboard-container', false);
+
+          } catch (error) {
+            console.log(error);
+          }
+
+          setTimeout(onLoadPage, 10000);
+        }, 1000);
+      };
+    </script>
+  </body>
+</html>

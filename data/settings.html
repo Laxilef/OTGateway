@@ -29,300 +29,578 @@
       </hgroup>
 
       <details>
-        <summary role="button" class="secondary">Portal settings</summary>
+        <summary><b>Portal settings</b></summary>
         <div>
           <div id="portal-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="portal-settings" class="hidden">
             <div class="grid">
               <label for="portal-login">
                 Login
-                <input type="text" class="portal-login" name="portal[login]" maxlength="12" required>
+                <input type="text" id="portal-login" name="portal[login]" maxlength="12" required>
               </label>
+
               <label for="portal-password">
                 Password
-                <input type="password" class="portal-password" name="portal[password]" maxlength="32" required>
+                <input type="password" id="portal-password" name="portal[password]" maxlength="32" required>
               </label>
             </div>
-            
-            <label for="portal-use-auth">
-              <input type="checkbox" class="portal-use-auth" name="portal[useAuth]" value="true">
-              Use auth
+
+            <label for="portal-auth">
+              <input type="checkbox" id="portal-auth" name="portal[auth]" value="true">
+              Require authentication
             </label>
-            <br>
-  
+            <br />
+
             <button type="submit">Save</button>
           </form>
         </div>
       </details>
 
+      <hr />
+
       <details>
-        <summary role="button" class="secondary">System settings</summary>
+        <summary><b>System settings</b></summary>
         <div>
           <div id="system-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="system-settings" class="hidden">
             <fieldset>
               <legend>Unit system</legend>
+
               <label>
-                <input type="radio" class="system-unit-system" name="system[unitSystem]" value="0" />
-                Metric (celsius)
+                <input type="radio" id="system-unit-system" name="system[unitSystem]" value="0" />
+                Metric (celsius, liters, bar)
               </label>
+
               <label>
-                <input type="radio" class="system-unit-system" name="system[unitSystem]" value="1" />
-                Imperial (fahrenheit)
+                <input type="radio" id="system-unit-system" name="system[unitSystem]" value="1" />
+                Imperial (fahrenheit, gallons, psi)
               </label>
             </fieldset>
-  
+
+            <fieldset>
+              <legend>Serial</legend>
+
+              <label for="system-serial-enable">
+                <input type="checkbox" id="system-serial-enable" name="system[serial][enable]" value="true">
+                Enable
+              </label>
+
+              <label for="system-serial-baudrate">
+                Baud rate
+                <input type="number" inputmode="numeric" id="system-serial-baudrate" name="system[serial][baudrate]" min="9600" max="115200" step="1" required>
+                <small>(Available: 9600, 19200, 38400, 57600, 74880, 115200)</small>
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Telnet</legend>
+
+              <label for="system-telnet-enable">
+                <input type="checkbox" id="system-telnet-enable" name="system[telnet][enable]" value="true">
+                Enable
+              </label>
+
+              <label for="system-telnet-port">
+                Port
+                <input type="number" inputmode="numeric" id="system-telnet-port" name="system[telnet][port]" min="1" max="65535" step="1" required>
+              </label>
+            </fieldset>
+
             <fieldset>
               <label for="system-debug">
-                <input type="checkbox" class="system-debug" name="system[debug]" value="true">
+                <input type="checkbox" id="system-debug" name="system[debug]" value="true">
                 Debug mode
               </label>
-              <label for="system-use-serial">
-                <input type="checkbox" class="system-use-serial" name="system[useSerial]" value="true">
-                Enable serial port
-              </label>
-              <label for="system-use-telnet">
-                <input type="checkbox" class="system-use-telnet" name="system[useTelnet]" value="true">
-                Enable telnet
-              </label>
             </fieldset>
-  
+
             <fieldset>
               <mark>After changing this settings, the ESP must be restarted for the changes to take effect.</mark>
             </fieldset>
-  
+
             <button type="submit">Save</button>
           </form>
         </div>
       </details>
 
+
+      <hr />
+
       <details>
-        <summary role="button" class="secondary">OpenTherm settings</summary>
+        <summary><b>Heating settings</b></summary>
+        <div>
+          <div id="heating-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="heating-settings" class="hidden">
+            <div class="grid">
+              <label for="heating-min-temp">
+                Minimum temperature
+                <input type="number" inputmode="numeric" id="heating-min-temp" name="heating[minTemp]" min="0" max="0" step="1" required>
+              </label>
+
+              <label for="heating-max-temp">
+                Maximum temperature
+                <input type="number" inputmode="numeric" id="heating-max-temp" name="heating[maxTemp]" min="0" max="0" step="1" required>
+              </label>
+            </div>
+
+            <div class="grid">
+              <label for="heating-hysteresis">
+                Hysteresis
+                <input type="number" inputmode="numeric" id="heating-hysteresis" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
+              </label>
+
+              <label for="heating-max-modulation">
+                Max modulation level
+                <input type="number" inputmode="numeric" id="heating-max-modulation" name="heating[maxModulation]" min="1" max="100" step="1" required>
+              </label>
+            </div>
+
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <hr />
+
+      <details>
+        <summary><b>DHW settings</b></summary>
+        <div>
+          <div id="dhw-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="dhw-settings" class="hidden">
+            <div class="grid">
+              <label for="dhw-min-temp">
+                Minimum temperature
+                <input type="number" inputmode="numeric" id="dhw-min-temp" name="dhw[minTemp]" min="0" max="0" step="1" required>
+              </label>
+
+              <label for="dhw-max-temp">
+                Maximum temperature
+                <input type="number" inputmode="numeric" id="dhw-max-temp" name="dhw[maxTemp]" min="0" max="0" step="1" required>
+              </label>
+            </div>
+
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <hr />
+
+      <details>
+        <summary><b>Emergency mode settings</b></summary>
+        <div>
+          <div id="emergency-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="emergency-settings" class="hidden">
+            <fieldset>
+              <label for="emergency-enable">
+                <input type="checkbox" id="emergency-enable" name="emergency[enable]" value="true">
+                Enable
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <label for="emergency-target">
+                Target temperature
+                <input type="number" inputmode="numeric" id="emergency-target" name="emergency[target]" min="0" max="0" step="1" required>
+                <small>
+                  <u>Indoor temperature</u> if Equitherm or PID is <b>enabled</b><br />
+                  <u>Heat carrier temperature</u> if Equitherm and PID <b>is disabled</b>
+                </small>
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Events</legend>
+
+              <label for="emergency-on-network-fault">
+                <input type="checkbox" id="emergency-on-network-fault" name="emergency[onNetworkFault]" value="true">
+                On network fault
+              </label>
+
+              <label for="emergency-on-mqtt-fault">
+                <input type="checkbox" id="emergency-on-mqtt-fault" name="emergency[onMqttFault]" value="true">
+                On MQTT fault
+              </label>
+            </fieldset>
+
+            <fieldset>
+              <legend>Regulators</legend>
+
+              <label for="emergency-use-equitherm">
+                <input type="checkbox" id="emergency-use-equitherm" name="emergency[useEquitherm]" value="true">
+                Use Equitherm
+              </label>
+              <label for="emergency-use-pid">
+                <input type="checkbox" id="emergency-use-pid" name="emergency[usePid]" value="true">
+                Use PID
+              </label>
+            </fieldset>
+
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <hr />
+
+      <details>
+        <summary><b>Equitherm settings</b></summary>
+        <div>
+          <div id="equitherm-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="equitherm-settings" class="hidden">
+            <fieldset>
+              <label for="equitherm-enable">
+                <input type="checkbox" id="equitherm-enable" name="equitherm[enable]" value="true">
+                Enable
+              </label>
+            </fieldset>
+
+            <div class="grid">
+              <label for="equitherm-n-factor">
+                N factor
+                <input type="number" inputmode="numeric" id="equitherm-n-factor" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
+              </label>
+
+              <label for="equitherm-k-factor">
+                K factor
+                <input type="number" inputmode="numeric" id="equitherm-k-factor" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
+              </label>
+
+              <label for="equitherm-t-factor">
+                T factor
+                <input type="number" inputmode="numeric" id="equitherm-t-factor" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
+                <small>Not used if PID is enabled</small>
+              </label>
+            </div>
+
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <hr />
+
+      <details>
+        <summary><b>PID settings</b></summary>
+        <div>
+          <div id="pid-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="pid-settings" class="hidden">
+            <fieldset>
+              <label for="pid-enable">
+                <input type="checkbox" id="pid-enable" name="pid[enable]" value="true">
+                Enable
+              </label>
+            </fieldset>
+
+            <div class="grid">
+              <label for="pid-p-factor">
+                P factor
+                <input type="number" inputmode="numeric" id="pid-p-factor" name="pid[p_factor]" min="0.1" max="1000" step="0.1" required>
+              </label>
+
+              <label for="pid-i-factor">
+                I factor
+                <input type="number" inputmode="numeric" id="pid-i-factor" name="pid[i_factor]" min="0" max="100" step="0.001" required>
+              </label>
+
+              <label for="pid-d-factor">
+                D factor
+                <input type="number" inputmode="numeric" id="pid-d-factor" name="pid[d_factor]" min="0" max="100000" step="1" required>
+              </label>
+            </div>
+
+            <label for="pid-dt">
+              DT <small>in seconds</small>
+              <input type="number" inputmode="numeric" id="pid-dt" name="pid[dt]" min="30" max="600" step="1" required>
+            </label>
+
+            <hr />
+
+            <div class="grid">
+              <label for="pid-min-temp">
+                Minimum temperature
+                <input type="number" inputmode="numeric" id="pid-min-temp" name="pid[minTemp]" min="0" max="0" step="1" required>
+              </label>
+
+              <label for="pid-max-temp">
+                Maximum temperature
+                <input type="number" inputmode="numeric" id="pid-max-temp" name="pid[maxTemp]" min="0" max="0" step="1" required>
+              </label>
+            </div>
+
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <hr />
+
+      <details>
+        <summary><b>OpenTherm settings</b></summary>
         <div>
           <div id="opentherm-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="opentherm-settings" class="hidden">
             <fieldset>
               <legend>Unit system</legend>
+
               <label>
-                <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
+                <input type="radio" id="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
                 Metric (celsius)
               </label>
+
               <label>
-                <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
+                <input type="radio" id="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
                 Imperial (fahrenheit)
               </label>
             </fieldset>
-  
+
             <div class="grid">
               <label for="opentherm-in-gpio">
                 In GPIO
-                <input type="number" inputmode="numeric" class="opentherm-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
+                <input type="number" inputmode="numeric" id="opentherm-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
               </label>
+
               <label for="opentherm-in-gpio">
                 Out GPIO
-                <input type="number" inputmode="numeric" class="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
+                <input type="number" inputmode="numeric" id="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
               </label>
+
               <label for="opentherm-member-id-code">
                 Master MemberID code
-                <input type="number" inputmode="numeric" class="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
+                <input type="number" inputmode="numeric" id="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
               </label>
             </div>
-  
+
             <fieldset>
               <legend>Options</legend>
               <label for="opentherm-dhw-present">
-                <input type="checkbox" class="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
+                <input type="checkbox" id="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
                 DHW present
               </label>
+
               <label for="opentherm-sw-mode">
-                <input type="checkbox" class="opentherm-sw-mode" name="opentherm[summerWinterMode]" value="true">
+                <input type="checkbox" id="opentherm-sw-mode" name="opentherm[summerWinterMode]" value="true">
                 Summer/winter mode
               </label>
+
               <label for="opentherm-heating-ch2-enabled">
-                <input type="checkbox" class="opentherm-heating-ch2-enabled" name="opentherm[heatingCh2Enabled]" value="true">
+                <input type="checkbox" id="opentherm-heating-ch2-enabled" name="opentherm[heatingCh2Enabled]" value="true">
                 Heating CH2 always enabled
               </label>
+
               <label for="opentherm-heating-ch1-to-ch2">
-                <input type="checkbox" class="opentherm-heating-ch1-to-ch2" name="opentherm[heatingCh1ToCh2]" value="true">
+                <input type="checkbox" id="opentherm-heating-ch1-to-ch2" name="opentherm[heatingCh1ToCh2]" value="true">
                 Duplicate heating CH1 to CH2
               </label>
+
               <label for="opentherm-dhw-to-ch2">
-                <input type="checkbox" class="opentherm-dhw-to-ch2" name="opentherm[dhwToCh2]" value="true">
+                <input type="checkbox" id="opentherm-dhw-to-ch2" name="opentherm[dhwToCh2]" value="true">
                 Duplicate DHW to CH2
               </label>
+
               <label for="opentherm-dhw-blocking">
-                <input type="checkbox" class="opentherm-dhw-blocking" name="opentherm[dhwBlocking]" value="true">
+                <input type="checkbox" id="opentherm-dhw-blocking" name="opentherm[dhwBlocking]" value="true">
                 DHW blocking
               </label>
+
               <label for="opentherm-sync-modulation-with-heating">
-                <input type="checkbox" class="opentherm-sync-modulation-with-heating" name="opentherm[modulationSyncWithHeating]" value="true">
+                <input type="checkbox" id="opentherm-sync-modulation-with-heating" name="opentherm[modulationSyncWithHeating]" value="true">
                 Sync modulation with heating
               </label>
+
               <label for="opentherm-get-min-max-temp">
-                <input type="checkbox" class="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
+                <input type="checkbox" id="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
                 Get min/max temp from boiler
               </label>
             </fieldset>
-  
+
             <button type="submit">Save</button>
           </form>
         </div>
       </details>
 
+      <hr />
+
       <details>
-        <summary role="button" class="secondary">MQTT settings</summary>
+        <summary><b>MQTT settings</b></summary>
         <div>
           <div id="mqtt-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="mqtt-settings" class="hidden">
+            <fieldset>
+              <label for="mqtt-enable">
+                <input type="checkbox" id="mqtt-enable" name="mqtt[enable]" value="true">
+                Enable
+              </label>
+            </fieldset>
+
             <div class="grid">
               <label for="mqtt-server">
                 Server
-                <input type="text" class="mqtt-server" name="mqtt[server]" maxlength="80" required>
+                <input type="text" id="mqtt-server" name="mqtt[server]" maxlength="80" required>
               </label>
+
               <label for="mqtt-port">
                 Port
-                <input type="number" inputmode="numeric" class="mqtt-port" name="mqtt[port]" min="1" max="65535" step="1" required>
+                <input type="number" inputmode="numeric" id="mqtt-port" name="mqtt[port]" min="1" max="65535" step="1" required>
               </label>
             </div>
-  
+
             <div class="grid">
               <label for="mqtt-user">
                 User
-                <input type="text" class="mqtt-user" name="mqtt[user]" maxlength="32" required>
+                <input type="text" id="mqtt-user" name="mqtt[user]" maxlength="32" required>
               </label>
+
               <label for="mqtt-password">
                 Password
-                <input type="password" class="mqtt-password" name="mqtt[password]" maxlength="32">
+                <input type="password" id="mqtt-password" name="mqtt[password]" maxlength="32">
               </label>
             </div>
-  
+
             <div class="grid">
               <label for="mqtt-prefix">
                 Prefix
-                <input type="text" class="mqtt-prefix" name="mqtt[prefix]" maxlength="32" required>
+                <input type="text" id="mqtt-prefix" name="mqtt[prefix]" maxlength="32" required>
               </label>
+
               <label for="mqtt-interval">
                 Publish interval <small>(sec)</small>
-                <input type="number" inputmode="numeric" class="mqtt-interval" name="mqtt[interval]" min="3" max="60" step="1" required>
+                <input type="number" inputmode="numeric" id="mqtt-interval" name="mqtt[interval]" min="3" max="60" step="1" required>
               </label>
             </div>
-  
+
             <button type="submit">Save</button>
           </form>
         </div>
       </details>
 
+      <hr />
+
       <details>
-        <summary role="button" class="secondary">Outdoor sensor settings</summary>
+        <summary><b>Outdoor sensor settings</b></summary>
         <div>
           <div id="outdoor-sensor-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="outdoor-sensor-settings" class="hidden">
             <fieldset>
               <legend>Source type</legend>
+
               <label>
-                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
+                <input type="radio" id="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
                 From boiler via OpenTherm
               </label>
+
               <label>
-                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
+                <input type="radio" id="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
                 Manual via MQTT/API
               </label>
+
               <label>
-                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
+                <input type="radio" id="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
                 External (DS18B20)
               </label>
             </fieldset>
-  
+
             <label for="outdoor-sensor-gpio">
               GPIO
-              <input type="number" inputmode="numeric" class="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
+              <input type="number" inputmode="numeric" id="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
             </label>
+
             <label for="outdoor-sensor-offset">
               Temp offset (calibration)
-              <input type="number" inputmode="numeric" class="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-20" max="20" step="0.01" required>
+              <input type="number" inputmode="numeric" id="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-10" max="10" step="0.01" required>
             </label>
-  
+
             <button type="submit">Save</button>
           </form>
         </div>
       </details>
 
+      <hr />
+
       <details>
-        <summary role="button" class="secondary">Indoor sensor settings</summary>
+        <summary><b>Indoor sensor settings</b></summary>
         <div>
           <div id="indoor-sensor-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="indoor-sensor-settings" class="hidden">
             <fieldset>
               <legend>Source type</legend>
+
               <label>
-                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
+                <input type="radio" id="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
                 Manual via MQTT/API
               </label>
+
               <label>
-                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
+                <input type="radio" id="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
                 External (DS18B20)
               </label>
+
               <label>
-                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
+                <input type="radio" id="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
                 BLE device <i>(ONLY for some ESP32 which support BLE)</i>
               </label>
             </fieldset>
-  
+
             <label for="indoor-sensor-gpio">
               GPIO
-              <input type="number" inputmode="numeric" class="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
+              <input type="number" inputmode="numeric" id="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
             </label>
-  
+
             <div class="grid">
               <label for="indoor-sensor-offset">
                 Temp offset (calibration)
-                <input type="number" inputmode="numeric" class="indoor-sensor-offset" name="sensors[indoor][offset]" min="-20" max="20" step="0.01" required>
+                <input type="number" inputmode="numeric" id="indoor-sensor-offset" name="sensors[indoor][offset]" min="-10" max="10" step="0.01" required>
               </label>
+
               <label for="indoor-sensor-ble-addresss">
                 BLE addresss
-                <input type="text" class="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
+                <input type="text" id="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddresss]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
                 <small>ONLY for some ESP32 which support BLE</small>
               </label>
             </div>
-  
+
             <button type="submit">Save</button>
           </form>
         </div>
       </details>
 
+      <hr />
+
       <details>
-        <summary role="button" class="secondary">External pump settings</summary>
+        <summary><b>External pump settings</b></summary>
         <div>
           <div id="extpump-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="extpump-settings" class="hidden">
-            <label for="extpump-use">
-              <input type="checkbox" class="extpump-use" name="externalPump[use]" value="true">
-              Use external pump
-            </label>
-            <br>
-  
+            <fieldset>
+              <label for="extpump-use">
+                <input type="checkbox" id="extpump-use" name="externalPump[use]" value="true">
+                Use external pump
+              </label>
+            </fieldset>
+
             <div class="grid">
               <label for="extpump-gpio">
                 Relay GPIO
-                <input type="number" inputmode="numeric" class="extpump-gpio" name="externalPump[gpio]" min="0" max="254" step="1">
+                <input type="number" inputmode="numeric" id="extpump-gpio" name="externalPump[gpio]" min="0" max="254" step="1">
               </label>
+
               <label for="extpump-pc-time">
                 Post circulation time <small>(min)</small>
-                <input type="number" inputmode="numeric" class="extpump-pc-time" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
+                <input type="number" inputmode="numeric" id="extpump-pc-time" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
               </label>
             </div>
-  
+
             <div class="grid">
               <label for="extpump-as-interval">
                 Anti stuck interval <small>(days)</small>
-                <input type="number" inputmode="numeric" class="extpump-as-interval" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
+                <input type="number" inputmode="numeric" id="extpump-as-interval" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
               </label>
+
               <label for="extpump-as-time">
                 Anti stuck time <small>(min)</small>
-                <input type="number" inputmode="numeric" class="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
+                <input type="number" inputmode="numeric" id="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
               </label>
             </div>
-  
+
             <button type="submit">Save</button>
           </form>
         </div>
@@ -344,15 +622,152 @@
   <script src="/static/app.js"></script>
   <script>
     window.onload = async function () {
-      await loadSettings();
+      const fillData = (data) => {
+        // System
+        setCheckboxValue('#system-debug', data.system.debug);
+        setCheckboxValue('#system-serial-enable', data.system.serial.enable);
+        setInputValue('#system-serial-baudrate', data.system.serial.baudrate);
+        setCheckboxValue('#system-telnet-enable', data.system.telnet.enable);
+        setInputValue('#system-telnet-port', data.system.telnet.port);
+        setRadioValue('#system-unit-system', data.system.unitSystem);
+        setBusy('#system-settings-busy', '#system-settings', false);
 
-      setupForm('#portal-settings');
-      setupForm('#opentherm-settings');
-      setupForm('#mqtt-settings');
-      setupForm('#outdoor-sensor-settings');
-      setupForm('#indoor-sensor-settings');
-      setupForm('#extpump-settings');
-      setupForm('#system-settings');
+        // Portal
+        setCheckboxValue('#portal-auth', data.portal.auth);
+        setInputValue('#portal-login', data.portal.login);
+        setInputValue('#portal-password', data.portal.password);
+        setBusy('#portal-settings-busy', '#portal-settings', false);
+
+        // Opentherm
+        setRadioValue('#opentherm-unit-system', data.opentherm.unitSystem);
+        setInputValue('#opentherm-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
+        setInputValue('#opentherm-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
+        setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
+        setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
+        setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);
+        setCheckboxValue('#opentherm-heating-ch2-enabled', data.opentherm.heatingCh2Enabled);
+        setCheckboxValue('#opentherm-heating-ch1-to-ch2', data.opentherm.heatingCh1ToCh2);
+        setCheckboxValue('#opentherm-dhw-to-ch2', data.opentherm.dhwToCh2);
+        setCheckboxValue('#opentherm-dhw-blocking', data.opentherm.dhwBlocking);
+        setCheckboxValue('#opentherm-sync-modulation-with-heating', data.opentherm.modulationSyncWithHeating);
+        setCheckboxValue('#opentherm-get-min-max-temp', data.opentherm.getMinMaxTemp);
+        setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
+
+        // MQTT
+        setCheckboxValue('#mqtt-enable', data.mqtt.enable);
+        setInputValue('#mqtt-server', data.mqtt.server);
+        setInputValue('#mqtt-port', data.mqtt.port);
+        setInputValue('#mqtt-user', data.mqtt.user);
+        setInputValue('#mqtt-password', data.mqtt.password);
+        setInputValue('#mqtt-prefix', data.mqtt.prefix);
+        setInputValue('#mqtt-interval', data.mqtt.interval);
+        setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
+
+        // Outdoor sensor
+        setRadioValue('#outdoor-sensor-type', data.sensors.outdoor.type);
+        setInputValue('#outdoor-sensor-gpio', data.sensors.outdoor.gpio  < 255 ? data.sensors.outdoor.gpio : '');
+        setInputValue('#outdoor-sensor-offset', data.sensors.outdoor.offset);
+        setBusy('#outdoor-sensor-settings-busy', '#outdoor-sensor-settings', false);
+
+        // Indoor sensor
+        setRadioValue('#indoor-sensor-type', data.sensors.indoor.type);
+        setInputValue('#indoor-sensor-gpio', data.sensors.indoor.gpio < 255 ? data.sensors.indoor.gpio : '');
+        setInputValue('#indoor-sensor-offset', data.sensors.indoor.offset);
+        setInputValue('#indoor-sensor-ble-addresss', data.sensors.indoor.bleAddresss);
+        setBusy('#indoor-sensor-settings-busy', '#indoor-sensor-settings', false);
+
+        // Extpump
+        setCheckboxValue('#extpump-use', data.externalPump.use);
+        setInputValue('#extpump-gpio', data.externalPump.gpio < 255 ? data.externalPump.gpio : '');
+        setInputValue('#extpump-pc-time', data.externalPump.postCirculationTime);
+        setInputValue('#extpump-as-interval', data.externalPump.antiStuckInterval);
+        setInputValue('#extpump-as-time', data.externalPump.antiStuckTime);
+        setBusy('#extpump-settings-busy', '#extpump-settings', false);
+
+        // Heating
+        setInputValue('#heating-min-temp', data.heating.minTemp, {
+          "min": data.system.unitSystem == 0 ? 0 : 32,
+          "max": data.system.unitSystem == 0 ? 99 : 211
+        });
+        setInputValue('#heating-max-temp', data.heating.maxTemp, {
+          "min": data.system.unitSystem == 0 ? 1 : 33,
+          "max": data.system.unitSystem == 0 ? 100 : 212
+        });
+        setInputValue('#heating-hysteresis', data.heating.hysteresis);
+        setInputValue('#heating-max-modulation', data.heating.maxModulation);
+        setBusy('#heating-settings-busy', '#heating-settings', false);
+
+        // DHW
+        setInputValue('#dhw-min-temp', data.dhw.minTemp, {
+          "min": data.system.unitSystem == 0 ? 0 : 32,
+          "max": data.system.unitSystem == 0 ? 99 : 211
+        });
+        setInputValue('#dhw-max-temp', data.dhw.maxTemp, {
+          "min": data.system.unitSystem == 0 ? 1 : 33,
+          "max": data.system.unitSystem == 0 ? 100 : 212
+        });
+        setBusy('#dhw-settings-busy', '#dhw-settings', false);
+
+        // Emergency mode
+        setCheckboxValue('#emergency-enable', data.emergency.enable);
+        setCheckboxValue('#emergency-use-equitherm', data.emergency.useEquitherm);
+        setCheckboxValue('#emergency-use-pid', data.emergency.usePid);
+        setCheckboxValue('#emergency-on-network-fault', data.emergency.onNetworkFault);
+        setCheckboxValue('#emergency-on-mqtt-fault', data.emergency.onMqttFault);
+        setInputValue('#emergency-target', data.emergency.target, {
+          "min": (!data.emergency.useEquitherm && !data.emergency.usePid) ? data.heating.minTemp : 10,
+          "max": (!data.emergency.useEquitherm && !data.emergency.usePid) ? data.heating.maxTemp : 30,
+        });
+        setBusy('#emergency-settings-busy', '#emergency-settings', false);
+
+        // Equitherm
+        setCheckboxValue('#equitherm-enable', data.equitherm.enable);
+        setInputValue('#equitherm-n-factor', data.equitherm.n_factor);
+        setInputValue('#equitherm-k-factor', data.equitherm.k_factor);
+        setInputValue('#equitherm-t-factor', data.equitherm.t_factor);
+        setBusy('#equitherm-settings-busy', '#equitherm-settings', false);
+
+        // PID
+        setCheckboxValue('#pid-enable', data.pid.enable);
+        setInputValue('#pid-p-factor', data.pid.p_factor);
+        setInputValue('#pid-i-factor', data.pid.i_factor);
+        setInputValue('#pid-d-factor', data.pid.d_factor);
+        setInputValue('#pid-dt', data.pid.dt);
+        setInputValue('#pid-min-temp', data.pid.minTemp, {
+          "min": 0,
+          "max": data.system.unitSystem == 0 ? 99 : 211
+        });
+        setInputValue('#pid-max-temp', data.pid.maxTemp, {
+          "min": 1,
+          "max": data.system.unitSystem == 0 ? 100 : 212
+        });
+        setBusy('#pid-settings-busy', '#pid-settings', false);
+      };
+
+      try {
+        const response = await fetch('/api/settings', { cache: 'no-cache' });
+        if (!response.ok) {
+          throw new Error('Response not valid');
+        }
+
+        const result = await response.json();
+        fillData(result);
+        setupForm('#portal-settings', fillData);
+        setupForm('#system-settings', fillData);
+        setupForm('#heating-settings', fillData);
+        setupForm('#dhw-settings', fillData);
+        setupForm('#emergency-settings', fillData);
+        setupForm('#equitherm-settings', fillData);
+        setupForm('#pid-settings', fillData);
+        setupForm('#opentherm-settings', fillData);
+        setupForm('#mqtt-settings', fillData);
+        setupForm('#outdoor-sensor-settings', fillData);
+        setupForm('#indoor-sensor-settings', fillData);
+        setupForm('#extpump-settings', fillData);
+
+      } catch (error) {
+        console.log(error);
+      }
     };
   </script>
 </body>

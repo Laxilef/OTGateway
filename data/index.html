@@ -28,44 +28,44 @@
             <p></p>
           </hgroup>
 
-          <div class="main-busy" aria-busy="true"></div>
-          <table class="main-table hidden">
+          <div id="main-busy" aria-busy="true"></div>
+          <table id="main-table" class="hidden">
             <tbody>
               <tr>
                 <th scope="row">Hostname:</th>
-                <td><b class="network-hostname"></b></td>
+                <td><b id="network-hostname"></b></td>
               </tr>
               <tr>
                 <th scope="row">MAC:</th>
-                <td><b class="network-mac"></b></td>
+                <td><b id="network-mac"></b></td>
               </tr>
               <tr>
                 <th scope="row">Connected:</th>
-                <td><input type="radio" class="network-connected" aria-invalid="false" checked disabled /></td>
+                <td><input type="radio" id="network-connected" aria-invalid="false" checked disabled /></td>
               </tr>
               <tr>
                 <th scope="row">SSID:</th>
-                <td><b class="network-ssid"></b></td>
+                <td><b id="network-ssid"></b></td>
               </tr>
               <tr>
                 <th scope="row">Signal:</th>
-                <td><b class="network-signal"></b> %</td>
+                <td><b id="network-signal"></b> %</td>
               </tr>
               <tr>
                 <th scope="row">IP:</th>
-                <td><b class="network-ip"></b></td>
+                <td><b id="network-ip"></b></td>
               </tr>
               <tr>
                 <th scope="row">Subnet:</th>
-                <td><b class="network-subnet"></b></td>
+                <td><b id="network-subnet"></b></td>
               </tr>
               <tr>
                 <th scope="row">Gateway:</th>
-                <td><b class="network-gateway"></b></td>
+                <td><b id="network-gateway"></b></td>
               </tr>
               <tr>
                 <th scope="row">DNS:</th>
-                <td><b class="network-dns"></b></td>
+                <td><b id="network-dns"></b></td>
               </tr>
             </tbody>
           </table>
@@ -82,147 +82,38 @@
             <p></p>
           </hgroup>
 
-          <div class="system-busy" aria-busy="true"></div>
-          <table class="system-table hidden">
+          <div id="system-busy" aria-busy="true"></div>
+          <table id="system-table" class="hidden">
             <tbody>
               <tr>
                 <th scope="row">Version:</th>
-                <td><b class="version"></b></td>
+                <td><b id="version"></b></td>
               </tr>
               <tr>
                 <th scope="row">Build date:</th>
-                <td><b class="build-date"></b></td>
+                <td><b id="build-date"></b></td>
               </tr>
               <tr>
                 <th scope="row">Uptime:</th>
-                <td><b class="uptime-days"></b> days, <b class="uptime-hours"></b> hours, <b class="uptime-min"></b> min., <b class="uptime-sec"></b> sec.</td>
+                <td><b id="uptime-days"></b> days, <b id="uptime-hours"></b> hours, <b id="uptime-min"></b> min., <b id="uptime-sec"></b> sec.</td>
               </tr>
               <tr>
                 <th scope="row">Free memory:</th>
-                <td><b class="free-heap"></b> of <b class="total-heap"></b> bytes (min: <b class="min-free-heap"></b> bytes)<br>max free block: <b class="max-free-block-heap"></b> bytes (min: <b class="min-max-free-block-heap"></b> bytes)</td>
+                <td><b id="free-heap"></b> of <b id="total-heap"></b> bytes (min: <b id="min-free-heap"></b> bytes)<br />max free block: <b id="max-free-block-heap"></b> bytes (min: <b id="min-max-free-block-heap"></b> bytes)</td>
               </tr>
               <tr>
                 <th scope="row">Last reset reason:</th>
-                <td><b class="reset-reason"></b></td>
+                <td><b id="reset-reason"></b></td>
               </tr>
             </tbody>
           </table>
 
-          <div class="grid">
+          <div role="group">
+            <a href="/dashboard.html" role="button">Dashboard</a>
             <a href="/settings.html" role="button">Settings</a>
             <a href="/upgrade.html" role="button">Upgrade</a>
             <a href="/restart.html" role="button" class="secondary restart">Restart</a>
           </div>
-        </div>
-      </article>
-
-      <article>
-        <div class="vars-busy" aria-busy="true"></div>
-        <div class="vars-table hidden">
-          <hgroup>
-            <h2>Info</h2>
-            <p>More information and settings can be found in your Home Assistant after setting up network and MQTT</p>
-          </hgroup>
-
-          <details>
-            <summary role="button" class="secondary">States and sensors</summary>
-            <table>
-              <tbody>
-                <tr>
-                  <th scope="row">OpenTherm connected:</th>
-                  <td><input type="radio" class="ot-connected" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">MQTT connected:</th>
-                  <td><input type="radio" class="mqtt-connected" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">Emergency:</th>
-                  <td><input type="radio" class="ot-emergency" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">Heating:</th>
-                  <td><input type="radio" class="ot-heating" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">DHW:</th>
-                  <td><input type="radio" class="ot-dhw" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">Flame:</th>
-                  <td><input type="radio" class="ot-flame" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">Fault:</th>
-                  <td><input type="radio" class="ot-fault" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">Diagnostic:</th>
-                  <td><input type="radio" class="ot-diagnostic" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">External pump:</th>
-                  <td><input type="radio" class="ot-external-pump" aria-invalid="false" checked disabled /></td>
-                </tr>
-                <tr>
-                  <th scope="row">Modulation:</th>
-                  <td><b class="ot-modulation"></b> %</td>
-                </tr>
-                <tr>
-                  <th scope="row">Pressure:</th>
-                  <td><b class="ot-pressure"></b> <span class="pressure-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">DHW flow rate:</th>
-                  <td><b class="ot-dhw-flow-rate"></b> <span class="volume-unit"></span>/min</td>
-                </tr>
-                <tr>
-                  <th scope="row">Fault code:</th>
-                  <td><b class="ot-fault-code"></b></td>
-                </tr>
-                <tr>
-                  <th scope="row">Indoor temp:</th>
-                  <td><b class="indoor-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">Outdoor temp:</th>
-                  <td><b class="outdoor-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">Heating temp:</th>
-                  <td><b class="heating-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">Heating setpoint temp:</th>
-                  <td><b class="heating-setpoint-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">Heating return temp:</th>
-                  <td><b class="heating-return-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">DHW temp:</th>
-                  <td><b class="dhw-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">Exhaust temp:</th>
-                  <td><b class="exhaust-temp"></b> <span class="temp-unit"></span></td>
-                </tr>
-              </tbody>
-            </table>
-          </details>
-
-          <details>
-            <summary role="button" class="secondary">OpenTherm diagnostic</summary>
-            <pre><b>Vendor:</b>          <span class="slave-vendor"></span>
-<b>Member ID:</b>       <span class="slave-member-id"></span>
-<b>Flags:</b>           <span class="slave-flags"></span>
-<b>Type:</b>            <span class="slave-type"></span>
-<b>Version:</b>         <span class="slave-version"></span>
-<b>OT version:</b>      <span class="slave-ot-version"></span>
-<b>Heating limits:</b>  <span class="heating-min-temp"></span>...<span class="heating-max-temp"></span> <span class="temp-unit"></span>
-<b>DHW limits:</b>      <span class="dhw-min-temp"></span>...<span class="dhw-max-temp"></span> <span class="temp-unit"></span></pre>
-          </details>
         </div>
       </article>
     </main>
@@ -242,8 +133,42 @@
     <script>
       window.onload = async function () {
         setTimeout(async function onLoadPage() {
-          await loadNetworkStatus();
-          await loadVars();
+          try {
+            const response = await fetch('/api/info', { cache: 'no-cache' });
+            if (!response.ok) {
+              throw new Error('Response not valid');
+            }
+
+            const result = await response.json();
+            setValue('#network-hostname', result.network.hostname);
+            setValue('#network-mac', result.network.mac);
+            setState('#network-connected', result.network.connected);
+            setValue('#network-ssid', result.network.ssid);
+            setValue('#network-signal', result.network.signalQuality);
+            setValue('#network-ip', result.network.ip);
+            setValue('#network-subnet', result.network.subnet);
+            setValue('#network-gateway', result.network.gateway);
+            setValue('#network-dns', result.network.dns);
+            setBusy('#main-busy', '#main-table', false);
+
+            setValue('#version', result.system.version);
+            setValue('#build-date', result.system.buildDate);
+            setValue('#uptime', result.system.uptime);
+            setValue('#uptime-days', Math.floor(result.system.uptime / 86400));
+            setValue('#uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
+            setValue('#uptime-min', Math.floor(result.system.uptime % 3600 / 60));
+            setValue('#uptime-sec', Math.floor(result.system.uptime % 60));
+            setValue('#total-heap', result.system.totalHeap);
+            setValue('#free-heap', result.system.freeHeap);
+            setValue('#min-free-heap', result.system.minFreeHeap);
+            setValue('#max-free-block-heap', result.system.maxFreeBlockHeap);
+            setValue('#min-max-free-block-heap', result.system.minMaxFreeBlockHeap);
+            setValue('#reset-reason', result.system.resetReason);
+            setBusy('#system-busy', '#system-table', false);
+
+          } catch (error) {
+            console.log(error);
+          }
 
           setTimeout(onLoadPage, 10000);
         }, 1000);

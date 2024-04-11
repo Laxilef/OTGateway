@@ -59,7 +59,7 @@ void setup() {
     return tm{sec, min, hour};
   });
   
-  Serial.begin(115200);
+  Serial.begin(settings.system.serial.baudrate);
   Log.addStream(&Serial);
   Log.print("\n\n\r");
 
@@ -109,12 +109,12 @@ void setup() {
   }
 
   // logs
-  if (!settings.system.useSerial) {
+  if (!settings.system.serial.enable) {
     Log.clearStreams();
     Serial.end();
   }
 
-  if (settings.system.useTelnet) {
+  if (settings.system.telnet.enable) {
     telnetStream = new ESPTelnetStream;
     telnetStream->setKeepAliveInterval(500);
     Log.addStream(telnetStream);

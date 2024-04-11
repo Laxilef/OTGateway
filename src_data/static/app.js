@@ -1,4 +1,4 @@
-function setupForm(formSelector) {
+function setupForm(formSelector, onResultCallback = null) {
   const form = document.querySelector(formSelector);
   if (!form) {
     return;
@@ -27,7 +27,7 @@ function setupForm(formSelector) {
       button.setAttribute('aria-busy', true);
     }
 
-    const onSuccess = (response) => {
+    const onSuccess = (result) => {
       if (button) {
         button.textContent = 'Saved';
         button.classList.add('success');
@@ -41,7 +41,7 @@ function setupForm(formSelector) {
       }
     };
 
-    const onFailed = (response) => {
+    const onFailed = () => {
       if (button) {
         button.textContent = 'Error';
         button.classList.add('failed');
@@ -71,15 +71,20 @@ function setupForm(formSelector) {
         body: form2json(fd)
       });
 
-      if (response.ok) {
-        onSuccess(response);
+      if (!response.ok) {
+        throw new Error('Response not valid');
+      }
 
-      } else {
-        onFailed(response);
+      const result = response.status != 204 ? (await response.json()) : null;
+      onSuccess(result);
+
+      if (onResultCallback instanceof Function) {
+        onResultCallback(result);
       }
 
     } catch (err) {
-      onFailed(false);
+      console.log(err);
+      onFailed();
     }
   });
 }
@@ -410,6 +415,9 @@ function setupUpgradeForm(formSelector) {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    hide('.upgrade-firmware-result');
+    hide('.upgrade-filesystem-result');
+
     if (button) {
       button.textContent = 'Uploading...';
       button.setAttribute('disabled', true);
@@ -437,199 +445,15 @@ function setupUpgradeForm(formSelector) {
   });
 }
 
-async function loadNetworkStatus() {
-  let response = await fetch('/api/network/status', { cache: 'no-cache' });
-  let result = await response.json();
-
-  setValue('.network-hostname', result.hostname);
-  setValue('.network-mac', result.mac);
-  setState('.network-connected', result.isConnected);
-  setValue('.network-ssid', result.ssid);
-  setValue('.network-signal', result.signalQuality);
-  setValue('.network-ip', result.ip);
-  setValue('.network-subnet', result.subnet);
-  setValue('.network-gateway', result.gateway);
-  setValue('.network-dns', result.dns);
-
-  setBusy('.main-busy', '.main-table', false);
-}
-
-async function loadNetworkSettings() {
-  let response = await fetch('/api/network/settings', { cache: 'no-cache' });
-  let result = await response.json();
-
-  setInputValue('.network-hostname', result.hostname);
-  setCheckboxValue('.network-use-dhcp', result.useDhcp);
-  setInputValue('.network-static-ip', result.staticConfig.ip);
-  setInputValue('.network-static-gateway', result.staticConfig.gateway);
-  setInputValue('.network-static-subnet', result.staticConfig.subnet);
-  setInputValue('.network-static-dns', result.staticConfig.dns);
-  setBusy('#network-settings-busy', '#network-settings', false);
-
-  setInputValue('.sta-ssid', result.sta.ssid);
-  setInputValue('.sta-password', result.sta.password);
-  setInputValue('.sta-channel', result.sta.channel);
-  setBusy('#sta-settings-busy', '#sta-settings', false);
-
-  setInputValue('.ap-ssid', result.ap.ssid);
-  setInputValue('.ap-password', result.ap.password);
-  setInputValue('.ap-channel', result.ap.channel);
-  setBusy('#ap-settings-busy', '#ap-settings', false);
-}
-
-async function loadSettings() {
-  let response = await fetch('/api/settings', { cache: 'no-cache' });
-  let result = await response.json();
-
-  setCheckboxValue('.system-debug', result.system.debug);
-  setCheckboxValue('.system-use-serial', result.system.useSerial);
-  setCheckboxValue('.system-use-telnet', result.system.useTelnet);
-  setRadioValue('.system-unit-system', result.system.unitSystem);
-  setBusy('#system-settings-busy', '#system-settings', false);
-
-  setCheckboxValue('.portal-use-auth', result.portal.useAuth);
-  setInputValue('.portal-login', result.portal.login);
-  setInputValue('.portal-password', result.portal.password);
-  setBusy('#portal-settings-busy', '#portal-settings', false);
-
-  setRadioValue('.opentherm-unit-system', result.opentherm.unitSystem);
-  setInputValue('.opentherm-in-gpio', result.opentherm.inGpio < 255 ? result.opentherm.inGpio : '');
-  setInputValue('.opentherm-out-gpio', result.opentherm.outGpio < 255 ? result.opentherm.outGpio : '');
-  setInputValue('.opentherm-member-id-code', result.opentherm.memberIdCode);
-  setCheckboxValue('.opentherm-dhw-present', result.opentherm.dhwPresent);
-  setCheckboxValue('.opentherm-sw-mode', result.opentherm.summerWinterMode);
-  setCheckboxValue('.opentherm-heating-ch2-enabled', result.opentherm.heatingCh2Enabled);
-  setCheckboxValue('.opentherm-heating-ch1-to-ch2', result.opentherm.heatingCh1ToCh2);
-  setCheckboxValue('.opentherm-dhw-to-ch2', result.opentherm.dhwToCh2);
-  setCheckboxValue('.opentherm-dhw-blocking', result.opentherm.dhwBlocking);
-  setCheckboxValue('.opentherm-sync-modulation-with-heating', result.opentherm.modulationSyncWithHeating);
-  setCheckboxValue('.opentherm-get-min-max-temp', result.opentherm.getMinMaxTemp);
-  setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
-
-  setInputValue('.mqtt-server', result.mqtt.server);
-  setInputValue('.mqtt-port', result.mqtt.port);
-  setInputValue('.mqtt-user', result.mqtt.user);
-  setInputValue('.mqtt-password', result.mqtt.password);
-  setInputValue('.mqtt-prefix', result.mqtt.prefix);
-  setInputValue('.mqtt-interval', result.mqtt.interval);
-  setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
-
-  setRadioValue('.outdoor-sensor-type', result.sensors.outdoor.type);
-  setInputValue('.outdoor-sensor-gpio', result.sensors.outdoor.gpio  < 255 ? result.sensors.outdoor.gpio : '');
-  setInputValue('.outdoor-sensor-offset', result.sensors.outdoor.offset);
-  setBusy('#outdoor-sensor-settings-busy', '#outdoor-sensor-settings', false);
-
-  setRadioValue('.indoor-sensor-type', result.sensors.indoor.type);
-  setInputValue('.indoor-sensor-gpio', result.sensors.indoor.gpio < 255 ? result.sensors.indoor.gpio : '');
-  setInputValue('.indoor-sensor-offset', result.sensors.indoor.offset);
-  setInputValue('.indoor-sensor-ble-addresss', result.sensors.indoor.bleAddresss);
-  setBusy('#indoor-sensor-settings-busy', '#indoor-sensor-settings', false);
-
-  setCheckboxValue('.extpump-use', result.externalPump.use);
-  setInputValue('.extpump-gpio', result.externalPump.gpio < 255 ? result.externalPump.gpio : '');
-  setInputValue('.extpump-pc-time', result.externalPump.postCirculationTime);
-  setInputValue('.extpump-as-interval', result.externalPump.antiStuckInterval);
-  setInputValue('.extpump-as-time', result.externalPump.antiStuckTime);
-  setBusy('#extpump-settings-busy', '#extpump-settings', false);
-}
-
-async function loadVars() {
-  let response = await fetch('/api/vars');
-  let result = await response.json();
-
-  let tempUnitStr, pressureUnitStr, volumeUnitStr;
-  switch (result.system.unitSystem) {
-    case 0:
-      tempUnitStr = 'C';
-      pressureUnitStr = 'bar';
-      volumeUnitStr = 'L';
-      break;
-
-    case 1:
-      tempUnitStr = 'F';
-      pressureUnitStr = 'psi';
-      volumeUnitStr = 'gal';
-      break;
-
-    default:
-      tempUnitStr = '?';
-      pressureUnitStr = '?';
-      volumeUnitStr = '?';
-      break;
-  }
-
-  setState('.ot-connected', result.states.otStatus);
-  setState('.ot-emergency', result.states.emergency);
-  setState('.ot-heating', result.states.heating);
-  setState('.ot-dhw', result.states.dhw);
-  setState('.ot-flame', result.states.flame);
-  setState('.ot-fault', result.states.fault);
-  setState('.ot-diagnostic', result.states.diagnostic);
-  setState('.ot-external-pump', result.states.externalPump);
-
-  setValue('.ot-modulation', result.sensors.modulation);
-  setValue('.ot-pressure', result.sensors.pressure);
-  setValue('.ot-dhw-flow-rate', result.sensors.dhwFlowRate);
-  setValue('.ot-fault-code', result.sensors.faultCode ? ("E" + result.sensors.faultCode) : "-");
-
-  setValue('.indoor-temp', result.temperatures.indoor);
-  setValue('.outdoor-temp', result.temperatures.outdoor);
-  setValue('.heating-temp', result.temperatures.heating);
-  setValue('.heating-return-temp', result.temperatures.heatingReturn);
-  setValue('.dhw-temp', result.temperatures.dhw);
-  setValue('.exhaust-temp', result.temperatures.exhaust);
-
-  setValue('.heating-min-temp', result.parameters.heatingMinTemp);
-  setValue('.heating-max-temp', result.parameters.heatingMaxTemp);
-  setValue('.heating-setpoint-temp', result.parameters.heatingSetpoint);
-  setValue('.dhw-min-temp', result.parameters.dhwMinTemp);
-  setValue('.dhw-max-temp', result.parameters.dhwMaxTemp);
-
-  setValue('.slave-member-id', result.parameters.slaveMemberId);
-  setValue('.slave-vendor', memberIdToVendor(result.parameters.slaveMemberId));
-  
-  setValue('.slave-flags', result.parameters.slaveFlags);
-  setValue('.slave-type', result.parameters.slaveType);
-  setValue('.slave-version', result.parameters.slaveVersion);
-  setValue('.slave-ot-version', result.parameters.slaveOtVersion);
-
-  setBusy('.vars-busy', '.vars-table', false);
-
-  setValue('.temp-unit', tempUnitStr);
-  setValue('.pressure-unit', pressureUnitStr);
-  setValue('.volume-unit', volumeUnitStr);
-  setValue('.version', result.system.version);
-  setValue('.build-date', result.system.buildDate);
-  setValue('.uptime', result.system.uptime);
-  setValue('.uptime-days', Math.floor(result.system.uptime / 86400));
-  setValue('.uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
-  setValue('.uptime-min', Math.floor(result.system.uptime % 3600 / 60));
-  setValue('.uptime-sec', Math.floor(result.system.uptime % 60));
-  setValue('.total-heap', result.system.totalHeap);
-  setValue('.free-heap', result.system.freeHeap);
-  setValue('.min-free-heap', result.system.minFreeHeap);
-  setValue('.max-free-block-heap', result.system.maxFreeBlockHeap);
-  setValue('.min-max-free-block-heap', result.system.minMaxFreeBlockHeap);
-  setValue('.reset-reason', result.system.resetReason);
-  setState('.mqtt-connected', result.system.mqttConnected);
-
-  setBusy('.system-busy', '.system-table', false);
-}
 
 function setBusy(busySelector, contentSelector, value) {
-  let busy = document.querySelector(busySelector);
-  let content = document.querySelector(contentSelector);
-  if (!busy || !content) {
-    return;
-  }
-
   if (!value) {
-    busy.classList.add('hidden');
-    content.classList.remove('hidden');
+    hide(busySelector);
+    show(contentSelector);
 
   } else {
-    busy.classList.remove('hidden');
-    content.classList.add('hidden');
+    show(busySelector);
+    hide(contentSelector);
   }
 }
 
@@ -673,15 +497,75 @@ function setRadioValue(selector, value) {
   }
 }
 
-function setInputValue(selector, value) {
-  let item = document.querySelector(selector);
-  if (!item) {
+function setInputValue(selector, value, attrs = {}) {
+  let items = document.querySelectorAll(selector);
+  if (!items.length) {
     return;
   }
 
-  item.value = value;
+  for (let item of items) {
+    item.value = value;
+
+    if (attrs instanceof Object) {
+      for (let attrKey of Object.keys(attrs)) {
+        item.setAttribute(attrKey, attrs[attrKey]);
+      }
+    }
+  }
 }
 
+function show(selector) {
+  let items = document.querySelectorAll(selector);
+  if (!items.length) {
+    return;
+  }
+
+  for (let item of items) {
+    if (item.classList.contains('hidden')) {
+      item.classList.remove('hidden');
+    }
+  }
+}
+
+function hide(selector) {
+  let items = document.querySelectorAll(selector);
+  if (!items.length) {
+    return;
+  }
+
+  for (let item of items) {
+    if (!item.classList.contains('hidden')) {
+      item.classList.add('hidden');
+    }
+  }
+}
+
+function unit2str(unitSystem, units = {}, defaultValue = '?') {
+  return (unitSystem in units) 
+    ? units[unitSystem] 
+    : defaultValue;
+}
+
+function temperatureUnit(unitSystem) {
+  return unit2str(unitSystem, {
+    0: "°C",
+    1: "°F"
+  });
+}
+
+function pressureUnit(unitSystem) {
+  return unit2str(unitSystem, {
+    0: "bar",
+    1: "psi"
+  });
+}
+
+function volumeUnit(unitSystem) {
+  return unit2str(unitSystem, {
+    0: "L",
+    1: "gal"
+  });
+}
 
 function memberIdToVendor(memberId) {
   // https://github.com/Jeroen88/EasyOpenTherm/blob/main/src/EasyOpenTherm.h

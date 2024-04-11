@@ -41,13 +41,7 @@
 	}
 }
 
-.hidden {
-	display: none !important;
-}
-
-header,
-main,
-footer {
+header, main, footer {
 	padding-top: 1rem !important;
 	padding-bottom: 1rem !important;
 }
@@ -58,6 +52,23 @@ article {
 
 footer {
 	text-align: center;
+}
+
+nav li a:has(> div.logo) {
+	margin-bottom: 0;
+}
+
+details > div {
+	padding: 0 var(--pico-form-element-spacing-horizontal);
+}
+
+pre {
+	padding: 0.5rem;
+}
+
+
+.hidden {
+	display: none !important;
 }
 
 button.success {
@@ -106,14 +117,80 @@ tr.network:hover {
   font-family: var(--pico-font-family-monospace);
 }
 
-nav li a:has(> div.logo) {
-	margin-bottom: 0;
-}
+.thermostat {
+	display: grid;
+  grid-template-columns: 0.5fr 2fr 0.5fr;
+  grid-template-rows: 0.25fr 1fr 0.25fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  justify-content: center;
+  justify-items: center;
+  grid-template-areas:
+    ". thermostat-header ."
+    "thermostat-minus thermostat-temp thermostat-plus"
+    "thermostat-control thermostat-control thermostat-control";
 
-details > div {
-	padding: 0 var(--pico-form-element-spacing-horizontal);
-}
-
-pre {
+	border: .25rem solid var(--pico-blockquote-border-color);
 	padding: 0.5rem;
+}
+
+.thermostat-header {
+  justify-self: center;
+  align-self: end;
+  grid-area: thermostat-header;
+
+	font-size: 1rem;
+  font-weight: bold;
+  border-bottom: .25rem solid var(--pico-primary-hover-border);
+	margin: 0 0 1rem 0;
+}
+
+.thermostat-temp {
+	display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 0.5fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "thermostat-temp-target"
+    "thermostat-temp-current";
+  grid-area: thermostat-temp;
+}
+
+.thermostat-temp-target {
+  justify-self: center;
+  align-self: center;
+  grid-area: thermostat-temp-target;
+
+	font-weight: bold;
+  font-size: 1.75rem;
+}
+
+.thermostat-temp-current {
+  justify-self: center;
+  align-self: start;
+  grid-area: thermostat-temp-current;
+
+	color: var(--pico-secondary);
+  font-size: 0.85rem;
+}
+
+.thermostat-minus {
+  justify-self: end;
+  align-self: center;
+  grid-area: thermostat-minus;
+}
+
+.thermostat-plus {
+  justify-self: start;
+  align-self: center;
+  grid-area: thermostat-plus;
+}
+
+.thermostat-control {
+  justify-self: center;
+  align-self: start;
+  grid-area: thermostat-control;
+
+	margin: 1.25rem 0;
 }

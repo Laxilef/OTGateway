@@ -20,6 +20,11 @@ public:
     if (this->client != nullptr) {
       if (this->client->connected()) {
         this->client->stop();
+
+        if (this->connected) {
+          this->onDisconnect();
+          this->connected = false;
+        }
       }
 
       delete this->client;
@@ -31,6 +36,12 @@ public:
 
   void disable() {
     this->client->stop();
+
+    if (this->connected) {
+      this->onDisconnect();
+      this->connected = false;
+    }
+    
     Task::disable();
 
     Log.sinfoln(FPSTR(L_MQTT), F("Disabled"));
@@ -176,13 +187,15 @@ protected:
       this->onConnect();
     }
 
-    if (!this->connected && settings.emergency.enable && !vars.states.emergency && millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
-      vars.states.emergency = true;
-      Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode enabled"));
+    if (settings.emergency.enable && settings.emergency.onMqttFault) {
+      if (!this->connected && !vars.states.emergency && millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
+        vars.states.emergency = true;
+        Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode enabled"));
 
-    } else if (this->connected && vars.states.emergency && millis() - this->connectedTime > 10000) {
-      vars.states.emergency = false;
-      Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode disabled"));
+      } else if (this->connected && vars.states.emergency && millis() - this->connectedTime > 10000) {
+        vars.states.emergency = false;
+        Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode disabled"));
+      }
     }
 
     if (!this->connected) {

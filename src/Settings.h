@@ -25,13 +25,22 @@ struct NetworkSettings {
 struct Settings {
   struct {
     bool debug = DEBUG_BY_DEFAULT;
-    bool useSerial = USE_SERIAL;
-    bool useTelnet = USE_TELNET;
+
+    struct {
+      bool enable = USE_SERIAL;
+      unsigned int baudrate = 115200;
+    } serial;
+
+    struct {
+      bool enable = USE_TELNET;
+      unsigned short port = 23;
+    } telnet;
+
     UnitSystem unitSystem = UnitSystem::METRIC;
   } system;
 
   struct {
-    bool useAuth = false;
+    bool auth = false;
     char login[13] = DEFAULT_PORTAL_LOGIN;
     char password[33] = DEFAULT_PORTAL_PASSWORD;
   } portal;
@@ -52,6 +61,7 @@ struct Settings {
   } opentherm;
 
   struct {
+    bool enable = false;
     char server[81] = DEFAULT_MQTT_SERVER;
     unsigned short port = DEFAULT_MQTT_PORT;
     char user[33] = DEFAULT_MQTT_USER;
@@ -65,6 +75,8 @@ struct Settings {
     float target = 40.0f;
     bool useEquitherm = false;
     bool usePid = false;
+    bool onNetworkFault = true;
+    bool onMqttFault = true;
   } emergency;
 
   struct {
@@ -142,6 +154,7 @@ struct Variables {
     bool fault = false;
     bool diagnostic = false;
     bool externalPump = false;
+    bool mqtt = false;
   } states;
 
   struct {

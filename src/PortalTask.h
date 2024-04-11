@@ -86,9 +86,21 @@ protected:
     this->webServer->addHandler(indexPage);*/
     this->webServer->addHandler(new StaticPage("/", &LittleFS, "/index.html", PORTAL_CACHE));
 
+    // dashboard page
+    auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, "/dashboard.html", PORTAL_CACHE))
+      ->setBeforeSendCallback([this]() {
+        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+          this->webServer->requestAuthentication(DIGEST_AUTH);
+          return false;
+        }
+
+        return true;
+      });
+    this->webServer->addHandler(dashboardPage);
+
     // restart
     this->webServer->on("/restart.html", HTTP_GET, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->send(401);
           return;
@@ -103,7 +115,7 @@ protected:
     // network settings page
     auto networkPage = (new StaticPage("/network.html", &LittleFS, "/network.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
           return false;
         }
@@ -115,7 +127,7 @@ protected:
     // settings page
     auto settingsPage = (new StaticPage("/settings.html", &LittleFS, "/settings.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
           return false;
         }
@@ -127,7 +139,7 @@ protected:
     // upgrade page
     auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, "/upgrade.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
           return false;
         }
@@ -138,7 +150,7 @@ protected:
 
     // OTA
     auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadCallback([this](const String& uri) {
-      if (this->isNeedAuth() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+      if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
         this->webServer->sendHeader("Connection", "close");
         this->webServer->send(401);
         return false;
@@ -172,7 +184,7 @@ protected:
 
     // backup
     this->webServer->on("/api/backup/save", HTTP_GET, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -196,7 +208,7 @@ protected:
     });
 
     this->webServer->on("/api/backup/restore", HTTP_POST, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -253,7 +265,7 @@ protected:
 
     // network
     this->webServer->on("/api/network/settings", HTTP_GET, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -267,7 +279,7 @@ protected:
     });
 
     this->webServer->on("/api/network/settings", HTTP_POST, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -298,8 +310,14 @@ protected:
       doc.clear();
       doc.shrinkToFit();
 
+      networkSettingsToJson(networkSettings, doc);
+      doc.shrinkToFit();
+      
+      this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+
       if (changed) {
-        this->webServer->send(201);
+        doc.clear();
+        doc.shrinkToFit();
 
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
@@ -312,33 +330,11 @@ protected:
             networkSettings.staticConfig.dns
           )
           ->reconnect();
-
-      } else {
-        this->webServer->send(200);
       }
     });
 
-    this->webServer->on("/api/network/status", HTTP_GET, [this]() {
-      bool isConnected = network->isConnected();
-
-      JsonDocument doc;
-      doc["hostname"] = networkSettings.hostname;
-      doc["mac"] = network->getStaMac();
-      doc["isConnected"] = isConnected;
-      doc["ssid"] = network->getStaSsid();
-      doc["signalQuality"] = isConnected ? Network::Manager::rssiToSignalQuality(network->getRssi()) : 0;
-      doc["channel"] = isConnected ? network->getStaChannel() : 0;
-      doc["ip"] = isConnected ? network->getStaIp().toString() : "";
-      doc["subnet"] = isConnected ? network->getStaSubnet().toString() : "";
-      doc["gateway"] = isConnected ? network->getStaGateway().toString() : "";
-      doc["dns"] = isConnected ? network->getStaDns().toString() : "";
-      doc.shrinkToFit();
-
-      this->bufferedWebServer->send(200, "application/json", doc);
-    });
-
     this->webServer->on("/api/network/scan", HTTP_GET, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->send(401);
           return;
@@ -374,7 +370,7 @@ protected:
 
     // settings
     this->webServer->on("/api/settings", HTTP_GET, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -388,7 +384,7 @@ protected:
     });
 
     this->webServer->on("/api/settings", HTTP_POST, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -419,12 +415,15 @@ protected:
       doc.clear();
       doc.shrinkToFit();
 
-      if (changed) {
-        fsSettings.update();
-        this->webServer->send(201);
+      settingsToJson(settings, doc);
+      doc.shrinkToFit();
 
-      } else {
-        this->webServer->send(200);
+      this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+
+      if (changed) {
+        doc.clear();
+        doc.shrinkToFit();
+        fsSettings.update();
       }
     });
 
@@ -433,25 +432,13 @@ protected:
     this->webServer->on("/api/vars", HTTP_GET, [this]() {
       JsonDocument doc;
       varsToJson(vars, doc);
-
-      doc["system"]["unitSystem"] = static_cast<byte>(settings.system.unitSystem);
-      doc["system"]["version"] = PROJECT_VERSION;
-      doc["system"]["buildDate"] = __DATE__ " " __TIME__;
-      doc["system"]["uptime"] = millis() / 1000ul;
-      doc["system"]["totalHeap"] = getTotalHeap();
-      doc["system"]["freeHeap"] = getFreeHeap();
-      doc["system"]["minFreeHeap"] = getFreeHeap(true);
-      doc["system"]["maxFreeBlockHeap"] = getMaxFreeBlockHeap();
-      doc["system"]["minMaxFreeBlockHeap"] = getMaxFreeBlockHeap(true);
-      doc["system"]["resetReason"] = getResetReason();
-      doc["system"]["mqttConnected"] = tMqtt->isConnected();
       doc.shrinkToFit();
 
       this->bufferedWebServer->send(200, "application/json", doc);
     });
 
     this->webServer->on("/api/vars", HTTP_POST, [this]() {
-      if (this->isNeedAuth()) {
+      if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
@@ -482,12 +469,39 @@ protected:
       doc.clear();
       doc.shrinkToFit();
 
-      if (changed) {
-        this->webServer->send(201);
+      varsToJson(vars, doc);
+      doc.shrinkToFit();
+      
+      this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+    });
 
-      } else {
-        this->webServer->send(200);
-      }
+    this->webServer->on("/api/info", HTTP_GET, [this]() {
+      bool isConnected = network->isConnected();
+
+      JsonDocument doc;
+      doc["network"]["hostname"] = networkSettings.hostname;
+      doc["network"]["mac"] = network->getStaMac();
+      doc["network"]["connected"] = isConnected;
+      doc["network"]["ssid"] = network->getStaSsid();
+      doc["network"]["signalQuality"] = isConnected ? Network::Manager::rssiToSignalQuality(network->getRssi()) : 0;
+      doc["network"]["channel"] = isConnected ? network->getStaChannel() : 0;
+      doc["network"]["ip"] = isConnected ? network->getStaIp().toString() : "";
+      doc["network"]["subnet"] = isConnected ? network->getStaSubnet().toString() : "";
+      doc["network"]["gateway"] = isConnected ? network->getStaGateway().toString() : "";
+      doc["network"]["dns"] = isConnected ? network->getStaDns().toString() : "";
+
+      doc["system"]["version"] = PROJECT_VERSION;
+      doc["system"]["buildDate"] = __DATE__ " " __TIME__;
+      doc["system"]["uptime"] = millis() / 1000ul;
+      doc["system"]["totalHeap"] = getTotalHeap();
+      doc["system"]["freeHeap"] = getFreeHeap();
+      doc["system"]["minFreeHeap"] = getFreeHeap(true);
+      doc["system"]["maxFreeBlockHeap"] = getMaxFreeBlockHeap();
+      doc["system"]["minMaxFreeBlockHeap"] = getMaxFreeBlockHeap(true);
+      doc["system"]["resetReason"] = getResetReason();
+      doc.shrinkToFit();
+
+      this->bufferedWebServer->send(200, "application/json", doc);
     });
 
 
@@ -560,8 +574,8 @@ protected:
     }
   }
 
-  bool isNeedAuth() {
-    return !network->isApEnabled() && settings.portal.useAuth && strlen(settings.portal.password);
+  bool isAuthRequired() {
+    return !network->isApEnabled() && settings.portal.auth && strlen(settings.portal.password);
   }
 
   void onCaptivePortal() {

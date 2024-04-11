@@ -723,8 +723,8 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
-    doc[FPSTR(HA_MIN)] = 1;
-    doc[FPSTR(HA_MAX)] = 100;
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 100;
       
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);

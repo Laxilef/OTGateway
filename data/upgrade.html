@@ -36,8 +36,8 @@
             Settings file:
             <input type="file" name="settings" id="restore-file" accept=".json">
           </label>
-          
-          <div class="grid">
+
+          <div role="group">
             <button type="submit">Restore</button>
             <button type="button" class="secondary" onclick="window.location='/api/backup/save';">Backup</button>
           </div>
@@ -50,7 +50,7 @@
         <hgroup>
           <h2>Upgrade</h2>
           <p>
-            In this section you can upgrade the firmware and filesystem of your device.<br>
+            In this section you can upgrade the firmware and filesystem of your device.<br />
             Latest releases can be downloaded from the <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank">Releases page</a> of the project repository.
           </p>
         </hgroup>
@@ -64,7 +64,7 @@
                 <button type="button" class="upgrade-firmware-result hidden" disabled></button>
               </div>
             </label>
-          
+
             <label for="filesystem-file">
               Filesystem:
               <div class="grid">
@@ -73,7 +73,7 @@
               </div>
             </label>
           </fieldset>
-          
+
           <ul>
             <li><mark>After a successful upgrade the filesystem, ALL settings will be reset to default values! Save backup before upgrading.</mark></li>
             <li><mark>After a successful upgrade, the device will automatically reboot after 10 seconds.</mark></li>
