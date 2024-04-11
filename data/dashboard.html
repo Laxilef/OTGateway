@@ -202,10 +202,20 @@
 
       window.onload = async function () {
         document.querySelector('#thermostat-heating-minus').addEventListener('click', (event) => {
+          if (!prevSettings) {
+            return;
+          }
+          
           newSettings.heating.target -= 0.5;
           modifiedTime = Date.now();
 
-          const minTemp = noRegulators ? prevSettings.heating.minTemp : 5;
+          let minTemp;
+          if (noRegulators) {
+            minTemp = prevSettings.heating.minTemp;
+          } else {
+            minTemp = prevSettings.system.unitSystem == 0 ? 5 : 41;
+          }
+
           if (prevSettings && newSettings.heating.target < minTemp) {
             newSettings.heating.target = minTemp;
           }
@@ -214,10 +224,20 @@
         });
 
         document.querySelector('#thermostat-heating-plus').addEventListener('click', (event) => {
+          if (!prevSettings) {
+            return;
+          } 
+          
           newSettings.heating.target += 0.5;
           modifiedTime = Date.now();
 
-          const maxTemp = noRegulators ? prevSettings.heating.maxTemp : 30;
+          let maxTemp;
+          if (noRegulators) {
+            maxTemp = prevSettings.heating.maxTemp;
+          } else {
+            maxTemp = prevSettings.system.unitSystem == 0 ? 30 : 86;
+          }
+
           if (prevSettings && newSettings.heating.target > maxTemp) {
             newSettings.heating.target = maxTemp;
           }
@@ -226,10 +246,14 @@
         });
 
         document.querySelector('#thermostat-dhw-minus').addEventListener('click', (event) => {
+          if (!prevSettings) {
+            return;
+          }
+          
           newSettings.dhw.target -= 1;
           modifiedTime = Date.now();
 
-          if (prevSettings && newSettings.dhw.target < prevSettings.dhw.minTemp) {
+          if (newSettings.dhw.target < prevSettings.dhw.minTemp) {
             newSettings.dhw.target = prevSettings.dhw.minTemp;
           }
 
@@ -237,10 +261,14 @@
         });
 
         document.querySelector('#thermostat-dhw-plus').addEventListener('click', (event) => {
+          if (!prevSettings) {
+            return;
+          }
+          
           newSettings.dhw.target += 1;
           modifiedTime = Date.now();
 
-          if (prevSettings && newSettings.dhw.target > prevSettings.dhw.maxTemp) {
+          if (newSettings.dhw.target > prevSettings.dhw.maxTemp) {
             newSettings.dhw.target = prevSettings.dhw.maxTemp;
           }
 
