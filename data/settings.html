@@ -195,6 +195,10 @@
                 <input type="checkbox" id="emergency-enable" name="emergency[enable]" value="true">
                 Enable
               </label>
+
+              <small>
+                <b>!</b> Emergency mode can be useful <u>only</u> when using Equitherm and/or PID (when normal work) and when reporting indoor/outdoor temperature via MQTT or API. In this mode, sensor values that are reported via MQTT/API are not used.
+              </small>
             </fieldset>
 
             <fieldset>
@@ -223,15 +227,19 @@
             </fieldset>
 
             <fieldset>
-              <legend>Regulators</legend>
+              <legend>Using regulators</legend>
 
               <label for="emergency-use-equitherm">
                 <input type="checkbox" id="emergency-use-equitherm" name="emergency[useEquitherm]" value="true">
-                Use Equitherm
+                <span>
+                  Equitherm <small>(requires at least an external/boiler <u>outdoor</u> sensor)</small>
+                </span>
               </label>
               <label for="emergency-use-pid">
                 <input type="checkbox" id="emergency-use-pid" name="emergency[usePid]" value="true">
-                Use PID
+                <span>
+                  PID <small>(requires at least an external/BLE <u>indoor</u> sensor)</small>
+                </span>
               </label>
             </fieldset>
 
