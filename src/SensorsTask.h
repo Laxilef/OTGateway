@@ -32,11 +32,13 @@ protected:
   DallasTemperature* indoorSensor = nullptr;
 
   bool initOutdoorSensor = false;
+  unsigned long initOutdoorSensorTime = 0;
   unsigned long startOutdoorConversionTime = 0;
   float filteredOutdoorTemp = 0;
   bool emptyOutdoorTemp = true;
   
   bool initIndoorSensor = false;
+  unsigned long initIndoorSensorTime = 0;
   unsigned long startIndoorConversionTime = 0;
   float filteredIndoorTemp = 0;
   bool emptyIndoorTemp = true;
@@ -229,10 +231,16 @@ protected:
 
   void outdoorTemperatureSensor() {
     if (!this->initOutdoorSensor) {
+      if (this->initOutdoorSensorTime && millis() - this->initOutdoorSensorTime < EXT_SENSORS_INTERVAL * 10) {
+        return;
+      }
+
       Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on gpio %hhu..."), settings.sensors.outdoor.gpio);
 
       this->oneWireOutdoorSensor->begin(settings.sensors.outdoor.gpio);
+      this->oneWireOutdoorSensor->reset();
       this->outdoorSensor->begin();
+      this->initOutdoorSensorTime = millis();
 
       Log.straceln(
         FPSTR(L_SENSORS_OUTDOOR),
@@ -295,10 +303,16 @@ protected:
 
   void indoorTemperatureSensor() {
     if (!this->initIndoorSensor) {
+      if (this->initIndoorSensorTime && millis() - this->initIndoorSensorTime < EXT_SENSORS_INTERVAL * 10) {
+        return;
+      }
+      
       Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on gpio %hhu..."), settings.sensors.indoor.gpio);
 
       this->oneWireIndoorSensor->begin(settings.sensors.indoor.gpio);
+      this->oneWireIndoorSensor->reset();
       this->indoorSensor->begin();
+      this->initIndoorSensorTime = millis();
 
       Log.straceln(
         FPSTR(L_SENSORS_INDOOR),
