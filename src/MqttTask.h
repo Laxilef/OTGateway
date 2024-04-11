@@ -188,7 +188,7 @@ protected:
     }
 
     if (settings.emergency.enable && settings.emergency.onMqttFault) {
-      if (!this->connected && !vars.states.emergency && millis() - this->disconnectedTime > EMERGENCY_TIME_TRESHOLD) {
+      if (!this->connected && !vars.states.emergency && millis() - this->disconnectedTime > (settings.emergency.tresholdTime * 1000)) {
         vars.states.emergency = true;
         Log.sinfoln(FPSTR(L_MQTT), F("Emergency mode enabled"));
 

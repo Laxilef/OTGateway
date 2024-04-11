@@ -37,6 +37,7 @@ struct Settings {
     } telnet;
 
     UnitSystem unitSystem = UnitSystem::METRIC;
+    byte statusLedGpio = DEFAULT_STATUS_LED_GPIO;
   } system;
 
   struct {
@@ -49,6 +50,7 @@ struct Settings {
     UnitSystem unitSystem = UnitSystem::METRIC;
     byte inGpio = DEFAULT_OT_IN_GPIO;
     byte outGpio = DEFAULT_OT_OUT_GPIO;
+    byte rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
     unsigned int memberIdCode = 0;
     bool dhwPresent = true;
     bool summerWinterMode = false;
@@ -73,6 +75,7 @@ struct Settings {
   struct {
     bool enable = true;
     float target = 40.0f;
+    unsigned short tresholdTime = 120;
     bool useEquitherm = false;
     bool usePid = false;
     bool onNetworkFault = true;

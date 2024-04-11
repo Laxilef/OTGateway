@@ -2,7 +2,6 @@
 #define PROJECT_VERSION             "1.4.0-rc.21"
 #define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
 
-#define EMERGENCY_TIME_TRESHOLD     120000
 #define MQTT_RECONNECT_INTERVAL     15000
 
 #define EXT_SENSORS_INTERVAL        5000
@@ -53,6 +52,10 @@
   #define DEBUG_BY_DEFAULT false
 #endif
 
+#ifndef DEFAULT_STATUS_LED_GPIO
+  #define DEFAULT_STATUS_LED_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
 #ifndef DEFAULT_PORTAL_LOGIN
   #define DEFAULT_PORTAL_LOGIN ""
 #endif
@@ -87,6 +90,10 @@
 
 #ifndef DEFAULT_OT_OUT_GPIO
   #define DEFAULT_OT_OUT_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_OT_RX_LED_GPIO
+  #define DEFAULT_OT_RX_LED_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
 #ifndef DEFAULT_SENSOR_OUTDOOR_GPIO

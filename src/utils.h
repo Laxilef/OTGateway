@@ -332,6 +332,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["system"]["telnet"]["enable"] = src.system.telnet.enable;
     dst["system"]["telnet"]["port"] = src.system.telnet.port;
     dst["system"]["unitSystem"] = static_cast<byte>(src.system.unitSystem);
+    dst["system"]["statusLedGpio"] = src.system.statusLedGpio;
 
     dst["portal"]["auth"] = src.portal.auth;
     dst["portal"]["login"] = src.portal.login;
@@ -340,6 +341,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["unitSystem"] = static_cast<byte>(src.opentherm.unitSystem);
     dst["opentherm"]["inGpio"] = src.opentherm.inGpio;
     dst["opentherm"]["outGpio"] = src.opentherm.outGpio;
+    dst["opentherm"]["rxLedGpio"] = src.opentherm.rxLedGpio;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
     dst["opentherm"]["dhwPresent"] = src.opentherm.dhwPresent;
     dst["opentherm"]["summerWinterMode"] = src.opentherm.summerWinterMode;
@@ -361,6 +363,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   dst["emergency"]["enable"] = src.emergency.enable;
   dst["emergency"]["target"] = roundd(src.emergency.target, 2);
+  dst["emergency"]["tresholdTime"] = src.emergency.tresholdTime;
   dst["emergency"]["useEquitherm"] = src.emergency.useEquitherm;
   dst["emergency"]["usePid"] = src.emergency.usePid;
   dst["emergency"]["onNetworkFault"] = src.emergency.onNetworkFault;
@@ -497,6 +500,23 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
+    if (!src["system"]["statusLedGpio"].isNull()) {
+      if (src["system"]["statusLedGpio"].is<JsonString>() && src["system"]["statusLedGpio"].as<JsonString>().size() == 0) {
+        if (dst.system.statusLedGpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.system.statusLedGpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["system"]["statusLedGpio"].as<unsigned char>();
+
+        if (value >= 0 && value <= 254) {
+          dst.system.statusLedGpio = value;
+          changed = true;
+        }
+      }
+    }
+
 
     // portal
     if (src["portal"]["auth"].is<bool>()) {
@@ -572,6 +592,23 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
         if (value >= 0 && value <= 254) {
           dst.opentherm.outGpio = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (!src["opentherm"]["rxLedGpio"].isNull()) {
+      if (src["opentherm"]["rxLedGpio"].is<JsonString>() && src["opentherm"]["rxLedGpio"].as<JsonString>().size() == 0) {
+        if (dst.opentherm.rxLedGpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.opentherm.rxLedGpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["opentherm"]["rxLedGpio"].as<unsigned char>();
+
+        if (value >= 0 && value <= 254) {
+          dst.opentherm.rxLedGpio = value;
           changed = true;
         }
       }
@@ -712,6 +749,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     dst.emergency.enable = src["emergency"]["enable"].as<bool>();
     changed = true;
   }
+
+    if (!src["emergency"]["tresholdTime"].isNull()) {
+      unsigned short value = src["emergency"]["tresholdTime"].as<unsigned short>();
+
+      if (value >= 60 && value <= 1800) {
+        dst.emergency.tresholdTime = value;
+        changed = true;
+      }
+    }
 
   if (src["emergency"]["useEquitherm"].is<bool>()) {
     if (dst.sensors.outdoor.type != SensorType::MANUAL) {

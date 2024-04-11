@@ -29,6 +29,7 @@ protected:
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long dhwSetTempTime = 0;
   unsigned long heatingSetTempTime = 0;
+  byte configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
 
 
   const char* getTaskName() {
@@ -50,11 +51,6 @@ protected:
       vars.parameters.dhwMinTemp = convertTemp(vars.parameters.dhwMinTemp, UnitSystem::METRIC, settings.system.unitSystem);
       vars.parameters.dhwMaxTemp = convertTemp(vars.parameters.dhwMaxTemp, UnitSystem::METRIC, settings.system.unitSystem);
     }
-    
-    #ifdef LED_OT_RX_GPIO
-      pinMode(LED_OT_RX_GPIO, OUTPUT);
-      digitalWrite(LED_OT_RX_GPIO, LOW);
-    #endif
 
     // delete instance
     if (this->instance != nullptr) {
@@ -89,13 +85,11 @@ protected:
       if (status == OpenThermResponseStatus::SUCCESS) {
         this->lastSuccessResponse = millis();
 
-        #ifdef LED_OT_RX_GPIO
-        {
-          digitalWrite(LED_OT_RX_GPIO, HIGH);
+        if (this->configuredRxLedGpio != GPIO_IS_NOT_CONFIGURED) {
+          digitalWrite(this->configuredRxLedGpio, HIGH);
           delayMicroseconds(2000);
-          digitalWrite(LED_OT_RX_GPIO, LOW);
+          digitalWrite(this->configuredRxLedGpio, LOW);
         }
-        #endif
       }
     });
 
@@ -119,6 +113,21 @@ protected:
     if (this->instance == nullptr) {
       this->delay(5000);
       return;
+    }
+
+    if (settings.opentherm.rxLedGpio != this->configuredRxLedGpio) {
+      if (this->configuredRxLedGpio != GPIO_IS_NOT_CONFIGURED) {
+        digitalWrite(this->configuredRxLedGpio, LOW);
+      }
+      
+      if (GPIO_IS_VALID(settings.opentherm.rxLedGpio)) {
+        this->configuredRxLedGpio = settings.opentherm.rxLedGpio;
+        pinMode(this->configuredRxLedGpio, OUTPUT);
+        digitalWrite(this->configuredRxLedGpio, LOW);
+
+      } else if (this->configuredRxLedGpio != GPIO_IS_NOT_CONFIGURED) {
+        this->configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
+      }
     }
 
     bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && this->isReady();

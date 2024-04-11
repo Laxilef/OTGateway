@@ -78,39 +78,44 @@
             </fieldset>
 
             <fieldset>
-              <legend>Serial</legend>
-
-              <label for="system-serial-enable">
-                <input type="checkbox" id="system-serial-enable" name="system[serial][enable]" value="true">
-                Enable
-              </label>
-
-              <label for="system-serial-baudrate">
-                Baud rate
-                <input type="number" inputmode="numeric" id="system-serial-baudrate" name="system[serial][baudrate]" min="9600" max="115200" step="1" required>
-                <small>(Available: 9600, 19200, 38400, 57600, 74880, 115200)</small>
+              <label for="system-status-led-gpio">
+                Status LED GPIO
+                <input type="number" inputmode="numeric" id="system-status-led-gpio" name="system[statusLedGpio]" min="0" max="254" step="1">
+                <small>blank - not use</small>
               </label>
             </fieldset>
 
             <fieldset>
-              <legend>Telnet</legend>
+              <legend>Diagnostic</legend>
 
-              <label for="system-telnet-enable">
-                <input type="checkbox" id="system-telnet-enable" name="system[telnet][enable]" value="true">
-                Enable
-              </label>
-
-              <label for="system-telnet-port">
-                Port
-                <input type="number" inputmode="numeric" id="system-telnet-port" name="system[telnet][port]" min="1" max="65535" step="1" required>
-              </label>
-            </fieldset>
-
-            <fieldset>
               <label for="system-debug">
                 <input type="checkbox" id="system-debug" name="system[debug]" value="true">
                 Debug mode
               </label>
+
+              <label for="system-serial-enable">
+                <input type="checkbox" id="system-serial-enable" name="system[serial][enable]" value="true">
+                Enable Serial port
+              </label>
+
+              <label for="system-telnet-enable">
+                <input type="checkbox" id="system-telnet-enable" name="system[telnet][enable]" value="true">
+                Enable Telnet
+              </label>
+
+              <div class="grid">
+                <label for="system-serial-baudrate">
+                  Serial port baud rate
+                  <input type="number" inputmode="numeric" id="system-serial-baudrate" name="system[serial][baudrate]" min="9600" max="115200" step="1" required>
+                  <small>Available: 9600, 19200, 38400, 57600, 74880, 115200</small>
+                </label>
+
+                <label for="system-telnet-port">
+                  Telnet port
+                  <input type="number" inputmode="numeric" id="system-telnet-port" name="system[telnet][port]" min="1" max="65535" step="1" required>
+                  <small>Default: 23</small>
+                </label>
+              </div>
             </fieldset>
 
             <fieldset>
@@ -201,7 +206,7 @@
               </small>
             </fieldset>
 
-            <fieldset>
+            <div class="grid">
               <label for="emergency-target">
                 Target temperature
                 <input type="number" inputmode="numeric" id="emergency-target" name="emergency[target]" min="0" max="0" step="1" required>
@@ -210,7 +215,12 @@
                   <u>Heat carrier temperature</u> if Equitherm and PID <b>is disabled</b>
                 </small>
               </label>
-            </fieldset>
+
+              <label for="emergency-treshold-time">
+                Treshold time <small>(sec)</small>
+                <input type="number" inputmode="numeric" id="emergency-treshold-time" name="emergency[tresholdTime]" min="60" max="1800" step="1" required>
+              </label>
+            </div>
 
             <fieldset>
               <legend>Events</legend>
@@ -370,6 +380,14 @@
               <label for="opentherm-in-gpio">
                 Out GPIO
                 <input type="number" inputmode="numeric" id="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
+              </label>
+            </div>
+
+            <div class="grid">
+              <label for="opentherm-rx-led-gpio">
+                RX LED GPIO
+                <input type="number" inputmode="numeric" id="opentherm-rx-led-gpio" name="opentherm[rxLedGpio]" min="0" max="254" step="1">
+                <small>blank - not use</small>
               </label>
 
               <label for="opentherm-member-id-code">
@@ -638,6 +656,7 @@
         setCheckboxValue('#system-telnet-enable', data.system.telnet.enable);
         setInputValue('#system-telnet-port', data.system.telnet.port);
         setRadioValue('#system-unit-system', data.system.unitSystem);
+        setInputValue('#system-status-led-gpio', data.system.statusLedGpio < 255 ? data.system.statusLedGpio : '');
         setBusy('#system-settings-busy', '#system-settings', false);
 
         // Portal
@@ -650,6 +669,7 @@
         setRadioValue('#opentherm-unit-system', data.opentherm.unitSystem);
         setInputValue('#opentherm-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
         setInputValue('#opentherm-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
+        setInputValue('#opentherm-rx-led-gpio', data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
         setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
         setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
         setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);
@@ -718,6 +738,7 @@
 
         // Emergency mode
         setCheckboxValue('#emergency-enable', data.emergency.enable);
+        setInputValue('#emergency-treshold-time', data.emergency.tresholdTime);
         setCheckboxValue('#emergency-use-equitherm', data.emergency.useEquitherm);
         setCheckboxValue('#emergency-use-pid', data.emergency.usePid);
         setCheckboxValue('#emergency-on-network-fault', data.emergency.onNetworkFault);

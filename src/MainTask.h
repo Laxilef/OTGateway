@@ -27,7 +27,6 @@ protected:
   enum class PumpStartReason {NONE, HEATING, ANTISTUCK};
 
   Blinker* blinker = nullptr;
-  bool blinkerInitialized = false;
   unsigned long firstFailConnect = 0;
   unsigned long lastHeapInfo = 0;
   unsigned int minFreeHeap = 0;
@@ -51,17 +50,7 @@ protected:
     return 3;
   }
 
-  void setup() {
-    #ifdef LED_STATUS_GPIO
-      pinMode(LED_STATUS_GPIO, OUTPUT);
-      digitalWrite(LED_STATUS_GPIO, LOW);
-    #endif
-
-    if (GPIO_IS_VALID(settings.externalPump.gpio)) {
-      pinMode(settings.externalPump.gpio, OUTPUT);
-      digitalWrite(settings.externalPump.gpio, LOW);
-    }
-  }
+  void setup() {}
 
   void loop() {
     network->loop();
@@ -111,7 +100,7 @@ protected:
 
       if (!vars.states.emergency && settings.emergency.enable && settings.emergency.onMqttFault && !tMqtt->isEnabled()) {
         vars.states.emergency = true;
-        
+
       } else if (vars.states.emergency && !settings.emergency.onMqttFault) {
         vars.states.emergency = false;
       }
@@ -142,7 +131,7 @@ protected:
           this->firstFailConnect = millis();
         }
 
-        if (millis() - this->firstFailConnect > EMERGENCY_TIME_TRESHOLD) {
+        if (millis() - this->firstFailConnect > (settings.emergency.tresholdTime * 1000)) {
           vars.states.emergency = true;
           Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode enabled"));
         }
@@ -151,9 +140,7 @@ protected:
     this->yield();
 
 
-    #ifdef LED_STATUS_GPIO
-      this->ledStatus(LED_STATUS_GPIO);
-    #endif
+    this->ledStatus();
     this->externalPump();
     this->yield();
 
@@ -222,16 +209,32 @@ protected:
     }
   }
 
-  void ledStatus(uint8_t gpio) {
+  void ledStatus() {
     uint8_t errors[4];
     uint8_t errCount = 0;
     static uint8_t errPos = 0;
     static unsigned long endBlinkTime = 0;
     static bool ledOn = false;
+    static uint8_t configuredGpio = GPIO_IS_NOT_CONFIGURED;
 
-    if (!this->blinkerInitialized) {
-      this->blinker->init(gpio);
-      this->blinkerInitialized = true;
+    if (settings.system.statusLedGpio != configuredGpio) {
+      if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
+        digitalWrite(configuredGpio, LOW);
+      }
+      
+      if (GPIO_IS_VALID(settings.system.statusLedGpio)) {
+        configuredGpio = settings.system.statusLedGpio;
+        pinMode(configuredGpio, OUTPUT);
+        digitalWrite(configuredGpio, LOW);
+        this->blinker->init(configuredGpio);
+
+      } else if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
+        configuredGpio = GPIO_IS_NOT_CONFIGURED;
+      }
+    }
+
+    if (configuredGpio == GPIO_IS_NOT_CONFIGURED) {
+      return;
     }
 
     if (!network->isConnected()) {
@@ -258,14 +261,14 @@ protected:
     if (!this->blinker->running() && millis() - endBlinkTime >= 5000) {
       if (errCount == 0) {
         if (!ledOn) {
-          digitalWrite(gpio, HIGH);
+          digitalWrite(configuredGpio, HIGH);
           ledOn = true;
         }
 
         return;
 
       } else if (ledOn) {
-        digitalWrite(gpio, LOW);
+        digitalWrite(configuredGpio, LOW);
         ledOn = false;
         endBlinkTime = millis();
         return;
@@ -286,6 +289,34 @@ protected:
   }
 
   void externalPump() {
+    static uint8_t configuredGpio = GPIO_IS_NOT_CONFIGURED;
+
+    if (settings.externalPump.gpio != configuredGpio) {
+      if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
+        digitalWrite(configuredGpio, LOW);
+      }
+      
+      if (GPIO_IS_VALID(settings.externalPump.gpio)) {
+        configuredGpio = settings.externalPump.gpio;
+        pinMode(configuredGpio, OUTPUT);
+        digitalWrite(configuredGpio, LOW);
+
+      } else if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
+        configuredGpio = GPIO_IS_NOT_CONFIGURED;
+      }
+    }
+
+    if (configuredGpio == GPIO_IS_NOT_CONFIGURED) {
+      if (vars.states.externalPump) {
+        vars.states.externalPump = false;
+        vars.parameters.extPumpLastEnableTime = millis();
+
+        Log.sinfoln("EXTPUMP", F("Disabled: use = off"));
+      }
+
+      return;
+    }
+
     if (!vars.states.heating && this->heatingEnabled) {
       this->heatingEnabled = false;
       this->heatingDisabledTime = millis();
@@ -294,11 +325,9 @@ protected:
       this->heatingEnabled = true;
     }
     
-    if (!settings.externalPump.use || !GPIO_IS_VALID(settings.externalPump.gpio)) {
+    if (!settings.externalPump.use) {
       if (vars.states.externalPump) {
-        if (GPIO_IS_VALID(settings.externalPump.gpio)) {
-          digitalWrite(settings.externalPump.gpio, LOW);
-        }
+        digitalWrite(configuredGpio, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
@@ -311,7 +340,7 @@ protected:
 
     if (vars.states.externalPump && !this->heatingEnabled) {
       if (this->extPumpStartReason == MainTask::PumpStartReason::HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
-        digitalWrite(settings.externalPump.gpio, LOW);
+        digitalWrite(configuredGpio, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
@@ -319,7 +348,7 @@ protected:
         Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
 
       } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
-        digitalWrite(settings.externalPump.gpio, LOW);
+        digitalWrite(configuredGpio, LOW);
 
         vars.states.externalPump = false;
         vars.parameters.extPumpLastEnableTime = millis();
@@ -335,7 +364,7 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
-      digitalWrite(settings.externalPump.gpio, HIGH);
+      digitalWrite(configuredGpio, HIGH);
 
       Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
 
@@ -344,7 +373,7 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;
 
-      digitalWrite(settings.externalPump.gpio, HIGH);
+      digitalWrite(configuredGpio, HIGH);
 
       Log.sinfoln("EXTPUMP", F("Enabled: anti stuck"));
     }
