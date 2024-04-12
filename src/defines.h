@@ -1,5 +1,5 @@
 #define PROJECT_NAME                "OpenTherm Gateway"
-#define PROJECT_VERSION             "1.4.0-rc.21"
+#define PROJECT_VERSION             "1.4.0-rc.22"
 #define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
 
 #define MQTT_RECONNECT_INTERVAL     15000
