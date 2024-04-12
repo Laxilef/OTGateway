@@ -287,7 +287,7 @@
 
         document.querySelector('#thermostat-dhw-enabled').addEventListener('change', (event) => {
           modifiedTime = Date.now();
-          newSettings.heating.dhw = event.currentTarget.checked;
+          newSettings.dhw.enable = event.currentTarget.checked;
         });
 
         setTimeout(async function onLoadPage() {
