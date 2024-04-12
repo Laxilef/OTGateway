@@ -1,4 +1,5 @@
 import shutil
+import gzip
 import os
 Import("env")
 
@@ -11,6 +12,23 @@ def post_build(source, target, env):
       
   env.Execute("pio run --target buildfs --environment %s" % env["PIOENV"]);
 
+
+def before_buildfs(source, target, env):
+  src = os.path.join(env["PROJECT_DIR"], "src_data")
+  dst = os.path.join(env["PROJECT_DIR"], "data")
+
+  for root, dirs, files in os.walk(src, topdown=False):
+    for name in files:
+      src_path = os.path.join(root, name)
+
+      with open(src_path, 'rb') as f_in:
+          dst_name = name + ".gz"
+          dst_path = os.path.join(dst, os.path.relpath(root, src), dst_name)
+
+          with gzip.open(dst_path, 'wb', 9) as f_out:
+            shutil.copyfileobj(f_in, f_out)
+          
+          print("Compressed '%s' to '%s'" % (src_path, dst_path))
 
 def after_buildfs(source, target, env):
   copy_to_build_dir({
@@ -31,4 +49,6 @@ def copy_to_build_dir(files, build_dir):
 
 
 env.AddPostAction("buildprog", post_build)
+env.AddPreAction("$BUILD_DIR/spiffs.bin", before_buildfs)
+env.AddPreAction("$BUILD_DIR/littlefs.bin", before_buildfs)
 env.AddPostAction("buildfs", after_buildfs)
