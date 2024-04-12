@@ -1,4 +1,7 @@
 #include <FS.h>
+#include <detail/mimetable.h>
+
+using namespace mime;
 
 class StaticPage : public RequestHandler {
 public:
@@ -61,6 +64,14 @@ public:
     }
     #endif
 
+    if (!this->path.endsWith(FPSTR(mimeTable[gz].endsWith)) && !this->fs->exists(path))  {
+      String pathWithGz = this->path + FPSTR(mimeTable[gz].endsWith);
+
+      if (this->fs->exists(pathWithGz)) {
+        this->path += FPSTR(mimeTable[gz].endsWith);
+      }
+    }
+
     File file = this->fs->open(this->path, "r");
     if (!file) {
       return false;
@@ -93,6 +104,6 @@ protected:
   BeforeSendCallback beforeSendCallback;
   String eTag;
   const char* uri = nullptr;
-  const char* path = nullptr;
+  String path;
   const char* cacheHeader = nullptr;
 };
