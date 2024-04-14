@@ -344,7 +344,11 @@ protected:
       auto apCount = WiFi.scanComplete();
       if (apCount <= 0) {
         if (apCount != WIFI_SCAN_RUNNING) {
+          #ifdef ARDUINO_ARCH_ESP8266
           WiFi.scanNetworks(true, true);
+          #else
+          WiFi.scanNetworks(true, true, true);
+          #endif
         }
         
         this->webServer->send(404);
