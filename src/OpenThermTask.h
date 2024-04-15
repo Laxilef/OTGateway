@@ -383,19 +383,28 @@ protected:
       float convertedTemp = convertTemp(vars.parameters.heatingSetpoint, settings.system.unitSystem, settings.opentherm.unitSystem);
       Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp: %u (converted: %.2f)"), vars.parameters.heatingSetpoint, convertedTemp);
 
-      // Set heating temp
-      if (this->instance->setHeatingCh1Temp(convertedTemp) || this->setMaxHeatingTemp(convertedTemp)) {
+      // Set max heating temp
+      if (this->setMaxHeatingTemp(convertedTemp)) {
         currentHeatingTemp = vars.parameters.heatingSetpoint;
         this->heatingSetTempTime = millis();
 
       } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set temp"));
+        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max heating temp"));
+      }
+
+      // Set heating temp
+      if (this->instance->setHeatingCh1Temp(convertedTemp)) {
+        currentHeatingTemp = vars.parameters.heatingSetpoint;
+        this->heatingSetTempTime = millis();
+
+      } else {
+        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set CH1 temp"));
       }
 
       // Set heating temp to CH2
       if (settings.opentherm.heatingCh1ToCh2) {
         if (!this->instance->setHeatingCh2Temp(convertedTemp)) {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set ch2 temp"));
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set CH2 temp"));
         }
       }
     }
