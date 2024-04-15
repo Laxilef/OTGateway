@@ -59,7 +59,7 @@ void setup() {
     return tm{sec, min, hour};
   });
   
-  Serial.begin(settings.system.serial.baudrate);
+  Serial.begin(115200);
   Log.addStream(&Serial);
   Log.print("\n\n\r");
 
@@ -110,8 +110,15 @@ void setup() {
 
   // logs
   if (!settings.system.serial.enable) {
-    Log.clearStreams();
     Serial.end();
+    Log.clearStreams();
+
+  } else if (settings.system.serial.baudrate != 115200) {
+    Serial.end();
+    Log.clearStreams();
+
+    Serial.begin(settings.system.serial.baudrate);
+    Log.addStream(&Serial);
   }
 
   if (settings.system.telnet.enable) {
