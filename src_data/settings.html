@@ -67,12 +67,12 @@
               <legend>Unit system</legend>
 
               <label>
-                <input type="radio" id="system-unit-system" name="system[unitSystem]" value="0" />
+                <input type="radio" class="system-unit-system" name="system[unitSystem]" value="0" />
                 Metric (celsius, liters, bar)
               </label>
 
               <label>
-                <input type="radio" id="system-unit-system" name="system[unitSystem]" value="1" />
+                <input type="radio" class="system-unit-system" name="system[unitSystem]" value="1" />
                 Imperial (fahrenheit, gallons, psi)
               </label>
             </fieldset>
@@ -359,12 +359,12 @@
               <legend>Unit system</legend>
 
               <label>
-                <input type="radio" id="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
+                <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
                 Metric (celsius)
               </label>
 
               <label>
-                <input type="radio" id="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
+                <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
                 Imperial (fahrenheit)
               </label>
             </fieldset>
@@ -508,17 +508,17 @@
               <legend>Source type</legend>
 
               <label>
-                <input type="radio" id="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
+                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
                 From boiler via OpenTherm
               </label>
 
               <label>
-                <input type="radio" id="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
+                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="1" />
                 Manual via MQTT/API
               </label>
 
               <label>
-                <input type="radio" id="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
+                <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="2" />
                 External (DS18B20)
               </label>
             </fieldset>
@@ -549,17 +549,17 @@
               <legend>Source type</legend>
 
               <label>
-                <input type="radio" id="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
+                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
                 Manual via MQTT/API
               </label>
 
               <label>
-                <input type="radio" id="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
+                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="2" />
                 External (DS18B20)
               </label>
 
               <label>
-                <input type="radio" id="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
+                <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="3" />
                 BLE device <i>(ONLY for some ESP32 which support BLE)</i>
               </label>
             </fieldset>
@@ -653,7 +653,7 @@
         setInputValue('#system-serial-baudrate', data.system.serial.baudrate);
         setCheckboxValue('#system-telnet-enable', data.system.telnet.enable);
         setInputValue('#system-telnet-port', data.system.telnet.port);
-        setRadioValue('#system-unit-system', data.system.unitSystem);
+        setRadioValue('.system-unit-system', data.system.unitSystem);
         setInputValue('#system-status-led-gpio', data.system.statusLedGpio < 255 ? data.system.statusLedGpio : '');
         setBusy('#system-settings-busy', '#system-settings', false);
 
@@ -664,7 +664,7 @@
         setBusy('#portal-settings-busy', '#portal-settings', false);
 
         // Opentherm
-        setRadioValue('#opentherm-unit-system', data.opentherm.unitSystem);
+        setRadioValue('.opentherm-unit-system', data.opentherm.unitSystem);
         setInputValue('#opentherm-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
         setInputValue('#opentherm-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
         setInputValue('#opentherm-rx-led-gpio', data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
@@ -690,13 +690,13 @@
         setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
 
         // Outdoor sensor
-        setRadioValue('#outdoor-sensor-type', data.sensors.outdoor.type);
+        setRadioValue('.outdoor-sensor-type', data.sensors.outdoor.type);
         setInputValue('#outdoor-sensor-gpio', data.sensors.outdoor.gpio  < 255 ? data.sensors.outdoor.gpio : '');
         setInputValue('#outdoor-sensor-offset', data.sensors.outdoor.offset);
         setBusy('#outdoor-sensor-settings-busy', '#outdoor-sensor-settings', false);
 
         // Indoor sensor
-        setRadioValue('#indoor-sensor-type', data.sensors.indoor.type);
+        setRadioValue('.indoor-sensor-type', data.sensors.indoor.type);
         setInputValue('#indoor-sensor-gpio', data.sensors.indoor.gpio < 255 ? data.sensors.indoor.gpio : '');
         setInputValue('#indoor-sensor-offset', data.sensors.indoor.offset);
         setInputValue('#indoor-sensor-ble-addresss', data.sensors.indoor.bleAddresss);
