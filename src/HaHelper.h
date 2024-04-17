@@ -623,7 +623,7 @@ public:
     doc[FPSTR(HA_NAME)] = F("PID factor I");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-i-circle-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.i_factor|float(0)|round(3) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.i_factor|float(0)|round(4) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"i_factor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;

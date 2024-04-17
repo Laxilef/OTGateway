@@ -133,7 +133,7 @@ protected:
       prevHeatingTarget = settings.heating.target;
       Log.sinfoln(FPSTR(L_REGULATOR), F("New target: %.2f"), settings.heating.target);
 
-      if (settings.equitherm.enable && settings.pid.enable) {
+      if (/*settings.equitherm.enable && */settings.pid.enable) {
         pidRegulator.integral = 0;
         Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
       }
@@ -167,6 +167,7 @@ protected:
           newTemp += pidResult;
 
           Log.sinfoln(FPSTR(L_REGULATOR_PID), F("New result: %hhd (%.2f)"), (int8_t) round(pidResult), pidResult);
+          Log.straceln(FPSTR(L_REGULATOR_PID), F("Integral: %.2f"), pidRegulator.integral);
 
         } else {
           newTemp += prevPidResult;
@@ -174,6 +175,10 @@ protected:
       } else {
         newTemp += prevPidResult;
       }
+
+    } else if (pidRegulator.integral != 0) {
+        pidRegulator.integral = 0;
+        Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
     }
 
     // default temp, manual mode
@@ -327,9 +332,23 @@ protected:
   }
 
   float getPidTemp(int minTemp, int maxTemp) {
-    pidRegulator.Kp = settings.pid.p_factor;
-    pidRegulator.Ki = settings.pid.i_factor;
-    pidRegulator.Kd = settings.pid.d_factor;
+    if (fabs(pidRegulator.Kp - settings.pid.p_factor) >= 0.0001f) {
+      pidRegulator.Kp = settings.pid.p_factor;
+      pidRegulator.integral = 0;
+      Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+    }
+
+    if (fabs(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
+      pidRegulator.Ki = settings.pid.i_factor;
+      pidRegulator.integral = 0;
+      Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+    }
+
+    if (fabs(pidRegulator.Kd - settings.pid.d_factor) >= 0.0001f) {
+      pidRegulator.Kd = settings.pid.d_factor;
+      pidRegulator.integral = 0;
+      Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+    }
 
     pidRegulator.setLimits(minTemp, maxTemp);
     pidRegulator.setDt(settings.pid.dt * 1000u);
@@ -342,7 +361,7 @@ protected:
   float tuneEquithermN(float ratio, float currentTemp, float setTemp, unsigned int dirtyInterval = 60, unsigned int accurateInterval = 1800, float accurateStep = 0.01, float accurateStepAfter = 1) {
     static uint32_t _prevIteration = millis();
 
-    if (abs(currentTemp - setTemp) < accurateStepAfter) {
+    if (fabs(currentTemp - setTemp) < accurateStepAfter) {
       if (millis() - _prevIteration < (accurateInterval * 1000)) {
         return ratio;
       }

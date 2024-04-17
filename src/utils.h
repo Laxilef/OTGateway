@@ -384,7 +384,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   dst["pid"]["enable"] = src.pid.enable;
   dst["pid"]["p_factor"] = roundd(src.pid.p_factor, 3);
-  dst["pid"]["i_factor"] = roundd(src.pid.i_factor, 3);
+  dst["pid"]["i_factor"] = roundd(src.pid.i_factor, 4);
   dst["pid"]["d_factor"] = roundd(src.pid.d_factor, 1);
   dst["pid"]["dt"] = src.pid.dt;
   dst["pid"]["minTemp"] = src.pid.minTemp;
@@ -836,7 +836,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     double value = src["pid"]["i_factor"].as<double>();
 
     if (value >= 0 && value <= 100) {
-      dst.pid.i_factor = roundd(value, 3);
+      dst.pid.i_factor = roundd(value, 4);
       changed = true;
     }
   }
