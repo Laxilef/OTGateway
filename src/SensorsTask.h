@@ -90,7 +90,7 @@ protected:
         newTemp += c2f(this->filteredOutdoorTemp);
       }
 
-      if (fabs(vars.temperatures.outdoor - newTemp) > 0.099) {
+      if (fabs(vars.temperatures.outdoor - newTemp) > 0.099f) {
         vars.temperatures.outdoor = newTemp;
         Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
       }
@@ -105,7 +105,7 @@ protected:
         newTemp += c2f(this->filteredIndoorTemp);
       }
 
-      if (fabs(vars.temperatures.indoor - newTemp) > 0.099) {
+      if (fabs(vars.temperatures.indoor - newTemp) > 0.099f) {
         vars.temperatures.indoor = newTemp;
         Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
       }
@@ -163,7 +163,7 @@ protected:
             return;
           }
 
-          float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.01);
+          float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.01f);
           Log.straceln(FPSTR(L_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
 
           if (this->emptyIndoorTemp) {
@@ -235,7 +235,7 @@ protected:
         return;
       }
 
-      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on gpio %hhu..."), settings.sensors.outdoor.gpio);
+      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on GPIO %hhu..."), settings.sensors.outdoor.gpio);
 
       this->oneWireOutdoorSensor->begin(settings.sensors.outdoor.gpio);
       this->oneWireOutdoorSensor->reset();
@@ -307,7 +307,7 @@ protected:
         return;
       }
       
-      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on gpio %hhu..."), settings.sensors.indoor.gpio);
+      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on GPIO %hhu..."), settings.sensors.indoor.gpio);
 
       this->oneWireIndoorSensor->begin(settings.sensors.indoor.gpio);
       this->oneWireIndoorSensor->reset();

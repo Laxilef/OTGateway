@@ -31,7 +31,6 @@
   - The current temperature of the heat carrier (usually the return heat carrier)
   - Set heat carrier temperature (depending on the selected mode)
   - Current hot water temperature
-- Auto tuning of PID and Equitherm parameters *(in development)*
 - [Home Assistant](https://www.home-assistant.io/) integration via MQTT. The ability to create any automation for the boiler!
 
 ![logo](/assets/ha.png)

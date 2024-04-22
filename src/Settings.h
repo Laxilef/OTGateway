@@ -60,6 +60,7 @@ struct Settings {
     bool dhwBlocking = false;
     bool modulationSyncWithHeating = false;
     bool getMinMaxTemp = true;
+    bool nativeHeatingControl = false;
   } opentherm;
 
   struct {
@@ -70,11 +71,12 @@ struct Settings {
     char password[33] = DEFAULT_MQTT_PASSWORD;
     char prefix[33] = DEFAULT_MQTT_PREFIX;
     unsigned short interval = 5;
+    bool homeAssistantDiscovery = true;
   } mqtt;
 
   struct {
     bool enable = true;
-    float target = 40.0f;
+    float target = DEFAULT_HEATING_TARGET_TEMP;
     unsigned short tresholdTime = 120;
     bool useEquitherm = false;
     bool usePid = false;
@@ -85,7 +87,7 @@ struct Settings {
   struct {
     bool enable = true;
     bool turbo = false;
-    float target = 40.0f;
+    float target = DEFAULT_HEATING_TARGET_TEMP;
     float hysteresis = 0.5f;
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
@@ -94,7 +96,7 @@ struct Settings {
 
   struct {
     bool enable = true;
-    byte target = 40;
+    float target = DEFAULT_DHW_TARGET_TEMP;
     byte minTemp = DEFAULT_DHW_MIN_TEMP;
     byte maxTemp = DEFAULT_DHW_MAX_TEMP;
   } dhw;
@@ -144,11 +146,6 @@ struct Settings {
 
 struct Variables {
   struct {
-    bool enable = false;
-    byte regulator = 0;
-  } tuning;
-
-  struct {
     bool otStatus = false;
     bool emergency = false;
     bool heating = false;
@@ -181,7 +178,7 @@ struct Variables {
     bool heatingEnabled = false;
     byte heatingMinTemp = DEFAULT_HEATING_MIN_TEMP;
     byte heatingMaxTemp = DEFAULT_HEATING_MAX_TEMP;
-    byte heatingSetpoint = 0;
+    float heatingSetpoint = 0;
     unsigned long extPumpLastEnableTime = 0;
     byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
     byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;

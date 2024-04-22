@@ -101,7 +101,8 @@ protected:
   }
 
   void loop() {
-    static byte currentHeatingTemp, currentDhwTemp = 0;
+    static float currentHeatingTemp = 0.0f;
+    static float currentDhwTemp = 0.0f;
 
     if (this->instanceInGpio != settings.opentherm.inGpio || this->instanceOutGpio != settings.opentherm.outGpio) {
       this->setup();
@@ -351,18 +352,13 @@ protected:
 
 
     // Update DHW temp
-    byte newDhwTemp = settings.dhw.target;
-    if (settings.opentherm.dhwPresent && settings.dhw.enable && (this->needSetDhwTemp() || newDhwTemp != currentDhwTemp)) {
-      if (newDhwTemp < settings.dhw.minTemp || newDhwTemp > settings.dhw.maxTemp) {
-        newDhwTemp = constrain(newDhwTemp, settings.dhw.minTemp, settings.dhw.maxTemp);
-      }
-
-      float convertedTemp = convertTemp(newDhwTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
-      Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp: %u (converted: %.2f)"), newDhwTemp, convertedTemp);
+    if (settings.opentherm.dhwPresent && settings.dhw.enable && (this->needSetDhwTemp() || fabs(settings.dhw.target - currentDhwTemp) > 0.0001f)) {
+      float convertedTemp = convertTemp(settings.dhw.target, settings.system.unitSystem, settings.opentherm.unitSystem);
+      Log.sinfoln(FPSTR(L_OT_DHW), F("Set temp: %.2f (converted: %.2f)"), settings.dhw.target, convertedTemp);
 
       // Set DHW temp
       if (this->instance->setDhwTemp(convertedTemp)) {
-        currentDhwTemp = newDhwTemp;
+        currentDhwTemp = settings.dhw.target;
         this->dhwSetTempTime = millis();
 
       } else {
@@ -372,57 +368,94 @@ protected:
       // Set DHW temp to CH2
       if (settings.opentherm.dhwToCh2) {
         if (!this->instance->setHeatingCh2Temp(convertedTemp)) {
-          Log.swarningln(FPSTR(L_OT_DHW), F("Failed set ch2 temp"));
+          Log.swarningln(FPSTR(L_OT_DHW), F("Failed set CH2 temp"));
         }
       }
     }
 
 
-    // Update heating temp
-    if (heatingEnabled && (this->needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001)) {
-      float convertedTemp = convertTemp(vars.parameters.heatingSetpoint, settings.system.unitSystem, settings.opentherm.unitSystem);
-      Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp: %u (converted: %.2f)"), vars.parameters.heatingSetpoint, convertedTemp);
+    // Native heating control
+    if (settings.opentherm.nativeHeatingControl) {
+      // Set current indoor temp
+      float indoorTemp = 0.0f;
+      float convertedTemp = 0.0f;
 
-      // Set max heating temp
-      if (this->setMaxHeatingTemp(convertedTemp)) {
-        currentHeatingTemp = vars.parameters.heatingSetpoint;
-        this->heatingSetTempTime = millis();
-
-      } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max heating temp"));
+      if (!vars.states.emergency || settings.sensors.indoor.type != SensorType::MANUAL) {
+        indoorTemp = vars.temperatures.indoor;
+        convertedTemp = convertTemp(indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
       }
 
-      // Set heating temp
-      if (this->instance->setHeatingCh1Temp(convertedTemp)) {
-        currentHeatingTemp = vars.parameters.heatingSetpoint;
-        this->heatingSetTempTime = millis();
-
-      } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set CH1 temp"));
+      Log.sinfoln(FPSTR(L_OT_HEATING), F("Set current indoor temp: %.2f (converted: %.2f)"), indoorTemp, convertedTemp);
+      if (!this->instance->setRoomTemp(convertedTemp)) {
+        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current indoor temp"));
       }
 
-      // Set heating temp to CH2
-      if (settings.opentherm.heatingCh1ToCh2) {
-        if (!this->instance->setHeatingCh2Temp(convertedTemp)) {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set CH2 temp"));
+      // Set target indoor temp
+      if (this->needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001f) {
+        convertedTemp = convertTemp(vars.parameters.heatingSetpoint, settings.system.unitSystem, settings.opentherm.unitSystem);
+        Log.sinfoln(FPSTR(L_OT_HEATING), F("Set target indoor temp: %.2f (converted: %.2f)"), vars.parameters.heatingSetpoint, convertedTemp);
+
+        if (this->instance->setRoomSetpoint(convertedTemp)) {
+          currentHeatingTemp = vars.parameters.heatingSetpoint;
+          this->heatingSetTempTime = millis();
+
+        } else {
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target indoor temp"));
         }
       }
-    }
 
-
-    // Hysteresis
-    // Only if enabled PID or/and Equitherm
-    if (settings.heating.hysteresis > 0 && (!vars.states.emergency || settings.emergency.usePid) && (settings.equitherm.enable || settings.pid.enable)) {
-      float halfHyst = settings.heating.hysteresis / 2;
-      if (this->pump && vars.temperatures.indoor - settings.heating.target + 0.0001 >= halfHyst) {
-        this->pump = false;
-
-      } else if (!this->pump && vars.temperatures.indoor - settings.heating.target - 0.0001 <= -(halfHyst)) {
+      // force enable pump
+      if (!this->pump) {
         this->pump = true;
       }
 
-    } else if (!this->pump) {
-      this->pump = true;
+    } else {
+      // Update heating temp
+      if (heatingEnabled && (this->needSetHeatingTemp() || fabs(vars.parameters.heatingSetpoint - currentHeatingTemp) > 0.0001f)) {
+        float convertedTemp = convertTemp(vars.parameters.heatingSetpoint, settings.system.unitSystem, settings.opentherm.unitSystem);
+        Log.sinfoln(FPSTR(L_OT_HEATING), F("Set temp: %.2f (converted: %.2f)"), vars.parameters.heatingSetpoint, convertedTemp);
+
+        // Set max heating temp
+        if (this->setMaxHeatingTemp(convertedTemp)) {
+          currentHeatingTemp = vars.parameters.heatingSetpoint;
+          this->heatingSetTempTime = millis();
+
+        } else {
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max heating temp"));
+        }
+
+        // Set heating temp
+        if (this->instance->setHeatingCh1Temp(convertedTemp)) {
+          currentHeatingTemp = vars.parameters.heatingSetpoint;
+          this->heatingSetTempTime = millis();
+
+        } else {
+          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set CH1 temp"));
+        }
+
+        // Set heating temp to CH2
+        if (settings.opentherm.heatingCh1ToCh2) {
+          if (!this->instance->setHeatingCh2Temp(convertedTemp)) {
+            Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set CH2 temp"));
+          }
+        }
+      }
+
+
+      // Hysteresis
+      // Only if enabled PID or/and Equitherm
+      if (settings.heating.hysteresis > 0 && (!vars.states.emergency || settings.emergency.usePid) && (settings.equitherm.enable || settings.pid.enable)) {
+        float halfHyst = settings.heating.hysteresis / 2;
+        if (this->pump && vars.temperatures.indoor - settings.heating.target + 0.0001f >= halfHyst) {
+          this->pump = false;
+
+        } else if (!this->pump && vars.temperatures.indoor - settings.heating.target - 0.0001f <= -(halfHyst)) {
+          this->pump = true;
+        }
+
+      } else if (!this->pump) {
+        this->pump = true;
+      }
     }
   }
 

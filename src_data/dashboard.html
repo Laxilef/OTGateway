@@ -250,7 +250,7 @@
             return;
           }
           
-          newSettings.dhw.target -= 1;
+          newSettings.dhw.target -= 1.0;
           modifiedTime = Date.now();
 
           if (newSettings.dhw.target < prevSettings.dhw.minTemp) {
@@ -265,7 +265,7 @@
             return;
           }
           
-          newSettings.dhw.target += 1;
+          newSettings.dhw.target += 1.0;
           modifiedTime = Date.now();
 
           if (newSettings.dhw.target > prevSettings.dhw.maxTemp) {
@@ -326,7 +326,7 @@
             }
 
             const result = await response.json();
-            noRegulators = !result.equitherm.enable && !result.pid.enable;
+            noRegulators = !result.opentherm.nativeHeatingControl && !result.equitherm.enable && !result.pid.enable;
             prevSettings = result;
             newSettings.heating.enable = result.heating.enable;
             newSettings.heating.turbo = result.heating.turbo;

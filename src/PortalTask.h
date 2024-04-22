@@ -427,7 +427,9 @@ protected:
       if (changed) {
         doc.clear();
         doc.shrinkToFit();
+
         fsSettings.update();
+        tMqtt->resetPublishedSettingsTime();
       }
     });
 
@@ -477,6 +479,13 @@ protected:
       doc.shrinkToFit();
       
       this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+
+      if (changed) {
+        doc.clear();
+        doc.shrinkToFit();
+        
+        tMqtt->resetPublishedVarsTime();
+      }
     });
 
     this->webServer->on("/api/info", HTTP_GET, [this]() {

@@ -57,7 +57,7 @@ float convertTemp(float value, const UnitSystem unitFrom, const UnitSystem unitT
   return value;
 }
 
-bool isValidTemp(const float value, UnitSystem unit, const float min = 0.1f, const float max = 99.9f, const UnitSystem minMaxUnit = UnitSystem::METRIC) {
+inline bool isValidTemp(const float value, UnitSystem unit, const float min = 0.1f, const float max = 99.9f, const UnitSystem minMaxUnit = UnitSystem::METRIC) {
   return value >= convertTemp(min, minMaxUnit, unit) && value <= convertTemp(max, minMaxUnit, unit);
 }
 
@@ -351,6 +351,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["dhwBlocking"] = src.opentherm.dhwBlocking;
     dst["opentherm"]["modulationSyncWithHeating"] = src.opentherm.modulationSyncWithHeating;
     dst["opentherm"]["getMinMaxTemp"] = src.opentherm.getMinMaxTemp;
+    dst["opentherm"]["nativeHeatingControl"] = src.opentherm.nativeHeatingControl;
 
     dst["mqtt"]["enable"] = src.mqtt.enable;
     dst["mqtt"]["server"] = src.mqtt.server;
@@ -359,15 +360,16 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["mqtt"]["password"] = src.mqtt.password;
     dst["mqtt"]["prefix"] = src.mqtt.prefix;
     dst["mqtt"]["interval"] = src.mqtt.interval;
-  }
+    dst["mqtt"]["homeAssistantDiscovery"] = src.mqtt.homeAssistantDiscovery;
 
-  dst["emergency"]["enable"] = src.emergency.enable;
-  dst["emergency"]["target"] = roundd(src.emergency.target, 2);
-  dst["emergency"]["tresholdTime"] = src.emergency.tresholdTime;
-  dst["emergency"]["useEquitherm"] = src.emergency.useEquitherm;
-  dst["emergency"]["usePid"] = src.emergency.usePid;
-  dst["emergency"]["onNetworkFault"] = src.emergency.onNetworkFault;
-  dst["emergency"]["onMqttFault"] = src.emergency.onMqttFault;
+    dst["emergency"]["enable"] = src.emergency.enable;
+    dst["emergency"]["target"] = roundd(src.emergency.target, 2);
+    dst["emergency"]["tresholdTime"] = src.emergency.tresholdTime;
+    dst["emergency"]["useEquitherm"] = src.emergency.useEquitherm;
+    dst["emergency"]["usePid"] = src.emergency.usePid;
+    dst["emergency"]["onNetworkFault"] = src.emergency.onNetworkFault;
+    dst["emergency"]["onMqttFault"] = src.emergency.onMqttFault;
+  }
 
   dst["heating"]["enable"] = src.heating.enable;
   dst["heating"]["turbo"] = src.heating.turbo;
@@ -378,7 +380,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dst["heating"]["maxModulation"] = src.heating.maxModulation;
 
   dst["dhw"]["enable"] = src.dhw.enable;
-  dst["dhw"]["target"] = src.dhw.target;
+  dst["dhw"]["target"] = roundd(src.dhw.target, 1);
   dst["dhw"]["minTemp"] = src.dhw.minTemp;
   dst["dhw"]["maxTemp"] = src.dhw.maxTemp;
 
@@ -425,7 +427,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   }
 }
 
-void safeSettingsToJson(const Settings& src, JsonVariant dst) {
+inline void safeSettingsToJson(const Settings& src, JsonVariant dst) {
   settingsToJson(src, dst, true);
 }
 
@@ -435,33 +437,47 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!safe) {
     // system
     if (src["system"]["debug"].is<bool>()) {
-      dst.system.debug = src["system"]["debug"].as<bool>();
-      changed = true;
+      bool value = src["system"]["debug"].as<bool>();
+
+      if (value != dst.system.debug) {
+        dst.system.debug = value;
+        changed = true;
+      }
     }
 
     if (src["system"]["serial"]["enable"].is<bool>()) {
-      dst.system.serial.enable = src["system"]["serial"]["enable"].as<bool>();
-      changed = true;
+      bool value = src["system"]["serial"]["enable"].as<bool>();
+
+      if (value != dst.system.serial.enable) {
+        dst.system.serial.enable = value;
+        changed = true;
+      }
     }
 
     if (!src["system"]["serial"]["baudrate"].isNull()) {
       unsigned int value = src["system"]["serial"]["baudrate"].as<unsigned int>();
 
       if (value == 9600 || value == 19200 || value == 38400 || value == 57600 || value == 74880 || value == 115200) {
-        dst.system.serial.baudrate = value;
-        changed = true;
+        if (value != dst.system.serial.baudrate) {
+          dst.system.serial.baudrate = value;
+          changed = true;
+        }
       }
     }
 
     if (src["system"]["telnet"]["enable"].is<bool>()) {
-      dst.system.telnet.enable = src["system"]["telnet"]["enable"].as<bool>();
-      changed = true;
+      bool value = src["system"]["telnet"]["enable"].as<bool>();
+      
+      if (value != dst.system.telnet.enable) {
+        dst.system.telnet.enable = value;
+        changed = true;
+      }
     }
 
     if (!src["system"]["telnet"]["port"].isNull()) {
       unsigned short value = src["system"]["telnet"]["port"].as<unsigned short>();
 
-      if (value > 0 && value <= 65535) {
+      if (value > 0 && value <= 65535 && value != dst.system.telnet.port) {
         dst.system.telnet.port = value;
         changed = true;
       }
@@ -473,13 +489,17 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       switch (value) {
         case static_cast<byte>(UnitSystem::METRIC):
-          dst.system.unitSystem = UnitSystem::METRIC;
-          changed = true;
+          if (dst.system.unitSystem != UnitSystem::METRIC) {
+            dst.system.unitSystem = UnitSystem::METRIC;
+            changed = true;
+          }
           break;
 
         case static_cast<byte>(UnitSystem::IMPERIAL):
-          dst.system.unitSystem = UnitSystem::IMPERIAL;
-          changed = true;
+          if (dst.system.unitSystem != UnitSystem::IMPERIAL) {
+            dst.system.unitSystem = UnitSystem::IMPERIAL;
+            changed = true;
+          }
           break;
 
         default:
@@ -510,7 +530,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       } else {
         unsigned char value = src["system"]["statusLedGpio"].as<unsigned char>();
 
-        if (value >= 0 && value <= 254) {
+        if (GPIO_IS_VALID(value) && value != dst.system.statusLedGpio) {
           dst.system.statusLedGpio = value;
           changed = true;
         }
@@ -520,14 +540,18 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
     // portal
     if (src["portal"]["auth"].is<bool>()) {
-      dst.portal.auth = src["portal"]["auth"].as<bool>();
-      changed = true;
+      bool value = src["portal"]["auth"].as<bool>();
+
+      if (value != dst.portal.auth) {
+        dst.portal.auth = value;
+        changed = true;
+      }
     }
 
     if (!src["portal"]["login"].isNull()) {
       String value = src["portal"]["login"].as<String>();
 
-      if (value.length() < sizeof(dst.portal.login)) {
+      if (value.length() < sizeof(dst.portal.login) && !String(dst.portal.login).equals(value)) {
         strcpy(dst.portal.login, value.c_str());
         changed = true;
       }
@@ -536,7 +560,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["portal"]["password"].isNull()) {
       String value = src["portal"]["password"].as<String>();
 
-      if (value.length() < sizeof(dst.portal.password)) {
+      if (value.length() < sizeof(dst.portal.password) && !String(dst.portal.password).equals(value)) {
         strcpy(dst.portal.password, value.c_str());
         changed = true;
       }
@@ -549,13 +573,17 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       switch (value) {
         case static_cast<byte>(UnitSystem::METRIC):
-          dst.opentherm.unitSystem = UnitSystem::METRIC;
-          changed = true;
+          if (dst.opentherm.unitSystem != UnitSystem::METRIC) {
+            dst.opentherm.unitSystem = UnitSystem::METRIC;
+            changed = true;
+          }
           break;
 
         case static_cast<byte>(UnitSystem::IMPERIAL):
-          dst.opentherm.unitSystem = UnitSystem::IMPERIAL;
-          changed = true;
+          if (dst.opentherm.unitSystem != UnitSystem::IMPERIAL) {
+            dst.opentherm.unitSystem = UnitSystem::IMPERIAL;
+            changed = true;
+          }
           break;
 
         default:
@@ -573,7 +601,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       } else {
         unsigned char value = src["opentherm"]["inGpio"].as<unsigned char>();
 
-        if (value >= 0 && value <= 254) {
+        if (GPIO_IS_VALID(value) && value != dst.opentherm.inGpio) {
           dst.opentherm.inGpio = value;
           changed = true;
         }
@@ -590,7 +618,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       } else {
         unsigned char value = src["opentherm"]["outGpio"].as<unsigned char>();
 
-        if (value >= 0 && value <= 254) {
+        if (GPIO_IS_VALID(value) && value != dst.opentherm.outGpio) {
           dst.opentherm.outGpio = value;
           changed = true;
         }
@@ -607,7 +635,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       } else {
         unsigned char value = src["opentherm"]["rxLedGpio"].as<unsigned char>();
 
-        if (value >= 0 && value <= 254) {
+        if (GPIO_IS_VALID(value) && value != dst.opentherm.rxLedGpio) {
           dst.opentherm.rxLedGpio = value;
           changed = true;
         }
@@ -617,7 +645,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["opentherm"]["memberIdCode"].isNull()) {
       unsigned int value = src["opentherm"]["memberIdCode"].as<unsigned int>();
 
-      if (value >= 0 && value < 65536) {
+      if (value >= 0 && value < 65536 && value != dst.opentherm.memberIdCode) {
         dst.opentherm.memberIdCode = value;
         changed = true;
       }
@@ -629,69 +657,118 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
 
     if (src["opentherm"]["summerWinterMode"].is<bool>()) {
-      dst.opentherm.summerWinterMode = src["opentherm"]["summerWinterMode"].as<bool>();
-      changed = true;
+      bool value = src["opentherm"]["summerWinterMode"].as<bool>();
+
+      if (value != dst.opentherm.summerWinterMode) {
+        dst.opentherm.summerWinterMode = value;
+        changed = true;
+      }
     }
 
     if (src["opentherm"]["heatingCh2Enabled"].is<bool>()) {
-      dst.opentherm.heatingCh2Enabled = src["opentherm"]["heatingCh2Enabled"].as<bool>();
+      bool value = src["opentherm"]["heatingCh2Enabled"].as<bool>();
 
-      if (dst.opentherm.heatingCh2Enabled) {
-        dst.opentherm.heatingCh1ToCh2 = false;
-        dst.opentherm.dhwToCh2 = false;
+      if (value != dst.opentherm.heatingCh2Enabled) {
+        dst.opentherm.heatingCh2Enabled = value;
+
+        if (dst.opentherm.heatingCh2Enabled) {
+          dst.opentherm.heatingCh1ToCh2 = false;
+          dst.opentherm.dhwToCh2 = false;
+        }
+
+        changed = true;
       }
-
-      changed = true;
     }
 
     if (src["opentherm"]["heatingCh1ToCh2"].is<bool>()) {
-      dst.opentherm.heatingCh1ToCh2 = src["opentherm"]["heatingCh1ToCh2"].as<bool>();
+      bool value = src["opentherm"]["heatingCh1ToCh2"].as<bool>();
 
-      if (dst.opentherm.heatingCh1ToCh2) {
-        dst.opentherm.heatingCh2Enabled = false;
-        dst.opentherm.dhwToCh2 = false;
+      if (value != dst.opentherm.heatingCh1ToCh2) {
+        dst.opentherm.heatingCh1ToCh2 = value;
+
+        if (dst.opentherm.heatingCh1ToCh2) {
+          dst.opentherm.heatingCh2Enabled = false;
+          dst.opentherm.dhwToCh2 = false;
+        }
+
+        changed = true;
       }
-
-      changed = true;
     }
 
     if (src["opentherm"]["dhwToCh2"].is<bool>()) {
-      dst.opentherm.dhwToCh2 = src["opentherm"]["dhwToCh2"].as<bool>();
+      bool value = src["opentherm"]["dhwToCh2"].as<bool>();
 
-      if (dst.opentherm.dhwToCh2) {
-        dst.opentherm.heatingCh2Enabled = false;
-        dst.opentherm.heatingCh1ToCh2 = false;
+      if (value != dst.opentherm.dhwToCh2) {
+        dst.opentherm.dhwToCh2 = value;
+
+        if (dst.opentherm.dhwToCh2) {
+          dst.opentherm.heatingCh2Enabled = false;
+          dst.opentherm.heatingCh1ToCh2 = false;
+        }
+
+        changed = true;
       }
-
-      changed = true;
     }
 
     if (src["opentherm"]["dhwBlocking"].is<bool>()) {
-      dst.opentherm.dhwBlocking = src["opentherm"]["dhwBlocking"].as<bool>();
-      changed = true;
+      bool value = src["opentherm"]["dhwBlocking"].as<bool>();
+
+      if (value != dst.opentherm.dhwBlocking) {
+        dst.opentherm.dhwBlocking = value;
+        changed = true;
+      }
     }
 
     if (src["opentherm"]["modulationSyncWithHeating"].is<bool>()) {
-      dst.opentherm.modulationSyncWithHeating = src["opentherm"]["modulationSyncWithHeating"].as<bool>();
-      changed = true;
+      bool value = src["opentherm"]["modulationSyncWithHeating"].as<bool>();
+
+      if (value != dst.opentherm.modulationSyncWithHeating) {
+        dst.opentherm.modulationSyncWithHeating = value;
+        changed = true;
+      }
     }
 
     if (src["opentherm"]["getMinMaxTemp"].is<bool>()) {
-      dst.opentherm.getMinMaxTemp = src["opentherm"]["getMinMaxTemp"].as<bool>();
-      changed = true;
+      bool value = src["opentherm"]["getMinMaxTemp"].as<bool>();
+
+      if (value != dst.opentherm.getMinMaxTemp) {
+        dst.opentherm.getMinMaxTemp = value;
+        changed = true;
+      }
+    }
+
+    if (src["opentherm"]["nativeHeatingControl"].is<bool>()) {
+      bool value = src["opentherm"]["nativeHeatingControl"].as<bool>();
+
+      if (value != dst.opentherm.nativeHeatingControl) {
+        dst.opentherm.nativeHeatingControl = value;
+
+        if (value) {
+          dst.emergency.useEquitherm = false;
+          dst.emergency.usePid = false;
+          dst.equitherm.enable = false;
+          dst.pid.enable = false;
+        }
+
+        changed = true;
+      }
     }
 
 
     // mqtt
     if (src["mqtt"]["enable"].is<bool>()) {
-      dst.mqtt.enable = src["mqtt"]["enable"].as<bool>();
-      changed = true;
+      bool value = src["mqtt"]["enable"].as<bool>();
+
+      if (value != dst.mqtt.enable) {
+        dst.mqtt.enable = value;
+        changed = true;
+      }
     }
     
     if (!src["mqtt"]["server"].isNull()) {
       String value = src["mqtt"]["server"].as<String>();
 
-      if (value.length() < sizeof(dst.mqtt.server)) {
+      if (value.length() < sizeof(dst.mqtt.server) && !String(dst.mqtt.server).equals(value)) {
         strcpy(dst.mqtt.server, value.c_str());
         changed = true;
       }
@@ -700,7 +777,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["mqtt"]["port"].isNull()) {
       unsigned short value = src["mqtt"]["port"].as<unsigned short>();
 
-      if (value > 0 && value <= 65535) {
+      if (value > 0 && value <= 65535 && value != dst.mqtt.port) {
         dst.mqtt.port = value;
         changed = true;
       }
@@ -709,7 +786,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["mqtt"]["user"].isNull()) {
       String value = src["mqtt"]["user"].as<String>();
 
-      if (value.length() < sizeof(dst.mqtt.user)) {
+      if (value.length() < sizeof(dst.mqtt.user) && !String(dst.mqtt.user).equals(value)) {
         strcpy(dst.mqtt.user, value.c_str());
         changed = true;
       }
@@ -718,7 +795,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["mqtt"]["password"].isNull()) {
       String value = src["mqtt"]["password"].as<String>();
 
-      if (value.length() < sizeof(dst.mqtt.password)) {
+      if (value.length() < sizeof(dst.mqtt.password) && !String(dst.mqtt.password).equals(value)) {
         strcpy(dst.mqtt.password, value.c_str());
         changed = true;
       }
@@ -727,7 +804,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["mqtt"]["prefix"].isNull()) {
       String value = src["mqtt"]["prefix"].as<String>();
 
-      if (value.length() < sizeof(dst.mqtt.prefix)) {
+      if (value.length() < sizeof(dst.mqtt.prefix) && !String(dst.mqtt.prefix).equals(value)) {
         strcpy(dst.mqtt.prefix, value.c_str());
         changed = true;
       }
@@ -736,115 +813,139 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src["mqtt"]["interval"].isNull()) {
       unsigned short value = src["mqtt"]["interval"].as<unsigned short>();
 
-      if (value >= 3 && value <= 60) {
+      if (value >= 3 && value <= 60 && value != dst.mqtt.interval) {
         dst.mqtt.interval = value;
         changed = true;
       }
     }
-  }
+
+    if (src["mqtt"]["homeAssistantDiscovery"].is<bool>()) {
+      bool value = src["mqtt"]["homeAssistantDiscovery"].as<bool>();
+
+      if (value != dst.mqtt.homeAssistantDiscovery) {
+        dst.mqtt.homeAssistantDiscovery = value;
+        changed = true;
+      }
+    }
 
 
-  // emergency
-  if (src["emergency"]["enable"].is<bool>()) {
-    dst.emergency.enable = src["emergency"]["enable"].as<bool>();
-    changed = true;
-  }
+    // emergency
+    if (src["emergency"]["enable"].is<bool>()) {
+      bool value = src["emergency"]["enable"].as<bool>();
+
+      if (value != dst.emergency.enable) {
+        dst.emergency.enable = value;
+        changed = true;
+      }
+    }
 
     if (!src["emergency"]["tresholdTime"].isNull()) {
       unsigned short value = src["emergency"]["tresholdTime"].as<unsigned short>();
 
-      if (value >= 60 && value <= 1800) {
+      if (value >= 60 && value <= 1800 && value != dst.emergency.tresholdTime) {
         dst.emergency.tresholdTime = value;
         changed = true;
       }
     }
 
-  if (src["emergency"]["useEquitherm"].is<bool>()) {
-    if (dst.sensors.outdoor.type != SensorType::MANUAL) {
-      dst.emergency.useEquitherm = src["emergency"]["useEquitherm"].as<bool>();
+    if (src["emergency"]["useEquitherm"].is<bool>()) {
+      bool value = src["emergency"]["useEquitherm"].as<bool>();
 
-    } else {
-      dst.emergency.useEquitherm = false;
+      if (!dst.opentherm.nativeHeatingControl && dst.sensors.outdoor.type != SensorType::MANUAL) {
+        if (value != dst.emergency.useEquitherm) {
+          dst.emergency.useEquitherm = value;
+          changed = true;
+        }
+
+      } else if (dst.emergency.useEquitherm) {
+        dst.emergency.useEquitherm = false;
+        changed = true;
+      }
+
+      if (dst.emergency.useEquitherm && dst.emergency.usePid) {
+        dst.emergency.usePid = false;
+        changed = true;
+      }
     }
 
-    if (dst.emergency.useEquitherm && dst.emergency.usePid) {
-      dst.emergency.usePid = false;
+    if (src["emergency"]["usePid"].is<bool>()) {
+      bool value = src["emergency"]["usePid"].as<bool>();
+
+      if (!dst.opentherm.nativeHeatingControl && dst.sensors.indoor.type != SensorType::MANUAL) {
+        if (value != dst.emergency.usePid) {
+          dst.emergency.usePid = value;
+          changed = true;
+        }
+
+      } else if (dst.emergency.usePid) {
+        dst.emergency.usePid = false;
+        changed = true;
+      }
+
+      if (dst.emergency.usePid && dst.emergency.useEquitherm) {
+        dst.emergency.useEquitherm = false;
+        changed = true;
+      }
     }
 
-    changed = true;
-  }
+    if (src["emergency"]["onNetworkFault"].is<bool>()) {
+      bool value = src["emergency"]["onNetworkFault"].as<bool>();
 
-  if (src["emergency"]["usePid"].is<bool>()) {
-    if (dst.sensors.indoor.type != SensorType::MANUAL) {
-      dst.emergency.usePid = src["emergency"]["usePid"].as<bool>();
-
-    } else {
-      dst.emergency.usePid = false;
+      if (value != dst.emergency.onNetworkFault) {
+        dst.emergency.onNetworkFault = value;
+        changed = true;
+      }
     }
 
-    if (dst.emergency.usePid && dst.emergency.useEquitherm) {
-      dst.emergency.useEquitherm = false;
-    }
+    if (src["emergency"]["onMqttFault"].is<bool>()) {
+      bool value = src["emergency"]["onMqttFault"].as<bool>();
 
-    changed = true;
-  }
-
-  if (src["emergency"]["onNetworkFault"].is<bool>()) {
-    dst.emergency.onNetworkFault = src["emergency"]["onNetworkFault"].as<bool>();
-    changed = true;
-  }
-
-  if (src["emergency"]["onMqttFault"].is<bool>()) {
-    dst.emergency.onMqttFault = src["emergency"]["onMqttFault"].as<bool>();
-    changed = true;
-  }
-
-  if (!src["emergency"]["target"].isNull()) {
-    double value = src["emergency"]["target"].as<double>();
-    bool noRegulators = (!dst.emergency.useEquitherm && !dst.emergency.usePid);
-    bool valid = isValidTemp(
-      value,
-      dst.system.unitSystem,
-      noRegulators ? dst.heating.minTemp : 5,
-      noRegulators ? dst.heating.maxTemp : 30,
-      noRegulators ? dst.system.unitSystem : UnitSystem::METRIC
-    );
-
-    if (valid) {
-      dst.emergency.target = roundd(value, 2);
-      changed = true;
+      if (value != dst.emergency.onMqttFault) {
+        dst.emergency.onMqttFault = value;
+        changed = true;
+      }
     }
   }
 
 
   // pid
   if (src["pid"]["enable"].is<bool>()) {
-    dst.pid.enable = src["pid"]["enable"].as<bool>();
-    changed = true;
+    bool value = src["pid"]["enable"].as<bool>();
+    
+    if (!dst.opentherm.nativeHeatingControl) {
+      if (value != dst.pid.enable) {
+        dst.pid.enable = value;
+        changed = true;
+      }
+
+    } else if (dst.pid.enable) {
+      dst.pid.enable = false;
+      changed = true;
+    }
   }
 
   if (!src["pid"]["p_factor"].isNull()) {
-    double value = src["pid"]["p_factor"].as<double>();
+    float value = src["pid"]["p_factor"].as<float>();
 
-    if (value > 0 && value <= 1000) {
+    if (value > 0 && value <= 1000 && fabs(value - dst.pid.p_factor) > 0.0001f) {
       dst.pid.p_factor = roundd(value, 3);
       changed = true;
     }
   }
 
   if (!src["pid"]["i_factor"].isNull()) {
-    double value = src["pid"]["i_factor"].as<double>();
+    float value = src["pid"]["i_factor"].as<float>();
 
-    if (value >= 0 && value <= 100) {
+    if (value >= 0 && value <= 100 && fabs(value - dst.pid.i_factor) > 0.0001f) {
       dst.pid.i_factor = roundd(value, 4);
       changed = true;
     }
   }
 
   if (!src["pid"]["d_factor"].isNull()) {
-    double value = src["pid"]["d_factor"].as<double>();
+    float value = src["pid"]["d_factor"].as<float>();
 
-    if (value >= 0 && value <= 100000) {
+    if (value >= 0 && value <= 100000 && fabs(value - dst.pid.d_factor) > 0.0001f) {
       dst.pid.d_factor = roundd(value, 1);
       changed = true;
     }
@@ -853,7 +954,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["pid"]["dt"].isNull()) {
     unsigned short value = src["pid"]["dt"].as<unsigned short>();
 
-    if (value >= 30 && value <= 600) {
+    if (value >= 30 && value <= 600 && value != dst.pid.dt) {
       dst.pid.dt = value;
       changed = true;
     }
@@ -862,7 +963,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["pid"]["maxTemp"].isNull()) {
     unsigned char value = src["pid"]["maxTemp"].as<unsigned char>();
 
-    if (isValidTemp(value, dst.system.unitSystem) && value > dst.pid.minTemp) {
+    if (isValidTemp(value, dst.system.unitSystem) && value > dst.pid.minTemp && value != dst.pid.maxTemp) {
       dst.pid.maxTemp = value;
       changed = true;
     }
@@ -871,7 +972,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["pid"]["minTemp"].isNull()) {
     unsigned char value = src["pid"]["minTemp"].as<unsigned char>();
 
-    if (isValidTemp(value, dst.system.unitSystem) && value < dst.pid.maxTemp) {
+    if (isValidTemp(value, dst.system.unitSystem) && value < dst.pid.maxTemp && value != dst.pid.minTemp) {
       dst.pid.minTemp = value;
       changed = true;
     }
@@ -880,32 +981,42 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // equitherm
   if (src["equitherm"]["enable"].is<bool>()) {
-    dst.equitherm.enable = src["equitherm"]["enable"].as<bool>();
-    changed = true;
+    bool value = src["equitherm"]["enable"].as<bool>();
+
+    if (!dst.opentherm.nativeHeatingControl) {
+      if (value != dst.equitherm.enable) {
+        dst.equitherm.enable = value;
+        changed = true;
+      }
+      
+    } else if (dst.equitherm.enable) {
+      dst.equitherm.enable = false;
+      changed = true;
+    }
   }
 
   if (!src["equitherm"]["n_factor"].isNull()) {
-    double value = src["equitherm"]["n_factor"].as<double>();
+    float value = src["equitherm"]["n_factor"].as<float>();
 
-    if (value > 0 && value <= 10) {
+    if (value > 0 && value <= 10 && fabs(value - dst.equitherm.n_factor) > 0.0001f) {
       dst.equitherm.n_factor = roundd(value, 3);
       changed = true;
     }
   }
 
   if (!src["equitherm"]["k_factor"].isNull()) {
-    double value = src["equitherm"]["k_factor"].as<double>();
+    float value = src["equitherm"]["k_factor"].as<float>();
 
-    if (value >= 0 && value <= 10) {
+    if (value >= 0 && value <= 10 && fabs(value - dst.equitherm.k_factor) > 0.0001f) {
       dst.equitherm.k_factor = roundd(value, 3);
       changed = true;
     }
   }
 
   if (!src["equitherm"]["t_factor"].isNull()) {
-    double value = src["equitherm"]["t_factor"].as<double>();
+    float value = src["equitherm"]["t_factor"].as<float>();
 
-    if (value >= 0 && value <= 10) {
+    if (value >= 0 && value <= 10 && fabs(value - dst.equitherm.t_factor) > 0.0001f) {
       dst.equitherm.t_factor = roundd(value, 3);
       changed = true;
     }
@@ -914,36 +1025,27 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // heating
   if (src["heating"]["enable"].is<bool>()) {
-    dst.heating.enable = src["heating"]["enable"].as<bool>();
-    changed = true;
+    bool value = src["heating"]["enable"].as<bool>();
+
+    if (value != dst.heating.enable) {
+      dst.heating.enable = value;
+      changed = true;
+    }
   }
 
   if (src["heating"]["turbo"].is<bool>()) {
-    dst.heating.turbo = src["heating"]["turbo"].as<bool>();
-    changed = true;
-  }
+    bool value = src["heating"]["turbo"].as<bool>();
 
-  if (!src["heating"]["target"].isNull()) {
-    double value = src["heating"]["target"].as<double>();
-    bool noRegulators = (!dst.equitherm.enable && !dst.pid.enable);
-    bool valid = isValidTemp(
-      value,
-      dst.system.unitSystem,
-      noRegulators ? dst.heating.minTemp : 5,
-      noRegulators ? dst.heating.maxTemp : 30,
-      noRegulators ? dst.system.unitSystem : UnitSystem::METRIC
-    );
-
-    if (valid) {
-      dst.heating.target = roundd(value, 2);
+    if (value != dst.heating.turbo) {
+      dst.heating.turbo = value;
       changed = true;
     }
   }
 
   if (!src["heating"]["hysteresis"].isNull()) {
-    double value = src["heating"]["hysteresis"].as<double>();
+    float value = src["heating"]["hysteresis"].as<float>();
 
-    if (value >= 0 && value <= 5) {
+    if (value >= 0 && value <= 5 && fabs(value - dst.heating.hysteresis) > 0.0001f) {
       dst.heating.hysteresis = roundd(value, 2);
       changed = true;
     }
@@ -952,7 +1054,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["heating"]["minTemp"].isNull()) {
     unsigned char value = src["heating"]["minTemp"].as<unsigned char>();
 
-    if (value >= vars.parameters.heatingMinTemp && value <= vars.parameters.heatingMaxTemp) {
+    if (value != dst.heating.minTemp && value >= vars.parameters.heatingMinTemp && value < vars.parameters.heatingMaxTemp && value != dst.heating.minTemp) {
       dst.heating.minTemp = value;
       changed = true;
     }
@@ -961,7 +1063,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["heating"]["maxTemp"].isNull()) {
     unsigned char value = src["heating"]["maxTemp"].as<unsigned char>();
 
-    if (value >= vars.parameters.heatingMinTemp && value <= vars.parameters.heatingMaxTemp) {
+    if (value != dst.heating.maxTemp && value > vars.parameters.heatingMinTemp && value <= vars.parameters.heatingMaxTemp && value != dst.heating.maxTemp) {
       dst.heating.maxTemp = value;
       changed = true;
     }
@@ -970,7 +1072,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["heating"]["maxModulation"].isNull()) {
     unsigned char value = src["heating"]["maxModulation"].as<unsigned char>();
 
-    if (value > 0 && value <= 100) {
+    if (value > 0 && value <= 100 && value != dst.heating.maxModulation) {
       dst.heating.maxModulation = value;
       changed = true;
     }
@@ -979,15 +1081,10 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // dhw
   if (src["dhw"]["enable"].is<bool>()) {
-    dst.dhw.enable = src["dhw"]["enable"].as<bool>();
-    changed = true;
-  }
+    bool value = src["dhw"]["enable"].as<bool>();
 
-  if (!src["dhw"]["target"].isNull()) {
-    unsigned char value = src["dhw"]["target"].as<unsigned char>();
-
-    if (isValidTemp(value, dst.system.unitSystem, dst.dhw.minTemp, dst.dhw.maxTemp, dst.system.unitSystem)) {
-      dst.dhw.target = value;
+    if (value != dst.dhw.enable) {
+      dst.dhw.enable = value;
       changed = true;
     }
   }
@@ -995,7 +1092,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["dhw"]["minTemp"].isNull()) {
     unsigned char value = src["dhw"]["minTemp"].as<unsigned char>();
 
-    if (value >= vars.parameters.dhwMinTemp && value <= vars.parameters.dhwMaxTemp) {
+    if (value >= vars.parameters.dhwMinTemp && value < vars.parameters.dhwMaxTemp && value != dst.dhw.minTemp) {
       dst.dhw.minTemp = value;
       changed = true;
     }
@@ -1004,7 +1101,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["dhw"]["maxTemp"].isNull()) {
     unsigned char value = src["dhw"]["maxTemp"].as<unsigned char>();
 
-    if (value >= vars.parameters.dhwMinTemp && value <= vars.parameters.dhwMaxTemp) {
+    if (value > vars.parameters.dhwMinTemp && value <= vars.parameters.dhwMaxTemp && value != dst.dhw.maxTemp) {
       dst.dhw.maxTemp = value;
       changed = true;
     }
@@ -1017,19 +1114,25 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
     switch (value) {
       case static_cast<byte>(SensorType::BOILER):
-        dst.sensors.outdoor.type = SensorType::BOILER;
-        changed = true;
+        if (dst.sensors.outdoor.type != SensorType::BOILER) {
+          dst.sensors.outdoor.type = SensorType::BOILER;
+          changed = true;
+        }
         break;
 
       case static_cast<byte>(SensorType::MANUAL):
-        dst.sensors.outdoor.type = SensorType::MANUAL;
-        dst.emergency.useEquitherm = false;
-        changed = true;
+        if (dst.sensors.outdoor.type != SensorType::MANUAL) {
+          dst.sensors.outdoor.type = SensorType::MANUAL;
+          dst.emergency.useEquitherm = false;
+          changed = true;
+        }
         break;
 
       case static_cast<byte>(SensorType::DS18B20):
-        dst.sensors.outdoor.type = SensorType::DS18B20;
-        changed = true;
+        if (dst.sensors.outdoor.type != SensorType::DS18B20) {
+          dst.sensors.outdoor.type = SensorType::DS18B20;
+          changed = true;
+        }
         break;
 
       default:
@@ -1047,7 +1150,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     } else {
       unsigned char value = src["sensors"]["outdoor"]["gpio"].as<unsigned char>();
 
-      if (value >= 0 && value <= 254) {
+      if (GPIO_IS_VALID(value) && value != dst.sensors.outdoor.gpio) {
         dst.sensors.outdoor.gpio = value;
         changed = true;
       }
@@ -1055,9 +1158,9 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
   if (!src["sensors"]["outdoor"]["offset"].isNull()) {
-    double value = src["sensors"]["outdoor"]["offset"].as<double>();
+    float value = src["sensors"]["outdoor"]["offset"].as<float>();
 
-    if (value >= -10 && value <= 10) {
+    if (value >= -10 && value <= 10 && fabs(value - dst.sensors.outdoor.offset) > 0.0001f) {
       dst.sensors.outdoor.offset = roundd(value, 2);
       changed = true;
     }
@@ -1067,26 +1170,28 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     byte value = src["sensors"]["indoor"]["type"].as<unsigned char>();
 
     switch (value) {
-      case static_cast<byte>(SensorType::BOILER):
-        dst.sensors.indoor.type = SensorType::BOILER;
-        changed = true;
-        break;
-
       case static_cast<byte>(SensorType::MANUAL):
-        dst.sensors.indoor.type = SensorType::MANUAL;
-        dst.emergency.usePid = false;
-        changed = true;
+        if (dst.sensors.indoor.type != SensorType::MANUAL) {
+          dst.sensors.indoor.type = SensorType::MANUAL;
+          dst.emergency.usePid = false;
+          dst.opentherm.nativeHeatingControl = false;
+          changed = true;
+        }
         break;
 
       case static_cast<byte>(SensorType::DS18B20):
-        dst.sensors.indoor.type = SensorType::DS18B20;
-        changed = true;
+        if (dst.sensors.indoor.type != SensorType::DS18B20) {
+          dst.sensors.indoor.type = SensorType::DS18B20;
+          changed = true;
+        }
         break;
 
       #if USE_BLE
       case static_cast<byte>(SensorType::BLUETOOTH):
-        dst.sensors.indoor.type = SensorType::BLUETOOTH;
-        changed = true;
+        if (dst.sensors.indoor.type != SensorType::BLUETOOTH) {
+          dst.sensors.indoor.type = SensorType::BLUETOOTH;
+          changed = true;
+        }
         break;
       #endif
 
@@ -1105,7 +1210,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     } else {
       unsigned char value = src["sensors"]["indoor"]["gpio"].as<unsigned char>();
       
-      if (value >= 0 && value <= 254) {
+      if (GPIO_IS_VALID(value) && value != dst.sensors.indoor.gpio) {
         dst.sensors.indoor.gpio = value;
         changed = true;
       }
@@ -1118,18 +1223,19 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     int tmp[6];
     if(sscanf(value.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) == 6) {
       for(uint8_t i = 0; i < 6; i++) {
-        dst.sensors.indoor.bleAddresss[i] = (uint8_t) tmp[i];
+        if (dst.sensors.indoor.bleAddresss[i] != (uint8_t) tmp[i]) {
+          dst.sensors.indoor.bleAddresss[i] = (uint8_t) tmp[i];
+          changed = true;
+        }
       }
-
-      changed = true;
     }
   }
   #endif
 
   if (!src["sensors"]["indoor"]["offset"].isNull()) {
-    double value = src["sensors"]["indoor"]["offset"].as<double>();
+    float value = src["sensors"]["indoor"]["offset"].as<float>();
 
-    if (value >= -10 && value <= 10) {
+    if (value >= -10 && value <= 10 && fabs(value - dst.sensors.indoor.offset) > 0.0001f) {
       dst.sensors.indoor.offset = roundd(value, 2);
       changed = true;
     }
@@ -1139,8 +1245,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!safe) {
     // external pump
     if (src["externalPump"]["use"].is<bool>()) {
-      dst.externalPump.use = src["externalPump"]["use"].as<bool>();
-      changed = true;
+      bool value = src["externalPump"]["use"].as<bool>();
+
+      if (value != dst.externalPump.use) {
+        dst.externalPump.use = value;
+        changed = true;
+      }
     }
 
     if (!src["externalPump"]["gpio"].isNull()) {
@@ -1153,7 +1263,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       } else {
         unsigned char value = src["externalPump"]["gpio"].as<unsigned char>();
 
-        if (value >= 0 && value <= 254) {
+        if (GPIO_IS_VALID(value) && value != dst.externalPump.gpio) {
           dst.externalPump.gpio = value;
           changed = true;
         }
@@ -1164,8 +1274,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       unsigned short value = src["externalPump"]["postCirculationTime"].as<unsigned short>();
 
       if (value >= 0 && value <= 120) {
-        dst.externalPump.postCirculationTime = value * 60;
-        changed = true;
+        value = value * 60;
+
+        if (value != dst.externalPump.postCirculationTime) {
+          dst.externalPump.postCirculationTime = value;
+          changed = true;
+        }
       }
     }
 
@@ -1173,8 +1287,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       unsigned int value = src["externalPump"]["antiStuckInterval"].as<unsigned int>();
 
       if (value >= 0 && value <= 366) {
-        dst.externalPump.antiStuckInterval = value * 86400;
-        changed = true;
+        value = value * 86400;
+
+        if (value != dst.externalPump.antiStuckInterval) {
+          dst.externalPump.antiStuckInterval = value;
+          changed = true;
+        }
       }
     }
 
@@ -1182,23 +1300,97 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       unsigned short value = src["externalPump"]["antiStuckTime"].as<unsigned short>();
 
       if (value >= 0 && value <= 20) {
-        dst.externalPump.antiStuckTime = value * 60;
-        changed = true;
+        value = value * 60;
+
+        if (value != dst.externalPump.antiStuckTime) {
+          dst.externalPump.antiStuckTime = value;
+          changed = true;
+        }
       }
+    }
+  }
+
+  // force check emergency target
+  {
+    float value = !src["emergency"]["target"].isNull() ? src["emergency"]["target"].as<float>() : dst.emergency.target;
+    bool noRegulators = !dst.opentherm.nativeHeatingControl && !dst.emergency.useEquitherm && !dst.emergency.usePid;
+    bool valid = isValidTemp(
+      value,
+      dst.system.unitSystem,
+      noRegulators ? dst.heating.minTemp : THERMOSTAT_INDOOR_MIN_TEMP,
+      noRegulators ? dst.heating.maxTemp : THERMOSTAT_INDOOR_MAX_TEMP,
+      noRegulators ? dst.system.unitSystem : UnitSystem::METRIC
+    );
+
+    if (!valid) {
+      value = convertTemp(
+        noRegulators ? DEFAULT_HEATING_TARGET_TEMP : THERMOSTAT_INDOOR_DEFAULT_TEMP,
+        UnitSystem::METRIC,
+        dst.system.unitSystem
+      );
+    }
+
+    if (fabs(dst.emergency.target - value) > 0.0001f) {
+      dst.emergency.target = roundd(value, 2);
+      changed = true;
+    }
+  }
+
+  // force check heating target
+  {
+    float value = !src["heating"]["target"].isNull() ? src["heating"]["target"].as<float>() : dst.heating.target;
+    bool noRegulators = !dst.opentherm.nativeHeatingControl && !dst.equitherm.enable && !dst.pid.enable;
+    bool valid = isValidTemp(
+      value,
+      dst.system.unitSystem,
+      noRegulators ? dst.heating.minTemp : THERMOSTAT_INDOOR_MIN_TEMP,
+      noRegulators ? dst.heating.maxTemp : THERMOSTAT_INDOOR_MAX_TEMP,
+      noRegulators ? dst.system.unitSystem : UnitSystem::METRIC
+    );
+
+    if (!valid) {
+      value = convertTemp(
+        noRegulators ? DEFAULT_HEATING_TARGET_TEMP : THERMOSTAT_INDOOR_DEFAULT_TEMP,
+        UnitSystem::METRIC,
+        dst.system.unitSystem
+      );
+    }
+
+    if (fabs(dst.heating.target - value) > 0.0001f) {
+      dst.heating.target = roundd(value, 2);
+      changed = true;
+    }
+  }
+
+  // force check dhw target
+  {
+    float value = !src["dhw"]["target"].isNull() ? src["dhw"]["target"].as<float>() : dst.dhw.target;
+    bool valid = isValidTemp(
+      value,
+      dst.system.unitSystem,
+      dst.dhw.minTemp,
+      dst.dhw.maxTemp,
+      dst.system.unitSystem
+    );
+
+    if (!valid) {
+      value = convertTemp(DEFAULT_DHW_TARGET_TEMP, UnitSystem::METRIC, dst.system.unitSystem);
+    }
+
+    if (fabs(dst.dhw.target - value) > 0.0001f) {
+      dst.dhw.target = value;
+      changed = true;
     }
   }
 
   return changed;
 }
 
-bool safeJsonToSettings(const JsonVariantConst src, Settings& dst) {
+inline bool safeJsonToSettings(const JsonVariantConst src, Settings& dst) {
   return jsonToSettings(src, dst, true);
 }
 
 void varsToJson(const Variables& src, JsonVariant dst) {
-  dst["tuning"]["enable"] = src.tuning.enable;
-  dst["tuning"]["regulator"] = src.tuning.regulator;
-
   dst["states"]["otStatus"] = src.states.otStatus;
   dst["states"]["emergency"] = src.states.emergency;
   dst["states"]["heating"] = src.states.heating;
@@ -1226,7 +1418,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["parameters"]["heatingEnabled"] = src.parameters.heatingEnabled;
   dst["parameters"]["heatingMinTemp"] = src.parameters.heatingMinTemp;
   dst["parameters"]["heatingMaxTemp"] = src.parameters.heatingMaxTemp;
-  dst["parameters"]["heatingSetpoint"] = src.parameters.heatingSetpoint;
+  dst["parameters"]["heatingSetpoint"] = roundd(src.parameters.heatingSetpoint, 2);
   dst["parameters"]["dhwMinTemp"] = src.parameters.dhwMinTemp;
   dst["parameters"]["dhwMaxTemp"] = src.parameters.dhwMaxTemp;
 
@@ -1240,38 +1432,26 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 bool jsonToVars(const JsonVariantConst src, Variables& dst) {
   bool changed = false;
 
-  // tuning
-  if (src["tuning"]["enable"].is<bool>()) {
-    dst.tuning.enable = src["tuning"]["enable"].as<bool>();
-    changed = true;
-  }
-
-  if (!src["tuning"]["regulator"].isNull()) {
-    unsigned char value = src["tuning"]["regulator"].as<unsigned char>();
-
-    if (value >= 0 && value <= 1) {
-      dst.tuning.regulator = value;
-      changed = true;
-    }
-  }
-
-
   // temperatures
   if (!src["temperatures"]["indoor"].isNull()) {
-    double value = src["temperatures"]["indoor"].as<double>();
+    float value = src["temperatures"]["indoor"].as<float>();
 
     if (settings.sensors.indoor.type == SensorType::MANUAL && isValidTemp(value, settings.system.unitSystem, -99.9f, 99.9f)) {
-      dst.temperatures.indoor = roundd(value, 2);
-      changed = true;
+      if (fabs(value - dst.temperatures.indoor) > 0.0001f) {
+        dst.temperatures.indoor = roundd(value, 2);
+        changed = true;
+      }
     }
   }
 
   if (!src["temperatures"]["outdoor"].isNull()) {
-    double value = src["temperatures"]["outdoor"].as<double>();
+    float value = src["temperatures"]["outdoor"].as<float>();
 
     if (settings.sensors.outdoor.type == SensorType::MANUAL && isValidTemp(value, settings.system.unitSystem, -99.9f, 99.9f)) {
-      dst.temperatures.outdoor = roundd(value, 2);
-      changed = true;
+      if (fabs(value - dst.temperatures.outdoor) > 0.0001f) {
+        dst.temperatures.outdoor = roundd(value, 2);
+        changed = true;
+      }
     }
   }
 

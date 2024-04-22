@@ -53,8 +53,16 @@ public:
     Log.sinfoln(FPSTR(L_MQTT), F("Enabled"));
   }
 
-  bool isConnected() {
+  inline bool isConnected() {
     return this->connected;
+  }
+
+  inline void resetPublishedSettingsTime() {
+    this->prevPubSettingsTime = 0;
+  }
+
+  inline void resetPublishedVarsTime() {
+    this->prevPubVarsTime = 0;
   }
 
 protected:
@@ -63,6 +71,7 @@ protected:
   HaHelper* haHelper = nullptr;
   MqttWriter* writer = nullptr;
   UnitSystem currentUnitSystem = UnitSystem::METRIC;
+  bool currentHomeAssistantDiscovery = false;
   unsigned short readyForSendTime = 15000;
   unsigned long lastReconnectTime = 0;
   unsigned long connectedTime = 0;
@@ -84,7 +93,7 @@ protected:
     return 2;
   }
 
-  bool isReadyForSend() {
+  inline bool isReadyForSend() {
     return millis() - this->connectedTime > this->readyForSendTime;
   }
 
@@ -227,15 +236,24 @@ protected:
     }
 
     // publish ha entities if not published
-    if (this->newConnection || this->currentUnitSystem != settings.system.unitSystem) {
-      this->publishHaEntities();
-      this->publishNonStaticHaEntities(true);
-      this->newConnection = false;
-      this->currentUnitSystem = settings.system.unitSystem;
+    if (settings.mqtt.homeAssistantDiscovery) {
+      if (this->newConnection || !this->currentHomeAssistantDiscovery || this->currentUnitSystem != settings.system.unitSystem) {
+        this->publishHaEntities();
+        this->publishNonStaticHaEntities(true);
+        this->currentHomeAssistantDiscovery = true;
+        this->currentUnitSystem = settings.system.unitSystem;
 
-    } else {
-      // publish non static ha entities
-      this->publishNonStaticHaEntities();
+      } else {
+        // publish non static ha entities
+        this->publishNonStaticHaEntities();
+      }
+
+    } else if (this->currentHomeAssistantDiscovery) {
+      this->currentHomeAssistantDiscovery = false;
+    }
+
+    if (this->newConnection) {
+      this->newConnection = false;
     }
   }
 
@@ -291,52 +309,26 @@ protected:
       Log.swarningln(FPSTR(L_MQTT_MSG), F("Not valid json"));
       return;
     }
+    doc.shrinkToFit();
 
     if (this->haHelper->getDeviceTopic("state/set").equals(topic)) {
       this->writer->publish(this->haHelper->getDeviceTopic("state/set").c_str(), nullptr, 0, true);
-      this->updateVariables(doc);
+      
+      if (jsonToVars(doc, vars)) {
+        this->resetPublishedVarsTime();
+      }
 
     } else if (this->haHelper->getDeviceTopic("settings/set").equals(topic)) {
       this->writer->publish(this->haHelper->getDeviceTopic("settings/set").c_str(), nullptr, 0, true);
-      this->updateSettings(doc);
+      
+      if (safeJsonToSettings(doc, settings)) {
+        this->resetPublishedSettingsTime();
+        fsSettings.update();
+      }
     }
-  }
-
-
-  bool updateSettings(JsonDocument& doc) {
-    bool changed = safeJsonToSettings(doc, settings);
-    doc.clear();
-    doc.shrinkToFit();
-
-    if (changed) {
-      this->prevPubSettingsTime = 0;
-      fsSettings.update();
-      return true;
-    }
-
-    return false;
-  }
-
-  bool updateVariables(JsonDocument& doc) {
-    bool changed = jsonToVars(doc, vars);
-    doc.clear();
-    doc.shrinkToFit();
-
-    if (changed) {
-      this->prevPubVarsTime = 0;
-      return true;
-    }
-
-    return false;
   }
 
   void publishHaEntities() {
-    // emergency
-    this->haHelper->publishSwitchEmergency();
-    this->haHelper->publishNumberEmergencyTarget(settings.system.unitSystem);
-    this->haHelper->publishSwitchEmergencyUseEquitherm();
-    this->haHelper->publishSwitchEmergencyUsePid();
-
     // heating
     this->haHelper->publishSwitchHeating(false);
     this->haHelper->publishSwitchHeatingTurbo();
@@ -362,10 +354,6 @@ protected:
     this->haHelper->publishNumberEquithermFactorN();
     this->haHelper->publishNumberEquithermFactorK();
     this->haHelper->publishNumberEquithermFactorT();
-
-    // tuning
-    this->haHelper->publishSwitchTuning();
-    this->haHelper->publishSelectTuningRegulator();
 
     // states
     this->haHelper->publishBinSensorStatus();
@@ -396,26 +384,22 @@ protected:
 
   bool publishNonStaticHaEntities(bool force = false) {
     static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
-    static bool _isStupidMode, _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent = false;
+    static bool _noRegulators, _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent = false;
 
     bool published = false;
-    bool isStupidMode = !settings.pid.enable && !settings.equitherm.enable;
+    bool noRegulators = !settings.opentherm.nativeHeatingControl && !settings.pid.enable && !settings.equitherm.enable;
     byte heatingMinTemp = 0;
     byte heatingMaxTemp = 0;
     bool editableOutdoorTemp = settings.sensors.outdoor.type == SensorType::MANUAL;
     bool editableIndoorTemp = settings.sensors.indoor.type == SensorType::MANUAL;
 
-    if (isStupidMode) {
+    if (noRegulators) {
       heatingMinTemp = settings.heating.minTemp;
       heatingMaxTemp = settings.heating.maxTemp;
 
-    } else if (settings.system.unitSystem == UnitSystem::METRIC) {
-      heatingMinTemp = 5;
-      heatingMaxTemp = 30;
-
-    } else if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
-      heatingMinTemp = 41;
-      heatingMaxTemp = 86;
+    } else {
+      heatingMinTemp = convertTemp(THERMOSTAT_INDOOR_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+      heatingMaxTemp = convertTemp(THERMOSTAT_INDOOR_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
     }
 
     if (force || _dhwPresent != settings.opentherm.dhwPresent) {
@@ -447,32 +431,17 @@ protected:
       published = true;
     }
 
-    if (force || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
-      if (settings.heating.target < heatingMinTemp || settings.heating.target > heatingMaxTemp) {
-        settings.heating.target = constrain(settings.heating.target, heatingMinTemp, heatingMaxTemp);
-      }
-
+    if (force || _noRegulators != noRegulators || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
       _heatingMinTemp = heatingMinTemp;
       _heatingMaxTemp = heatingMaxTemp;
-      _isStupidMode = isStupidMode;
+      _noRegulators = noRegulators;
 
       this->haHelper->publishNumberHeatingTarget(settings.system.unitSystem, heatingMinTemp, heatingMaxTemp, false);
       this->haHelper->publishClimateHeating(
         settings.system.unitSystem,
         heatingMinTemp,
         heatingMaxTemp,
-        isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
-      );
-
-      published = true;
-
-    } else if (_isStupidMode != isStupidMode) {
-      _isStupidMode = isStupidMode;
-      this->haHelper->publishClimateHeating(
-        settings.system.unitSystem,
-        heatingMinTemp,
-        heatingMaxTemp,
-        isStupidMode ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
+        noRegulators ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
       );
 
       published = true;

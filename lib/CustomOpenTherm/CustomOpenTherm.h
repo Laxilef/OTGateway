@@ -126,6 +126,26 @@ public:
     return isValidResponse(response);
   }
 
+  bool setRoomSetpoint(float temperature) {
+    unsigned long response = this->sendRequest(buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TrSet,
+      temperatureToData(temperature)
+    ));
+
+    return isValidResponse(response);
+  }
+
+  bool setRoomTemp(float temperature) {
+    unsigned long response = this->sendRequest(buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::Tr,
+      temperatureToData(temperature)
+    ));
+
+    return isValidResponse(response);
+  }
+
   bool sendBoilerReset() {
     unsigned int data = 1;
     data <<= 8;

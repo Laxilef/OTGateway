@@ -1,20 +1,27 @@
-#define PROJECT_NAME                "OpenTherm Gateway"
-#define PROJECT_VERSION             "1.4.0-rc.23"
-#define PROJECT_REPO                "https://github.com/Laxilef/OTGateway"
+#define PROJECT_NAME                    "OpenTherm Gateway"
+#define PROJECT_VERSION                 "1.4.0-rc.23"
+#define PROJECT_REPO                    "https://github.com/Laxilef/OTGateway"
 
-#define MQTT_RECONNECT_INTERVAL     15000
+#define MQTT_RECONNECT_INTERVAL         15000
 
-#define EXT_SENSORS_INTERVAL        5000
-#define EXT_SENSORS_FILTER_K        0.15
+#define EXT_SENSORS_INTERVAL            5000
+#define EXT_SENSORS_FILTER_K            0.15
 
-#define CONFIG_URL                  "http://%s/"
-#define SETTINGS_VALID_VALUE        "stvalid" // only 8 chars!
+#define CONFIG_URL                      "http://%s/"
+#define SETTINGS_VALID_VALUE            "stvalid" // only 8 chars!
+#define GPIO_IS_NOT_CONFIGURED          0xff
 
-#define GPIO_IS_NOT_CONFIGURED      0xff
-#define DEFAULT_HEATING_MIN_TEMP    20
-#define DEFAULT_HEATING_MAX_TEMP    90
-#define DEFAULT_DHW_MIN_TEMP        30
-#define DEFAULT_DHW_MAX_TEMP        60
+#define DEFAULT_HEATING_TARGET_TEMP     40
+#define DEFAULT_HEATING_MIN_TEMP        20
+#define DEFAULT_HEATING_MAX_TEMP        90
+
+#define DEFAULT_DHW_TARGET_TEMP         40
+#define DEFAULT_DHW_MIN_TEMP            30
+#define DEFAULT_DHW_MAX_TEMP            60
+
+#define THERMOSTAT_INDOOR_DEFAULT_TEMP  20
+#define THERMOSTAT_INDOOR_MIN_TEMP      5
+#define THERMOSTAT_INDOOR_MAX_TEMP      30
 
 #ifndef USE_SERIAL
   #define USE_SERIAL true

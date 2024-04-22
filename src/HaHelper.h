@@ -6,107 +6,6 @@ public:
   static const byte TEMP_SOURCE_HEATING = 0;
   static const byte TEMP_SOURCE_INDOOR = 1;
 
-  bool publishSwitchEmergency(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("emergency"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("emergency"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Use emergency");
-    doc[FPSTR(HA_ICON)] = F("mdi:sun-snowflake-variant");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_STATE_ON)] = true;
-    doc[FPSTR(HA_STATE_OFF)] = false;
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.emergency.enable }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"emergency\": {\"enable\" : true}}");
-    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"emergency\": {\"enable\" : false}}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("emergency")).c_str(), doc);
-  }
-
-  bool publishNumberEmergencyTarget(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("emergency_target"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("emergency_target"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-
-    if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
-      doc[FPSTR(HA_MIN)] = 5;
-      doc[FPSTR(HA_MAX)] = 50;
-
-    } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
-      doc[FPSTR(HA_MIN)] = 41;
-      doc[FPSTR(HA_MAX)] = 122;
-    }
-    
-    doc[FPSTR(HA_NAME)] = F("Emergency target temp");
-    doc[FPSTR(HA_ICON)] = F("mdi:thermometer-alert");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.emergency.target|float(0)|round(1) }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"emergency\": {\"target\" : {{ value }}}}");
-    doc[FPSTR(HA_STEP)] = 0.5;
-    doc[FPSTR(HA_MODE)] = "box";
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("emergency_target")).c_str(), doc);
-  }
-
-  bool publishSwitchEmergencyUseEquitherm(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.outdoor.type != 1, 'online', 'offline') }}");
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("emergency_use_equitherm"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("emergency_use_equitherm"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Use equitherm in emergency");
-    doc[FPSTR(HA_ICON)] = F("mdi:snowflake-alert");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_STATE_ON)] = true;
-    doc[FPSTR(HA_STATE_OFF)] = false;
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.emergency.useEquitherm }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"emergency\": {\"useEquitherm\" : true}}");
-    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"emergency\": {\"useEquitherm\" : false}}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("emergency_use_equitherm")).c_str(), doc);
-  }
-
-  bool publishSwitchEmergencyUsePid(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.indoor.type != 1, 'online', 'offline') }}");
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("emergency_use_pid"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("emergency_use_pid"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Use PID in emergency");
-    doc[FPSTR(HA_ICON)] = F("mdi:snowflake-alert");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_STATE_ON)] = true;
-    doc[FPSTR(HA_STATE_OFF)] = false;
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.emergency.usePid }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"emergency\": {\"usePid\" : true}}");
-    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"emergency\": {\"usePid\" : false}}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("emergency_use_pid")).c_str(), doc);
-  }
-
-
   bool publishSwitchHeating(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
@@ -175,7 +74,7 @@ public:
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"target\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = minTemp;
     doc[FPSTR(HA_MAX)] = maxTemp;
-    doc[FPSTR(HA_STEP)] = 0.5;
+    doc[FPSTR(HA_STEP)] = 0.5f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -206,7 +105,7 @@ public:
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"hysteresis\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
     doc[FPSTR(HA_MAX)] = 5;
-    doc[FPSTR(HA_STEP)] = 0.1;
+    doc[FPSTR(HA_STEP)] = 0.1f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -234,7 +133,7 @@ public:
     doc[FPSTR(HA_NAME)] = F("Heating setpoint");
     doc[FPSTR(HA_ICON)] = F("mdi:coolant-temperature");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingSetpoint|int(0) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.parameters.heatingSetpoint|float(0)|round(1) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
@@ -433,7 +332,7 @@ public:
     doc[FPSTR(HA_NAME)] = F("DHW target");
     doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.target|int(0) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.target|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"target\" : {{ value|int(0) }}}}");
     doc[FPSTR(HA_MIN)] = minTemp;
@@ -605,9 +504,9 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.p_factor|float(0)|round(3) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"p_factor\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0.1;
+    doc[FPSTR(HA_MIN)] = 0.1f;
     doc[FPSTR(HA_MAX)] = 1000;
-    doc[FPSTR(HA_STEP)] = 0.1;
+    doc[FPSTR(HA_STEP)] = 0.1f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -628,7 +527,7 @@ public:
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"i_factor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
     doc[FPSTR(HA_MAX)] = 100;
-    doc[FPSTR(HA_STEP)] = 0.001;
+    doc[FPSTR(HA_STEP)] = 0.001f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -779,9 +678,9 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.n_factor|float(0)|round(3) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"n_factor\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0.001;
+    doc[FPSTR(HA_MIN)] = 0.001f;
     doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.001;
+    doc[FPSTR(HA_STEP)] = 0.001f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -802,7 +701,7 @@ public:
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"k_factor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
     doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.01;
+    doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -825,54 +724,12 @@ public:
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"t_factor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
     doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.01;
+    doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_t_factor")).c_str(), doc);
-  }
-
-
-  bool publishSwitchTuning(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("tuning"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("tuning"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Tuning");
-    doc[FPSTR(HA_ICON)] = F("mdi:tune-vertical");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_STATE_ON)] = true;
-    doc[FPSTR(HA_STATE_OFF)] = false;
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.tuning.enable }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
-    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"tuning\": {\"enable\" : true}}");
-    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"tuning\": {\"enable\" : false}}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("tuning")).c_str(), doc);
-  }
-
-  bool publishSelectTuningRegulator(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"tuning\": {\"regulator\": {% if value == 'Equitherm' %}0{% elif value == 'PID' %}1{% endif %}}}");
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("tuning_regulator"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("tuning_regulator"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_NAME)] = F("Tuning regulator");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{% if value_json.tuning.regulator == 0 %}Equitherm{% elif value_json.tuning.regulator == 1 %}PID{% endif %}");
-    doc[FPSTR(HA_OPTIONS)][0] = F("Equitherm");
-    doc[FPSTR(HA_OPTIONS)][1] = F("PID");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SELECT), F("tuning_regulator")).c_str(), doc);
   }
 
 
@@ -1184,7 +1041,7 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.indoor|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"temperatures\": {\"indoor\":{{ value }}}}");
-    doc[FPSTR(HA_STEP)] = 0.01;
+    doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -1243,7 +1100,7 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperatures.outdoor|float(0)|round(1) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"temperatures\": {\"outdoor\":{{ value }}}}");
-    doc[FPSTR(HA_STEP)] = 0.01;
+    doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
@@ -1452,7 +1309,7 @@ public:
 
     doc[FPSTR(HA_MIN_TEMP)] = minTemp;
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
-    doc[FPSTR(HA_TEMP_STEP)] = 0.5;
+    doc[FPSTR(HA_TEMP_STEP)] = 0.5f;
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
@@ -1475,7 +1332,7 @@ public:
     doc[FPSTR(HA_TEMPERATURE_COMMAND_TEMPLATE)] = F("{\"dhw\": {\"target\" : {{ value|int(0) }}}}");
 
     doc[FPSTR(HA_TEMPERATURE_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.dhw.target|int(0) }}");
+    doc[FPSTR(HA_TEMPERATURE_STATE_TEMPLATE)] = F("{{ value_json.dhw.target|float(0)|round(1) }}");
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";

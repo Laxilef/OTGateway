@@ -435,6 +435,13 @@
                 <input type="checkbox" id="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
                 Get min/max temp from boiler
               </label>
+              
+              <hr />
+              <label for="opentherm-native-heating-control">
+                <input type="checkbox" id="opentherm-native-heating-control" name="opentherm[nativeHeatingControl]" value="true">
+                Native heating control (boiler)<br />
+                <small>Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators and hysteresis in firmware.</small>
+              </label>
             </fieldset>
 
             <button type="submit">Save</button>
@@ -453,6 +460,11 @@
               <label for="mqtt-enable">
                 <input type="checkbox" id="mqtt-enable" name="mqtt[enable]" value="true">
                 Enable
+              </label>
+
+              <label for="mqtt-ha-discovery">
+                <input type="checkbox" id="mqtt-ha-discovery" name="mqtt[homeAssistantDiscovery]" value="true">
+                Home Assistant Discovery
               </label>
             </fieldset>
 
@@ -677,10 +689,12 @@
         setCheckboxValue('#opentherm-dhw-blocking', data.opentherm.dhwBlocking);
         setCheckboxValue('#opentherm-sync-modulation-with-heating', data.opentherm.modulationSyncWithHeating);
         setCheckboxValue('#opentherm-get-min-max-temp', data.opentherm.getMinMaxTemp);
+        setCheckboxValue('#opentherm-native-heating-control', data.opentherm.nativeHeatingControl);
         setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
 
         // MQTT
         setCheckboxValue('#mqtt-enable', data.mqtt.enable);
+        setCheckboxValue('#mqtt-ha-discovery', data.mqtt.homeAssistantDiscovery);
         setInputValue('#mqtt-server', data.mqtt.server);
         setInputValue('#mqtt-port', data.mqtt.port);
         setInputValue('#mqtt-user', data.mqtt.user);
