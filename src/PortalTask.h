@@ -512,6 +512,34 @@ protected:
       doc["system"]["maxFreeBlockHeap"] = getMaxFreeBlockHeap();
       doc["system"]["minMaxFreeBlockHeap"] = getMaxFreeBlockHeap(true);
       doc["system"]["resetReason"] = getResetReason();
+      
+      #ifdef ARDUINO_ARCH_ESP8266
+      doc["system"]["chipModel"] = esp_is_8285() ? "ESP8285" : "ESP8266";
+      doc["system"]["chipRevision"] = 0;
+      doc["system"]["chipCores"] = 1;
+      doc["system"]["cpuFreq"] = ESP.getCpuFreqMHz();
+      doc["system"]["coreVersion"] = ESP.getCoreVersion();
+      doc["system"]["flashSize"] = ESP.getFlashChipSize();
+      doc["system"]["flashRealSize"] = ESP.getFlashChipRealSize();
+      #elif ARDUINO_ARCH_ESP32
+      doc["system"]["chipModel"] = ESP.getChipModel();
+      doc["system"]["chipRevision"] = ESP.getChipRevision();
+      doc["system"]["chipCores"] = ESP.getChipCores();
+      doc["system"]["cpuFreq"] = ESP.getCpuFreqMHz();
+      doc["system"]["coreVersion"] = ESP.getSdkVersion();
+      doc["system"]["flashSize"] = ESP.getFlashChipSize();
+      doc["system"]["flashRealSize"] = doc["system"]["flashSize"];
+      #else
+      doc["system"]["chipModel"] = 0;
+      doc["system"]["chipRevision"] = 0;
+      doc["system"]["chipCores"] = 0;
+      doc["system"]["cpuFreq"] = 0;
+      doc["system"]["coreVersion"] = 0;
+      doc["system"]["flashSize"] = 0;
+      doc["system"]["flashRealSize"] = 0;
+      #endif
+
+
       doc.shrinkToFit();
 
       this->bufferedWebServer->send(200, "application/json", doc);

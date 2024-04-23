@@ -87,7 +87,7 @@
             <tbody>
               <tr>
                 <th scope="row">Version:</th>
-                <td><b id="version"></b></td>
+                <td><b id="version"></b>, core/sdk: <b id="core-version"></b></td>
               </tr>
               <tr>
                 <th scope="row">Build date:</th>
@@ -100,6 +100,10 @@
               <tr>
                 <th scope="row">Free memory:</th>
                 <td><b id="free-heap"></b> of <b id="total-heap"></b> bytes (min: <b id="min-free-heap"></b> bytes)<br />max free block: <b id="max-free-block-heap"></b> bytes (min: <b id="min-max-free-block-heap"></b> bytes)</td>
+              </tr>
+              <tr>
+                <th scope="row">Board:</th>
+                <td>Chip <b id="chip-model"></b> (rev. <span id="chip-revision"></span>)<br />Cores: <b id="chip-cores"></b>, frequency: <b id="cpu-freq"></b> mHz<br />Flash size: <b id="flash-size"></b> MB (real: <b id="flash-real-size"></b> MB)</td>
               </tr>
               <tr>
                 <th scope="row">Last reset reason:</th>
@@ -164,6 +168,15 @@
             setValue('#max-free-block-heap', result.system.maxFreeBlockHeap);
             setValue('#min-max-free-block-heap', result.system.minMaxFreeBlockHeap);
             setValue('#reset-reason', result.system.resetReason);
+            
+            setValue('#chip-model', result.system.chipModel);
+            setValue('#chip-revision', result.system.chipRevision);
+            setValue('#chip-cores', result.system.chipCores);
+            setValue('#cpu-freq', result.system.cpuFreq);
+            setValue('#core-version', result.system.coreVersion);
+            setValue('#flash-size', result.system.flashSize / 1024 / 1024);
+            setValue('#flash-real-size', result.system.flashRealSize / 1024 / 1024);
+
             setBusy('#system-busy', '#system-table', false);
 
           } catch (error) {
