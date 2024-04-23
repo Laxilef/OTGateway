@@ -144,7 +144,7 @@ protected:
       heatingEnabled,
       settings.opentherm.dhwPresent && settings.dhw.enable,
       false,
-      false,
+      settings.opentherm.nativeHeatingControl,
       heatingCh2Enabled,
       settings.opentherm.summerWinterMode,
       settings.opentherm.dhwBlocking
@@ -401,6 +401,13 @@ protected:
 
         } else {
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target indoor temp"));
+        }
+
+        // Set target temp to CH2
+        if (settings.opentherm.heatingCh1ToCh2) {
+          if (!this->instance->setRoomSetpointCh2(convertedTemp)) {
+            Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target indoor temp to CH2"));
+          }
         }
       }
 

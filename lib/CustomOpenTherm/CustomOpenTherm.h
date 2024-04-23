@@ -136,6 +136,16 @@ public:
     return isValidResponse(response);
   }
 
+  bool setRoomSetpointCh2(float temperature) {
+    unsigned long response = this->sendRequest(buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TrSetCH2,
+      temperatureToData(temperature)
+    ));
+
+    return isValidResponse(response);
+  }
+
   bool setRoomTemp(float temperature) {
     unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
