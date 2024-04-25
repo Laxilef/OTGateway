@@ -192,8 +192,15 @@ protected:
     }
 
     if (vars.states.emergency) {
-      etRegulator.Kt = 0;
-      etRegulator.indoorTemp = 0;
+      if (settings.sensors.indoor.type == SensorType::MANUAL) {
+        etRegulator.Kt = 0;
+        etRegulator.indoorTemp = 0;
+
+      } else {
+        etRegulator.Kt = settings.equitherm.t_factor;
+        etRegulator.indoorTemp = indoorTemp;
+      }
+      
       etRegulator.outdoorTemp = outdoorTemp;
 
     } else if (settings.pid.enable) {
