@@ -65,7 +65,7 @@ protected:
     bool indoorTempUpdated = false;
     bool outdoorTempUpdated = false;
 
-    if (settings.sensors.outdoor.type == SensorType::DS18B20 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
+    if (settings.sensors.outdoor.type == SensorType::DS18B20 && GPIO_IS_VALID(settings.sensors.outdoor.gpio)) {
       outdoorTemperatureSensor();
       outdoorTempUpdated = true;
     }
