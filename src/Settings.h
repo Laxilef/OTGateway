@@ -141,6 +141,30 @@ struct Settings {
     unsigned short antiStuckTime = 300;
   } externalPump;
 
+  struct {
+    byte gpio = DEFAULT_RELAY1_GPIO;
+    bool normal = false;
+    bool selfLocking = false;
+  } relay1;
+
+   struct {
+    byte gpio = DEFAULT_RELAY2_GPIO;
+    bool normal = false;
+    bool selfLocking = false;
+  } relay2;
+
+   struct {
+    byte gpio = DEFAULT_RELAY3_GPIO;
+    bool normal = false;
+    bool selfLocking = false;
+  } relay3;
+
+   struct {
+    byte gpio = DEFAULT_RELAY4_GPIO;
+    bool normal = false;
+    bool selfLocking = false;
+  } relay4;
+
   char validationValue[8] = SETTINGS_VALID_VALUE;
 } settings;
 
@@ -193,6 +217,10 @@ struct Variables {
     uint8_t masterType = 0;
     uint8_t masterVersion = 0;
     float masterOtVersion = 0;
+    unsigned long relay1LastTurnTime = 0;
+    unsigned long relay2LastTurnTime = 0;
+    unsigned long relay3LastTurnTime = 0;
+    unsigned long relay4LastTurnTime = 0;
   } parameters;
 
   struct {
@@ -200,4 +228,12 @@ struct Variables {
     bool resetFault = false;
     bool resetDiagnostic = false;
   } actions;
+
+  struct {
+    bool relay1 = false;
+    bool relay2 = false;
+    bool relay3 = false;
+    bool relay4 = false;
+  } relays;
+
 } vars;

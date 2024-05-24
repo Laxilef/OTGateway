@@ -602,7 +602,7 @@
       <hr />
 
       <details>
-        <summary><b>External pump settings</b></summary>
+        <summary><b>External pump setting</b></summary>
         <div>
           <div id="extpump-settings-busy" aria-busy="true"></div>
           <form action="/api/settings" id="extpump-settings" class="hidden">
@@ -636,6 +636,67 @@
                 <input type="number" inputmode="numeric" id="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
               </label>
             </div>
+
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      </details>
+
+      <hr />
+
+      <details>
+        <summary><b>Relays</b></summary>
+        <div>
+          <div id="relays-settings-busy" aria-busy="true"></div>
+          <form action="/api/settings" id="relays-settings" class="hidden">
+
+            <legend><strong>Relay #1</strong></legend>
+            <input type="number" inputmode="numeric" id="relays-gpio-1" name="relay1[gpio]" min="0" max="254" step="1" placeholder="GPIO">
+            <label for="relays-normal-1">
+              Default: OFF
+              <input type="checkbox" role="switch" id="relays-normal-1" name="relay1[normal]" value="true"/>
+              ON
+            </label>
+            <label for="relays-selflocking-1">
+              Self-locking:
+              <input type="checkbox" role="switch" id="relays-selflocking-1" name="relay1[selfLocking]" value="true"/>
+            </label>
+
+            <legend><strong>Relay #2</strong></legend>
+            <input type="number" inputmode="numeric" id="relays-gpio-2" name="relay2[gpio]" min="0" max="254" step="1" placeholder="GPIO">
+            <label for="relays-normal-2">
+              Default: OFF
+              <input type="checkbox" role="switch" id="relays-normal-2" name="relay2[normal]" value="true" />
+              ON
+            </label>
+            <label for="relays-selflocking-2">
+              Self-locking:
+              <input type="checkbox" role="switch" id="relays-selflocking-2" name="relay2[selfLocking]" value="true" />
+            </label>
+
+            <legend><strong>Relay #3</strong></legend>
+            <input type="number" inputmode="numeric" id="relays-gpio-3" name="relay3[gpio]" min="0" max="254" step="1" placeholder="GPIO">
+            <label for="relays-normal-3">
+              Default: OFF
+              <input type="checkbox" role="switch" id="relays-normal-3" name="relay3[normal]" value="true" />
+              ON
+            </label>
+            <label for="relays-selflocking-3">
+              Self-locking:
+              <input type="checkbox" role="switch" id="relays-selflocking-3" name="relay3[selfLocking]" value="true" />
+            </label>
+
+            <legend><strong>Relay #4</strong></legend>
+            <input type="number" inputmode="numeric" id="relays-gpio-4" name="relay4[gpio]" min="0" max="254" step="1" placeholder="GPIO">
+            <label for="relays-normal-4">
+              Default: OFF
+              <input type="checkbox" role="switch" id="relays-normal-4" name="relay4[normal]" value="true" />
+              ON
+            </label>
+            <label for="relays-selflocking-4">
+              Self-locking:
+              <input type="checkbox" role="switch" id="relays-selflocking-4" name="relay4[selfLocking]" value="true" />
+            </label>
 
             <button type="submit">Save</button>
           </form>
@@ -783,6 +844,25 @@
           "max": data.system.unitSystem == 0 ? 100 : 212
         });
         setBusy('#pid-settings-busy', '#pid-settings', false);
+
+        // Relays
+        try {
+          setInputValue('#relays-gpio-1', data.relay1.gpio < 255 ? data.relay1.gpio : '');
+          setInputValue('#relays-gpio-2', data.relay2.gpio < 255 ? data.relay2.gpio : '');
+          setInputValue('#relays-gpio-3', data.relay3.gpio < 255 ? data.relay3.gpio : '');
+          setInputValue('#relays-gpio-4', data.relay4.gpio < 255 ? data.relay4.gpio : '');
+          setCheckboxValue('#relays-normal-1', data.relay1.normal);
+          setCheckboxValue('#relays-normal-2', data.relay2.normal);
+          setCheckboxValue('#relays-normal-3', data.relay3.normal);
+          setCheckboxValue('#relays-normal-4', data.relay4.normal);
+          setCheckboxValue('#relays-selflocking-1', data.relay1.selfLocking);
+          setCheckboxValue('#relays-selflocking-2', data.relay2.selfLocking);
+          setCheckboxValue('#relays-selflocking-3', data.relay3.selfLocking);
+          setCheckboxValue('#relays-selflocking-4', data.relay4.selfLocking);
+          setBusy('#relays-settings-busy', '#relays-settings', false);
+        } catch (error) {
+          console.log(error);
+        }
       };
 
       try {
@@ -804,6 +884,7 @@
         setupForm('#mqtt-settings', fillData);
         setupForm('#outdoor-sensor-settings', fillData);
         setupForm('#indoor-sensor-settings', fillData);
+        setupForm('#relays-settings', fillData);
         setupForm('#extpump-settings', fillData);
 
       } catch (error) {

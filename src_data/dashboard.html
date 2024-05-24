@@ -168,6 +168,31 @@
 <b>Heating limits:</b>  <span id="heating-min-temp"></span>...<span id="heating-max-temp"></span> <span class="temp-unit"></span>
 <b>DHW limits:</b>      <span id="dhw-min-temp"></span>...<span id="dhw-max-temp"></span> <span class="temp-unit"></span></pre>
           </details>
+
+          <hr />
+
+          <details>
+            <summary><b>Relays</b></summary>
+            <div class="grid">
+              <div id="relay1-div">
+                <input type="checkbox" role="switch" id="relay1" value="true"/>
+                <label htmlFor="relay1">Relay #1</label>
+              </div>
+              <div id="relay2-div">
+                <input type="checkbox" role="switch" id="relay2" value="true"/>
+                <label htmlFor="relay2">Relay #2</label>
+              </div>
+              <div id="relay3-div">
+                <input type="checkbox" role="switch" id="relay3" value="true"/>
+                <label htmlFor="relay3">Relay #3</label>
+              </div>
+              <div id="relay4-div">
+                <input type="checkbox" role="switch" id="relay4" value="true"/>
+                <label htmlFor="relay4">Relay #4</label>
+              </div>
+            </div>
+          </details>
+
         </div>
       </article>
     </main>
@@ -186,8 +211,10 @@
     <script src="/static/app.js"></script>
     <script>
       let modifiedTime = null;
+      let modifiedTimeRelay = null;
       let noRegulators;
       let prevSettings;
+      let prevVars;
       let newSettings = {
         heating: {
           enable: false,
@@ -197,6 +224,14 @@
         dhw: {
           enable: false,
           target: 0
+        }
+      }
+      let newVars = {
+        relays: {
+          relay1: false,
+          relay2: false,
+          relay3: false,
+          relay4: false
         }
       };
 
@@ -290,14 +325,41 @@
           newSettings.dhw.enable = event.currentTarget.checked;
         });
 
+        document.querySelector('#relay1').addEventListener('change', (event) => {
+          modifiedTimeRelay = Date.now();
+          newVars.relays.relay1 = event.currentTarget.checked;
+        });
+
+        document.querySelector('#relay2').addEventListener('change', (event) => {
+          modifiedTimeRelay = Date.now();
+          newVars.relays.relay2 = event.currentTarget.checked;
+        });
+
+        document.querySelector('#relay3').addEventListener('change', (event) => {
+          modifiedTimeRelay = Date.now();
+          newVars.relays.relay3 = event.currentTarget.checked;
+        });
+
+        document.querySelector('#relay4').addEventListener('change', (event) => {
+          modifiedTimeRelay = Date.now();
+          newVars.relays.relay4 = event.currentTarget.checked;
+        });
+
         setTimeout(async function onLoadPage() {
           if (modifiedTime) {
             if ((Date.now() - modifiedTime) < 5000) {
               setTimeout(onLoadPage, 1000);
               return;
             }
-
             modifiedTime = null;
+          }
+
+          if (modifiedTimeRelay) {
+            if ((Date.now() - modifiedTimeRelay) < 500) {
+              setTimeout(onLoadPage, 250);
+              return;
+            }
+            modifiedTimeRelay = null;
           }
 
           // settings
@@ -351,13 +413,40 @@
             setValue('.pressure-unit', pressureUnit(result.system.unitSystem));
             setValue('.volume-unit', volumeUnit(result.system.unitSystem));
 
+            if (result.relay1.gpio == 0xff) {
+              hide('#relay1-div');
+            }
+            if (result.relay2.gpio == 0xff) {
+              hide('#relay2-div');
+            }
+            if (result.relay3.gpio == 0xff) {
+              hide('#relay3-div');
+            }
+            if (result.relay4.gpio == 0xff) {
+              hide('#relay4-div');
+            }
+            
           } catch (error) {
             console.log(error);
           }
 
           // vars
           try {
-            const response = await fetch('/api/vars', { cache: 'no-cache' });
+            let modified = prevVars && (
+              (prevVars.relays.relay1 != newVars.relays.relay1)
+              || (prevVars.relays.relay2 != newVars.relays.relay2)
+              || (prevVars.relays.relay3 != newVars.relays.relay3)
+              || (prevVars.relays.relay4 != newVars.relays.relay4)
+            );
+
+            let parameters = {cache: 'no-cache'};
+            if (modified) {
+              parameters.method = "POST";
+              parameters.body = JSON.stringify(newVars);
+            }
+            
+            const response = await fetch('/api/vars', parameters);
+
             if (!response.ok) {
               throw new Error('Response not valid');
             }
@@ -402,6 +491,17 @@
             setValue('#slave-version', result.parameters.slaveVersion);
             setValue('#slave-ot-version', result.parameters.slaveOtVersion);
             setBusy('#dashboard-busy', '#dashboard-container', false);
+
+            setCheckboxValue('#relay1', result.relays.relay1);
+            setCheckboxValue('#relay2', result.relays.relay2);
+            setCheckboxValue('#relay3', result.relays.relay3);
+            setCheckboxValue('#relay4', result.relays.relay4);
+
+            prevVars = result;
+            newVars.relays.relay1 = result.relays.relay1;
+            newVars.relays.relay2 = result.relays.relay2;
+            newVars.relays.relay3 = result.relays.relay3;
+            newVars.relays.relay4 = result.relays.relay4;
 
           } catch (error) {
             console.log(error);

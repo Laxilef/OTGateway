@@ -36,6 +36,7 @@ protected:
   unsigned long heatingDisabledTime = 0;
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
   unsigned long externalPumpStartTime = 0;
+  unsigned long relaysStartTime[4] = {0, 0, 0, 0};
   bool telnetStarted = false;
 
   const char* getTaskName() {
@@ -142,6 +143,7 @@ protected:
 
     this->ledStatus();
     this->externalPump();
+    this->relays();
     this->yield();
 
 
@@ -286,6 +288,104 @@ protected:
     }
 
     this->blinker->tick();
+  }
+
+  void relays() {
+
+    static unsigned int holdTime = 100;
+    
+    uint8_t gpio = settings.relay1.gpio;
+    if (GPIO_IS_VALID(gpio)) {
+      pinMode(gpio, OUTPUT);
+      if (vars.parameters.relay1LastTurnTime == 0) {
+        digitalWrite(gpio, settings.relay1.normal == true ? HIGH : LOW);
+        Log.sinfoln("RELAY1", F("set normal (%s)"), settings.relay1.normal == true ? "ON" : "OFF");
+        vars.relays.relay1 = settings.relay1.normal;
+        vars.parameters.relay1LastTurnTime = millis();
+      } else if (vars.relays.relay1 != (digitalRead(gpio) == HIGH ? true : false)) {
+        digitalWrite(gpio, vars.relays.relay1 == true ? HIGH : LOW);
+        Log.sinfoln("RELAY1", F("turn (%s)"), vars.relays.relay1 == true ? "ON" : "OFF");
+        vars.parameters.relay1LastTurnTime = millis();
+      }
+      if ((settings.relay1.selfLocking == false) && (vars.relays.relay1 != settings.relay1.normal)) {
+        if (millis() - vars.parameters.relay1LastTurnTime > holdTime) {
+          vars.parameters.relay1LastTurnTime = 0;
+        }
+      }
+    }
+
+    if ((settings.relay1.selfLocking == false) && (vars.relays.relay1 != settings.relay1.normal)) {
+      return;
+    }
+
+    gpio = settings.relay2.gpio;
+    if (GPIO_IS_VALID(gpio)) {
+      pinMode(gpio, OUTPUT);
+      if (vars.parameters.relay2LastTurnTime == 0) {
+        digitalWrite(gpio, settings.relay2.normal == true ? HIGH : LOW);
+        Log.sinfoln("RELAY2", F("set normal (%s)"), settings.relay2.normal == true ? "ON" : "OFF");
+        vars.relays.relay2 = settings.relay2.normal;
+        vars.parameters.relay2LastTurnTime = millis();
+      } else if (vars.relays.relay2 != (digitalRead(gpio) == HIGH ? true : false)) {
+        digitalWrite(gpio, vars.relays.relay2 == true ? HIGH : LOW);
+        Log.sinfoln("RELAY2", F("turn (%s)"), vars.relays.relay2 == true ? "ON" : "OFF");
+        vars.parameters.relay2LastTurnTime = millis();
+      }
+      if ((settings.relay2.selfLocking == false) && (vars.relays.relay2 != settings.relay2.normal)) {
+        if (millis() - vars.parameters.relay2LastTurnTime > holdTime) {
+          vars.parameters.relay2LastTurnTime = 0;
+        }
+      }
+    }
+
+    if ((settings.relay2.selfLocking == false) && (vars.relays.relay2 != settings.relay2.normal)) {
+      return;
+    }
+
+    gpio = settings.relay3.gpio;
+    if (GPIO_IS_VALID(gpio)) {
+      pinMode(gpio, OUTPUT);
+      if (vars.parameters.relay3LastTurnTime == 0) {
+        digitalWrite(gpio, settings.relay3.normal == true ? HIGH : LOW);
+        Log.sinfoln("RELAY3", F("set normal (%s)"), settings.relay3.normal == true ? "ON" : "OFF");
+        vars.relays.relay3 = settings.relay3.normal;
+        vars.parameters.relay3LastTurnTime = millis();
+      } else if (vars.relays.relay3 != (digitalRead(gpio) == HIGH ? true : false)) {
+        digitalWrite(gpio, vars.relays.relay3 == true ? HIGH : LOW);
+        Log.sinfoln("RELAY3", F("turn (%s)"), vars.relays.relay3 == true ? "ON" : "OFF");
+        vars.parameters.relay3LastTurnTime = millis();
+      }
+      if ((settings.relay3.selfLocking == false) && (vars.relays.relay3 != settings.relay3.normal)) {
+        if (millis() - vars.parameters.relay3LastTurnTime > holdTime) {
+          vars.parameters.relay3LastTurnTime = 0;
+        }
+      }
+    }
+
+    if ((settings.relay3.selfLocking == false) && (vars.relays.relay3 != settings.relay3.normal)) {
+      return;
+    }
+
+    gpio = settings.relay4.gpio;
+    if (GPIO_IS_VALID(gpio)) {
+      pinMode(gpio, OUTPUT);
+      if (vars.parameters.relay4LastTurnTime == 0) {
+        digitalWrite(gpio, settings.relay4.normal == true ? HIGH : LOW);
+        Log.sinfoln("RELAY4", F("set normal (%s)"), settings.relay4.normal == true ? "ON" : "OFF");
+        vars.relays.relay4 = settings.relay4.normal;
+        vars.parameters.relay4LastTurnTime = millis();
+      } else if (vars.relays.relay4 != (digitalRead(gpio) == HIGH ? true : false)) {
+        digitalWrite(gpio, vars.relays.relay4 == true ? HIGH : LOW);
+        Log.sinfoln("RELAY4", F("turn (%s)"), vars.relays.relay4 == true ? "ON" : "OFF");
+        vars.parameters.relay4LastTurnTime = millis();
+      }
+      if ((settings.relay4.selfLocking == false) && (vars.relays.relay4 != settings.relay4.normal)) {
+        if (millis() - vars.parameters.relay4LastTurnTime > holdTime) {
+          vars.parameters.relay4LastTurnTime = 0;
+        }
+      }
+    }
+
   }
 
   void externalPump() {

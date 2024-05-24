@@ -6,6 +6,90 @@ public:
   static const byte TEMP_SOURCE_HEATING = 0;
   static const byte TEMP_SOURCE_INDOOR = 1;
 
+  bool publishRelay1(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("relay1"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("relay1"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_NAME)] = F("Relay #1");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_STATE_ON)] = true;
+    doc[FPSTR(HA_STATE_OFF)] = false;
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.relays.relay1 }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"relays\": {\"relay1\" : true}}");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"relays\": {\"relay1\" : false}}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("relay1")).c_str(), doc);
+  }
+
+  bool publishRelay2(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("relay2"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("relay2"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_NAME)] = F("Relay #2");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_STATE_ON)] = true;
+    doc[FPSTR(HA_STATE_OFF)] = false;
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.relays.relay2 }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"relays\": {\"relay2\" : true}}");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"relays\": {\"relay2\" : false}}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("relay2")).c_str(), doc);
+  }
+
+  bool publishRelay3(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("relay3"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("relay3"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_NAME)] = F("Relay #3");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_STATE_ON)] = true;
+    doc[FPSTR(HA_STATE_OFF)] = false;
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.relays.relay3 }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"relays\": {\"relay3\" : true}}");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"relays\": {\"relay3\" : false}}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("relay3")).c_str(), doc);
+  }
+
+  bool publishRelay4(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("relay4"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("relay4"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_NAME)] = F("Relay #4");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_STATE_ON)] = true;
+    doc[FPSTR(HA_STATE_OFF)] = false;
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.relays.relay4 }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("state/set"));
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"relays\": {\"relay4\" : true}}");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"relays\": {\"relay4\" : false}}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("relay4")).c_str(), doc);
+  }
+
   bool publishSwitchHeating(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));

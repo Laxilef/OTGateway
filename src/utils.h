@@ -418,6 +418,19 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dst["sensors"]["indoor"]["bleAddresss"] = String(bleAddress);
   dst["sensors"]["indoor"]["offset"] = roundd(src.sensors.indoor.offset, 2);
 
+  dst["relay1"]["gpio"] = src.relay1.gpio;
+  dst["relay1"]["normal"] = src.relay1.normal;
+  dst["relay1"]["selfLocking"] = src.relay1.selfLocking;
+  dst["relay2"]["gpio"] = src.relay2.gpio;
+  dst["relay2"]["normal"] = src.relay2.normal;
+  dst["relay2"]["selfLocking"] = src.relay2.selfLocking;
+  dst["relay3"]["gpio"] = src.relay3.gpio;
+  dst["relay3"]["normal"] = src.relay3.normal;
+  dst["relay3"]["selfLocking"] = src.relay3.selfLocking;
+  dst["relay4"]["gpio"] = src.relay4.gpio;
+  dst["relay4"]["normal"] = src.relay4.normal;
+  dst["relay4"]["selfLocking"] = src.relay4.selfLocking;
+
   if (!safe) {
     dst["externalPump"]["use"] = src.externalPump.use;
     dst["externalPump"]["gpio"] = src.externalPump.gpio;
@@ -1310,6 +1323,139 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
+  // relays
+  if (!src["relay1"]["gpio"].isNull()) {
+    if (src["relay1"]["gpio"].is<JsonString>() && src["relay1"]["gpio"].as<JsonString>().size() == 0) {
+      if (dst.relay1.gpio != GPIO_IS_NOT_CONFIGURED) {
+        dst.relay1.gpio = GPIO_IS_NOT_CONFIGURED;
+        changed = true;
+      }
+      
+    } else {
+      unsigned char value = src["relay1"]["gpio"].as<unsigned char>();
+
+      if (GPIO_IS_VALID(value) && value != dst.relay1.gpio) {
+        dst.relay1.gpio = value;
+        changed = true;
+      }
+    }
+  }
+  if (src["relay1"]["normal"].is<bool>()) {
+    bool value = src["relay1"]["normal"].as<bool>();
+
+    if (value != dst.relay1.normal) {
+      dst.relay1.normal = value;
+      changed = true;
+    }
+  }
+  if (src["relay1"]["selfLocking"].is<bool>()) {
+    bool value = src["relay1"]["selfLocking"].as<bool>();
+
+    if (value != dst.relay1.selfLocking) {
+      dst.relay1.selfLocking = value;
+      changed = true;
+    }
+  }
+
+  if (!src["relay2"]["gpio"].isNull()) {
+    if (src["relay2"]["gpio"].is<JsonString>() && src["relay2"]["gpio"].as<JsonString>().size() == 0) {
+      if (dst.relay2.gpio != GPIO_IS_NOT_CONFIGURED) {
+        dst.relay2.gpio = GPIO_IS_NOT_CONFIGURED;
+        changed = true;
+      }
+      
+    } else {
+      unsigned char value = src["relay2"]["gpio"].as<unsigned char>();
+
+      if (GPIO_IS_VALID(value) && value != dst.relay2.gpio) {
+        dst.relay2.gpio = value;
+        changed = true;
+      }
+    }
+  }
+  if (src["relay2"]["normal"].is<bool>()) {
+    bool value = src["relay2"]["normal"].as<bool>();
+
+    if (value != dst.relay2.normal) {
+      dst.relay2.normal = value;
+      changed = true;
+    }
+  }
+  if (src["relay2"]["selfLocking"].is<bool>()) {
+    bool value = src["relay2"]["selfLocking"].as<bool>();
+
+    if (value != dst.relay2.selfLocking) {
+      dst.relay2.selfLocking = value;
+      changed = true;
+    }
+  }
+
+  if (!src["relay3"]["gpio"].isNull()) {
+    if (src["relay3"]["gpio"].is<JsonString>() && src["relay3"]["gpio"].as<JsonString>().size() == 0) {
+      if (dst.relay3.gpio != GPIO_IS_NOT_CONFIGURED) {
+        dst.relay3.gpio = GPIO_IS_NOT_CONFIGURED;
+        changed = true;
+      }
+      
+    } else {
+      unsigned char value = src["relay3"]["gpio"].as<unsigned char>();
+
+      if (GPIO_IS_VALID(value) && value != dst.relay3.gpio) {
+        dst.relay3.gpio = value;
+        changed = true;
+      }
+    }
+  }
+  if (src["relay3"]["normal"].is<bool>()) {
+    bool value = src["relay3"]["normal"].as<bool>();
+
+    if (value != dst.relay3.normal) {
+      dst.relay3.normal = value;
+      changed = true;
+    }
+  }
+  if (src["relay3"]["selfLocking"].is<bool>()) {
+    bool value = src["relay3"]["selfLocking"].as<bool>();
+
+    if (value != dst.relay3.selfLocking) {
+      dst.relay3.selfLocking = value;
+      changed = true;
+    }
+  }
+
+  if (!src["relay4"]["gpio"].isNull()) {
+    if (src["relay4"]["gpio"].is<JsonString>() && src["relay4"]["gpio"].as<JsonString>().size() == 0) {
+      if (dst.relay4.gpio != GPIO_IS_NOT_CONFIGURED) {
+        dst.relay4.gpio = GPIO_IS_NOT_CONFIGURED;
+        changed = true;
+      }
+      
+    } else {
+      unsigned char value = src["relay4"]["gpio"].as<unsigned char>();
+
+      if (GPIO_IS_VALID(value) && value != dst.relay4.gpio) {
+        dst.relay4.gpio = value;
+        changed = true;
+      }
+    }
+  }
+  if (src["relay4"]["normal"].is<bool>()) {
+    bool value = src["relay4"]["normal"].as<bool>();
+
+    if (value != dst.relay4.normal) {
+      dst.relay4.normal = value;
+      changed = true;
+    }
+  }
+  if (src["relay4"]["selfLocking"].is<bool>()) {
+    bool value = src["relay4"]["selfLocking"].as<bool>();
+
+    if (value != dst.relay4.selfLocking) {
+      dst.relay4.selfLocking = value;
+      changed = true;
+    }
+  }
+
   // force check emergency target
   {
     float value = !src["emergency"]["target"].isNull() ? src["emergency"]["target"].as<float>() : dst.emergency.target;
@@ -1427,6 +1573,11 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["parameters"]["slaveType"] = src.parameters.slaveType;
   dst["parameters"]["slaveVersion"] = src.parameters.slaveVersion;
   dst["parameters"]["slaveOtVersion"] = src.parameters.slaveOtVersion;
+
+  dst["relays"]["relay1"] = src.relays.relay1;
+  dst["relays"]["relay2"] = src.relays.relay2;
+  dst["relays"]["relay3"] = src.relays.relay3;
+  dst["relays"]["relay4"] = src.relays.relay4;
 }
 
 bool jsonToVars(const JsonVariantConst src, Variables& dst) {
@@ -1466,6 +1617,36 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
 
   if (src["actions"]["resetDiagnostic"].is<bool>() && src["actions"]["resetDiagnostic"].as<bool>()) {
     dst.actions.resetDiagnostic = true;
+  }
+
+  // relays
+  if (src["relays"]["relay1"].is<bool>()) {
+    bool value = src["relays"]["relay1"].as<bool>();
+    if (value != dst.relays.relay1) {
+      dst.relays.relay1 = value;
+      changed = true;
+    }
+  }
+  if (src["relays"]["relay2"].is<bool>()) {
+    bool value = src["relays"]["relay2"].as<bool>();
+    if (value != dst.relays.relay2) {
+      dst.relays.relay2 = value;
+      changed = true;
+    }
+  }
+  if (src["relays"]["relay3"].is<bool>()) {
+    bool value = src["relays"]["relay3"].as<bool>();
+    if (value != dst.relays.relay3) {
+      dst.relays.relay3 = value;
+      changed = true;
+    }
+  }
+  if (src["relays"]["relay4"].is<bool>()) {
+    bool value = src["relays"]["relay4"].as<bool>();
+    if (value != dst.relays.relay4) {
+      dst.relays.relay4 = value;
+      changed = true;
+    }
   }
 
   return changed;

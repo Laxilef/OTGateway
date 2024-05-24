@@ -329,6 +329,20 @@ protected:
   }
 
   void publishHaEntities() {
+    // relays
+    if (settings.relay1.gpio != 0xff) {
+      this->haHelper->publishRelay1();
+    }
+    if (settings.relay2.gpio != 0xff) {
+      this->haHelper->publishRelay2();
+    }
+    if (settings.relay3.gpio != 0xff) {
+      this->haHelper->publishRelay3();
+    }
+    if (settings.relay4.gpio != 0xff) {
+      this->haHelper->publishRelay4();
+    }
+
     // heating
     this->haHelper->publishSwitchHeating(false);
     this->haHelper->publishSwitchHeatingTurbo();
