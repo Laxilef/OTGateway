@@ -51,6 +51,8 @@ struct Settings {
     byte inGpio = DEFAULT_OT_IN_GPIO;
     byte outGpio = DEFAULT_OT_OUT_GPIO;
     byte rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
+    byte faultStateGpio = DEFAULT_OT_FAULT_STATE_GPIO;
+    byte invertFaultState = false;
     unsigned int memberIdCode = 0;
     bool dhwPresent = true;
     bool summerWinterMode = false;

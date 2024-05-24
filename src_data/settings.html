@@ -435,6 +435,20 @@
                 <input type="checkbox" id="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
                 Get min/max temp from boiler
               </label>
+
+              <hr />
+              <fieldset>
+                <label for="opentherm-fault-state-gpio">
+                  Fault state GPIO
+                  <input type="number" inputmode="numeric" id="opentherm-fault-state-gpio" name="opentherm[faultStateGpio]" min="0" max="254" step="1">
+                  <small>Can be useful to switch on another boiler <u>via relay</u>. Blank - not use.</small>
+                </label>
+  
+                <label for="opentherm-invert-fault-state">
+                  <input type="checkbox" id="opentherm-invert-fault-state" name="opentherm[invertFaultState]" value="true">
+                  Invert fault state
+                </label>
+              </fieldset>
               
               <hr />
               <label for="opentherm-native-heating-control">
@@ -680,6 +694,8 @@
         setInputValue('#opentherm-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
         setInputValue('#opentherm-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
         setInputValue('#opentherm-rx-led-gpio', data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
+        setInputValue('#opentherm-fault-state-gpio', data.opentherm.faultStateGpio < 255 ? data.opentherm.faultStateGpio : '');
+        setCheckboxValue('#opentherm-invert-fault-state', data.opentherm.invertFaultState);
         setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
         setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
         setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);

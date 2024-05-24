@@ -342,6 +342,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["inGpio"] = src.opentherm.inGpio;
     dst["opentherm"]["outGpio"] = src.opentherm.outGpio;
     dst["opentherm"]["rxLedGpio"] = src.opentherm.rxLedGpio;
+    dst["opentherm"]["faultStateGpio"] = src.opentherm.faultStateGpio;
+    dst["opentherm"]["invertFaultState"] = src.opentherm.invertFaultState;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
     dst["opentherm"]["dhwPresent"] = src.opentherm.dhwPresent;
     dst["opentherm"]["summerWinterMode"] = src.opentherm.summerWinterMode;
@@ -642,6 +644,32 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
+    if (!src["opentherm"]["faultStateGpio"].isNull()) {
+      if (src["opentherm"]["faultStateGpio"].is<JsonString>() && src["opentherm"]["faultStateGpio"].as<JsonString>().size() == 0) {
+        if (dst.opentherm.faultStateGpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.opentherm.faultStateGpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["opentherm"]["faultStateGpio"].as<unsigned char>();
+
+        if (GPIO_IS_VALID(value) && value != dst.opentherm.faultStateGpio) {
+          dst.opentherm.faultStateGpio = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (src["opentherm"]["invertFaultState"].is<bool>()) {
+      bool value = src["opentherm"]["invertFaultState"].as<bool>();
+
+      if (value != dst.opentherm.invertFaultState) {
+        dst.opentherm.invertFaultState = value;
+        changed = true;
+      }
+    }
+
     if (!src["opentherm"]["memberIdCode"].isNull()) {
       unsigned int value = src["opentherm"]["memberIdCode"].as<unsigned int>();
 
@@ -652,8 +680,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
 
     if (src["opentherm"]["dhwPresent"].is<bool>()) {
-      dst.opentherm.dhwPresent = src["opentherm"]["dhwPresent"].as<bool>();
-      changed = true;
+      bool value = src["opentherm"]["dhwPresent"].as<bool>();
+
+      if (value != dst.opentherm.dhwPresent) {
+        dst.opentherm.dhwPresent = value;
+        changed = true;
+      }
     }
 
     if (src["opentherm"]["summerWinterMode"].is<bool>()) {
