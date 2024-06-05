@@ -7,35 +7,35 @@
 #endif
 #include <NetworkConnection.h>
 
-namespace Network {
-  class Manager {
+namespace NetworkUtils {
+  class NetworkMgr {
   public:
     typedef std::function<void()> YieldCallback;
     typedef std::function<void(unsigned int)> DelayCallback;
 
-    Manager() {
-      Connection::setup(this->useDhcp);
+    NetworkMgr() {
+      NetworkConnection::setup(this->useDhcp);
       this->resetWifi();
     }
 
-    Manager* setYieldCallback(YieldCallback callback = nullptr) {
+    NetworkMgr* setYieldCallback(YieldCallback callback = nullptr) {
       this->yieldCallback = callback;
 
       return this;
     }
 
-    Manager* setDelayCallback(DelayCallback callback = nullptr) {
+    NetworkMgr* setDelayCallback(DelayCallback callback = nullptr) {
       this->delayCallback = callback;
 
       return this;
     }
 
-    Manager* setHostname(const char* value) {
+    NetworkMgr* setHostname(const char* value) {
       this->hostname = value;
       return this;
     }
 
-    Manager* setApCredentials(const char* ssid, const char* password = nullptr, byte channel = 0) {
+    NetworkMgr* setApCredentials(const char* ssid, const char* password = nullptr, byte channel = 0) {
       this->apName = ssid;
       this->apPassword = password;
       this->apChannel = channel;
@@ -43,7 +43,7 @@ namespace Network {
       return this;
     }
 
-    Manager* setStaCredentials(const char* ssid = nullptr, const char* password = nullptr, byte channel = 0) {
+    NetworkMgr* setStaCredentials(const char* ssid = nullptr, const char* password = nullptr, byte channel = 0) {
       this->staSsid = ssid;
       this->staPassword = password;
       this->staChannel = channel;
@@ -51,14 +51,14 @@ namespace Network {
       return this;
     }
 
-    Manager* setUseDhcp(bool value) {
+    NetworkMgr* setUseDhcp(bool value) {
       this->useDhcp = value;
-      Connection::setup(this->useDhcp);
+      NetworkConnection::setup(this->useDhcp);
 
       return this;
     }
 
-    Manager* setStaticConfig(const char* ip, const char* gateway, const char* subnet, const char* dns) {
+    NetworkMgr* setStaticConfig(const char* ip, const char* gateway, const char* subnet, const char* dns) {
       this->staticIp.fromString(ip);
       this->staticGateway.fromString(gateway);
       this->staticSubnet.fromString(subnet);
@@ -67,7 +67,7 @@ namespace Network {
       return this;
     }
 
-    Manager* setStaticConfig(IPAddress& ip, IPAddress& gateway, IPAddress& subnet, IPAddress& dns) {
+    NetworkMgr* setStaticConfig(IPAddress& ip, IPAddress& gateway, IPAddress& subnet, IPAddress& dns) {
       this->staticIp = ip;
       this->staticGateway = gateway;
       this->staticSubnet = subnet;
@@ -81,11 +81,11 @@ namespace Network {
     }
 
     bool isConnected() {
-      return this->isStaEnabled() && Connection::getStatus() == Connection::Status::CONNECTED;
+      return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED;
     }
 
     bool isConnecting() {
-      return this->isStaEnabled() && Connection::getStatus() == Connection::Status::CONNECTING;
+      return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTING;
     }
 
     bool isStaEnabled() {
@@ -156,7 +156,9 @@ namespace Network {
       }
 
       WiFi.persistent(false);
+      #if !defined(ESP_ARDUINO_VERSION_MAJOR) || ESP_ARDUINO_VERSION_MAJOR < 3
       WiFi.setAutoConnect(false);
+      #endif
       WiFi.setAutoReconnect(false);
 
       #ifdef ARDUINO_ARCH_ESP8266
@@ -253,9 +255,9 @@ namespace Network {
       while (millis() - beginConnectionTime < timeout) {
         this->delayCallback(100);
 
-        Connection::Status status = Connection::getStatus();
-        if (status != Connection::Status::CONNECTING && status != Connection::Status::NONE) {
-          return status == Connection::Status::CONNECTED;
+        NetworkConnection::Status status = NetworkConnection::getStatus();
+        if (status != NetworkConnection::Status::CONNECTING && status != NetworkConnection::Status::NONE) {
+          return status == NetworkConnection::Status::CONNECTED;
         }
       }
 
@@ -266,7 +268,7 @@ namespace Network {
       if (this->isConnected() && !this->hasStaCredentials()) {
         Log.sinfoln(FPSTR(L_NETWORK), F("Reset"));
         this->resetWifi();
-        Connection::reset();
+        NetworkConnection::reset();
         this->delayCallback(200);
 
       } else if (this->isConnected() && !this->reconnectFlag) {
@@ -305,7 +307,7 @@ namespace Network {
           Log.sinfoln(
             FPSTR(L_NETWORK),
             F("Disconnected, reason: %d, uptime: %lu s."),
-            Connection::getDisconnectReason(),
+            NetworkConnection::getDisconnectReason(),
             (millis() - this->connectedTime) / 1000
           );
         }
@@ -327,16 +329,16 @@ namespace Network {
         } else if (this->isConnecting() && millis() - this->prevReconnectingTime > this->resetConnectionTimeout) {
           Log.swarningln(FPSTR(L_NETWORK), F("Connection timeout, reset wifi..."));
           this->resetWifi();
-          Connection::reset();
+          NetworkConnection::reset();
           this->delayCallback(200);
 
         } else if (!this->isConnecting() && this->hasStaCredentials() && (!this->prevReconnectingTime || millis() - this->prevReconnectingTime > this->reconnectInterval)) {
           Log.sinfoln(FPSTR(L_NETWORK), F("Try connect..."));
 
           this->reconnectFlag = false;
-          Connection::reset();
+          NetworkConnection::reset();
           if (!this->connect(true, this->connectionTimeout)) {
-            Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d"), Connection::getStatus(), Connection::getDisconnectReason());
+            Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d"), NetworkConnection::getStatus(), NetworkConnection::getDisconnectReason());
           }
 
           this->prevReconnectingTime = millis();

@@ -5,8 +5,8 @@
   #include <WiFi.h>
 #endif
 
-namespace Network {
-  struct Connection {
+namespace NetworkUtils {
+  struct NetworkConnection {
     enum class Status {
       CONNECTED,
       CONNECTING,

@@ -4,11 +4,11 @@
 #include <ArduinoJson.h>
 #include <FileData.h>
 #include <LittleFS.h>
-#include "ESPTelnetStream.h"
+#include <ESPTelnetStream.h>
 #include <TinyLogger.h>
-#include <NetworkManager.h>
+#include <NetworkMgr.h>
 #include "Settings.h"
-#include <utils.h>
+#include "utils.h"
 
 #if defined(ARDUINO_ARCH_ESP32)
   #include <ESP32Scheduler.h>
@@ -27,11 +27,13 @@
 #include "PortalTask.h"
 #include "MainTask.h"
 
+using namespace NetworkUtils;
+
 // Vars
 FileData fsNetworkSettings(&LittleFS, "/network.conf", 'n', &networkSettings, sizeof(networkSettings), 1000);
 FileData fsSettings(&LittleFS, "/settings.conf", 's', &settings, sizeof(settings), 60000);
 ESPTelnetStream* telnetStream = nullptr;
-Network::Manager* network = nullptr;
+NetworkMgr* network = nullptr;
 
 // Tasks
 MqttTask* tMqtt;
@@ -130,7 +132,7 @@ void setup() {
   Log.setLevel(settings.system.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
 
   // network
-  network = (new Network::Manager)
+  network = (new NetworkMgr)
     ->setHostname(networkSettings.hostname)
     ->setStaCredentials(
     #ifdef WOKWI

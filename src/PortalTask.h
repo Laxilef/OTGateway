@@ -14,7 +14,9 @@ using WebServer = ESP8266WebServer;
 #include <UpgradeHandler.h>
 #include <DNSServer.h>
 
-extern Network::Manager* network;
+using namespace NetworkUtils;
+
+extern NetworkMgr* network;
 extern FileData fsSettings, fsNetworkSettings;
 extern MqttTask* tMqtt;
 
@@ -359,7 +361,7 @@ protected:
       for (short int i = 0; i < apCount; i++) {
         String ssid = WiFi.SSID(i);
         doc[i]["ssid"] = ssid;
-        doc[i]["signalQuality"] = Network::Manager::rssiToSignalQuality(WiFi.RSSI(i));
+        doc[i]["signalQuality"] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
         doc[i]["channel"] = WiFi.channel(i);
         doc[i]["hidden"] = !ssid.length();
         doc[i]["encryptionType"] = WiFi.encryptionType(i);
@@ -496,7 +498,7 @@ protected:
       doc["network"]["mac"] = network->getStaMac();
       doc["network"]["connected"] = isConnected;
       doc["network"]["ssid"] = network->getStaSsid();
-      doc["network"]["signalQuality"] = isConnected ? Network::Manager::rssiToSignalQuality(network->getRssi()) : 0;
+      doc["network"]["signalQuality"] = isConnected ? NetworkMgr::rssiToSignalQuality(network->getRssi()) : 0;
       doc["network"]["channel"] = isConnected ? network->getStaChannel() : 0;
       doc["network"]["ip"] = isConnected ? network->getStaIp().toString() : "";
       doc["network"]["subnet"] = isConnected ? network->getStaSubnet().toString() : "";

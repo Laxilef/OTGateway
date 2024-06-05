@@ -1,6 +1,8 @@
 #include <Blinker.h>
 
-extern Network::Manager* network;
+using namespace NetworkUtils;
+
+extern NetworkMgr* network;
 extern MqttTask* tMqtt;
 extern OpenThermTask* tOt;
 extern FileData fsSettings, fsNetworkSettings;
