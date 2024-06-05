@@ -139,7 +139,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
         row.classList.add("network");
         row.setAttribute('data-ssid', result[i].hidden ? '' : result[i].ssid);
         row.onclick = function () {
-          const input = document.querySelector('input.sta-ssid');
+          const input = document.querySelector('input#sta-ssid');
           const ssid = this.getAttribute('data-ssid');
           if (!input || !ssid) {
             return;
