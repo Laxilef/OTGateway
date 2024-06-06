@@ -123,7 +123,9 @@
   #define PROGMEM 
 #endif
 
-#ifndef GPIO_IS_VALID_GPIO
+#ifdef ARDUINO_ARCH_ESP32
+  #include <driver/gpio.h>
+#elif !defined(GPIO_IS_VALID_GPIO)
   #define GPIO_IS_VALID_GPIO(gpioNum) (gpioNum >= 0 && gpioNum <= 16)
 #endif
 
