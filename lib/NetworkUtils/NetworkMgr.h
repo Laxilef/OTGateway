@@ -147,10 +147,11 @@ namespace NetworkUtils {
     bool resetWifi() {
       // set policy manual for work 13 ch
       {
-        wifi_country_t country = {"CN", 1, 13, WIFI_COUNTRY_POLICY_MANUAL};
         #ifdef ARDUINO_ARCH_ESP8266
+        wifi_country_t country = {"CN", 1, 13, WIFI_COUNTRY_POLICY_AUTO};
         wifi_set_country(&country);
         #elif defined(ARDUINO_ARCH_ESP32)
+        const wifi_country_t country = {"CN", 1, 13, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_AUTO};
         esp_wifi_set_country(&country);
         #endif
       }

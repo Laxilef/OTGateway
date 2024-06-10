@@ -40,17 +40,19 @@ protected:
   unsigned long externalPumpStartTime = 0;
   bool telnetStarted = false;
 
-  const char* getTaskName() {
+  #if defined(ARDUINO_ARCH_ESP32)
+  const char* getTaskName() override {
     return "Main";
   }
 
-  /*int getTaskCore() {
+  /*BaseType_t getTaskCore() override {
     return 1;
   }*/
 
-  int getTaskPriority() {
+  int getTaskPriority() override {
     return 3;
   }
+  #endif
 
   void setup() {}
 

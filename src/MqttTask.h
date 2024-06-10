@@ -81,17 +81,19 @@ protected:
   bool connected = false;
   bool newConnection = false;
 
-  const char* getTaskName() {
+  #if defined(ARDUINO_ARCH_ESP32)
+  const char* getTaskName() override {
     return "Mqtt";
   }
   
-  /*int getTaskCore() {
+  /*BaseType_t getTaskCore() override {
     return 1;
   }*/
 
-  int getTaskPriority() {
+  int getTaskPriority() override {
     return 2;
   }
+  #endif
 
   inline bool isReadyForSend() {
     return millis() - this->connectedTime > this->readyForSendTime;

@@ -43,23 +43,30 @@ protected:
   float filteredIndoorTemp = 0;
   bool emptyIndoorTemp = true;
 
-#if USE_BLE
+  #if defined(ARDUINO_ARCH_ESP32)
+  #if USE_BLE
   BLEClient* pBleClient = nullptr;
   bool initBleSensor = false;
   bool initBleNotify = false;
-#endif
+  #endif
 
-  const char* getTaskName() {
+  const char* getTaskName() override {
     return "Sensors";
   }
 
-  /*int getTaskCore() {
-    return 1;
-  }*/
+  BaseType_t getTaskCore() override {
+    // https://github.com/h2zero/NimBLE-Arduino/issues/676
+    #if USE_BLE && defined(CONFIG_BT_NIMBLE_PINNED_TO_CORE)
+    return CONFIG_BT_NIMBLE_PINNED_TO_CORE;
+    #else
+    return tskNO_AFFINITY;
+    #endif
+  }
 
-  int getTaskPriority() {
+  int getTaskPriority() override {
     return 4;
   }
+  #endif
 
   void loop() {
     bool indoorTempUpdated = false;

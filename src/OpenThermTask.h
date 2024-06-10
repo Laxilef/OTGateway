@@ -33,18 +33,19 @@ protected:
   byte configuredFaultStateGpio = GPIO_IS_NOT_CONFIGURED;
   bool faultState = false;
 
-
-  const char* getTaskName() {
+  #if defined(ARDUINO_ARCH_ESP32)
+  const char* getTaskName() override {
     return "OpenTherm";
   }
   
-  int getTaskCore() {
+  BaseType_t getTaskCore() override {
     return 1;
   }
 
-  int getTaskPriority() {
+  int getTaskPriority() override {
     return 5;
   }
+  #endif
 
   void setup() {
     if (settings.system.unitSystem != UnitSystem::METRIC) {

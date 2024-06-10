@@ -14,17 +14,19 @@ protected:
   float prevEtResult = 0;
   float prevPidResult = 0;
 
-  const char* getTaskName() {
+  #if defined(ARDUINO_ARCH_ESP32)
+  const char* getTaskName() override {
     return "Regulator";
   }
   
-  /*int getTaskCore() {
+  /*BaseType_t getTaskCore() override {
     return 1;
   }*/
 
-  int getTaskPriority() {
+  int getTaskPriority() override {
     return 4;
   }
+  #endif
   
   void loop() {
     float newTemp = vars.parameters.heatingSetpoint;
