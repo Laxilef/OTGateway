@@ -361,10 +361,16 @@ protected:
       for (short int i = 0; i < apCount; i++) {
         String ssid = WiFi.SSID(i);
         doc[i]["ssid"] = ssid;
+        doc[i]["bssid"] = WiFi.BSSIDstr(i);
         doc[i]["signalQuality"] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
         doc[i]["channel"] = WiFi.channel(i);
         doc[i]["hidden"] = !ssid.length();
-        doc[i]["encryptionType"] = WiFi.encryptionType(i);
+        #ifdef ARDUINO_ARCH_ESP8266
+        const bss_info* info = WiFi.getScanInfoByIndex(i);
+        doc[i]["auth"] = info->authmode;
+        #else
+        doc[i]["auth"] = WiFi.encryptionType(i);
+        #endif
       }
       doc.shrinkToFit();
 

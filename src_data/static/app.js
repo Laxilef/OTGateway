@@ -150,19 +150,56 @@ function setupNetworkScanForm(formSelector, tableSelector) {
         };
 
         row.insertCell().textContent = "#" + (i + 1);
-        row.insertCell().innerHTML = result[i].hidden ? '<i>Hidden</i>' : result[i].ssid;
+        row.insertCell().innerHTML = result[i].hidden ? ("<i>" + result[i].bssid + "</i>") : result[i].ssid;
 
-        const signalCell = row.insertCell();
-        const signalElement = document.createElement("kbd");
-        signalElement.textContent = result[i].signalQuality + "%";
-        if (result[i].signalQuality > 60) {
-          signalElement.classList.add('greatSignal');
+        // info cell
+        let infoCell = row.insertCell();
+
+        // signal quality
+        let signalQualityIcon = document.createElement("i");
+        if (result[i].signalQuality > 80) {
+          signalQualityIcon.classList.add('icons-wifi-strength-4');
+        } else if (result[i].signalQuality > 60) {
+          signalQualityIcon.classList.add('icons-wifi-strength-3');
         } else if (result[i].signalQuality > 40) {
-          signalElement.classList.add('normalSignal');
+          signalQualityIcon.classList.add('icons-wifi-strength-2');
+        } else if (result[i].signalQuality > 20) {
+          signalQualityIcon.classList.add('icons-wifi-strength-1');
         } else {
-          signalElement.classList.add('badSignal');
+          signalQualityIcon.classList.add('icons-wifi-strength-0');
         }
-        signalCell.appendChild(signalElement);
+        
+        let signalQualityContainer = document.createElement("span");
+        signalQualityContainer.setAttribute('data-tooltip', result[i].signalQuality + "%");
+        signalQualityContainer.appendChild(signalQualityIcon);
+        infoCell.appendChild(signalQualityContainer);
+
+        // auth
+        const authList = {
+          0: "Open",
+          1: "WEP",
+          2: "WPA",
+          3: "WPA2",
+          4: "WPA/WPA2",
+          5: "WPA/WPA2 Enterprise",
+          6: "WPA3",
+          7: "WPA2/WPA3",
+          8: "WAPI",
+          9: "OWE",
+          10: "WPA3 Enterprise"
+        };
+        let authIcon = document.createElement("i");
+
+        if (result[i].auth == 0) {
+          authIcon.classList.add('icons-unlocked');
+        } else {
+          authIcon.classList.add('icons-locked');
+        }
+
+        let authContainer = document.createElement("span");
+        authContainer.setAttribute('data-tooltip', (result[i].auth in authList) ? authList[result[i].auth] : "unknown");
+        authContainer.appendChild(authIcon);
+        infoCell.appendChild(authContainer);
       }
 
       if (button) {
