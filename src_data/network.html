@@ -167,6 +167,26 @@
   <script src="/static/app.js"></script>
   <script>
     window.onload = async function () {
+      const fillData = (data) => {
+        setInputValue('#network-hostname', data.hostname);
+        setCheckboxValue('#network-use-dhcp', data.useDhcp);
+        setInputValue('#network-static-ip', data.staticConfig.ip);
+        setInputValue('#network-static-gateway', data.staticConfig.gateway);
+        setInputValue('#network-static-subnet', data.staticConfig.subnet);
+        setInputValue('#network-static-dns', data.staticConfig.dns);
+        setBusy('#network-settings-busy', '#network-settings', false);
+
+        setInputValue('#sta-ssid', data.sta.ssid);
+        setInputValue('#sta-password', data.sta.password);
+        setInputValue('#sta-channel', data.sta.channel);
+        setBusy('#sta-settings-busy', '#sta-settings', false);
+
+        setInputValue('#ap-ssid', data.ap.ssid);
+        setInputValue('#ap-password', data.ap.password);
+        setInputValue('#ap-channel', data.ap.channel);
+        setBusy('#ap-settings-busy', '#ap-settings', false);
+      };
+
       try {
         const response = await fetch('/api/network/settings', { cache: 'no-cache' });
         if (!response.ok) {
@@ -174,32 +194,16 @@
         }
 
         const result = await response.json();
-        setInputValue('#network-hostname', result.hostname);
-        setCheckboxValue('#network-use-dhcp', result.useDhcp);
-        setInputValue('#network-static-ip', result.staticConfig.ip);
-        setInputValue('#network-static-gateway', result.staticConfig.gateway);
-        setInputValue('#network-static-subnet', result.staticConfig.subnet);
-        setInputValue('#network-static-dns', result.staticConfig.dns);
-        setBusy('#network-settings-busy', '#network-settings', false);
+        fillData(result);
 
-        setInputValue('#sta-ssid', result.sta.ssid);
-        setInputValue('#sta-password', result.sta.password);
-        setInputValue('#sta-channel', result.sta.channel);
-        setBusy('#sta-settings-busy', '#sta-settings', false);
-
-        setInputValue('#ap-ssid', result.ap.ssid);
-        setInputValue('#ap-password', result.ap.password);
-        setInputValue('#ap-channel', result.ap.channel);
-        setBusy('#ap-settings-busy', '#ap-settings', false);
+        setupForm('#network-settings', fillData, ['hostname']);
+        setupNetworkScanForm('#network-scan', '#networks');
+        setupForm('#sta-settings', fillData, ['sta.ssid', 'sta.password']);
+        setupForm('#ap-settings', fillData, ['ap.ssid', 'ap.password']);
 
       } catch (error) {
         console.log(error);
       }
-
-      setupForm('#network-settings');
-      setupNetworkScanForm('#network-scan', '#networks');
-      setupForm('#sta-settings');
-      setupForm('#ap-settings');
     };
   </script>
 </body>

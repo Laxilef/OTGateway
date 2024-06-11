@@ -809,7 +809,8 @@
 
         const result = await response.json();
         fillData(result);
-        setupForm('#portal-settings', fillData);
+        
+        setupForm('#portal-settings', fillData, ['portal.login', 'portal.password']);
         setupForm('#system-settings', fillData);
         setupForm('#heating-settings', fillData);
         setupForm('#dhw-settings', fillData);
@@ -817,9 +818,9 @@
         setupForm('#equitherm-settings', fillData);
         setupForm('#pid-settings', fillData);
         setupForm('#opentherm-settings', fillData);
-        setupForm('#mqtt-settings', fillData);
+        setupForm('#mqtt-settings', fillData, ['mqtt.user', 'mqtt.password', 'mqtt.prefix']);
         setupForm('#outdoor-sensor-settings', fillData);
-        setupForm('#indoor-sensor-settings', fillData);
+        setupForm('#indoor-sensor-settings', fillData, ['sensors.indoor.bleAddresss']);
         setupForm('#extpump-settings', fillData);
 
       } catch (error) {

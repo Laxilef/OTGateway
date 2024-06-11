@@ -1,4 +1,4 @@
-function setupForm(formSelector, onResultCallback = null) {
+function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
   const form = document.querySelector(formSelector);
   if (!form) {
     return;
@@ -68,7 +68,7 @@ function setupForm(formSelector, onResultCallback = null) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: form2json(fd)
+        body: form2json(fd, noCastItems)
       });
 
       if (!response.ok) {
@@ -635,15 +635,19 @@ function memberIdToVendor(memberId) {
     : "unknown vendor";
 }
 
-function form2json(data) {
+function form2json(data, noCastItems = []) {
   let method = function (object, pair) {
     let keys = pair[0].replace(/\]/g, '').split('[');
     let key = keys[0];
     let value = pair[1];
-    if (value === 'true' || value === 'false') {
-      value = value === 'true';
-    } else if (typeof (value) === 'string' && value.trim() !== '' && !isNaN(value)) {
-      value = parseFloat(value);
+
+    if (!noCastItems.includes(keys.join('.'))) {
+      if (value === 'true' || value === 'false') {
+        value = value === 'true';
+
+      } else if (typeof (value) === 'string' && value.trim() !== '' && !isNaN(value)) {
+        value = parseFloat(value);
+      }
     }
 
     if (keys.length > 1) {
