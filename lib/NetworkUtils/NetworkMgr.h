@@ -203,6 +203,7 @@ namespace NetworkUtils {
 
       if (force && !this->isApEnabled()) {
         this->resetWifi();
+        NetworkConnection::reset();
 
       } else {
         /*#ifdef ARDUINO_ARCH_ESP8266
@@ -218,7 +219,7 @@ namespace NetworkUtils {
         return false;
       }
 
-      this->delayCallback(200);
+      this->delayCallback(250);
 
       #ifdef ARDUINO_ARCH_ESP32
       if (this->setWifiHostname(this->hostname)) {
@@ -233,7 +234,7 @@ namespace NetworkUtils {
         return false;
       }
 
-      this->delayCallback(200);
+      this->delayCallback(250);
 
       #ifdef ARDUINO_ARCH_ESP8266
       if (this->setWifiHostname(this->hostname)) {
@@ -243,7 +244,7 @@ namespace NetworkUtils {
         Log.serrorln(FPSTR(L_NETWORK), F("Set hostname '%s': fail"), this->hostname);
       }
 
-      this->delayCallback(200);
+      this->delayCallback(250);
       #endif
 
       if (!this->useDhcp) {
@@ -266,13 +267,22 @@ namespace NetworkUtils {
     }
 
     void loop() {
-      if (this->isConnected() && !this->hasStaCredentials()) {
+      if (this->reconnectFlag) {
+        this->delayCallback(5000);
+
+        Log.sinfoln(FPSTR(L_NETWORK), F("Reconnecting..."));
+        this->reconnectFlag = false;
+        this->resetWifi();
+        NetworkConnection::reset();
+        this->delayCallback(1000);
+
+      } else if (this->isConnected() && !this->hasStaCredentials()) {
         Log.sinfoln(FPSTR(L_NETWORK), F("Reset"));
         this->resetWifi();
         NetworkConnection::reset();
-        this->delayCallback(200);
+        this->delayCallback(1000);
 
-      } else if (this->isConnected() && !this->reconnectFlag) {
+      } else if (this->isConnected()) {
         if (!this->connected) {
           this->connectedTime = millis();
           this->connected = true;
@@ -331,12 +341,11 @@ namespace NetworkUtils {
           Log.swarningln(FPSTR(L_NETWORK), F("Connection timeout, reset wifi..."));
           this->resetWifi();
           NetworkConnection::reset();
-          this->delayCallback(200);
+          this->delayCallback(250);
 
         } else if (!this->isConnecting() && this->hasStaCredentials() && (!this->prevReconnectingTime || millis() - this->prevReconnectingTime > this->reconnectInterval)) {
           Log.sinfoln(FPSTR(L_NETWORK), F("Try connect..."));
 
-          this->reconnectFlag = false;
           NetworkConnection::reset();
           if (!this->connect(true, this->connectionTimeout)) {
             Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d"), NetworkConnection::getStatus(), NetworkConnection::getDisconnectReason());
