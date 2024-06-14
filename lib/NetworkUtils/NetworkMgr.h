@@ -212,7 +212,7 @@ namespace NetworkUtils {
         }
         #endif*/
 
-        WiFi.disconnect(false, true);
+        this->disconnect();
       }
 
       if (!this->hasStaCredentials()) {
@@ -266,13 +266,17 @@ namespace NetworkUtils {
       return false;
     }
 
+    void disconnect() {
+      WiFi.disconnect(false, true);
+    }
+
     void loop() {
       if (this->reconnectFlag) {
         this->delayCallback(5000);
 
         Log.sinfoln(FPSTR(L_NETWORK), F("Reconnecting..."));
         this->reconnectFlag = false;
-        this->resetWifi();
+        this->disconnect();
         NetworkConnection::reset();
         this->delayCallback(1000);
 
@@ -297,7 +301,7 @@ namespace NetworkUtils {
         }
 
         if (this->isApEnabled() && millis() - this->connectedTime > this->reconnectInterval && !this->hasApClients()) {
-          Log.sinfoln(FPSTR(L_NETWORK), F("Stop AP because connected, start only STA"));
+          Log.sinfoln(FPSTR(L_NETWORK), F("Stop AP because STA connected"));
 
           WiFi.mode(WIFI_STA);
           return;
@@ -348,7 +352,7 @@ namespace NetworkUtils {
 
           NetworkConnection::reset();
           if (!this->connect(true, this->connectionTimeout)) {
-            Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d"), NetworkConnection::getStatus(), NetworkConnection::getDisconnectReason());
+            Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d, raw reason: %d"), NetworkConnection::getStatus(), NetworkConnection::getDisconnectReason(), NetworkConnection::rawDisconnectReason);
           }
 
           this->prevReconnectingTime = millis();

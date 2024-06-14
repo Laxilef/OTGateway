@@ -623,6 +623,10 @@ protected:
     if (this->stateWebServer()) {
       this->webServer->handleClient();
     }
+
+    if (!this->stateDnsServer() && !this->stateWebServer()) {
+      this->delay(250);
+    }
   }
 
   bool isAuthRequired() {

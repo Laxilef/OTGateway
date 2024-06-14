@@ -27,6 +27,7 @@ namespace NetworkUtils {
 
     static Status status;
     static DisconnectReason disconnectReason;
+    static uint8_t rawDisconnectReason;
     
     static void setup(bool useDhcp);
     static void setUseDhcp(bool value);
