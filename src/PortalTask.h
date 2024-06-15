@@ -82,7 +82,7 @@ protected:
         String result;
 
         if (strcmp(var, "ver") == 0) {
-          result = PROJECT_VERSION;
+          result = BUILD_VERSION;
         }
 
         return result;
@@ -513,8 +513,9 @@ protected:
       doc["network"]["gateway"] = isConnected ? network->getStaGateway().toString() : "";
       doc["network"]["dns"] = isConnected ? network->getStaDns().toString() : "";
 
-      doc["system"]["version"] = PROJECT_VERSION;
+      doc["system"]["buildVersion"] = BUILD_VERSION;
       doc["system"]["buildDate"] = __DATE__ " " __TIME__;
+      doc["system"]["buildEnv"] = BUILD_ENV;
       doc["system"]["uptime"] = millis() / 1000ul;
       doc["system"]["totalHeap"] = getTotalHeap();
       doc["system"]["freeHeap"] = getFreeHeap();

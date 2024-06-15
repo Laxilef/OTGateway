@@ -87,11 +87,11 @@
             <tbody>
               <tr>
                 <th scope="row">Version:</th>
-                <td><b id="version"></b>, core/sdk: <b id="core-version"></b></td>
+                <td><b id="build-version"></b></td>
               </tr>
               <tr>
-                <th scope="row">Build date:</th>
-                <td><b id="build-date"></b></td>
+                <th scope="row">Build:</th>
+                <td>Env: <b id="build-env"></b><br />Date: <b id="build-date"></b><br />Core/SDK: <b id="core-version"></b></td>
               </tr>
               <tr>
                 <th scope="row">Uptime:</th>
@@ -155,8 +155,9 @@
             setValue('#network-dns', result.network.dns);
             setBusy('#main-busy', '#main-table', false);
 
-            setValue('#version', result.system.version);
+            setValue('#build-version', result.system.buildVersion);
             setValue('#build-date', result.system.buildDate);
+            setValue('#build-env', result.system.buildEnv);
             setValue('#uptime', result.system.uptime);
             setValue('#uptime-days', Math.floor(result.system.uptime / 86400));
             setValue('#uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));

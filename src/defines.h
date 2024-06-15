@@ -1,5 +1,4 @@
 #define PROJECT_NAME                    "OpenTherm Gateway"
-#define PROJECT_VERSION                 "1.4.1"
 #define PROJECT_REPO                    "https://github.com/Laxilef/OTGateway"
 
 #define MQTT_RECONNECT_INTERVAL         15000
@@ -22,6 +21,14 @@
 #define THERMOSTAT_INDOOR_DEFAULT_TEMP  20
 #define THERMOSTAT_INDOOR_MIN_TEMP      5
 #define THERMOSTAT_INDOOR_MAX_TEMP      30
+
+#ifndef BUILD_VERSION
+  #define BUILD_VERSION                 "0.0.0"
+#endif
+
+#ifndef BUILD_ENV
+  #define BUILD_ENV                     "undefined"
+#endif
 
 #ifndef USE_SERIAL
   #define USE_SERIAL true

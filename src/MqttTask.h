@@ -163,7 +163,7 @@ protected:
 
     // ha helper settings
     this->haHelper->setDevicePrefix(settings.mqtt.prefix);
-    this->haHelper->setDeviceVersion(PROJECT_VERSION);
+    this->haHelper->setDeviceVersion(BUILD_VERSION);
     this->haHelper->setDeviceModel(PROJECT_NAME);
     this->haHelper->setDeviceName(PROJECT_NAME);
     this->haHelper->setWriter(this->writer);
