@@ -146,6 +146,13 @@ void setup() {
       strlen(networkSettings.ap.ssid) ? networkSettings.ap.ssid : nullptr,
       strlen(networkSettings.ap.password) ? networkSettings.ap.password : nullptr,
       networkSettings.ap.channel
+    )
+    ->setUseDhcp(networkSettings.useDhcp)
+    ->setStaticConfig(
+      networkSettings.staticConfig.ip,
+      networkSettings.staticConfig.gateway,
+      networkSettings.staticConfig.subnet,
+      networkSettings.staticConfig.dns
     );
 
   // tasks
