@@ -130,7 +130,7 @@ struct Settings {
     struct {
       SensorType type = SensorType::MANUAL;
       byte gpio = DEFAULT_SENSOR_INDOOR_GPIO;
-      uint8_t bleAddresss[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      uint8_t bleAddress[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       float offset = 0.0f;
     } indoor;
   } sensors;

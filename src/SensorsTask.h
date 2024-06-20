@@ -140,7 +140,7 @@ protected:
     this->initBleNotify = false;
 
     // Connect to the remote BLE Server.
-    BLEAddress bleServerAddress(settings.sensors.indoor.bleAddresss);
+    BLEAddress bleServerAddress(settings.sensors.indoor.bleAddress);
     if (!pBleClient->connect(bleServerAddress)) {
       Log.swarningln(FPSTR(L_SENSORS_BLE), "Failed connecting to device at %s", bleServerAddress.toString().c_str());
       return;

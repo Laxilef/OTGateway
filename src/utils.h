@@ -410,14 +410,14 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   sprintf(
     bleAddress,
     "%02x:%02x:%02x:%02x:%02x:%02x",
-    src.sensors.indoor.bleAddresss[0],
-    src.sensors.indoor.bleAddresss[1],
-    src.sensors.indoor.bleAddresss[2],
-    src.sensors.indoor.bleAddresss[3],
-    src.sensors.indoor.bleAddresss[4],
-    src.sensors.indoor.bleAddresss[5]
+    src.sensors.indoor.bleAddress[0],
+    src.sensors.indoor.bleAddress[1],
+    src.sensors.indoor.bleAddress[2],
+    src.sensors.indoor.bleAddress[3],
+    src.sensors.indoor.bleAddress[4],
+    src.sensors.indoor.bleAddress[5]
   );
-  dst["sensors"]["indoor"]["bleAddresss"] = String(bleAddress);
+  dst["sensors"]["indoor"]["bleAddress"] = String(bleAddress);
   dst["sensors"]["indoor"]["offset"] = roundd(src.sensors.indoor.offset, 2);
 
   if (!safe) {
@@ -1250,13 +1250,13 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
   #if USE_BLE
-  if (!src["sensors"]["indoor"]["bleAddresss"].isNull()) {
-    String value = src["sensors"]["indoor"]["bleAddresss"].as<String>();
+  if (!src["sensors"]["indoor"]["bleAddress"].isNull()) {
+    String value = src["sensors"]["indoor"]["bleAddress"].as<String>();
     int tmp[6];
     if(sscanf(value.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) == 6) {
       for(uint8_t i = 0; i < 6; i++) {
-        if (dst.sensors.indoor.bleAddresss[i] != (uint8_t) tmp[i]) {
-          dst.sensors.indoor.bleAddresss[i] = (uint8_t) tmp[i];
+        if (dst.sensors.indoor.bleAddress[i] != (uint8_t) tmp[i]) {
+          dst.sensors.indoor.bleAddress[i] = (uint8_t) tmp[i];
           changed = true;
         }
       }
