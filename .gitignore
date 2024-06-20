@@ -1,6 +1,8 @@
 .pio
 .vscode
 build/*.bin
-data/**/*.gz
+data/*
 secrets.ini
+node_modules
+package-lock.json
 !.gitkeep

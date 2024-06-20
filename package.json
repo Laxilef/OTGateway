@@ -1,0 +1,17 @@
+{
+  "name": "otgateway",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "cssnano": "^7.0.2",
+    "cssnano-preset-advanced": "^7.0.2",
+    "gulp": "^5.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-gzip": "^1.4.2",
+    "gulp-html-minifier-terser": "^7.1.0",
+    "gulp-jsonminify": "^1.1.0",
+    "gulp-postcss": "^10.0.0",
+    "gulp-terser": "^2.1.0"
+  }
+}

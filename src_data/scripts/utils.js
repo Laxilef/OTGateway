@@ -22,14 +22,14 @@ function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
     event.preventDefault();
 
     if (button) {
-      button.textContent = 'Please wait...';
+      button.textContent = i18n("button.wait");
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
     }
 
     const onSuccess = (result) => {
       if (button) {
-        button.textContent = 'Saved';
+        button.textContent = i18n('button.saved');
         button.classList.add('success');
         button.removeAttribute('aria-busy');
 
@@ -43,7 +43,7 @@ function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
 
     const onFailed = () => {
       if (button) {
-        button.textContent = 'Error';
+        button.textContent = i18n('button.error');
         button.classList.add('failed');
         button.removeAttribute('aria-busy');
 
@@ -110,7 +110,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
     }
 
     if (button) {
-      button.innerHTML = 'Please wait...';
+      button.innerHTML = i18n('button.wait');
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
     }
@@ -270,14 +270,14 @@ function setupRestoreBackupForm(formSelector) {
     event.preventDefault();
 
     if (button) {
-      button.textContent = 'Please wait...';
+      button.textContent = i18n('button.wait');
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
     }
 
     const onSuccess = (response) => {
       if (button) {
-        button.textContent = 'Restored';
+        button.textContent = i18n('button.restored');
         button.classList.add('success');
         button.removeAttribute('aria-busy');
 
@@ -291,7 +291,7 @@ function setupRestoreBackupForm(formSelector) {
 
     const onFailed = (response) => {
       if (button) {
-        button.textContent = 'Error';
+        button.textContent = i18n('button.error');
         button.classList.add('failed');
         button.removeAttribute('aria-busy');
 
@@ -437,7 +437,7 @@ function setupUpgradeForm(formSelector) {
 
   const onFailed = (response) => {
     if (button) {
-      button.textContent = 'Error';
+      button.textContent = i18n('button.error');
       button.classList.add('failed');
       button.removeAttribute('aria-busy');
 
@@ -456,7 +456,7 @@ function setupUpgradeForm(formSelector) {
     hide('.upgrade-filesystem-result');
 
     if (button) {
-      button.textContent = 'Uploading...';
+      button.textContent = i18n('button.uploading');
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
     }

@@ -77,7 +77,7 @@ protected:
     #endif
 
     // index page
-    /*auto indexPage = (new DynamicPage("/", &LittleFS, "/index.html"))
+    /*auto indexPage = (new DynamicPage("/", &LittleFS, "/pages/index.html"))
       ->setTemplateCallback([](const char* var) -> String {
         String result;
 
@@ -88,10 +88,10 @@ protected:
         return result;
       });
     this->webServer->addHandler(indexPage);*/
-    this->webServer->addHandler(new StaticPage("/", &LittleFS, "/index.html", PORTAL_CACHE));
+    this->webServer->addHandler(new StaticPage("/", &LittleFS, "/pages/index.html", PORTAL_CACHE));
 
     // dashboard page
-    auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, "/dashboard.html", PORTAL_CACHE))
+    auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, "/pages/dashboard.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -117,7 +117,7 @@ protected:
     });
 
     // network settings page
-    auto networkPage = (new StaticPage("/network.html", &LittleFS, "/network.html", PORTAL_CACHE))
+    auto networkPage = (new StaticPage("/network.html", &LittleFS, "/pages/network.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -129,7 +129,7 @@ protected:
     this->webServer->addHandler(networkPage);
 
     // settings page
-    auto settingsPage = (new StaticPage("/settings.html", &LittleFS, "/settings.html", PORTAL_CACHE))
+    auto settingsPage = (new StaticPage("/settings.html", &LittleFS, "/pages/settings.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -141,7 +141,7 @@ protected:
     this->webServer->addHandler(settingsPage);
 
     // upgrade page
-    auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, "/upgrade.html", PORTAL_CACHE))
+    auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, "/pages/upgrade.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -250,6 +250,7 @@ protected:
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
+          ->setApCredentials(networkSettings.ap.ssid, networkSettings.ap.password, networkSettings.ap.channel)
           ->setUseDhcp(networkSettings.useDhcp)
           ->setStaticConfig(
             networkSettings.staticConfig.ip,
@@ -326,6 +327,7 @@ protected:
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
+          ->setApCredentials(networkSettings.ap.ssid, networkSettings.ap.password, networkSettings.ap.channel)
           ->setUseDhcp(networkSettings.useDhcp)
           ->setStaticConfig(
             networkSettings.staticConfig.ip,
@@ -573,7 +575,7 @@ protected:
       }
     });
 
-    this->webServer->serveStatic("/favicon.ico", LittleFS, "/static/favicon.ico", PORTAL_CACHE);
+    this->webServer->serveStatic("/favicon.ico", LittleFS, "/static/images/favicon.ico", PORTAL_CACHE);
     this->webServer->serveStatic("/static", LittleFS, "/static", PORTAL_CACHE);
   }
 

@@ -1,0 +1,331 @@
+{
+  "values": {
+    "logo": "OpenTherm Gateway",
+    "nav": {
+      "license": "License",
+      "source": "Source code",
+      "help": "Help",
+      "issues": "Issues & questions",
+      "releases": "Releases"
+    },
+
+    "button": {
+      "upgrade": "Upgrade",
+      "restart": "Restart",
+      "save": "Save",
+      "saved": "Saved",
+      "refresh": "Refresh",
+      "restore": "Restore",
+      "restored": "Restored",
+      "backup": "Backup",
+      "wait": "Please wait...",
+      "uploading": "Uploading...",
+      "success": "Success",
+      "error": "Error"
+    },
+
+    "index": {
+      "title": "OpenTherm Gateway",
+
+      "section": {
+        "network": "Network",
+        "system": "System"
+      },
+
+      "system": {
+        "build": {
+          "title": "Build",
+          "version": "Version",
+          "date": "Date",
+          "sdk": "Core/SDK"
+        },
+        "uptime": "Uptime",
+        "memory": {
+          "title": "Free memory",
+          "maxFreeBlock": "max free block",
+          "min": "min"
+        },
+        "board": "Board",
+        "chip": {
+          "model": "Chip",
+          "cores": "Cores",
+          "freq": "frequency"
+        },
+        "flash": {
+          "size": "Flash size",
+          "realSize": "real size"
+        },
+        "lastResetReason": "Last reset reason"
+      }
+    },
+
+    "dashboard": {
+      "name": "Dashboard",
+      "title": "Dashboard - OpenTherm Gateway",
+
+      "section": {
+        "control": "Control",
+        "states": "States and sensors",
+        "otDiag": "OpenTherm diagnostic"
+      },
+
+      "thermostat": {
+        "heating": "Heating",
+        "dhw": "DHW",
+        "temp.current": "Current",
+        "enable": "Enable",
+        "turbo": "Turbo mode"
+      },
+
+      "state": {
+        "ot": "OpenTherm connected",
+        "mqtt": "MQTT connected",
+        "emergency": "Emergency",
+        "heating": "Heating",
+        "dhw": "DHW",
+        "flame": "Flame",
+        "fault": "Fault",
+        "diag": "Diagnostic",
+        "extpump": "External pump",
+        "modulation": "Modulation",
+        "pressure": "Pressure",
+        "dhwFlowRate": "DHW flow rate",
+        "faultCode": "Fault code",
+        "indoorTemp": "Indoor temp",
+        "outdoorTemp": "Outdoor temp",
+        "heatingTemp": "Heating temp",
+        "heatingSetpointTemp": "Heating setpoint temp",
+        "heatingReturnTemp": "Heating return temp",
+        "dhwTemp": "DHW temp",
+        "exhaustTemp": "Exhaust temp"
+      }
+    },
+
+    "network": {
+      "title": "Network - OpenTherm Gateway",
+      "name": "Network settings",
+
+      "section": {
+        "static": "Static settings",
+        "availableNetworks": "Available networks",
+        "staSettings": "WiFi settings",
+        "apSettings": "AP settings"
+      },
+
+      "scan": {
+        "pos": "#",
+        "info": "Info"
+      },
+
+      "wifi": {
+        "ssid": "SSID",
+        "password": "Password",
+        "channel": "Channel",
+        "signal": "Signal",
+        "connected": "Connected"
+      },
+
+      "params": {
+        "hostname": "Hostname",
+        "dhcp": "Use DHCP",
+        "mac": "MAC",
+        "ip": "IP",
+        "subnet": "Subnet",
+        "gateway": "Gateway",
+        "dns": "DNS"
+      },
+
+      "sta": {
+        "channel.note": "set 0 for auto select"
+      }
+    },
+
+    "settings": {
+      "title": "Settings - OpenTherm Gateway",
+      "name": "Settings",
+
+      "section": {
+        "portal": "Portal settings",
+        "system": "System settings",
+        "diag": "Diagnostic",
+        "heating": "Heating settings",
+        "dhw": "DHW settings",
+        "emergency": "Emergency mode settings",
+        "emergency.events": "Events",
+        "emergency.regulators": "Using regulators",
+        "equitherm": "Equitherm settings",
+        "pid": "PID settings",
+        "ot": "OpenTherm settings",
+        "ot.options": "Options",
+        "mqtt": "MQTT settings",
+        "outdorSensor": "Outdoor sensor settings",
+        "indoorSensor": "Indoor sensor settings",
+        "extPump": "External pump settings"
+      },
+
+      "enable": "Enable",
+      "note": {
+        "restart": "After changing these settings, the device must be restarted for the changes to take effect.",
+        "blankNotUse": "blank - not use"
+      },
+
+      "temp": {
+        "min": "Minimum temperature",
+        "max": "Maximum temperature"
+      },
+
+      "portal": {
+        "login": "Login",
+        "password": "Password",
+        "auth": "Require authentication"
+      },
+
+      "system": {
+        "unit": "Unit system",
+        "metric": "Metric <small>(celsius, liters, bar)</small>",
+        "imperial": "Imperial <small>(fahrenheit, gallons, psi)</small>",
+        "statusLedGpio": "Status LED GPIO",
+        "debug": "Debug mode",
+        "serial": {
+          "enable": "Enable Serial port",
+          "baud": {
+            "title": "Serial port baud rate",
+            "note": "Available: 9600, 19200, 38400, 57600, 74880, 115200"
+          }
+        },
+        "telnet": {
+          "enable": "Enable Telnet",
+          "port": {
+            "title": "Telnet port",
+            "note": "Default: 23"
+          }
+        }
+      },
+
+      "heating": {
+        "hyst": "Hysteresis",
+        "maxMod": "Max modulation level"
+      },
+
+      "emergency": {
+        "desc": "<b>!</b> Emergency mode can be useful <u>only</u> when using Equitherm and/or PID (when normal work) and when reporting indoor/outdoor temperature via MQTT or API. In this mode, sensor values that are reported via MQTT/API are not used.",
+        
+        "target": {
+          "title": "Target temperature",
+          "note": "<u>Indoor temperature</u> if Equitherm or PID is <b>enabled</b><br /><u>Heat carrier temperature</u> if Equitherm and PID <b>is disabled</b>"
+        },
+        "treshold": "Treshold time <small>(sec)</small>",
+
+        "events": {
+          "network": "On network fault",
+          "mqtt": "On MQTT fault"
+        },
+
+        "regulators": {
+          "equitherm": "Equitherm <small>(requires at least an external/boiler <u>outdoor</u> sensor)</small>",
+          "pid": "PID <small>(requires at least an external/BLE <u>indoor</u> sensor)</small>"
+        }
+      },
+
+      "equitherm": {
+        "n": "N factor",
+        "k": "K factor",
+        "t": {
+          "title": "T factor",
+          "note": "Not used if PID is enabled"
+        }
+      },
+
+      "pid": {
+        "p": "P factor",
+        "i": "I factor",
+        "d": "D factor",
+        "dt": "DT <small>in seconds</small>"
+      },
+
+      "ot": {
+        "inGpio": "In GPIO",
+        "outGpio": "Out GPIO",
+        "ledGpio": "RX LED GPIO",
+        "memberIdCode": "Master MemberID code",
+
+        "options": {
+          "dhwPresent": "DHW present",
+          "summerWinterMode": "Summer/winter mode",
+          "heatingCh2Enabled": "Heating CH2 always enabled",
+          "heatingCh1ToCh2": "Duplicate heating CH1 to CH2",
+          "dhwToCh2": "Duplicate DHW to CH2",
+          "dhwBlocking": "DHW blocking",
+          "modulationSyncWithHeating": "Sync modulation with heating",
+          "getMinMaxTemp": "Get min/max temp from boiler"
+        },
+
+        "faultState": {
+          "gpio": "Fault state GPIO",
+          "note": "Can be useful to switch on another boiler <u>via relay</u>. Blank - not use.",
+          "invert": "Invert fault state"
+        },
+
+        "nativeHeating": {
+          "title": "Native heating control (boiler)",
+          "note": "Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators and hysteresis in firmware."
+        }
+      },
+
+      "mqtt": {
+        "homeAssistantDiscovery": "Home Assistant Discovery",
+        "server": "Server",
+        "port": "Port",
+        "user": "User",
+        "password": "Password",
+        "prefix": "Prefix",
+        "interval": "Publish interval <small>(sec)</small>"
+      },
+
+      "tempSensor": {
+        "source": {
+          "type": "Source type",
+          "boiler": "From boiler via OpenTherm",
+          "manual": "Manual via MQTT/API",
+          "ext": "External (DS18B20)",
+          "ble": "BLE device <i>(ONLY for some ESP32 which support BLE)</i>"
+        },
+        "gpio": "GPIO",
+        "offset": "Temp offset <small>(calibration)</small>",
+        "bleAddress": {
+          "title": "BLE address",
+          "note": "ONLY for some ESP32 which support BLE"
+        }
+      },
+
+      "extPump": {
+        "use": "Use external pump",
+        "gpio": "Relay GPIO",
+        "postCirculationTime": "Post circulation time <small>(min)</small>",
+        "antiStuckInterval": "Anti stuck interval <small>(days)</small>",
+        "antiStuckTime": "Anti stuck time <small>(min)</small>"
+      }
+    },
+
+    "upgrade": {
+      "title": "Upgrade - OpenTherm Gateway",
+      "name": "Upgrade",
+
+      "section": {
+        "backupAndRestore": "Backup & restore",
+        "backupAndRestore.desc": "In this section you can save and restore a backup of ALL settings.",
+        "upgrade": "Upgrade",
+        "upgrade.desc": "In this section you can upgrade the firmware and filesystem of your device.<br />Latest releases can be downloaded from the <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> of the project repository." 
+      },
+
+      "note": {
+        "disclaimer1": "After a successful upgrade the filesystem, ALL settings will be reset to default values! Save backup before upgrading.",
+        "disclaimer2": "After a successful upgrade, the device will automatically reboot after 10 seconds."
+      },
+
+      "settingsFile": "Settings file",
+      "fw": "Firmware",
+      "fs": "Filesystem"
+    }
+  }
+}

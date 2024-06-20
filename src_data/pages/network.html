@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n>network.title</title>
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a></li>
+        </ul>
+        <ul>
+          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <div>
+          <hgroup>
+            <h2 data-i18n>network.name</h2>
+            <p></p>
+          </hgroup>
+
+          <div id="network-settings-busy" aria-busy="true"></div>
+          <form action="/api/network/settings" id="network-settings" class="hidden">
+            <label for="network-hostname">
+              <span data-i18n>network.params.hostname</span>
+              <input type="text" id="network-hostname" name="hostname" maxlength="24" pattern="[A-Za-z0-9]+[A-Za-z0-9\-]+[A-Za-z0-9]+" required>
+            </label>
+
+            <label for="network-use-dhcp">
+              <input type="checkbox" id="network-use-dhcp" name="useDhcp" value="true">
+              <span data-i18n>network.params.dhcp</span>
+            </label>
+            <br />
+            <hr />
+            <h4 data-i18n>network.section.static</h4>
+
+            <label for="network-static-ip">
+              <span data-i18n>network.params.ip</span>
+              <input type="text" id="network-static-ip" name="staticConfig[ip]" value="true" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+            </label>
+
+            <label for="network-static-gateway">
+              <span data-i18n>network.params.gateway</span>
+              <input type="text" id="network-static-gateway" name="staticConfig[gateway]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+            </label>
+
+            <label for="network-static-subnet">
+              <span data-i18n>network.params.subnet</span>
+              <input type="text" id="network-static-subnet" name="staticConfig[subnet]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+            </label>
+
+            <label for="network-static-dns">
+              <span data-i18n>network.params.dns</span>
+              <input type="text" id="network-static-dns" name="staticConfig[dns]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+            </label>
+
+            <button type="submit" data-i18n>button.save</button>
+          </form>
+        </div>
+      </article>
+
+      <article>
+        <div>
+          <hgroup>
+            <h3 data-i18n>network.section.availableNetworks</h3>
+            <p></p>
+          </hgroup>
+
+          <form action="/api/network/scan" id="network-scan">
+            <div style="max-height: 25rem;" class="overflow-auto">
+              <table id="networks" role="grid">
+                <thead>
+                  <tr>
+                    <th scope="col" data-i18n>network.scan.pos</th>
+                    <th scope="col" data-i18n>network.wifi.ssid</th>
+                    <th scope="col" data-i18n>network.scan.info</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <button type="submit" data-i18n>button.refresh</button>
+          </form>
+
+          <hr />
+          <div>
+            <hgroup>
+              <h2 data-i18n>network.section.staSettings</h2>
+              <p></p>
+            </hgroup>
+
+            <div id="sta-settings-busy" aria-busy="true"></div>
+            <form action="/api/network/settings" id="sta-settings" class="hidden">
+              <label for="sta-ssid">
+                <span data-i18n>network.wifi.ssid</span>
+                <input type="text" id="sta-ssid" name="sta[ssid]" maxlength="32" required>
+              </label>
+
+              <label for="sta-password">
+                <span data-i18n>network.wifi.password</span>
+                <input type="password" id="sta-password" name="sta[password]" maxlength="64" required>
+              </label>
+
+              <label for="sta-channel">
+                <span data-i18n>network.wifi.channel</span>
+                <input type="number" inputmode="numeric" id="sta-channel" name="sta[channel]" min="0" max="12" step="1" required>
+                <small data-i18n>network.sta.channel.note</small>
+              </label>
+
+              <button type="submit" data-i18n>button.save</button>
+            </form>
+          </div>
+        </div>
+      </article>
+
+      <article>
+        <div>
+          <hgroup>
+            <h2 data-i18n>network.section.apSettings</h2>
+            <p></p>
+          </hgroup>
+
+          <div id="ap-settings-busy" aria-busy="true"></div>
+          <form action="/api/network/settings" id="ap-settings" class="hidden">
+            <label for="ap-ssid">
+              <span data-i18n>network.wifi.ssid</span>
+              <input type="text" id="ap-ssid" name="ap[ssid]" maxlength="32" required>
+            </label>
+
+            <label for="ap-password">
+              <span data-i18n>network.wifi.password</span>
+              <input type="text" id="ap-password" name="ap[password]" maxlength="64" required>
+            </label>
+
+            <label for="ap-channel">
+              <span data-i18n>network.wifi.channel</span>
+              <input type="number" inputmode="numeric" id="ap-channel" name="ap[channel]" min="1" max="12" step="1" required>
+            </label>
+
+            <button type="submit" data-i18n>button.save</button>
+          </form>
+        </div>
+      </article>
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const lang = new Lang(document.getElementById('lang'));
+        lang.build();
+
+        const fillData = (data) => {
+          setInputValue('#network-hostname', data.hostname);
+          setCheckboxValue('#network-use-dhcp', data.useDhcp);
+          setInputValue('#network-static-ip', data.staticConfig.ip);
+          setInputValue('#network-static-gateway', data.staticConfig.gateway);
+          setInputValue('#network-static-subnet', data.staticConfig.subnet);
+          setInputValue('#network-static-dns', data.staticConfig.dns);
+          setBusy('#network-settings-busy', '#network-settings', false);
+
+          setInputValue('#sta-ssid', data.sta.ssid);
+          setInputValue('#sta-password', data.sta.password);
+          setInputValue('#sta-channel', data.sta.channel);
+          setBusy('#sta-settings-busy', '#sta-settings', false);
+
+          setInputValue('#ap-ssid', data.ap.ssid);
+          setInputValue('#ap-password', data.ap.password);
+          setInputValue('#ap-channel', data.ap.channel);
+          setBusy('#ap-settings-busy', '#ap-settings', false);
+        };
+
+        try {
+          const response = await fetch('/api/network/settings', { cache: 'no-cache' });
+          if (!response.ok) {
+            throw new Error('Response not valid');
+          }
+
+          const result = await response.json();
+          fillData(result);
+
+          setupForm('#network-settings', fillData, ['hostname']);
+          setupNetworkScanForm('#network-scan', '#networks');
+          setupForm('#sta-settings', fillData, ['sta.ssid', 'sta.password']);
+          setupForm('#ap-settings', fillData, ['ap.ssid', 'ap.password']);
+
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -3,19 +3,26 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OpenTherm Gateway</title>
-    <link rel="stylesheet" href="/static/pico.min.css">
-    <link rel="stylesheet" href="/static/app.css"/>
+    <title data-i18n>index.title</title>
+    <link rel="stylesheet" href="/static/app.css" />
   </head>
 
   <body>
     <header class="container">
       <nav>
         <ul>
-          <li><a href="/"><div class="logo">OpenTherm Gateway</div></a></li>
+          <li><a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a></li>
         </ul>
         <ul>
-          <li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>
+          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
         </ul>
       </nav>
     </header>
@@ -24,7 +31,7 @@
       <article>
         <div>
           <hgroup>
-            <h2>Network</h2>
+            <h2 data-i18n>index.section.network</h2>
             <p></p>
           </hgroup>
 
@@ -32,45 +39,45 @@
           <table id="main-table" class="hidden">
             <tbody>
               <tr>
-                <th scope="row">Hostname:</th>
+                <th scope="row" data-i18n>network.params.hostname</th>
                 <td><b id="network-hostname"></b></td>
               </tr>
               <tr>
-                <th scope="row">MAC:</th>
+                <th scope="row" data-i18n>network.params.mac</th>
                 <td><b id="network-mac"></b></td>
               </tr>
               <tr>
-                <th scope="row">Connected:</th>
+                <th scope="row" data-i18n>network.wifi.connected</th>
                 <td><input type="radio" id="network-connected" aria-invalid="false" checked disabled /></td>
               </tr>
               <tr>
-                <th scope="row">SSID:</th>
+                <th scope="row" data-i18n>network.wifi.ssid</th>
                 <td><b id="network-ssid"></b></td>
               </tr>
               <tr>
-                <th scope="row">Signal:</th>
+                <th scope="row" data-i18n>network.wifi.signal</th>
                 <td><b id="network-signal"></b> %</td>
               </tr>
               <tr>
-                <th scope="row">IP:</th>
+                <th scope="row" data-i18n>network.params.ip</th>
                 <td><b id="network-ip"></b></td>
               </tr>
               <tr>
-                <th scope="row">Subnet:</th>
+                <th scope="row" data-i18n>network.params.subnet</th>
                 <td><b id="network-subnet"></b></td>
               </tr>
               <tr>
-                <th scope="row">Gateway:</th>
+                <th scope="row" data-i18n>network.params.gateway</th>
                 <td><b id="network-gateway"></b></td>
               </tr>
               <tr>
-                <th scope="row">DNS:</th>
+                <th scope="row" data-i18n>network.params.dns</th>
                 <td><b id="network-dns"></b></td>
               </tr>
             </tbody>
           </table>
           <div class="grid">
-            <a href="/network.html" role="button">Network settings</a>
+            <a href="/network.html" role="button" data-i18n>network.name</a>
           </div>
         </div>
       </article>
@@ -78,7 +85,7 @@
       <article>
         <div>
           <hgroup>
-            <h2>System</h2>
+            <h2 data-i18n>index.section.system</h2>
             <p></p>
           </hgroup>
 
@@ -86,37 +93,53 @@
           <table id="system-table" class="hidden">
             <tbody>
               <tr>
-                <th scope="row">Version:</th>
+                <th scope="row" data-i18n>index.system.build.version</th>
                 <td><b id="build-version"></b></td>
               </tr>
               <tr>
-                <th scope="row">Build:</th>
-                <td>Env: <b id="build-env"></b><br />Date: <b id="build-date"></b><br />Core/SDK: <b id="core-version"></b></td>
+                <th scope="row" data-i18n>index.system.build.title</th>
+                <td>
+                  Env: <b id="build-env"></b><br />
+                  <span data-i18n>index.system.build.date</span>: <b id="build-date"></b><br />
+                  <span data-i18n>index.system.build.sdk</span>: <b id="core-version"></b>
+                </td>
               </tr>
               <tr>
-                <th scope="row">Uptime:</th>
-                <td><b id="uptime-days"></b> days, <b id="uptime-hours"></b> hours, <b id="uptime-min"></b> min., <b id="uptime-sec"></b> sec.</td>
+                <th scope="row" data-i18n>index.system.uptime</th>
+                <td>
+                  <b id="uptime-days"></b> days, 
+                  <b id="uptime-hours"></b> hours, 
+                  <b id="uptime-min"></b> min., 
+                  <b id="uptime-sec"></b> sec.
+                </td>
               </tr>
               <tr>
-                <th scope="row">Free memory:</th>
-                <td><b id="free-heap"></b> of <b id="total-heap"></b> bytes (min: <b id="min-free-heap"></b> bytes)<br />max free block: <b id="max-free-block-heap"></b> bytes (min: <b id="min-max-free-block-heap"></b> bytes)</td>
+                <th scope="row" data-i18n>index.system.memory.title</th>
+                <td>
+                  <b id="free-heap"></b> of <b id="total-heap"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="min-free-heap"></b> bytes)<br />
+                  <span data-i18n>index.system.memory.maxFreeBlock</span>: <b id="max-free-block-heap"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="min-max-free-block-heap"></b> bytes)
+                </td>
               </tr>
               <tr>
-                <th scope="row">Board:</th>
-                <td>Chip <b id="chip-model"></b> (rev. <span id="chip-revision"></span>)<br />Cores: <b id="chip-cores"></b>, frequency: <b id="cpu-freq"></b> mHz<br />Flash size: <b id="flash-size"></b> MB (real: <b id="flash-real-size"></b> MB)</td>
+                <th scope="row" data-i18n>index.system.board</th>
+                <td>
+                  <span data-i18n>index.system.chip.model</span>: <b id="chip-model"></b> (rev. <span id="chip-revision"></span>)<br />
+                  <span data-i18n>index.system.chip.cores</span>: <b id="chip-cores"></b>, <span data-i18n>index.system.chip.freq</span>: <b id="cpu-freq"></b> mHz<br />
+                  <span data-i18n>index.system.flash.size</span>: <b id="flash-size"></b> MB (<span data-i18n>index.system.flash.realSize</span>: <b id="flash-real-size"></b> MB)
+                </td>
               </tr>
               <tr>
-                <th scope="row">Last reset reason:</th>
+                <th scope="row" data-i18n>index.system.lastResetReason</th>
                 <td><b id="reset-reason"></b></td>
               </tr>
             </tbody>
           </table>
 
           <div class="grid">
-            <a href="/dashboard.html" role="button">Dashboard</a>
-            <a href="/settings.html" role="button">Settings</a>
-            <a href="/upgrade.html" role="button">Upgrade</a>
-            <a href="/restart.html" role="button" class="secondary restart">Restart</a>
+            <a href="/dashboard.html" role="button" data-i18n>dashboard.name</a>
+            <a href="/settings.html" role="button" data-i18n>settings.name</a>
+            <a href="/upgrade.html" role="button" data-i18n>upgrade.name</a>
+            <a href="/restart.html" role="button" class="secondary restart" data-i18n>button.restart</a>
           </div>
         </div>
       </article>
@@ -125,17 +148,20 @@
     <footer class="container">
       <small>
         <b>Made by Laxilef</b>
-        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary">License</a>
-        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary">Source code</a>
-        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary">Help</a>
-        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary">Issue & questions</a>
-        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary">Releases</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
       </small>
     </footer>
 
     <script src="/static/app.js"></script>
     <script>
-      window.onload = async function () {
+      document.addEventListener('DOMContentLoaded', async () => {
+        const lang = new Lang(document.getElementById('lang'));
+        lang.build();
+
         setTimeout(async function onLoadPage() {
           try {
             const response = await fetch('/api/info', { cache: 'no-cache' });
@@ -169,7 +195,7 @@
             setValue('#max-free-block-heap', result.system.maxFreeBlockHeap);
             setValue('#min-max-free-block-heap', result.system.minMaxFreeBlockHeap);
             setValue('#reset-reason', result.system.resetReason);
-            
+
             setValue('#chip-model', result.system.chipModel);
             setValue('#chip-revision', result.system.chipRevision);
             setValue('#chip-cores', result.system.chipCores);
@@ -186,7 +212,7 @@
 
           setTimeout(onLoadPage, 10000);
         }, 1000);
-      };
+      });
     </script>
   </body>
 </html>

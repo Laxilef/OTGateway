@@ -14,6 +14,9 @@ def post_build(source, target, env):
 
 
 def before_buildfs(source, target, env):
+  env.Execute("npm install --silent")
+  env.Execute("npx gulp build_all --no-deprecation")
+"""
   src = os.path.join(env["PROJECT_DIR"], "src_data")
   dst = os.path.join(env["PROJECT_DIR"], "data")
 
@@ -32,6 +35,7 @@ def before_buildfs(source, target, env):
             shutil.copyfileobj(f_in, f_out)
           
           print("Compressed '%s' to '%s'" % (src_path, dst_path))
+"""
 
 def after_buildfs(source, target, env):
   copy_to_build_dir({

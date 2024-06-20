@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n>upgrade.title</title>
+    <link rel="stylesheet" href="/static/app.css">
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li><a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a></li>
+        </ul>
+        <ul>
+          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <div>
+          <hgroup>
+            <h2 data-i18n>upgrade.section.backupAndRestore</h2>
+            <p data-i18n>upgrade.section.backupAndRestore.desc</p>
+          </hgroup>
+
+          <form action="/api/backup/restore" id="restore">
+            <label for="restore-file">
+              <span data-i18n>upgrade.settingsFile</span>
+              <input type="file" name="settings" id="restore-file" accept=".json">
+            </label>
+
+            <div class="grid">
+              <button type="submit" data-i18n>button.restore</button>
+              <button type="button" class="secondary" onclick="window.location='/api/backup/save';" data-i18n>button.backup</button>
+            </div>
+          </form>
+        </div>
+      </article>
+
+      <article>
+        <div>
+          <hgroup>
+            <h2 data-i18n>upgrade.section.upgrade</h2>
+            <p data-i18n>upgrade.section.upgrade.desc</p>
+          </hgroup>
+
+          <form action="/api/upgrade" id="upgrade">
+            <fieldset class="primary">
+              <label for="firmware-file">
+                <span data-i18n>upgrade.fw</span>:
+                <div class="grid">
+                  <input type="file" name="firmware" id="firmware-file" accept=".bin">
+                  <button type="button" class="upgrade-firmware-result hidden" disabled></button>
+                </div>
+              </label>
+
+              <label for="filesystem-file">
+                <span data-i18n>upgrade.fs</span>:
+                <div class="grid">
+                  <input type="file" name="filesystem" id="filesystem-file" accept=".bin">
+                  <button type="button" class="upgrade-filesystem-result hidden" disabled></button>
+                </div>
+              </label>
+            </fieldset>
+
+            <ul>
+              <li><mark data-i18n>upgrade.note.disclaimer1</mark></li>
+              <li><mark data-i18n>upgrade.note.disclaimer2</mark></li>
+            </ul>
+
+            <button type="submit" data-i18n>button.upgrade</button>
+          </form>
+        </div>
+      </article>
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const lang = new Lang(document.getElementById('lang'));
+        lang.build();
+
+        setupRestoreBackupForm('#restore');
+        setupUpgradeForm('#upgrade');
+      });
+    </script>
+  </body>
+</html>

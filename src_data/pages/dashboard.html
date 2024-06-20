@@ -3,19 +3,26 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard - OpenTherm Gateway</title>
-    <link rel="stylesheet" href="/static/pico.min.css">
-    <link rel="stylesheet" href="/static/app.css"/>
+    <title data-i18n>dashboard.title</title>
+    <link rel="stylesheet" href="/static/app.css" />
   </head>
 
   <body>
     <header class="container">
       <nav>
         <ul>
-          <li><a href="/"><div class="logo">OpenTherm Gateway</div></a></li>
+          <li><a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a></li>
         </ul>
         <ul>
-          <li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>
+          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
         </ul>
       </nav>
     </header>
@@ -23,43 +30,43 @@
     <main class="container">
       <article>
         <hgroup>
-          <h2>Dashboard</h2>
+          <h2 data-i18n>dashboard.name</h2>
           <p></p>
         </hgroup>
 
         <div id="dashboard-busy" aria-busy="true"></div>
         <div id="dashboard-container" class="hidden">
           <details open>
-            <summary><b>Control</b></summary>
+            <summary><b data-i18n>dashboard.section.control</b></summary>
             <div class="grid">
               <div class="thermostat" id="thermostat-heating">
-                <div class="thermostat-header">Heating</div>
+                <div class="thermostat-header" data-i18n>dashboard.thermostat.heating</div>
                 <div class="thermostat-temp">
                   <div class="thermostat-temp-target"><span id="thermostat-heating-target"></span> <span class="temp-unit"></span></div>
-                  <div class="thermostat-temp-current">Current: <span id="thermostat-heating-current"></span> <span class="temp-unit"></span></div>
+                  <div class="thermostat-temp-current"><span data-i18n>dashboard.thermostat.temp.current</span>: <span id="thermostat-heating-current"></span> <span class="temp-unit"></span></div>
                 </div>
                 <div class="thermostat-minus"><button id="thermostat-heating-minus" class="outline"><i class="icons-down"></i></button></div>
                 <div class="thermostat-plus"><button id="thermostat-heating-plus" class="outline"><i class="icons-up"></i></button></div>
                 <div class="thermostat-control">
                   <input type="checkbox" role="switch" id="thermostat-heating-enabled" value="true">
-                  <label htmlFor="thermostat-heating-enabled">Enable</label>
+                  <label htmlFor="thermostat-heating-enabled" data-i18n>dashboard.thermostat.enable</label>
 
                   <input type="checkbox" role="switch" id="thermostat-heating-turbo" value="true">
-                  <label htmlFor="thermostat-heating-turbo">Turbo mode</label>
+                  <label htmlFor="thermostat-heating-turbo" data-i18n>dashboard.thermostat.turbo</label>
                 </div>
               </div>
 
               <div class="thermostat" id="thermostat-dhw">
-                <div class="thermostat-header">DHW</div>
+                <div class="thermostat-header" data-i18n>dashboard.thermostat.dhw</div>
                 <div class="thermostat-temp">
                   <div class="thermostat-temp-target"><span id="thermostat-dhw-target"></span> <span class="temp-unit"></span></div>
-                  <div class="thermostat-temp-current">Current: <span id="thermostat-dhw-current"></span> <span class="temp-unit"></span></div>
+                  <div class="thermostat-temp-current"><span data-i18n>dashboard.thermostat.temp.current</span>: <span id="thermostat-dhw-current"></span> <span class="temp-unit"></span></div>
                 </div>
                 <div class="thermostat-minus"><button class="outline" id="thermostat-dhw-minus"><i class="icons-down"></i></button></div>
                 <div class="thermostat-plus"><button class="outline" id="thermostat-dhw-plus"><i class="icons-up"></i></button></div>
                 <div class="thermostat-control">
                   <input type="checkbox" role="switch" id="thermostat-dhw-enabled" value="true">
-                  <label htmlFor="thermostat-dhw-enabled">Enable</label>
+                  <label htmlFor="thermostat-dhw-enabled" data-i18n>dashboard.thermostat.enable</label>
                 </div>
               </div>
             </div>
@@ -68,87 +75,87 @@
           <hr />
 
           <details>
-            <summary><b>States and sensors</b></summary>
+            <summary><b data-i18n>dashboard.section.states</b></summary>
             <table>
               <tbody>
                 <tr>
-                  <th scope="row">OpenTherm connected:</th>
+                  <th scope="row" data-i18n>dashboard.state.ot</th>
                   <td><input type="radio" id="ot-connected" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">MQTT connected:</th>
+                  <th scope="row" data-i18n>dashboard.state.mqtt</th>
                   <td><input type="radio" id="mqtt-connected" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">Emergency:</th>
+                  <th scope="row" data-i18n>dashboard.state.emergency</th>
                   <td><input type="radio" id="ot-emergency" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">Heating:</th>
+                  <th scope="row" data-i18n>dashboard.state.heating</th>
                   <td><input type="radio" id="ot-heating" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">DHW:</th>
+                  <th scope="row" data-i18n>dashboard.state.dhw</th>
                   <td><input type="radio" id="ot-dhw" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">Flame:</th>
+                  <th scope="row" data-i18n>dashboard.state.flame</th>
                   <td><input type="radio" id="ot-flame" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">Fault:</th>
+                  <th scope="row" data-i18n>dashboard.state.fault</th>
                   <td><input type="radio" id="ot-fault" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">Diagnostic:</th>
+                  <th scope="row" data-i18n>dashboard.state.diag</th>
                   <td><input type="radio" id="ot-diagnostic" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">External pump:</th>
+                  <th scope="row" data-i18n>dashboard.state.extpump</th>
                   <td><input type="radio" id="ot-external-pump" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row">Modulation:</th>
+                  <th scope="row" data-i18n>dashboard.state.modulation</th>
                   <td><b id="ot-modulation"></b> %</td>
                 </tr>
                 <tr>
-                  <th scope="row">Pressure:</th>
+                  <th scope="row" data-i18n>dashboard.state.pressure</th>
                   <td><b id="ot-pressure"></b> <span class="pressure-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">DHW flow rate:</th>
+                  <th scope="row" data-i18n>dashboard.state.dhwFlowRate</th>
                   <td><b id="ot-dhw-flow-rate"></b> <span class="volume-unit"></span>/min</td>
                 </tr>
                 <tr>
-                  <th scope="row">Fault code:</th>
+                  <th scope="row" data-i18n>dashboard.state.faultCode</th>
                   <td><b id="ot-fault-code"></b></td>
                 </tr>
                 <tr>
-                  <th scope="row">Indoor temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.indoorTemp</th>
                   <td><b id="indoor-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">Outdoor temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.outdoorTemp</th>
                   <td><b id="outdoor-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">Heating temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.heatingTemp</th>
                   <td><b id="heating-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">Heating setpoint temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.heatingSetpointTemp</th>
                   <td><b id="heating-setpoint-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">Heating return temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.heatingReturnTemp</th>
                   <td><b id="heating-return-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">DHW temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.dhwTemp</th>
                   <td><b id="dhw-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">Exhaust temp:</th>
+                  <th scope="row" data-i18n>dashboard.state.exhaustTemp</th>
                   <td><b id="exhaust-temp"></b> <span class="temp-unit"></span></td>
                 </tr>
               </tbody>
@@ -158,7 +165,7 @@
           <hr />
 
           <details>
-            <summary><b>OpenTherm diagnostic</b></summary>
+            <summary><b data-i18n>dashboard.section.otDiag</b></summary>
             <pre><b>Vendor:</b>          <span id="slave-vendor"></span>
 <b>Member ID:</b>       <span id="slave-member-id"></span>
 <b>Flags:</b>           <span id="slave-flags"></span>
@@ -175,11 +182,11 @@
     <footer class="container">
       <small>
         <b>Made by Laxilef</b>
-        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary">License</a>
-        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary">Source code</a>
-        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary">Help</a>
-        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary">Issue & questions</a>
-        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary">Releases</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
       </small>
     </footer>
 
@@ -200,12 +207,15 @@
         }
       };
 
-      window.onload = async function () {
+      document.addEventListener('DOMContentLoaded', async () => {
+        const lang = new Lang(document.getElementById('lang'));
+        lang.build();
+
         document.querySelector('#thermostat-heating-minus').addEventListener('click', (event) => {
           if (!prevSettings) {
             return;
           }
-          
+
           newSettings.heating.target -= 0.5;
           modifiedTime = Date.now();
 
@@ -226,8 +236,8 @@
         document.querySelector('#thermostat-heating-plus').addEventListener('click', (event) => {
           if (!prevSettings) {
             return;
-          } 
-          
+          }
+
           newSettings.heating.target += 0.5;
           modifiedTime = Date.now();
 
@@ -249,7 +259,7 @@
           if (!prevSettings) {
             return;
           }
-          
+
           newSettings.dhw.target -= 1.0;
           modifiedTime = Date.now();
 
@@ -264,7 +274,7 @@
           if (!prevSettings) {
             return;
           }
-          
+
           newSettings.dhw.target += 1.0;
           modifiedTime = Date.now();
 
@@ -314,7 +324,7 @@
               console.log(newSettings);
             }
 
-            let parameters = {cache: 'no-cache'};
+            let parameters = { cache: 'no-cache' };
             if (modified) {
               parameters.method = "POST";
               parameters.body = JSON.stringify(newSettings);
@@ -409,7 +419,7 @@
 
           setTimeout(onLoadPage, 10000);
         }, 1000);
-      };
+      });
     </script>
   </body>
 </html>
