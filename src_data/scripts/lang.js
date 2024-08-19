@@ -102,7 +102,7 @@ class Lang {
   }
   
   getSuitableLocale(locales) {
-    return locales.find(this.localeIsSupported) || this.defaultLocale;
+    return locales.find(this.localeIsSupported, this) || this.defaultLocale;
   }
   
   browserLocales(codeOnly = false) {
