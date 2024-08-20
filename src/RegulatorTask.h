@@ -198,6 +198,10 @@ protected:
         etRegulator.Kt = 0;
         etRegulator.indoorTemp = 0;
 
+      } else if ((settings.sensors.indoor.type == SensorType::DS18B20 || settings.sensors.indoor.type == SensorType::BLUETOOTH) && !vars.sensors.indoor.connected) {
+        etRegulator.Kt = 0;
+        etRegulator.indoorTemp = 0;
+        
       } else {
         etRegulator.Kt = settings.equitherm.t_factor;
         etRegulator.indoorTemp = indoorTemp;

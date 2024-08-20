@@ -77,13 +77,15 @@ struct Settings {
   } mqtt;
 
   struct {
-    bool enable = true;
+    bool enable = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
     unsigned short tresholdTime = 120;
     bool useEquitherm = false;
     bool usePid = false;
     bool onNetworkFault = true;
     bool onMqttFault = true;
+    bool onIndoorSensorDisconnect = false;
+    bool onOutdoorSensorDisconnect = false;
   } emergency;
 
   struct {
@@ -124,6 +126,7 @@ struct Settings {
     struct {
       SensorType type = SensorType::BOILER;
       byte gpio = DEFAULT_SENSOR_OUTDOOR_GPIO;
+      uint8_t bleAddress[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       float offset = 0.0f;
     } outdoor;
 
@@ -165,6 +168,20 @@ struct Variables {
     float dhwFlowRate = 0.0f;
     byte faultCode = 0;
     int8_t rssi = 0;
+
+    struct {
+      bool connected = false;
+      int8_t rssi = 0;
+      float battery = 0.0f;
+      float humidity = 0.0f;
+    } outdoor;
+
+    struct {
+      bool connected = false;
+      int8_t rssi = 0;
+      float battery = 0.0f;
+      float humidity = 0.0f;
+    } indoor;
   } sensors;
 
   struct {

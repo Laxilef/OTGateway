@@ -371,6 +371,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["emergency"]["usePid"] = src.emergency.usePid;
     dst["emergency"]["onNetworkFault"] = src.emergency.onNetworkFault;
     dst["emergency"]["onMqttFault"] = src.emergency.onMqttFault;
+    dst["emergency"]["onIndoorSensorDisconnect"] = src.emergency.onIndoorSensorDisconnect;
+    dst["emergency"]["onOutdoorSensorDisconnect"] = src.emergency.onOutdoorSensorDisconnect;
   }
 
   dst["heating"]["enable"] = src.heating.enable;
@@ -401,12 +403,24 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   dst["sensors"]["outdoor"]["type"] = static_cast<byte>(src.sensors.outdoor.type);
   dst["sensors"]["outdoor"]["gpio"] = src.sensors.outdoor.gpio;
+
+  char bleAddress[18];
+  sprintf(
+    bleAddress,
+    "%02x:%02x:%02x:%02x:%02x:%02x",
+    src.sensors.outdoor.bleAddress[0],
+    src.sensors.outdoor.bleAddress[1],
+    src.sensors.outdoor.bleAddress[2],
+    src.sensors.outdoor.bleAddress[3],
+    src.sensors.outdoor.bleAddress[4],
+    src.sensors.outdoor.bleAddress[5]
+  );
+  dst["sensors"]["outdoor"]["bleAddress"] = String(bleAddress);
   dst["sensors"]["outdoor"]["offset"] = roundd(src.sensors.outdoor.offset, 2);
 
   dst["sensors"]["indoor"]["type"] = static_cast<byte>(src.sensors.indoor.type);
   dst["sensors"]["indoor"]["gpio"] = src.sensors.indoor.gpio;
 
-  char bleAddress[18];
   sprintf(
     bleAddress,
     "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -883,7 +897,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (src["emergency"]["useEquitherm"].is<bool>()) {
       bool value = src["emergency"]["useEquitherm"].as<bool>();
 
-      if (!dst.opentherm.nativeHeatingControl && dst.sensors.outdoor.type != SensorType::MANUAL) {
+      if (!dst.opentherm.nativeHeatingControl && dst.sensors.outdoor.type != SensorType::MANUAL && dst.sensors.outdoor.type != SensorType::BLUETOOTH) {
         if (value != dst.emergency.useEquitherm) {
           dst.emergency.useEquitherm = value;
           changed = true;
@@ -903,7 +917,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (src["emergency"]["usePid"].is<bool>()) {
       bool value = src["emergency"]["usePid"].as<bool>();
 
-      if (!dst.opentherm.nativeHeatingControl && dst.sensors.indoor.type != SensorType::MANUAL) {
+      if (!dst.opentherm.nativeHeatingControl && dst.sensors.indoor.type != SensorType::MANUAL && dst.sensors.indoor.type != SensorType::BLUETOOTH) {
         if (value != dst.emergency.usePid) {
           dst.emergency.usePid = value;
           changed = true;
@@ -934,6 +948,26 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.emergency.onMqttFault) {
         dst.emergency.onMqttFault = value;
+        changed = true;
+      }
+    }
+
+    if (src["emergency"]["onIndoorSensorDisconnect"].is<bool>()) {
+      bool value = src["emergency"]["onIndoorSensorDisconnect"].as<bool>();
+
+      if (value != dst.emergency.onIndoorSensorDisconnect) {
+        dst.emergency.onIndoorSensorDisconnect = value;
+        dst.emergency.usePid = false;
+        changed = true;
+      }
+    }
+
+    if (src["emergency"]["onOutdoorSensorDisconnect"].is<bool>()) {
+      bool value = src["emergency"]["onOutdoorSensorDisconnect"].as<bool>();
+
+      if (value != dst.emergency.onOutdoorSensorDisconnect) {
+        dst.emergency.onOutdoorSensorDisconnect = value;
+        dst.emergency.useEquitherm = false;
         changed = true;
       }
     }
@@ -1167,6 +1201,16 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         }
         break;
 
+      #if USE_BLE
+      case static_cast<byte>(SensorType::BLUETOOTH):
+        if (dst.sensors.outdoor.type != SensorType::BLUETOOTH) {
+          dst.sensors.outdoor.type = SensorType::BLUETOOTH;
+          dst.emergency.useEquitherm = false;
+          changed = true;
+        }
+        break;
+      #endif
+
       default:
         break;
     }
@@ -1188,6 +1232,21 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
   }
+
+  #if USE_BLE
+  if (!src["sensors"]["outdoor"]["bleAddress"].isNull()) {
+    String value = src["sensors"]["outdoor"]["bleAddress"].as<String>();
+    int tmp[6];
+    if(sscanf(value.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]) == 6) {
+      for(uint8_t i = 0; i < 6; i++) {
+        if (dst.sensors.outdoor.bleAddress[i] != (uint8_t) tmp[i]) {
+          dst.sensors.outdoor.bleAddress[i] = (uint8_t) tmp[i];
+          changed = true;
+        }
+      }
+    }
+  }
+  #endif
 
   if (!src["sensors"]["outdoor"]["offset"].isNull()) {
     float value = src["sensors"]["outdoor"]["offset"].as<float>();
@@ -1222,6 +1281,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       case static_cast<byte>(SensorType::BLUETOOTH):
         if (dst.sensors.indoor.type != SensorType::BLUETOOTH) {
           dst.sensors.indoor.type = SensorType::BLUETOOTH;
+          dst.emergency.usePid = false;
           changed = true;
         }
         break;
@@ -1439,6 +1499,14 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["sensors"]["faultCode"] = src.sensors.faultCode;
   dst["sensors"]["rssi"] = src.sensors.rssi;
   dst["sensors"]["uptime"] = millis() / 1000ul;
+  dst["sensors"]["outdoor"]["connected"] = src.sensors.outdoor.connected;
+  dst["sensors"]["outdoor"]["rssi"] = src.sensors.outdoor.rssi;
+  dst["sensors"]["outdoor"]["battery"] = roundd(src.sensors.outdoor.battery, 2);
+  dst["sensors"]["outdoor"]["humidity"] = roundd(src.sensors.outdoor.humidity, 2);
+  dst["sensors"]["indoor"]["connected"] = src.sensors.indoor.connected;
+  dst["sensors"]["indoor"]["rssi"] = src.sensors.indoor.rssi;
+  dst["sensors"]["indoor"]["battery"] = roundd(src.sensors.indoor.battery, 2);
+  dst["sensors"]["indoor"]["humidity"] = roundd(src.sensors.indoor.humidity, 2);
 
   dst["temperatures"]["indoor"] = roundd(src.temperatures.indoor, 2);
   dst["temperatures"]["outdoor"] = roundd(src.temperatures.outdoor, 2);

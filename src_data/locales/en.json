@@ -8,6 +8,7 @@
       "issues": "Issues & questions",
       "releases": "Releases"
     },
+    "dbm": "dBm",
 
     "button": {
       "upgrade": "Upgrade",
@@ -87,6 +88,14 @@
         "fault": "Fault",
         "diag": "Diagnostic",
         "extpump": "External pump",
+        "outdoorSensorConnected": "Outdoor sensor connected",
+        "outdoorSensorRssi": "Outdoor sensor RSSI",
+        "outdoorSensorHumidity": "Outdoor sensor humidity",
+        "outdoorSensorBattery": "Outdoor sensor battery",
+        "indoorSensorConnected": "Indoor sensor connected",
+        "indoorSensorRssi": "Indoor sensor RSSI",
+        "indoorSensorHumidity": "Indoor sensor humidity",
+        "indoorSensorBattery": "Indoor sensor battery",
         "modulation": "Modulation",
         "pressure": "Pressure",
         "dhwFlowRate": "DHW flow rate",
@@ -208,7 +217,7 @@
       },
 
       "emergency": {
-        "desc": "<b>!</b> Emergency mode can be useful <u>only</u> when using Equitherm and/or PID (when normal work) and when reporting indoor/outdoor temperature via MQTT or API. In this mode, sensor values that are reported via MQTT/API are not used.",
+        "desc": "<b>!</b> Emergency mode can be useful <u>only</u> when using Equitherm and/or PID (when normal work) and when reporting indoor/outdoor temperature via MQTT/API/BLE. In this mode, sensor values that are reported via MQTT/API/BLE are not used.",
         
         "target": {
           "title": "Target temperature",
@@ -218,12 +227,14 @@
 
         "events": {
           "network": "On network fault",
-          "mqtt": "On MQTT fault"
+          "mqtt": "On MQTT fault",
+          "indoorSensorDisconnect": "On loss connection with indoor sensor",
+          "outdoorSensorDisconnect": "On loss connection with outdoor sensor"
         },
 
         "regulators": {
-          "equitherm": "Equitherm <small>(requires at least an external/boiler <u>outdoor</u> sensor)</small>",
-          "pid": "PID <small>(requires at least an external/BLE <u>indoor</u> sensor)</small>"
+          "equitherm": "Equitherm <small>(requires at least an external (DS18B20) or boiler <u>outdoor</u> sensor)</small>",
+          "pid": "PID <small>(requires at least an external (DS18B20) <u>indoor</u> sensor)</small>"
         }
       },
 

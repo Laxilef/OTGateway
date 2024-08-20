@@ -29,7 +29,6 @@ protected:
   enum class PumpStartReason {NONE, HEATING, ANTISTUCK};
 
   Blinker* blinker = nullptr;
-  unsigned long firstFailConnect = 0;
   unsigned long lastHeapInfo = 0;
   unsigned int minFreeHeap = 0;
   unsigned int minMaxFreeBlockHeap = 0;
@@ -39,6 +38,8 @@ protected:
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
   unsigned long externalPumpStartTime = 0;
   bool telnetStarted = false;
+  bool emergencyDetected = false;
+  unsigned long emergencyFlipTime = 0;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -85,10 +86,6 @@ protected:
     vars.states.mqtt = tMqtt->isConnected();
     vars.sensors.rssi = network->isConnected() ? WiFi.RSSI() : 0;
 
-    if (vars.states.emergency && !settings.emergency.enable) {
-      vars.states.emergency = false;
-    }
-
     if (network->isConnected()) {
       if (!this->telnetStarted && telnetStream != nullptr) {
         telnetStream->begin(23, false);
@@ -100,17 +97,6 @@ protected:
 
       } else if (!settings.mqtt.enable && tMqtt->isEnabled()) {
         tMqtt->disable();
-      }
-
-      if (!vars.states.emergency && settings.emergency.enable && settings.emergency.onMqttFault && !tMqtt->isEnabled()) {
-        vars.states.emergency = true;
-
-      } else if (vars.states.emergency && !settings.emergency.onMqttFault) {
-        vars.states.emergency = false;
-      }
-
-      if (this->firstFailConnect != 0) {
-        this->firstFailConnect = 0;
       }
 
       if ( Log.getLevel() != TinyLogger::Level::INFO && !settings.system.debug ) {
@@ -129,21 +115,10 @@ protected:
       if (tMqtt->isEnabled()) {
         tMqtt->disable();
       }
-
-      if (!vars.states.emergency && settings.emergency.enable && settings.emergency.onNetworkFault) {
-        if (this->firstFailConnect == 0) {
-          this->firstFailConnect = millis();
-        }
-
-        if (millis() - this->firstFailConnect > (settings.emergency.tresholdTime * 1000)) {
-          vars.states.emergency = true;
-          Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode enabled"));
-        }
-      }
     }
     this->yield();
 
-
+    this->emergency();
     this->ledStatus();
     this->externalPump();
     this->yield();
@@ -210,6 +185,76 @@ protected:
         freeHeap, getTotalHeap(), this->minFreeHeap, minFreeHeapDiff, maxFreeBlockHeap, this->minMaxFreeBlockHeap, minMaxFreeBlockHeapDiff, getHeapFrag()
       );
       this->lastHeapInfo = millis();
+    }
+  }
+
+  void emergency() {
+    if (!settings.emergency.enable && vars.states.emergency) {
+      this->emergencyDetected = false;
+      vars.states.emergency = false;
+
+      Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode disabled"));
+    }
+
+    if (!settings.emergency.enable) {
+      return;
+    }
+
+    // flags
+    uint8_t emergencyFlags = 0b00000000;
+
+    // set network flag
+    if (settings.emergency.onNetworkFault && !network->isConnected()) {
+      emergencyFlags |= 0b00000001;
+    }
+
+    // set mqtt flag
+    if (settings.emergency.onMqttFault && (!tMqtt->isEnabled() || !tMqtt->isConnected())) {
+      emergencyFlags |= 0b00000010;
+    }
+
+    // set outdoor sensor flag
+    if (settings.sensors.outdoor.type == SensorType::DS18B20 || settings.sensors.outdoor.type == SensorType::BLUETOOTH) {
+      if (settings.emergency.onOutdoorSensorDisconnect && !vars.sensors.outdoor.connected) {
+        emergencyFlags |= 0b00000100;
+      }
+    }
+
+    // set indoor sensor flag
+    if (settings.sensors.indoor.type == SensorType::DS18B20 || settings.sensors.indoor.type == SensorType::BLUETOOTH) {
+      if (settings.emergency.onIndoorSensorDisconnect && !vars.sensors.indoor.connected) {
+        emergencyFlags |= 0b00001000;
+      }
+    }
+
+    // if any flags is true
+    if ((emergencyFlags & 0b00001111) != 0) {
+      if (!this->emergencyDetected) {
+        // flip flag
+        this->emergencyDetected = true;
+        this->emergencyFlipTime = millis();
+
+      } else if (this->emergencyDetected && !vars.states.emergency) {
+        // enable emergency
+        if (millis() - this->emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
+          vars.states.emergency = true;
+          Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode enabled (%hhu)"), emergencyFlags);
+        }
+      }
+
+    } else {
+      if (this->emergencyDetected) {
+        // flip flag
+        this->emergencyDetected = false;
+        this->emergencyFlipTime = millis();
+
+      } else if (!this->emergencyDetected && vars.states.emergency) {
+        // disable emergency
+        if (millis() - this->emergencyFlipTime > 30000) {
+          vars.states.emergency = false;
+          Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode disabled"));
+        }
+      }
     }
   }
 

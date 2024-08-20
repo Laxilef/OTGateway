@@ -115,6 +115,38 @@
                   <td><input type="radio" id="ot-external-pump" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.state.outdoorSensorConnected</th>
+                  <td><input type="radio" id="outdoor-sensor-connected" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.outdoorSensorRssi</th>
+                  <td><b id="outdoor-sensor-rssi"></b> <span data-i18n>dbm</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.outdoorSensorHumidity</th>
+                  <td><b id="outdoor-sensor-humidity"></b> %</td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.outdoorSensorBattery</th>
+                  <td><b id="outdoor-sensor-battery"></b> %</td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.indoorSensorConnected</th>
+                  <td><input type="radio" id="indoor-sensor-connected" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.indoorSensorRssi</th>
+                  <td><b id="indoor-sensor-rssi"></b> <span data-i18n>dbm</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.indoorSensorHumidity</th>
+                  <td><b id="indoor-sensor-humidity"></b> %</td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.indoorSensorBattery</th>
+                  <td><b id="indoor-sensor-battery"></b> %</td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.state.modulation</th>
                   <td><b id="ot-modulation"></b> %</td>
                 </tr>
@@ -377,6 +409,7 @@
             setValue('#thermostat-dhw-current', result.temperatures.dhw);
 
             setState('#ot-connected', result.states.otStatus);
+            setState('#mqtt-connected', result.states.mqtt);
             setState('#ot-emergency', result.states.emergency);
             setState('#ot-heating', result.states.heating);
             setState('#ot-dhw', result.states.dhw);
@@ -384,7 +417,15 @@
             setState('#ot-fault', result.states.fault);
             setState('#ot-diagnostic', result.states.diagnostic);
             setState('#ot-external-pump', result.states.externalPump);
-            setState('#mqtt-connected', result.states.mqtt);
+            setState('#outdoor-sensor-connected', result.sensors.outdoor.connected);
+            setState('#indoor-sensor-connected', result.sensors.indoor.connected);
+
+            setValue('#outdoor-sensor-rssi', result.sensors.outdoor.rssi);
+            setValue('#outdoor-sensor-humidity', result.sensors.outdoor.humidity);
+            setValue('#outdoor-sensor-battery', result.sensors.outdoor.battery);
+            setValue('#indoor-sensor-rssi', result.sensors.indoor.rssi);
+            setValue('#indoor-sensor-humidity', result.sensors.indoor.humidity);
+            setValue('#indoor-sensor-battery', result.sensors.indoor.battery);
 
             setValue('#ot-modulation', result.sensors.modulation);
             setValue('#ot-pressure', result.sensors.pressure);
