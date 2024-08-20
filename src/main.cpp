@@ -135,13 +135,9 @@ void setup() {
   network = (new NetworkMgr)
     ->setHostname(networkSettings.hostname)
     ->setStaCredentials(
-    #ifdef WOKWI
-      "Wokwi-GUEST", nullptr, 6
-    #else
       strlen(networkSettings.sta.ssid) ? networkSettings.sta.ssid : nullptr,
       strlen(networkSettings.sta.password) ? networkSettings.sta.password : nullptr,
       networkSettings.sta.channel
-    #endif
     )->setApCredentials(
       strlen(networkSettings.ap.ssid) ? networkSettings.ap.ssid : nullptr,
       strlen(networkSettings.ap.password) ? networkSettings.ap.password : nullptr,
