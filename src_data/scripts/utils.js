@@ -14,14 +14,11 @@ function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
   let button = form.querySelector('button[type="submit"]');
   let defaultText;
 
-  if (button) {
-    defaultText = button.textContent;
-  }
-
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (button) {
+      defaultText = button.textContent;
       button.textContent = i18n("button.wait");
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
@@ -100,16 +97,13 @@ function setupNetworkScanForm(formSelector, tableSelector) {
   let button = form.querySelector('button[type="submit"]');
   let defaultText;
 
-  if (button) {
-    defaultText = button.innerHTML;
-  }
-
   const onSubmitFn = async (event) => {
     if (event) {
       event.preventDefault();
     }
 
     if (button) {
+      defaultText = button.innerHTML;
       button.innerHTML = i18n('button.wait');
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
@@ -262,14 +256,11 @@ function setupRestoreBackupForm(formSelector) {
   let button = form.querySelector('button[type="submit"]');
   let defaultText;
 
-  if (button) {
-    defaultText = button.textContent;
-  }
-
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (button) {
+      defaultText = button.textContent;
       button.textContent = i18n('button.wait');
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
@@ -348,10 +339,6 @@ function setupUpgradeForm(formSelector) {
   const url = form.action;
   let button = form.querySelector('button[type="submit"]');
   let defaultText;
-
-  if (button) {
-    defaultText = button.textContent;
-  }
 
   const statusToText = (status) => {
     switch (status) {
@@ -456,6 +443,7 @@ function setupUpgradeForm(formSelector) {
     hide('.upgrade-filesystem-result');
 
     if (button) {
+      defaultText = button.textContent;
       button.textContent = i18n('button.uploading');
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
