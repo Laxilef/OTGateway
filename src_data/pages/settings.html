@@ -561,23 +561,26 @@
                 </label>
               </fieldset>
 
-              <label for="outdoor-sensor-gpio">
-                <span data-i18n>settings.tempSensor.gpio</span>
-                <input type="number" inputmode="numeric" id="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
-              </label>
-
               <div class="grid">
-                <label for="outdoor-sensor-offset">
-                  <span data-i18n>settings.tempSensor.offset</span>
-                  <input type="number" inputmode="numeric" id="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-10" max="10" step="0.01" required>
+                <label for="outdoor-sensor-gpio">
+                  <span data-i18n>settings.tempSensor.gpio</span>
+                  <input type="number" inputmode="numeric" id="outdoor-sensor-gpio" name="sensors[outdoor][gpio]" min="0" max="254" step="1">
                 </label>
-                
+
                 <label for="outdoor-sensor-ble-addresss">
-                  <span data-i18n>settings.tempSensor.bleAddress.title</span>
+                  <span data-i18n>settings.tempSensor.bleAddress</span>
                   <input type="text" id="outdoor-sensor-ble-addresss" name="sensors[outdoor][bleAddress]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
-                  <small data-i18n>settings.tempSensor.bleAddress.note</small>
                 </label>
               </div>
+
+              <label for="outdoor-sensor-offset">
+                <span data-i18n>settings.tempSensor.offset</span>
+                <input type="number" inputmode="numeric" id="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-10" max="10" step="0.01" required>
+              </label>
+              
+              <fieldset>
+                <mark data-i18n>settings.note.bleDevice</mark>
+              </fieldset>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -610,23 +613,26 @@
                 </label>
               </fieldset>
 
-              <label for="indoor-sensor-gpio">
-                <span data-i18n>settings.tempSensor.gpio</span>
-                <input type="number" inputmode="numeric" id="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
-              </label>
-
               <div class="grid">
-                <label for="indoor-sensor-offset">
-                  <span data-i18n>settings.tempSensor.offset</span>
-                  <input type="number" inputmode="numeric" id="indoor-sensor-offset" name="sensors[indoor][offset]" min="-10" max="10" step="0.01" required>
+                <label for="indoor-sensor-gpio">
+                  <span data-i18n>settings.tempSensor.gpio</span>
+                  <input type="number" inputmode="numeric" id="indoor-sensor-gpio" name="sensors[indoor][gpio]" min="0" max="254" step="1">
                 </label>
 
                 <label for="indoor-sensor-ble-addresss">
-                  <span data-i18n>settings.tempSensor.bleAddress.title</span>
+                  <span data-i18n>settings.tempSensor.bleAddress</span>
                   <input type="text" id="indoor-sensor-ble-addresss" name="sensors[indoor][bleAddress]" pattern="([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}">
-                  <small data-i18n>settings.tempSensor.bleAddress.note</small>
                 </label>
               </div>
+
+              <label for="indoor-sensor-offset">
+                <span data-i18n>settings.tempSensor.offset</span>
+                <input type="number" inputmode="numeric" id="indoor-sensor-offset" name="sensors[indoor][offset]" min="-10" max="10" step="0.01" required>
+              </label>
+
+              <fieldset>
+                <mark data-i18n>settings.note.bleDevice</mark>
+              </fieldset>
 
               <button type="submit" data-i18n>button.save</button>
             </form>

@@ -175,7 +175,8 @@
       "enable": "Enable",
       "note": {
         "restart": "After changing these settings, the device must be restarted for the changes to take effect.",
-        "blankNotUse": "blank - not use"
+        "blankNotUse": "blank - not use",
+        "bleDevice": "BLE device can be used <u>only</u> with some ESP32 boards with BLE support!"
       },
 
       "temp": {
@@ -212,7 +213,7 @@
       },
 
       "heating": {
-        "hyst": "Hysteresis",
+        "hyst": "Hysteresis <small>(in degrees)</small>",
         "maxMod": "Max modulation level"
       },
 
@@ -299,14 +300,11 @@
           "boiler": "From boiler via OpenTherm",
           "manual": "Manual via MQTT/API",
           "ext": "External (DS18B20)",
-          "ble": "BLE device <i>(ONLY for some ESP32 which support BLE)</i>"
+          "ble": "BLE device"
         },
         "gpio": "GPIO",
         "offset": "Temp offset <small>(calibration)</small>",
-        "bleAddress": {
-          "title": "BLE address",
-          "note": "ONLY for some ESP32 which support BLE"
-        }
+        "bleAddress": "BLE device MAC address"
       },
 
       "extPump": {
