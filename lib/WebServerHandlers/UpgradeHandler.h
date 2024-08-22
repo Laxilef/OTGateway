@@ -58,6 +58,10 @@ public:
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
+  bool canHandle(WebServer &server, HTTPMethod method, const String uri) override {
+    return this->canHandle(method, uri);
+  }
+
   bool canHandle(HTTPMethod method, const String uri) override {
   #else
   bool canHandle(HTTPMethod method, const String& uri) override {
@@ -66,6 +70,10 @@ public:
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
+  bool canUpload(WebServer &server, const String uri) override {
+    return this->canUpload(uri);
+  }
+
   bool canUpload(const String uri) override {
   #else
   bool canUpload(const String& uri) override {
