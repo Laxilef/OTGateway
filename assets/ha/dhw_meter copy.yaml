@@ -1,0 +1,16 @@
+#For configuration.yaml add watermeter 
+sensor:
+    - platform: integration
+      unique_id: hot_water_meter
+      name: hot_water_meter
+      source: sensor.opentherm_dhw_flow_rate
+      unit_time: min
+      method: left
+      round: 2
+
+homeassistant:
+    customize:
+      sensor.hot_water_meter:
+        friendly_name: "Hot water"
+        device_class: "water"
+        icon: "mdi:water-pump"
