@@ -1,0 +1,48 @@
+# Blueprint for reporting indoor/outdoor temperature to OpenTherm Gateway from any home assistant sensor
+# Updated: 03.09.2024
+
+blueprint:
+  name: Report temp to OpenTherm Gateway
+  domain: automation
+  author: "Laxilef"
+  
+  input:
+    source_entity:
+      name: Source entity
+      description: "Temperature data source"
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: sensor
+              device_class: temperature
+    target_entity:
+      name: Target entity
+      description: "Usually ``number.opentherm_indoor_temp`` or ``number.opentherm_outdoor_temp``"
+      default: "number.opentherm_indoor_temp"
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: number
+
+mode: single
+variables:
+  source_entity: !input source_entity
+  target_entity: !input target_entity
+trigger:
+  - platform: time_pattern
+    seconds: /30
+condition:
+  - condition: template
+    value_template: "{{ states(source_entity) != 'unavailable' and states(target_entity) != 'unavailable' }}"
+action:
+  - if:
+      - condition: template
+        value_template: "{{ (states(source_entity)|float(0) - states(target_entity)|float(0)) | abs | round(2) >= 0.01 }}"
+    then:
+      - service: number.set_value
+        data:
+          value: "{{ states(source_entity)|float(0)|round(2) }}"
+        target:
+          entity_id: "{{ target_entity }}"

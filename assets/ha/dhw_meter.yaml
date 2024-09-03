@@ -1,3 +1,6 @@
+# Package for Home Assistant Packages
+# More info: https://www.home-assistant.io/docs/configuration/packages/
+
 dhw_meter:
   sensor:
     - platform: integration
