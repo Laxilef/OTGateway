@@ -42,7 +42,7 @@ All available information and instructions can be found in the wiki:
    * [Quick Start](https://github.com/Laxilef/OTGateway/wiki#quick-start)
    * [Build firmware](https://github.com/Laxilef/OTGateway/wiki#build-firmware)
    * [Flash firmware via ESP Flash Download Tool](https://github.com/Laxilef/OTGateway/wiki#flash-firmware-via-esp-flash-download-tool)
-   * [HomeAsssistant settings](https://github.com/Laxilef/OTGateway/wiki#homeasssistant-settings)
+   * [Settings](https://github.com/Laxilef/OTGateway/wiki#settings)
       * [External temperature sensors](https://github.com/Laxilef/OTGateway/wiki#external-temperature-sensors)
       * [Reporting indoor/outdoor temperature from any Home Assistant sensor](https://github.com/Laxilef/OTGateway/wiki#reporting-indooroutdoor-temperature-from-any-home-assistant-sensor)
       * [Reporting outdoor temperature from Home Assistant weather integration](https://github.com/Laxilef/OTGateway/wiki#reporting-outdoor-temperature-from-home-assistant-weather-integration)
