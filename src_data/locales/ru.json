@@ -269,7 +269,8 @@
           "dhwToCh2": "Дублировать параметры ГВС в канал 2",
           "dhwBlocking": "DHW blocking",
           "modulationSyncWithHeating": "Синхронизировать модуляцию с отоплением",
-          "getMinMaxTemp": "Получать мин. и макс. температуру от котла"
+          "getMinMaxTemp": "Получать мин. и макс. температуру от котла",
+          "immergasFix": "Фикс для котлов Immergas"
         },
 
         "faultState": {

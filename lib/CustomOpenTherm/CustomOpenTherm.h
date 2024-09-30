@@ -79,7 +79,7 @@ public:
     }
   }
 
-  unsigned long setBoilerStatus(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2, bool summerWinterMode, bool dhwBlocking) {
+  unsigned long setBoilerStatus(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2, bool summerWinterMode, bool dhwBlocking, uint8_t lb = 0) {
     unsigned int data = enableCentralHeating
       | (enableHotWater << 1)
       | (enableCooling << 2)
@@ -87,7 +87,9 @@ public:
       | (enableCentralHeating2 << 4)
       | (summerWinterMode << 5)
       | (dhwBlocking << 6);
+    
     data <<= 8;
+    data |= lb;
 
     return this->sendRequest(buildRequest(
       OpenThermMessageType::READ_DATA,

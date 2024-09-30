@@ -165,6 +165,16 @@ protected:
       heatingCh2Enabled = settings.opentherm.dhwPresent && settings.dhw.enable;
     }
 
+    // Set boiler status LB
+    // Some boilers require this, although this is against protocol
+    uint8_t statusLb = 0;
+
+    // Immergas fix
+    // https://arduino.ru/forum/programmirovanie/termostat-opentherm-na-esp8266?page=15#comment-649392
+    if (settings.opentherm.immergasFix) {
+      statusLb = 0xCA;
+    }
+
     unsigned long response = this->instance->setBoilerStatus(
       heatingEnabled,
       settings.opentherm.dhwPresent && settings.dhw.enable,
@@ -172,7 +182,8 @@ protected:
       settings.opentherm.nativeHeatingControl,
       heatingCh2Enabled,
       settings.opentherm.summerWinterMode,
-      settings.opentherm.dhwBlocking
+      settings.opentherm.dhwBlocking,
+      statusLb
     );
 
     if (!CustomOpenTherm::isValidResponse(response)) {

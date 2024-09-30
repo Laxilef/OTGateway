@@ -443,6 +443,11 @@
                   <span data-i18n>settings.ot.options.getMinMaxTemp</span>
                 </label>
 
+                <label for="opentherm-immergas-fix"></label>
+                  <input type="checkbox" id="opentherm-immergas-fix" name="opentherm[immergasFix]" value="true">
+                  <span data-i18n>settings.ot.options.immergasFix</span>
+                </label>
+
                 <hr />
                 <fieldset>
                   <label for="opentherm-fault-state-gpio">
@@ -736,6 +741,7 @@
           setCheckboxValue('#opentherm-sync-modulation-with-heating', data.opentherm.modulationSyncWithHeating);
           setCheckboxValue('#opentherm-get-min-max-temp', data.opentherm.getMinMaxTemp);
           setCheckboxValue('#opentherm-native-heating-control', data.opentherm.nativeHeatingControl);
+          setCheckboxValue('#opentherm-immergas-fix', data.opentherm.immergasFix);
           setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
 
           // MQTT

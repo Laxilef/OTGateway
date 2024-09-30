@@ -63,6 +63,7 @@ struct Settings {
     bool modulationSyncWithHeating = false;
     bool getMinMaxTemp = true;
     bool nativeHeatingControl = false;
+    bool immergasFix = false;
   } opentherm;
 
   struct {
