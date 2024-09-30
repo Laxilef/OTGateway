@@ -58,34 +58,26 @@ public:
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
-  bool canHandle(WebServer &server, HTTPMethod method, const String uri) override {
+  bool canHandle(WebServer &server, HTTPMethod method, const String &uri) override {
     return this->canHandle(method, uri);
   }
-
-  bool canHandle(HTTPMethod method, const String uri) override {
-  #else
-  bool canHandle(HTTPMethod method, const String& uri) override {
   #endif
+
+  bool canHandle(HTTPMethod method, const String& uri) override {
     return method == HTTP_POST && uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
-  bool canUpload(WebServer &server, const String uri) override {
+  bool canUpload(WebServer &server, const String &uri) override {
     return this->canUpload(uri);
   }
-
-  bool canUpload(const String uri) override {
-  #else
-  bool canUpload(const String& uri) override {
   #endif
+
+  bool canUpload(const String& uri) override {
     return uri.equals(this->uri) && (!this->canUploadCallback || this->canUploadCallback(uri));
   }
 
-  #if defined(ARDUINO_ARCH_ESP32)
-  bool handle(WebServer& server, HTTPMethod method, const String uri) override {
-  #else
   bool handle(WebServer& server, HTTPMethod method, const String& uri) override {
-  #endif
     if (this->afterUpgradeCallback) {
       this->afterUpgradeCallback(this->firmwareResult, this->filesystemResult);
     }
@@ -99,11 +91,7 @@ public:
     return true;
   }
 
-  #if defined(ARDUINO_ARCH_ESP32)
-  void upload(WebServer& server, const String uri, HTTPUpload& upload) override {
-  #else
   void upload(WebServer& server, const String& uri, HTTPUpload& upload) override {
-  #endif
     UpgradeResult* result;
     if (upload.name.equals("firmware")) {
       result = &this->firmwareResult;

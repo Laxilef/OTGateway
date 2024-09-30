@@ -28,22 +28,16 @@ public:
   }
 
   #if defined(ARDUINO_ARCH_ESP32)
-  bool canHandle(WebServer &server, HTTPMethod method, const String uri) override {
+  bool canHandle(WebServer &server, HTTPMethod method, const String &uri) override {
     return this->canHandle(method, uri);
   }
-
-  bool canHandle(HTTPMethod method, const String uri) override {
-  #else
-  bool canHandle(HTTPMethod method, const String& uri) override {
   #endif
+
+  bool canHandle(HTTPMethod method, const String& uri) override {
     return method == HTTP_GET && uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
   }
 
-  #if defined(ARDUINO_ARCH_ESP32)
-  bool handle(WebServer& server, HTTPMethod method, const String uri) override {
-  #else
   bool handle(WebServer& server, HTTPMethod method, const String& uri) override {
-  #endif
     if (!this->canHandle(method, uri)) {
       return false;
     }
