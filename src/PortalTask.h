@@ -582,6 +582,10 @@ protected:
   void loop() {
     // web server
     if (!this->stateWebServer() && (network->isApEnabled() || network->isConnected()) && millis() - this->webServerChangeState >= this->changeStateInterval) {
+      #ifdef ARDUINO_ARCH_ESP32
+      this->delay(250);
+      #endif
+      
       this->startWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
 
