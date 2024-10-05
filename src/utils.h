@@ -1507,6 +1507,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["sensors"]["pressure"] = roundd(src.sensors.pressure, 2);
   dst["sensors"]["dhwFlowRate"] = roundd(src.sensors.dhwFlowRate, 2);
   dst["sensors"]["faultCode"] = src.sensors.faultCode;
+  dst["sensors"]["diagnosticCode"] = src.sensors.diagnosticCode;
   dst["sensors"]["rssi"] = src.sensors.rssi;
   dst["sensors"]["uptime"] = millis() / 1000ul;
   dst["sensors"]["outdoor"]["connected"] = src.sensors.outdoor.connected;

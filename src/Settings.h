@@ -168,6 +168,7 @@ struct Variables {
     float pressure = 0.0f;
     float dhwFlowRate = 0.0f;
     byte faultCode = 0;
+    unsigned short diagnosticCode = 0;
     int8_t rssi = 0;
 
     struct {

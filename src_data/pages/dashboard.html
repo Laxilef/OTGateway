@@ -162,6 +162,10 @@
                   <th scope="row" data-i18n>dashboard.state.faultCode</th>
                   <td><b id="ot-fault-code"></b></td>
                 </tr>
+                <tr></tr>
+                  <th scope="row" data-i18n>dashboard.state.diagCode</th>
+                  <td><b id="ot-diag-code"></b></td>
+                </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.state.indoorTemp</th>
                   <td><b id="indoor-temp"></b> <span class="temp-unit"></span></td>
@@ -430,7 +434,18 @@
             setValue('#ot-modulation', result.sensors.modulation);
             setValue('#ot-pressure', result.sensors.pressure);
             setValue('#ot-dhw-flow-rate', result.sensors.dhwFlowRate);
-            setValue('#ot-fault-code', result.sensors.faultCode ? ("E" + result.sensors.faultCode) : "-");
+            setValue(
+              '#ot-fault-code',
+              result.sensors.faultCode
+                ? (result.sensors.faultCode + " (0x" + dec2hex(result.sensors.faultCode) + ")")
+                : "-"
+            );
+            setValue(
+              '#ot-diag-code',
+              result.sensors.diagnosticCode
+                ? (result.sensors.diagnosticCode + " (0x" + dec2hex(result.sensors.diagnosticCode) + ")")
+                : "-"
+            );
 
             setValue('#indoor-temp', result.temperatures.indoor);
             setValue('#outdoor-temp', result.temperatures.outdoor);

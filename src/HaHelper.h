@@ -885,11 +885,31 @@ public:
     doc[FPSTR(HA_NAME)] = F("Fault code");
     doc[FPSTR(HA_ICON)] = F("mdi:chat-alert-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"E%02d\"|format(value_json.sensors.faultCode) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"%02d (0x%02X)\"|format(value_json.sensors.faultCode, value_json.sensors.faultCode) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("fault_code")).c_str(), doc);
+  }
+
+  bool publishSensorDiagnosticCode(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus and value_json.states.fault or value_json.states.diagnostic, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("diagnostic_code"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("diagnostic_code"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_NAME)] = F("Diagnostic code");
+    doc[FPSTR(HA_ICON)] = F("mdi:chat-alert-outline");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"%02d (0x%02X)\"|format(value_json.sensors.diagnosticCode, value_json.sensors.diagnosticCode) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("diagnostic_code")).c_str(), doc);
   }
 
   bool publishSensorRssi(bool enabledByDefault = true) {

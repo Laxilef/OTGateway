@@ -666,3 +666,12 @@ function form2json(data, noCastItems = []) {
   let object = Array.from(data).reduce(method, {});
   return JSON.stringify(object);
 }
+
+function dec2hex(i) {
+  let hex = parseInt(i).toString(16);
+  if (hex.length % 2 != 0) {
+    hex = "0" + hex;
+  }
+  
+  return hex.toUpperCase();
+}

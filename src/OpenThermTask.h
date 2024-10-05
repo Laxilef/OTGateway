@@ -347,6 +347,14 @@ protected:
         vars.sensors.faultCode = 0;
       }
 
+      // Get diagnostic code (if necessary)
+      if (vars.states.fault || vars.states.diagnostic) {
+        updateDiagCode();
+        
+      } else if (vars.sensors.diagnosticCode != 0) {
+        vars.sensors.diagnosticCode = 0;
+      }
+
       updatePressure();
 
       this->prevUpdateNonEssentialVars = millis();
@@ -933,10 +941,27 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      vars.sensors.faultCode = 0;
       return false;
     }
 
     vars.sensors.faultCode = response & 0xFF;
+    return true;
+  }
+
+  bool updateDiagCode() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::OEMDiagnosticCode,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      vars.sensors.diagnosticCode = 0;
+      return false;
+    }
+
+    vars.sensors.diagnosticCode = CustomOpenTherm::getUInt(response);
     return true;
   }
 
