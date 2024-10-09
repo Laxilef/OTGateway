@@ -557,6 +557,13 @@ protected:
       Log.swarningln(FPSTR(L_OT), F("Get slave OT version failed"));
     }
 
+    if (this->setMasterOtVersion(2.2f)) {
+      Log.straceln(FPSTR(L_OT), F("Master OT version: %f"), vars.parameters.masterOtVersion);
+
+    } else {
+      Log.swarningln(FPSTR(L_OT), F("Set master OT version failed"));
+    }
+
     if (this->updateSlaveConfig()) {
       Log.straceln(FPSTR(L_OT), F("Slave member id: %u, flags: %u"), vars.parameters.slaveMemberId, vars.parameters.slaveFlags);
 
