@@ -261,6 +261,14 @@
         "outGpio": "Выход GPIO",
         "ledGpio": "RX LED GPIO",
         "memberIdCode": "Master MemberID код",
+        "pressureMultiplier": {
+          "title": "Коэфф. коррекции давления",
+          "note": "Если давление отображается <b>Х10</b> от реального, установите значение <b>10</b>."
+        },
+        "dhwFlowRateMultiplier": {
+          "title": "Коэфф. коррекции потока ГВС",
+          "note": "Если поток ГВС отображается <b>Х10</b> от реального, установите значение <b>10</b>."
+        },
 
         "options": {
           "dhwPresent": "Контур ГВС",

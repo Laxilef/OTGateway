@@ -5,6 +5,7 @@
 
 #define EXT_SENSORS_INTERVAL            5000
 #define EXT_SENSORS_FILTER_K            0.15
+#define OT_NUM_VALUES_FILTER_K          0.1
 
 #define CONFIG_URL                      "http://%s/"
 #define SETTINGS_VALID_VALUE            "stvalid" // only 8 chars!

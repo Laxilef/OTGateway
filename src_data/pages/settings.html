@@ -401,6 +401,20 @@
                 </label>
               </div>
 
+              <div class="grid">
+                <label for="opentherm-pressure-multiplier">
+                  <span data-i18n>settings.ot.pressureMultiplier.title</span>
+                  <input type="number" inputmode="numeric" id="opentherm-pressure-multiplier" name="opentherm[pressureMultiplier]" min="0.1" max="100" step="0.01">
+                  <small data-i18n>settings.ot.pressureMultiplier.note</small>
+                </label>
+
+                <label for="opentherm-dhw-fr-multiplier">
+                  <span data-i18n>settings.ot.dhwFlowRateMultiplier.title</span>
+                  <input type="number" inputmode="numeric" id="opentherm-dhw-fr-multiplier" name="opentherm[dhwFlowRateMultiplier]" min="0.1" max="100" step="0.01">
+                  <small data-i18n>settings.ot.dhwFlowRateMultiplier.note</small>
+                </label>
+              </div>
+
               <fieldset>
                 <legend data-i18n>settings.section.ot.options</legend>
                 <label for="opentherm-dhw-present">
@@ -737,6 +751,8 @@
           setInputValue('#opentherm-fault-state-gpio', data.opentherm.faultStateGpio < 255 ? data.opentherm.faultStateGpio : '');
           setCheckboxValue('#opentherm-invert-fault-state', data.opentherm.invertFaultState);
           setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
+          setInputValue('#opentherm-pressure-multiplier', data.opentherm.pressureMultiplier);
+          setInputValue('#opentherm-dhw-fr-multiplier', data.opentherm.dhwFlowRateMultiplier);
           setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
           setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);
           setCheckboxValue('#opentherm-heating-ch2-enabled', data.opentherm.heatingCh2Enabled);

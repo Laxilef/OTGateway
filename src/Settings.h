@@ -54,6 +54,8 @@ struct Settings {
     byte faultStateGpio = DEFAULT_OT_FAULT_STATE_GPIO;
     byte invertFaultState = false;
     unsigned int memberIdCode = 0;
+    int8_t pressureMultiplier = 1;
+    int8_t dhwFlowRateMultiplier = 1;
     bool dhwPresent = true;
     bool summerWinterMode = false;
     bool heatingCh2Enabled = true;

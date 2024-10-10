@@ -345,6 +345,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["faultStateGpio"] = src.opentherm.faultStateGpio;
     dst["opentherm"]["invertFaultState"] = src.opentherm.invertFaultState;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
+    dst["opentherm"]["pressureMultiplier"] = roundd(src.opentherm.pressureMultiplier, 2);
+    dst["opentherm"]["dhwFlowRateMultiplier"] = roundd(src.opentherm.dhwFlowRateMultiplier, 2);
     dst["opentherm"]["dhwPresent"] = src.opentherm.dhwPresent;
     dst["opentherm"]["summerWinterMode"] = src.opentherm.summerWinterMode;
     dst["opentherm"]["heatingCh2Enabled"] = src.opentherm.heatingCh2Enabled;
@@ -691,6 +693,24 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value >= 0 && value < 65536 && value != dst.opentherm.memberIdCode) {
         dst.opentherm.memberIdCode = value;
+        changed = true;
+      }
+    }
+
+    if (!src["opentherm"]["pressureMultiplier"].isNull()) {
+      float value = src["opentherm"]["pressureMultiplier"].as<float>();
+
+      if (value > 0 && value <= 100 && fabs(value - dst.opentherm.pressureMultiplier) > 0.0001f) {
+        dst.opentherm.pressureMultiplier = roundd(value, 2);
+        changed = true;
+      }
+    }
+
+    if (!src["opentherm"]["dhwFlowRateMultiplier"].isNull()) {
+      float value = src["opentherm"]["dhwFlowRateMultiplier"].as<float>();
+
+      if (value > 0 && value <= 100 && fabs(value - dst.opentherm.dhwFlowRateMultiplier) > 0.0001f) {
+        dst.opentherm.dhwFlowRateMultiplier = roundd(value, 2);
         changed = true;
       }
     }

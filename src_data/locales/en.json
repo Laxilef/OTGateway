@@ -261,6 +261,14 @@
         "outGpio": "Out GPIO",
         "ledGpio": "RX LED GPIO",
         "memberIdCode": "Master MemberID code",
+        "pressureMultiplier": {
+          "title": "Coeff. pressure correction",
+          "note": "If the pressure displayed is <b>X10</b> from the real one, set the <b>10</b>."
+        },
+        "dhwFlowRateMultiplier": {
+          "title": "Coeff. DHW flow rate correction",
+          "note": "If the DHW flow rate displayed is <b>X10</b> from the real one, set the <b>10</b>."
+        },
 
         "options": {
           "dhwPresent": "DHW present",

@@ -22,8 +22,6 @@ protected:
   bool isInitialized = false;
   unsigned long initializedTime = 0;
   unsigned int initializedMemberIdCode = 0;
-  byte dhwFlowRateMultiplier = 1;
-  byte pressureMultiplier = 1;
   bool pump = true;
   unsigned long lastSuccessResponse = 0;
   unsigned long prevUpdateNonEssentialVars = 0;
@@ -228,8 +226,6 @@ protected:
       this->isInitialized = true;
       this->initializedTime = millis();
       this->initializedMemberIdCode = settings.opentherm.memberIdCode;
-      this->dhwFlowRateMultiplier = 1;
-      this->pressureMultiplier = 1;
       this->initialize();
     }
 
@@ -817,7 +813,7 @@ protected:
     );
 
     if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.outdoor) >= 0.1f) {
-      vars.temperatures.outdoor += (value - vars.temperatures.outdoor) * EXT_SENSORS_FILTER_K;
+      vars.temperatures.outdoor += (value - vars.temperatures.outdoor) * OT_NUM_VALUES_FILTER_K;
       
     } else {
       vars.temperatures.outdoor = value;
@@ -849,7 +845,7 @@ protected:
     );
 
     if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.exhaust) >= 0.1f) {
-      vars.temperatures.exhaust += (value - vars.temperatures.exhaust) * EXT_SENSORS_FILTER_K;
+      vars.temperatures.exhaust += (value - vars.temperatures.exhaust) * OT_NUM_VALUES_FILTER_K;
       
     } else {
       vars.temperatures.exhaust = value;
@@ -881,7 +877,7 @@ protected:
     );
 
     if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.heating) >= 0.1f) {
-      vars.temperatures.heating += (value - vars.temperatures.heating) * EXT_SENSORS_FILTER_K;
+      vars.temperatures.heating += (value - vars.temperatures.heating) * OT_NUM_VALUES_FILTER_K;
 
     } else {
       vars.temperatures.heating = value;
@@ -908,7 +904,7 @@ protected:
     );
 
     if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.heatingReturn) >= 0.1f) {
-      vars.temperatures.heatingReturn += (value - vars.temperatures.heatingReturn) * EXT_SENSORS_FILTER_K;
+      vars.temperatures.heatingReturn += (value - vars.temperatures.heatingReturn) * OT_NUM_VALUES_FILTER_K;
       
     } else {
       vars.temperatures.heatingReturn = value;
@@ -942,7 +938,7 @@ protected:
     );
 
     if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.dhw) >= 0.1f) {
-      vars.temperatures.dhw += (value - vars.temperatures.dhw) * EXT_SENSORS_FILTER_K;
+      vars.temperatures.dhw += (value - vars.temperatures.dhw) * OT_NUM_VALUES_FILTER_K;
       
     } else {
       vars.temperatures.dhw = value;
@@ -963,12 +959,12 @@ protected:
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (this->dhwFlowRateMultiplier != 10 && value > convertVolume(16, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
-      this->dhwFlowRateMultiplier = 10;
+    if (value < 0 || value > convertVolume(16, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
+      return false;
     }
 
     vars.sensors.dhwFlowRate = convertVolume(
-      value / this->dhwFlowRateMultiplier,
+      value / settings.opentherm.dhwFlowRateMultiplier,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
@@ -1021,7 +1017,7 @@ protected:
 
     float value = CustomOpenTherm::getFloat(response);
     if (settings.opentherm.filteringNumValues && fabs(vars.sensors.modulation) >= 0.1f) {
-      vars.sensors.modulation += (value - vars.sensors.modulation) * EXT_SENSORS_FILTER_K;
+      vars.sensors.modulation += (value - vars.sensors.modulation) * OT_NUM_VALUES_FILTER_K;
       
     } else {
       vars.sensors.modulation = value;
@@ -1042,18 +1038,18 @@ protected:
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (this->pressureMultiplier != 10 && value > convertPressure(5, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
-      this->pressureMultiplier = 10;
+    if (value < 0 || value > convertPressure(5, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
+      return false;
     }
 
     value = convertPressure(
-      value / this->pressureMultiplier,
+      value / settings.opentherm.pressureMultiplier,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
 
     if (settings.opentherm.filteringNumValues && fabs(vars.sensors.pressure) >= 0.1f) {
-      vars.sensors.pressure += (value - vars.sensors.pressure) * EXT_SENSORS_FILTER_K;
+      vars.sensors.pressure += (value - vars.sensors.pressure) * OT_NUM_VALUES_FILTER_K;
       
     } else {
       vars.sensors.pressure = value;
