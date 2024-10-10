@@ -963,11 +963,13 @@ protected:
       return false;
     }
 
-    vars.sensors.dhwFlowRate = convertVolume(
+    value = convertVolume(
       value / settings.opentherm.dhwFlowRateMultiplier,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    vars.sensors.dhwFlowRate = value > 0.09f ? value : 0.0f;
     
     return true;
   }
