@@ -355,6 +355,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["getMinMaxTemp"] = src.opentherm.getMinMaxTemp;
     dst["opentherm"]["nativeHeatingControl"] = src.opentherm.nativeHeatingControl;
     dst["opentherm"]["immergasFix"] = src.opentherm.immergasFix;
+    dst["opentherm"]["filteringNumValues"] = src.opentherm.filteringNumValues;
 
     dst["mqtt"]["enable"] = src.mqtt.enable;
     dst["mqtt"]["server"] = src.mqtt.server;
@@ -806,6 +807,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.immergasFix) {
         dst.opentherm.immergasFix = value;
+        changed = true;
+      }
+    }
+
+    if (src["opentherm"]["filteringNumValues"].is<bool>()) {
+      bool value = src["opentherm"]["filteringNumValues"].as<bool>();
+
+      if (value != dst.opentherm.filteringNumValues) {
+        dst.opentherm.filteringNumValues = value;
         changed = true;
       }
     }

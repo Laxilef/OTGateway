@@ -64,6 +64,7 @@ struct Settings {
     bool getMinMaxTemp = true;
     bool nativeHeatingControl = false;
     bool immergasFix = false;
+    bool filteringNumValues = false;
   } opentherm;
 
   struct {

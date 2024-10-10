@@ -271,7 +271,8 @@
           "dhwBlocking": "DHW blocking",
           "modulationSyncWithHeating": "Синхронизировать модуляцию с отоплением",
           "getMinMaxTemp": "Получать мин. и макс. температуру от котла",
-          "immergasFix": "Фикс для котлов Immergas"
+          "immergasFix": "Фикс для котлов Immergas",
+          "filteringNumValues": "Использовать фильтрацию для числовых значений"
         },
 
         "faultState": {

@@ -810,11 +810,18 @@ protected:
       return false;
     }
     
-    vars.temperatures.outdoor = settings.sensors.outdoor.offset + convertTemp(
+    float value = settings.sensors.outdoor.offset + convertTemp(
       CustomOpenTherm::getFloat(response),
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.outdoor) >= 0.1f) {
+      vars.temperatures.outdoor += (value - vars.temperatures.outdoor) * EXT_SENSORS_FILTER_K;
+      
+    } else {
+      vars.temperatures.outdoor = value;
+    }
 
     return true;
   }
@@ -835,11 +842,18 @@ protected:
       return false;
     }
 
-    vars.temperatures.exhaust = convertTemp(
+    value = convertTemp(
       value,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.exhaust) >= 0.1f) {
+      vars.temperatures.exhaust += (value - vars.temperatures.exhaust) * EXT_SENSORS_FILTER_K;
+      
+    } else {
+      vars.temperatures.exhaust = value;
+    }
 
     return true;
   }
@@ -860,11 +874,18 @@ protected:
       return false;
     }
 
-    vars.temperatures.heating = convertTemp(
+    value = convertTemp(
       value,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.heating) >= 0.1f) {
+      vars.temperatures.heating += (value - vars.temperatures.heating) * EXT_SENSORS_FILTER_K;
+
+    } else {
+      vars.temperatures.heating = value;
+    }
 
     return true;
   }
@@ -880,11 +901,19 @@ protected:
       return false;
     }
 
-    vars.temperatures.heatingReturn = convertTemp(
+    float value = convertTemp(
       CustomOpenTherm::getFloat(response),
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.heatingReturn) >= 0.1f) {
+      vars.temperatures.heatingReturn += (value - vars.temperatures.heatingReturn) * EXT_SENSORS_FILTER_K;
+      
+    } else {
+      vars.temperatures.heatingReturn = value;
+    }
+    
 
     return true;
   }
@@ -906,11 +935,18 @@ protected:
       return false;
     }
 
-    vars.temperatures.dhw = convertTemp(
+    value = convertTemp(
       value,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.dhw) >= 0.1f) {
+      vars.temperatures.dhw += (value - vars.temperatures.dhw) * EXT_SENSORS_FILTER_K;
+      
+    } else {
+      vars.temperatures.dhw = value;
+    }
 
     return true;
   }
@@ -983,7 +1019,13 @@ protected:
       return false;
     }
 
-    vars.sensors.modulation = CustomOpenTherm::getFloat(response);
+    float value = CustomOpenTherm::getFloat(response);
+    if (settings.opentherm.filteringNumValues && fabs(vars.sensors.modulation) >= 0.1f) {
+      vars.sensors.modulation += (value - vars.sensors.modulation) * EXT_SENSORS_FILTER_K;
+      
+    } else {
+      vars.sensors.modulation = value;
+    }
 
     return true;
   }
@@ -1004,11 +1046,18 @@ protected:
       this->pressureMultiplier = 10;
     }
 
-    vars.sensors.pressure = convertPressure(
+    value = convertPressure(
       value / this->pressureMultiplier,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
+
+    if (settings.opentherm.filteringNumValues && fabs(vars.sensors.pressure) >= 0.1f) {
+      vars.sensors.pressure += (value - vars.sensors.pressure) * EXT_SENSORS_FILTER_K;
+      
+    } else {
+      vars.sensors.pressure = value;
+    }
 
     return true;
   }

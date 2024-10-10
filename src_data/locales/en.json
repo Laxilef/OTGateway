@@ -271,7 +271,8 @@
           "dhwBlocking": "DHW blocking",
           "modulationSyncWithHeating": "Sync modulation with heating",
           "getMinMaxTemp": "Get min/max temp from boiler",
-          "immergasFix": "Fix for Immergas boilers"
+          "immergasFix": "Fix for Immergas boilers",
+          "filteringNumValues": "Use filtering for numeric values"
         },
 
         "faultState": {
