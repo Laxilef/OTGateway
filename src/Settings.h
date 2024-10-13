@@ -54,8 +54,8 @@ struct Settings {
     byte faultStateGpio = DEFAULT_OT_FAULT_STATE_GPIO;
     byte invertFaultState = false;
     unsigned int memberIdCode = 0;
-    float pressureMultiplier = 1.0f;
-    float dhwFlowRateMultiplier = 1.0f;
+    float pressureFactor = 1.0f;
+    float dhwFlowRateFactor = 1.0f;
     bool dhwPresent = true;
     bool summerWinterMode = false;
     bool heatingCh2Enabled = true;
@@ -66,7 +66,11 @@ struct Settings {
     bool getMinMaxTemp = true;
     bool nativeHeatingControl = false;
     bool immergasFix = false;
-    bool filteringNumValues = false;
+
+    struct {
+      bool enable = false;
+      float factor = 0.1f;
+    } filterNumValues;
   } opentherm;
 
   struct {

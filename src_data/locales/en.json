@@ -261,13 +261,24 @@
         "outGpio": "Out GPIO",
         "ledGpio": "RX LED GPIO",
         "memberIdCode": "Master MemberID code",
-        "pressureMultiplier": {
+        "pressureFactor": {
           "title": "Coeff. pressure correction",
-          "note": "If the pressure displayed is <b>X10</b> from the real one, set the <b>10</b>."
+          "note": "If the pressure displayed is <b>X10</b> from the real one, set the <b>0.1</b>."
         },
-        "dhwFlowRateMultiplier": {
+        "dhwFlowRateFactor": {
           "title": "Coeff. DHW flow rate correction",
-          "note": "If the DHW flow rate displayed is <b>X10</b> from the real one, set the <b>10</b>."
+          "note": "If the DHW flow rate displayed is <b>X10</b> from the real one, set the <b>0.1</b>."
+        },
+        "fnv": {
+          "title": "Filtering numeric values",
+          "enable": {
+            "title": "Enable filtering",
+            "note": "It can be useful if there is a lot of sharp noise on the charts. The filter used is \"Running Average\"."
+          },
+          "factor": {
+            "title": "Filtration coeff.",
+            "note": "The lower the value, the smoother and <u>longer</u> the change in numeric values."
+          }
         },
 
         "options": {
@@ -279,8 +290,7 @@
           "dhwBlocking": "DHW blocking",
           "modulationSyncWithHeating": "Sync modulation with heating",
           "getMinMaxTemp": "Get min/max temp from boiler",
-          "immergasFix": "Fix for Immergas boilers",
-          "filteringNumValues": "Use filtering for numeric values"
+          "immergasFix": "Fix for Immergas boilers"
         },
 
         "faultState": {

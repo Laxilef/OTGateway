@@ -402,16 +402,16 @@
               </div>
 
               <div class="grid">
-                <label for="opentherm-pressure-multiplier">
-                  <span data-i18n>settings.ot.pressureMultiplier.title</span>
-                  <input type="number" inputmode="numeric" id="opentherm-pressure-multiplier" name="opentherm[pressureMultiplier]" min="0.1" max="100" step="0.01">
-                  <small data-i18n>settings.ot.pressureMultiplier.note</small>
+                <label for="opentherm-pressure-factor">
+                  <span data-i18n>settings.ot.pressureFactor.title</span>
+                  <input type="number" inputmode="numeric" id="opentherm-pressure-factor" name="opentherm[pressureFactor]" min="0.1" max="100" step="0.01">
+                  <small data-i18n>settings.ot.pressureFactor.note</small>
                 </label>
 
-                <label for="opentherm-dhw-fr-multiplier">
-                  <span data-i18n>settings.ot.dhwFlowRateMultiplier.title</span>
-                  <input type="number" inputmode="numeric" id="opentherm-dhw-fr-multiplier" name="opentherm[dhwFlowRateMultiplier]" min="0.1" max="100" step="0.01">
-                  <small data-i18n>settings.ot.dhwFlowRateMultiplier.note</small>
+                <label for="opentherm-dhw-fr-factor">
+                  <span data-i18n>settings.ot.dhwFlowRateFactor.title</span>
+                  <input type="number" inputmode="numeric" id="opentherm-dhw-fr-factor" name="opentherm[dhwFlowRateFactor]" min="0.1" max="100" step="0.01">
+                  <small data-i18n>settings.ot.dhwFlowRateFactor.note</small>
                 </label>
               </div>
 
@@ -462,10 +462,25 @@
                   <span data-i18n>settings.ot.options.immergasFix</span>
                 </label>
 
-                <label for="opentherm-filtering-num-values">
-                  <input type="checkbox" id="opentherm-filtering-num-values" name="opentherm[filteringNumValues]" value="true">
-                  <span data-i18n>settings.ot.options.filteringNumValues</span>
-                </label>
+                <hr />
+                <fieldset>
+                  <legend>
+                    <span data-i18n>settings.ot.fnv.title</span>
+                  </legend>
+
+                  <label for="opentherm-fnv-enable">
+                    <input type="checkbox" id="opentherm-fnv-enable" name="opentherm[filterNumValues][enable]" value="true">
+                    <span data-i18n>settings.ot.fnv.enable.title</span>
+                    <br>
+                    <small data-i18n>settings.ot.fnv.enable.note</small>
+                  </label>
+
+                  <label for="opentherm-fnv-factor">
+                    <span data-i18n>settings.ot.fnv.factor.title</span>
+                    <input type="number" inputmode="numeric" id="opentherm-fnv-factor" name="opentherm[filterNumValues][factor]" min="0.01" max="1" step="0.01">
+                    <small data-i18n>settings.ot.fnv.factor.note</small>
+                  </label>
+                </fieldset>
 
                 <hr />
                 <fieldset>
@@ -751,8 +766,8 @@
           setInputValue('#opentherm-fault-state-gpio', data.opentherm.faultStateGpio < 255 ? data.opentherm.faultStateGpio : '');
           setCheckboxValue('#opentherm-invert-fault-state', data.opentherm.invertFaultState);
           setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
-          setInputValue('#opentherm-pressure-multiplier', data.opentherm.pressureMultiplier);
-          setInputValue('#opentherm-dhw-fr-multiplier', data.opentherm.dhwFlowRateMultiplier);
+          setInputValue('#opentherm-pressure-factor', data.opentherm.pressureFactor);
+          setInputValue('#opentherm-dhw-fr-factor', data.opentherm.dhwFlowRateFactor);
           setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
           setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);
           setCheckboxValue('#opentherm-heating-ch2-enabled', data.opentherm.heatingCh2Enabled);
@@ -763,7 +778,8 @@
           setCheckboxValue('#opentherm-get-min-max-temp', data.opentherm.getMinMaxTemp);
           setCheckboxValue('#opentherm-native-heating-control', data.opentherm.nativeHeatingControl);
           setCheckboxValue('#opentherm-immergas-fix', data.opentherm.immergasFix);
-          setCheckboxValue('#opentherm-filtering-num-values', data.opentherm.filteringNumValues);
+          setCheckboxValue('#opentherm-fnv-enable', data.opentherm.filterNumValues.enable);
+          setInputValue('#opentherm-fnv-factor', data.opentherm.filterNumValues.factor);
           setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
 
           // MQTT

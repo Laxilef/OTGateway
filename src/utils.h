@@ -345,8 +345,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["faultStateGpio"] = src.opentherm.faultStateGpio;
     dst["opentherm"]["invertFaultState"] = src.opentherm.invertFaultState;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
-    dst["opentherm"]["pressureMultiplier"] = roundd(src.opentherm.pressureMultiplier, 2);
-    dst["opentherm"]["dhwFlowRateMultiplier"] = roundd(src.opentherm.dhwFlowRateMultiplier, 2);
+    dst["opentherm"]["pressureFactor"] = roundd(src.opentherm.pressureFactor, 2);
+    dst["opentherm"]["dhwFlowRateFactor"] = roundd(src.opentherm.dhwFlowRateFactor, 2);
     dst["opentherm"]["dhwPresent"] = src.opentherm.dhwPresent;
     dst["opentherm"]["summerWinterMode"] = src.opentherm.summerWinterMode;
     dst["opentherm"]["heatingCh2Enabled"] = src.opentherm.heatingCh2Enabled;
@@ -357,7 +357,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["getMinMaxTemp"] = src.opentherm.getMinMaxTemp;
     dst["opentherm"]["nativeHeatingControl"] = src.opentherm.nativeHeatingControl;
     dst["opentherm"]["immergasFix"] = src.opentherm.immergasFix;
-    dst["opentherm"]["filteringNumValues"] = src.opentherm.filteringNumValues;
+    dst["opentherm"]["filterNumValues"]["enable"] = src.opentherm.filterNumValues.enable;
+    dst["opentherm"]["filterNumValues"]["factor"] = roundd(src.opentherm.filterNumValues.factor, 2);
 
     dst["mqtt"]["enable"] = src.mqtt.enable;
     dst["mqtt"]["server"] = src.mqtt.server;
@@ -697,20 +698,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (!src["opentherm"]["pressureMultiplier"].isNull()) {
-      float value = src["opentherm"]["pressureMultiplier"].as<float>();
+    if (!src["opentherm"]["pressureFactor"].isNull()) {
+      float value = src["opentherm"]["pressureFactor"].as<float>();
 
-      if (value > 0 && value <= 100 && fabs(value - dst.opentherm.pressureMultiplier) > 0.0001f) {
-        dst.opentherm.pressureMultiplier = roundd(value, 2);
+      if (value > 0 && value <= 100 && fabs(value - dst.opentherm.pressureFactor) > 0.0001f) {
+        dst.opentherm.pressureFactor = roundd(value, 2);
         changed = true;
       }
     }
 
-    if (!src["opentherm"]["dhwFlowRateMultiplier"].isNull()) {
-      float value = src["opentherm"]["dhwFlowRateMultiplier"].as<float>();
+    if (!src["opentherm"]["dhwFlowRateFactor"].isNull()) {
+      float value = src["opentherm"]["dhwFlowRateFactor"].as<float>();
 
-      if (value > 0 && value <= 100 && fabs(value - dst.opentherm.dhwFlowRateMultiplier) > 0.0001f) {
-        dst.opentherm.dhwFlowRateMultiplier = roundd(value, 2);
+      if (value > 0 && value <= 100 && fabs(value - dst.opentherm.dhwFlowRateFactor) > 0.0001f) {
+        dst.opentherm.dhwFlowRateFactor = roundd(value, 2);
+        changed = true;
+      }
+    }
+
+    if (src["opentherm"]["filterNumValues"]["enable"].is<bool>()) {
+      bool value = src["opentherm"]["filterNumValues"]["enable"].as<bool>();
+
+      if (value != dst.opentherm.filterNumValues.enable) {
+        dst.opentherm.filterNumValues.enable = value;
+        changed = true;
+      }
+    }
+
+    if (!src["opentherm"]["filterNumValues"]["factor"].isNull()) {
+      float value = src["opentherm"]["filterNumValues"]["factor"].as<float>();
+
+      if (value > 0 && value <= 1 && fabs(value - dst.opentherm.filterNumValues.factor) > 0.0001f) {
+        dst.opentherm.filterNumValues.factor = roundd(value, 2);
         changed = true;
       }
     }
@@ -827,15 +846,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.immergasFix) {
         dst.opentherm.immergasFix = value;
-        changed = true;
-      }
-    }
-
-    if (src["opentherm"]["filteringNumValues"].is<bool>()) {
-      bool value = src["opentherm"]["filteringNumValues"].as<bool>();
-
-      if (value != dst.opentherm.filteringNumValues) {
-        dst.opentherm.filteringNumValues = value;
         changed = true;
       }
     }

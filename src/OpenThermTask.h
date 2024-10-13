@@ -254,7 +254,7 @@ protected:
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
       if (!heatingEnabled && settings.opentherm.modulationSyncWithHeating) {
-        if (setMaxModulationLevel(0)) {
+        if (this->setMaxModulationLevel(0)) {
           Log.snoticeln(FPSTR(L_OT_HEATING), F("Set max modulation 0% (off)"));
 
         } else {
@@ -262,7 +262,7 @@ protected:
         }
 
       } else {
-        if (setMaxModulationLevel(settings.heating.maxModulation)) {
+        if (this->setMaxModulationLevel(settings.heating.maxModulation)) {
           Log.snoticeln(FPSTR(L_OT_HEATING), F("Set max modulation %hhu%%"), settings.heating.maxModulation);
 
         } else {
@@ -273,7 +273,7 @@ protected:
 
       // Get DHW min/max temp (if necessary)
       if (settings.opentherm.dhwPresent && settings.opentherm.getMinMaxTemp) {
-        if (updateMinMaxDhwTemp()) {
+        if (this->updateMinMaxDhwTemp()) {
           if (settings.dhw.minTemp < vars.parameters.dhwMinTemp) {
             settings.dhw.minTemp = vars.parameters.dhwMinTemp;
             fsSettings.update();
@@ -303,7 +303,7 @@ protected:
 
       // Get heating min/max temp
       if (settings.opentherm.getMinMaxTemp) {
-        if (updateMinMaxHeatingTemp()) {
+        if (this->updateMinMaxHeatingTemp()) {
           if (settings.heating.minTemp < vars.parameters.heatingMinTemp) {
             settings.heating.minTemp = vars.parameters.heatingMinTemp;
             fsSettings.update();
@@ -330,14 +330,9 @@ protected:
         fsSettings.update();
       }
 
-      // Get outdoor temp (if necessary)
-      if (settings.sensors.outdoor.type == SensorType::BOILER) {
-        updateOutsideTemp();
-      }
-
       // Get fault code (if necessary)
       if (vars.states.fault) {
-        updateFaultCode();
+        this->updateFaultCode();
         
       } else if (vars.sensors.faultCode != 0) {
         vars.sensors.faultCode = 0;
@@ -345,13 +340,23 @@ protected:
 
       // Get diagnostic code (if necessary)
       if (vars.states.fault || vars.states.diagnostic) {
-        updateDiagCode();
+        this->updateDiagCode();
         
       } else if (vars.sensors.diagnosticCode != 0) {
         vars.sensors.diagnosticCode = 0;
       }
 
-      updatePressure();
+      // If filtering is disabled, then it is enough to
+      // update these parameters once a minute
+      if (!settings.opentherm.filterNumValues.enable) {
+        // Get outdoor temp (if necessary)
+        if (settings.sensors.outdoor.type == SensorType::BOILER) {
+          this->updateOutdoorTemp();
+        }
+        
+        // Get pressure
+        this->updatePressure();
+      }
 
       this->prevUpdateNonEssentialVars = millis();
     }
@@ -359,7 +364,7 @@ protected:
 
     // Get current modulation level (if necessary)
     if (vars.states.flame) {
-      updateModulationLevel();
+      this->updateModulationLevel();
 
     } else {
       vars.sensors.modulation = 0;
@@ -367,8 +372,8 @@ protected:
 
     // Update DHW sensors (if necessary)
     if (settings.opentherm.dhwPresent) {
-      updateDhwTemp();
-      updateDhwFlowRate();
+      this->updateDhwTemp();
+      this->updateDhwFlowRate();
 
     } else {
       vars.temperatures.dhw = 0.0f;
@@ -376,13 +381,25 @@ protected:
     }
 
     // Get current heating temp
-    updateHeatingTemp();
+    this->updateHeatingTemp();
 
     // Get heating return temp
-    updateHeatingReturnTemp();
+    this->updateHeatingReturnTemp();
 
     // Get exhaust temp
-    updateExhaustTemp();
+    this->updateExhaustTemp();
+
+    // If filtering is enabled, these parameters
+    // must be updated every time.
+    if (settings.opentherm.filterNumValues.enable) {
+      // Get outdoor temp (if necessary)
+      if (settings.sensors.outdoor.type == SensorType::BOILER) {
+        this->updateOutdoorTemp();
+      }
+      
+      // Get pressure
+      this->updatePressure();
+    }
 
 
     // Fault reset action
@@ -795,7 +812,7 @@ protected:
     return CustomOpenTherm::isValidResponse(response);
   }
 
-  bool updateOutsideTemp() {
+  bool updateOutdoorTemp() {
     unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
       OpenThermMessageID::Toutside,
@@ -812,8 +829,8 @@ protected:
       settings.system.unitSystem
     );
 
-    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.outdoor) >= 0.1f) {
-      vars.temperatures.outdoor += (value - vars.temperatures.outdoor) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.temperatures.outdoor) >= 0.1f) {
+      vars.temperatures.outdoor += (value - vars.temperatures.outdoor) * settings.opentherm.filterNumValues.factor;
       
     } else {
       vars.temperatures.outdoor = value;
@@ -844,8 +861,8 @@ protected:
       settings.system.unitSystem
     );
 
-    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.exhaust) >= 0.1f) {
-      vars.temperatures.exhaust += (value - vars.temperatures.exhaust) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.temperatures.exhaust) >= 0.1f) {
+      vars.temperatures.exhaust += (value - vars.temperatures.exhaust) * settings.opentherm.filterNumValues.factor;
       
     } else {
       vars.temperatures.exhaust = value;
@@ -876,8 +893,8 @@ protected:
       settings.system.unitSystem
     );
 
-    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.heating) >= 0.1f) {
-      vars.temperatures.heating += (value - vars.temperatures.heating) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.temperatures.heating) >= 0.1f) {
+      vars.temperatures.heating += (value - vars.temperatures.heating) * settings.opentherm.filterNumValues.factor;
 
     } else {
       vars.temperatures.heating = value;
@@ -903,8 +920,8 @@ protected:
       settings.system.unitSystem
     );
 
-    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.heatingReturn) >= 0.1f) {
-      vars.temperatures.heatingReturn += (value - vars.temperatures.heatingReturn) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.temperatures.heatingReturn) >= 0.1f) {
+      vars.temperatures.heatingReturn += (value - vars.temperatures.heatingReturn) * settings.opentherm.filterNumValues.factor;
       
     } else {
       vars.temperatures.heatingReturn = value;
@@ -937,8 +954,8 @@ protected:
       settings.system.unitSystem
     );
 
-    if (settings.opentherm.filteringNumValues && fabs(vars.temperatures.dhw) >= 0.1f) {
-      vars.temperatures.dhw += (value - vars.temperatures.dhw) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.temperatures.dhw) >= 0.1f) {
+      vars.temperatures.dhw += (value - vars.temperatures.dhw) * settings.opentherm.filterNumValues.factor;
       
     } else {
       vars.temperatures.dhw = value;
@@ -964,7 +981,7 @@ protected:
     }
 
     value = convertVolume(
-      value / settings.opentherm.dhwFlowRateMultiplier,
+      value * settings.opentherm.dhwFlowRateFactor,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
@@ -1018,8 +1035,8 @@ protected:
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (settings.opentherm.filteringNumValues && fabs(vars.sensors.modulation) >= 0.1f) {
-      vars.sensors.modulation += (value - vars.sensors.modulation) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.sensors.modulation) >= 0.1f) {
+      vars.sensors.modulation += (value - vars.sensors.modulation) * settings.opentherm.filterNumValues.factor;
       
     } else {
       vars.sensors.modulation = value;
@@ -1045,13 +1062,13 @@ protected:
     }
 
     value = convertPressure(
-      value / settings.opentherm.pressureMultiplier,
+      value * settings.opentherm.pressureFactor,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
 
-    if (settings.opentherm.filteringNumValues && fabs(vars.sensors.pressure) >= 0.1f) {
-      vars.sensors.pressure += (value - vars.sensors.pressure) * OT_NUM_VALUES_FILTER_K;
+    if (settings.opentherm.filterNumValues.enable && fabs(vars.sensors.pressure) >= 0.1f) {
+      vars.sensors.pressure += (value - vars.sensors.pressure) * settings.opentherm.filterNumValues.factor;
       
     } else {
       vars.sensors.pressure = value;
