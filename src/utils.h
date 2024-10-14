@@ -347,6 +347,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
     dst["opentherm"]["pressureFactor"] = roundd(src.opentherm.pressureFactor, 2);
     dst["opentherm"]["dhwFlowRateFactor"] = roundd(src.opentherm.dhwFlowRateFactor, 2);
+    dst["opentherm"]["minPower"] = roundd(src.opentherm.minPower, 2);
+    dst["opentherm"]["maxPower"] = roundd(src.opentherm.maxPower, 2);
     dst["opentherm"]["dhwPresent"] = src.opentherm.dhwPresent;
     dst["opentherm"]["summerWinterMode"] = src.opentherm.summerWinterMode;
     dst["opentherm"]["heatingCh2Enabled"] = src.opentherm.heatingCh2Enabled;
@@ -712,6 +714,24 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value > 0 && value <= 100 && fabs(value - dst.opentherm.dhwFlowRateFactor) > 0.0001f) {
         dst.opentherm.dhwFlowRateFactor = roundd(value, 2);
+        changed = true;
+      }
+    }
+
+    if (!src["opentherm"]["minPower"].isNull()) {
+      float value = src["opentherm"]["minPower"].as<float>();
+
+      if (value >= 0 && value <= 1000 && fabs(value - dst.opentherm.minPower) > 0.0001f) {
+        dst.opentherm.minPower = roundd(value, 2);
+        changed = true;
+      }
+    }
+
+    if (!src["opentherm"]["maxPower"].isNull()) {
+      float value = src["opentherm"]["maxPower"].as<float>();
+
+      if (value >= 0 && value <= 1000 && fabs(value - dst.opentherm.maxPower) > 0.0001f) {
+        dst.opentherm.maxPower = roundd(value, 2);
         changed = true;
       }
     }
@@ -1546,8 +1566,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["sensors"]["modulation"] = roundd(src.sensors.modulation, 2);
   dst["sensors"]["pressure"] = roundd(src.sensors.pressure, 2);
   dst["sensors"]["dhwFlowRate"] = roundd(src.sensors.dhwFlowRate, 2);
-  dst["sensors"]["maxPower"] = src.sensors.maxPower;
-  dst["sensors"]["currentPower"] = roundd(src.sensors.currentPower, 2);
+  dst["sensors"]["power"] = roundd(src.sensors.power, 2);
   dst["sensors"]["faultCode"] = src.sensors.faultCode;
   dst["sensors"]["diagnosticCode"] = src.sensors.diagnosticCode;
   dst["sensors"]["rssi"] = src.sensors.rssi;

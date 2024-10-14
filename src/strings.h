@@ -4,6 +4,9 @@
 #endif
 
 const char L_SETTINGS[]             PROGMEM = "SETTINGS";
+const char L_SETTINGS_OT[]          PROGMEM = "SETTINGS.OT";
+const char L_SETTINGS_DHW[]         PROGMEM = "SETTINGS.DHW";
+const char L_SETTINGS_HEATING[]     PROGMEM = "SETTINGS.HEATING";
 const char L_NETWORK[]              PROGMEM = "NETWORK";
 const char L_NETWORK_SETTINGS[]     PROGMEM = "NETWORK.SETTINGS";
 const char L_PORTAL_WEBSERVER[]     PROGMEM = "PORTAL.WEBSERVER";

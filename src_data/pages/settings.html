@@ -415,6 +415,20 @@
                 </label>
               </div>
 
+              <div class="grid">
+                <label for="opentherm-min-power">
+                  <span data-i18n>settings.ot.minPower.title</span>
+                  <input type="number" inputmode="numeric" id="opentherm-min-power" name="opentherm[minPower]" min="0" max="1000" step="0.1">
+                  <small data-i18n>settings.ot.minPower.note</small>
+                </label>
+
+                <label for="opentherm-max-power">
+                  <span data-i18n>settings.ot.maxPower.title</span>
+                  <input type="number" inputmode="numeric" id="opentherm-max-power" name="opentherm[maxPower]" min="0" max="1000" step="0.1">
+                  <small data-i18n>settings.ot.maxPower.note</small>
+                </label>
+              </div>
+
               <fieldset>
                 <legend data-i18n>settings.section.ot.options</legend>
                 <label for="opentherm-dhw-present">
@@ -768,6 +782,8 @@
           setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
           setInputValue('#opentherm-pressure-factor', data.opentherm.pressureFactor);
           setInputValue('#opentherm-dhw-fr-factor', data.opentherm.dhwFlowRateFactor);
+          setInputValue('#opentherm-min-power', data.opentherm.minPower);
+          setInputValue('#opentherm-max-power', data.opentherm.maxPower);
           setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
           setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);
           setCheckboxValue('#opentherm-heating-ch2-enabled', data.opentherm.heatingCh2Enabled);
