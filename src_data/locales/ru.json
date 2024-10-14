@@ -9,6 +9,7 @@
       "releases": "Релизы"
     },
     "dbm": "дБм",
+    "kw": "кВт",
 
     "button": {
       "upgrade": "Обновить",
@@ -99,6 +100,8 @@
         "modulation": "Уровень модуляции",
         "pressure": "Давление",
         "dhwFlowRate": "Расход ГВС",
+        "maxPower": "Макс. мощность",
+        "currentPower": "Текущая мощность",
         "faultCode": "Код ошибки",
         "diagCode": "Диагностический код",
         "indoorTemp": "Внутренняя темп.",

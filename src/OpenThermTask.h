@@ -253,6 +253,19 @@ protected:
 
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
+      if (this->updateMinModulationLevel()) {
+        Log.straceln(FPSTR(L_OT), F("Min modulation: %u%%, boiler max power: %u kW"), vars.parameters.minModulation, vars.sensors.maxPower);
+        
+        if (vars.parameters.minModulation > settings.heating.maxModulation) {
+          settings.heating.maxModulation = vars.parameters.minModulation;
+          fsSettings.update();
+          Log.snoticeln(FPSTR(L_OT_DHW), F("Updated min modulation: %hhu"), settings.heating.maxModulation);
+        }
+
+      } else {
+        Log.swarningln(FPSTR(L_OT), F("Failed get min modulation & max power"));
+      }
+
       if (!heatingEnabled && settings.opentherm.modulationSyncWithHeating) {
         if (this->setMaxModulationLevel(0)) {
           Log.snoticeln(FPSTR(L_OT_HEATING), F("Set max modulation 0% (off)"));
@@ -363,11 +376,22 @@ protected:
 
 
     // Get current modulation level (if necessary)
-    if (vars.states.flame) {
-      this->updateModulationLevel();
+    if (vars.states.flame && this->updateModulationLevel()) {
+      vars.sensors.currentPower = vars.sensors.maxPower > 0
+        ? vars.sensors.maxPower * (vars.sensors.modulation / 100)
+        : 0;
+      
+      Log.sverboseln(
+        FPSTR(L_OT_DHW),
+        F("Current modulation level: %.2f%%, power: %.2f of %hhu kW"),
+        vars.sensors.modulation,
+        vars.sensors.currentPower,
+        vars.sensors.maxPower
+      );
 
     } else {
       vars.sensors.modulation = 0;
+      vars.sensors.currentPower = 0;
     }
 
     // Update DHW sensors (if necessary)
@@ -1041,6 +1065,26 @@ protected:
     } else {
       vars.sensors.modulation = value;
     }
+
+    return true;
+  }
+
+  bool updateMinModulationLevel() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::MaxCapacityMinModLevel,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+    }
+
+    byte minModulation = response & 0xFF;
+    byte maxPower = (response & 0xFFFF) >> 8;
+
+    vars.parameters.minModulation = minModulation;
+    vars.sensors.maxPower = maxPower;
 
     return true;
   }

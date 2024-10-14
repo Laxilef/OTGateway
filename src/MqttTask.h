@@ -357,6 +357,8 @@ protected:
     // sensors
     this->haHelper->publishSensorModulation(false);
     this->haHelper->publishSensorPressure(settings.system.unitSystem, false);
+    this->haHelper->publishSensorMaxPower(false);
+    this->haHelper->publishSensorCurrentPower();
     this->haHelper->publishSensorFaultCode();
     this->haHelper->publishSensorDiagnosticCode();
     this->haHelper->publishSensorRssi(false);

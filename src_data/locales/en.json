@@ -9,6 +9,7 @@
       "releases": "Releases"
     },
     "dbm": "dBm",
+    "kw": "kW",
 
     "button": {
       "upgrade": "Upgrade",
@@ -99,6 +100,8 @@
         "modulation": "Modulation",
         "pressure": "Pressure",
         "dhwFlowRate": "DHW flow rate",
+        "maxPower": "Max power",
+        "currentPower": "Current power",
         "faultCode": "Fault code",
         "diagCode": "Diagnostic code",
         "indoorTemp": "Indoor temp",

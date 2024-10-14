@@ -159,6 +159,14 @@
                   <td><b id="ot-dhw-flow-rate"></b> <span class="volume-unit"></span>/min</td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.state.maxPower</th>
+                  <td><b id="ot-max-power"></b> <span data-i18n>kw</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.currentPower</th>
+                  <td><b id="ot-current-power"></b> <span data-i18n>kw</span></td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.state.faultCode</th>
                   <td><b id="ot-fault-code"></b></td>
                 </tr>
@@ -434,6 +442,8 @@
             setValue('#ot-modulation', result.sensors.modulation);
             setValue('#ot-pressure', result.sensors.pressure);
             setValue('#ot-dhw-flow-rate', result.sensors.dhwFlowRate);
+            setValue('#ot-max-power', result.sensors.maxPower);
+            setValue('#ot-current-power', result.sensors.currentPower);
             setValue(
               '#ot-fault-code',
               result.sensors.faultCode

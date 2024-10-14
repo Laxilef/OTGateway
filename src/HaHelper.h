@@ -872,6 +872,52 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("diagnostic")).c_str(), doc);
   }
 
+  bool publishSensorMaxPower(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("max_power"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("max_power"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("power");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("kW");
+    doc[FPSTR(HA_NAME)] = F("Max power");
+    doc[FPSTR(HA_ICON)] = F("mdi:chart-bar");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.maxPower|float(0)|round(2) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("max_power")).c_str(), doc);
+  }
+
+  bool publishSensorCurrentPower(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("current_power"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("current_power"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("power");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("kW");
+    doc[FPSTR(HA_NAME)] = F("Current power");
+    doc[FPSTR(HA_ICON)] = F("mdi:chart-bar");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.currentPower|float(0)|round(2) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("current_power")).c_str(), doc);
+  }
+
   bool publishSensorFaultCode(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));

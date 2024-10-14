@@ -174,6 +174,8 @@ struct Variables {
     float modulation = 0.0f;
     float pressure = 0.0f;
     float dhwFlowRate = 0.0f;
+    byte maxPower = 0;
+    float currentPower = 0.0f;
     byte faultCode = 0;
     unsigned short diagnosticCode = 0;
     int8_t rssi = 0;
@@ -210,6 +212,7 @@ struct Variables {
     unsigned long extPumpLastEnableTime = 0;
     byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
     byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;
+    byte minModulation = 0;
     byte maxModulation = 0;
     uint8_t slaveMemberId = 0;
     uint8_t slaveFlags = 0;
