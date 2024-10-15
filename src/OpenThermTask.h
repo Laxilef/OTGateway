@@ -185,7 +185,11 @@ protected:
     );
 
     if (!CustomOpenTherm::isValidResponse(response)) {
-      Log.swarningln(FPSTR(L_OT), F("Invalid response after setBoilerStatus: %s"), CustomOpenTherm::statusToString(this->instance->getLastResponseStatus()));
+      Log.swarningln(
+        FPSTR(L_OT),
+        F("Failed receive boiler status: %s"),
+        CustomOpenTherm::statusToString(this->instance->getLastResponseStatus())
+      );
     }
 
     if (!vars.states.otStatus && millis() - this->lastSuccessResponse < 1150) {
@@ -240,6 +244,12 @@ protected:
     vars.states.flame = CustomOpenTherm::isFlameOn(response);
     vars.states.fault = CustomOpenTherm::isFault(response);
     vars.states.diagnostic = CustomOpenTherm::isDiagnostic(response);
+
+    Log.snoticeln(
+      FPSTR(L_OT),
+      F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; fault: %hhu; diag: %hhu"),
+      vars.states.heating, vars.states.dhw, vars.states.flame, vars.states.fault, vars.states.diagnostic
+    );
 
     // Fault state
     if (this->configuredFaultStateGpio != GPIO_IS_NOT_CONFIGURED) {
