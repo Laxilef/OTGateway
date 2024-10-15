@@ -129,7 +129,9 @@ void setup() {
     Log.addStream(telnetStream);
   }
 
-  Log.setLevel(settings.system.debug ? TinyLogger::Level::VERBOSE : TinyLogger::Level::INFO);
+  if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
+    Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
+  }
 
   // network
   network = (new NetworkMgr)

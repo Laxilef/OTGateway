@@ -198,13 +198,10 @@
         "metric": "Metric <small>(celsius, liters, bar)</small>",
         "imperial": "Imperial <small>(fahrenheit, gallons, psi)</small>",
         "statusLedGpio": "Status LED GPIO",
-        "debug": "Debug mode",
+        "logLevel": "Log level",
         "serial": {
           "enable": "Enable Serial port",
-          "baud": {
-            "title": "Serial port baud rate",
-            "note": "Available: 9600, 19200, 38400, 57600, 74880, 115200"
-          }
+          "baud": "Serial port baud rate"
         },
         "telnet": {
           "enable": "Enable Telnet",

@@ -326,7 +326,7 @@ bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
 
 void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   if (!safe) {
-    dst["system"]["debug"] = src.system.debug;
+    dst["system"]["logLevel"] = static_cast<uint8_t>(src.system.logLevel);
     dst["system"]["serial"]["enable"] = src.system.serial.enable;
     dst["system"]["serial"]["baudrate"] = src.system.serial.baudrate;
     dst["system"]["telnet"]["enable"] = src.system.telnet.enable;
@@ -459,11 +459,11 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   if (!safe) {
     // system
-    if (src["system"]["debug"].is<bool>()) {
-      bool value = src["system"]["debug"].as<bool>();
+    if (!src["system"]["logLevel"].isNull()) {
+      uint8_t value = src["system"]["logLevel"].as<uint8_t>();
 
-      if (value != dst.system.debug) {
-        dst.system.debug = value;
+      if (value != dst.system.logLevel && value >= TinyLogger::Level::SILENT && value <= TinyLogger::Level::VERBOSE) {
+        dst.system.logLevel = value;
         changed = true;
       }
     }

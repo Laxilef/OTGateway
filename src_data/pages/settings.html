@@ -94,11 +94,6 @@
               <fieldset>
                 <legend data-i18n>settings.section.diag</legend>
 
-                <label for="system-debug">
-                  <input type="checkbox" id="system-debug" name="system[debug]" value="true">
-                  <span data-i18n>settings.system.debug</span>
-                </label>
-
                 <label for="system-serial-enable">
                   <input type="checkbox" id="system-serial-enable" name="system[serial][enable]" value="true">
                   <span data-i18n>settings.system.serial.enable</span>
@@ -109,11 +104,31 @@
                   <span data-i18n>settings.system.telnet.enable</span>
                 </label>
 
+                <label for="system-log-level">
+                  <span data-i18n>settings.system.logLevel</span>
+                  <select id="system-log-level" name="system[logLevel]">
+                    <option value="0">SILENT</option>
+                    <option value="1">FATAL</option>
+                    <option value="2">ERROR</option>
+                    <option value="3">WARNING</option>
+                    <option value="4">INFO</option>
+                    <option value="5">NOTICE</option>
+                    <option value="6">TRACE</option>
+                    <option value="7">VERBOSE</option>
+                  </select>
+                </label>
+
                 <div class="grid">
                   <label for="system-serial-baudrate">
-                    <span data-i18n>settings.system.serial.baud.title</span>
-                    <input type="number" inputmode="numeric" id="system-serial-baudrate" name="system[serial][baudrate]" min="9600" max="115200" step="1" required>
-                    <small data-i18n>settings.system.serial.baud.note</small>
+                    <span data-i18n>settings.system.serial.baud</span>
+                    <select id="system-serial-baudrate" name="system[serial][baudrate]" required>
+                      <option value="9600">9600</option>
+                      <option value="19200">19200</option>
+                      <option value="38400">38400</option>
+                      <option value="57600">57600</option>
+                      <option value="74880">74880</option>
+                      <option value="115200">115200</option>
+                    </select>
                   </label>
 
                   <label for="system-telnet-port">
@@ -757,9 +772,9 @@
 
         const fillData = (data) => {
           // System
-          setCheckboxValue('#system-debug', data.system.debug);
+          setSelectValue('#system-log-level', data.system.logLevel);
           setCheckboxValue('#system-serial-enable', data.system.serial.enable);
-          setInputValue('#system-serial-baudrate', data.system.serial.baudrate);
+          setSelectValue('#system-serial-baudrate', data.system.serial.baudrate);
           setCheckboxValue('#system-telnet-enable', data.system.telnet.enable);
           setInputValue('#system-telnet-port', data.system.telnet.port);
           setRadioValue('.system-unit-system', data.system.unitSystem);

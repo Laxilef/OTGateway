@@ -198,13 +198,10 @@
         "metric": "Метрическая <small>(цильсии, литры, бары)</small>",
         "imperial": "Imperial <small>(фаренгейты, галлоны, psi)</small>",
         "statusLedGpio": "Статус LED GPIO",
-        "debug": "Отладка",
+        "logLevel": "Уровень логирования",
         "serial": {
           "enable": "Вкл. Serial порт",
-          "baud": {
-            "title": "Скорость Serial порта",
-            "note": "Доступно: 9600, 19200, 38400, 57600, 74880, 115200"
-          }
+          "baud": "Скорость Serial порта"
         },
         "telnet": {
           "enable": "Вкл. Telnet",

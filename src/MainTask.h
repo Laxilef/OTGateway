@@ -99,11 +99,10 @@ protected:
         tMqtt->disable();
       }
 
-      if ( Log.getLevel() != TinyLogger::Level::INFO && !settings.system.debug ) {
-        Log.setLevel(TinyLogger::Level::INFO);
-
-      } else if ( Log.getLevel() != TinyLogger::Level::VERBOSE && settings.system.debug ) {
-        Log.setLevel(TinyLogger::Level::VERBOSE);
+      if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
+        if (Log.getLevel() != settings.system.logLevel) {
+          Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
+        } 
       }
 
     } else {
@@ -160,7 +159,7 @@ protected:
       this->restartSignalTime = millis();
     }
 
-    if (!settings.system.debug) {
+    if (settings.system.logLevel < TinyLogger::Level::VERBOSE) {
       return;
     }
 

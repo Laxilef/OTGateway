@@ -24,7 +24,7 @@ struct NetworkSettings {
 
 struct Settings {
   struct {
-    bool debug = DEBUG_BY_DEFAULT;
+    uint8_t logLevel = DEFAULT_LOG_LEVEL;
 
     struct {
       bool enable = USE_SERIAL;

@@ -62,8 +62,8 @@
   #define DEFAULT_STA_PASSWORD ""
 #endif
 
-#ifndef DEBUG_BY_DEFAULT
-  #define DEBUG_BY_DEFAULT false
+#ifndef DEFAULT_LOG_LEVEL
+  #define DEFAULT_LOG_LEVEL TinyLogger::Level::VERBOSE
 #endif
 
 #ifndef DEFAULT_STATUS_LED_GPIO

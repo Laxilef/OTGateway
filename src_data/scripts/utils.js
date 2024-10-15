@@ -539,6 +539,17 @@ function setInputValue(selector, value, attrs = {}) {
   }
 }
 
+function setSelectValue(selector, value) {
+  let item = document.querySelector(selector);
+  if (!item) {
+    return;
+  }
+
+  for (let option of item.options) {
+    option.selected = option.value == value;
+  }
+}
+
 function show(selector) {
   let items = document.querySelectorAll(selector);
   if (!items.length) {
