@@ -54,6 +54,7 @@ struct Settings {
     byte faultStateGpio = DEFAULT_OT_FAULT_STATE_GPIO;
     byte invertFaultState = false;
     unsigned int memberIdCode = 0;
+    uint8_t maxModulation = 100;
     float pressureFactor = 1.0f;
     float dhwFlowRateFactor = 1.0f;
     float minPower = 0.0f;
@@ -105,7 +106,6 @@ struct Settings {
     float hysteresis = 0.5f;
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
-    byte maxModulation = 100;
   } heating;
 
   struct {

@@ -329,7 +329,6 @@ protected:
     this->haHelper->publishSensorBoilerHeatingMaxTemp(settings.system.unitSystem, false);
     this->haHelper->publishNumberHeatingMinTemp(settings.system.unitSystem, false);
     this->haHelper->publishNumberHeatingMaxTemp(settings.system.unitSystem, false);
-    this->haHelper->publishNumberHeatingMaxModulation(false);
 
     // pid
     this->haHelper->publishSwitchPid();

@@ -166,17 +166,10 @@
                 </label>
               </div>
 
-              <div class="grid">
-                <label for="heating-hysteresis">
-                  <span data-i18n>settings.heating.hyst</span>
-                  <input type="number" inputmode="numeric" id="heating-hysteresis" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
-                </label>
-
-                <label for="heating-max-modulation">
-                  <span data-i18n>settings.heating.maxMod</span>
-                  <input type="number" inputmode="numeric" id="heating-max-modulation" name="heating[maxModulation]" min="1" max="100" step="1" required>
-                </label>
-              </div>
+              <label for="heating-hysteresis">
+                <span data-i18n>settings.heating.hyst</span>
+                <input type="number" inputmode="numeric" id="heating-hysteresis" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
+              </label>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -401,32 +394,23 @@
                   <span data-i18n>settings.ot.outGpio</span>
                   <input type="number" inputmode="numeric" id="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
                 </label>
-              </div>
 
-              <div class="grid">
                 <label for="opentherm-rx-led-gpio">
                   <span data-i18n>settings.ot.ledGpio</span>
                   <input type="number" inputmode="numeric" id="opentherm-rx-led-gpio" name="opentherm[rxLedGpio]" min="0" max="254" step="1">
                   <small data-i18n>settings.note.blankNotUse</small>
                 </label>
+              </div>
 
+              <div class="grid">
                 <label for="opentherm-member-id-code">
                   <span data-i18n>settings.ot.memberIdCode</span>
                   <input type="number" inputmode="numeric" id="opentherm-member-id-code" name="opentherm[memberIdCode]" min="0" max="65535" step="1" required>
                 </label>
-              </div>
 
-              <div class="grid">
-                <label for="opentherm-pressure-factor">
-                  <span data-i18n>settings.ot.pressureFactor.title</span>
-                  <input type="number" inputmode="numeric" id="opentherm-pressure-factor" name="opentherm[pressureFactor]" min="0.1" max="100" step="0.01">
-                  <small data-i18n>settings.ot.pressureFactor.note</small>
-                </label>
-
-                <label for="opentherm-dhw-fr-factor">
-                  <span data-i18n>settings.ot.dhwFlowRateFactor.title</span>
-                  <input type="number" inputmode="numeric" id="opentherm-dhw-fr-factor" name="opentherm[dhwFlowRateFactor]" min="0.1" max="100" step="0.01">
-                  <small data-i18n>settings.ot.dhwFlowRateFactor.note</small>
+                <label for="opentherm-max-modulation">
+                  <span data-i18n>settings.ot.maxMod</span>
+                  <input type="number" inputmode="numeric" id="opentherm-max-modulation" name="opentherm[maxModulation]" min="1" max="100" step="1" required>
                 </label>
               </div>
 
@@ -492,46 +476,66 @@
                 </label>
 
                 <hr />
-                <fieldset>
-                  <legend>
-                    <span data-i18n>settings.ot.fnv.title</span>
-                  </legend>
-
-                  <label for="opentherm-fnv-enable">
-                    <input type="checkbox" id="opentherm-fnv-enable" name="opentherm[filterNumValues][enable]" value="true">
-                    <span data-i18n>settings.ot.fnv.enable.title</span>
-                    <br>
-                    <small data-i18n>settings.ot.fnv.enable.note</small>
-                  </label>
-
-                  <label for="opentherm-fnv-factor">
-                    <span data-i18n>settings.ot.fnv.factor.title</span>
-                    <input type="number" inputmode="numeric" id="opentherm-fnv-factor" name="opentherm[filterNumValues][factor]" min="0.01" max="1" step="0.01">
-                    <small data-i18n>settings.ot.fnv.factor.note</small>
-                  </label>
-                </fieldset>
-
-                <hr />
-                <fieldset>
-                  <label for="opentherm-fault-state-gpio">
-                    <span data-i18n>settings.ot.faultState.gpio</span>
-                    <input type="number" inputmode="numeric" id="opentherm-fault-state-gpio" name="opentherm[faultStateGpio]" min="0" max="254" step="1">
-                    <small data-i18n>settings.ot.faultState.note</small>
-                  </label>
-
-                  <label for="opentherm-invert-fault-state">
-                    <input type="checkbox" id="opentherm-invert-fault-state" name="opentherm[invertFaultState]" value="true">
-                    <span data-i18n>settings.ot.faultState.invert</span>
-                  </label>
-                </fieldset>
-
-                <hr />
                 <label for="opentherm-native-heating-control">
                   <input type="checkbox" id="opentherm-native-heating-control" name="opentherm[nativeHeatingControl]" value="true">
                   <span data-i18n>settings.ot.nativeHeating.title</span><br />
                   <small data-i18n>settings.ot.nativeHeating.note</small>
                 </label>
               </fieldset>
+              <hr />
+
+              <details>
+                <summary role="button" class="secondary" data-i18n>settings.ot.advanced</summary>
+                <div>
+                  <div class="grid">
+                    <label for="opentherm-pressure-factor">
+                      <span data-i18n>settings.ot.pressureFactor.title</span>
+                      <input type="number" inputmode="numeric" id="opentherm-pressure-factor" name="opentherm[pressureFactor]" min="0.1" max="100" step="0.01">
+                      <small data-i18n>settings.ot.pressureFactor.note</small>
+                    </label>
+    
+                    <label for="opentherm-dhw-fr-factor">
+                      <span data-i18n>settings.ot.dhwFlowRateFactor.title</span>
+                      <input type="number" inputmode="numeric" id="opentherm-dhw-fr-factor" name="opentherm[dhwFlowRateFactor]" min="0.1" max="100" step="0.01">
+                      <small data-i18n>settings.ot.dhwFlowRateFactor.note</small>
+                    </label>
+                  </div>
+                  <hr />
+
+                  <fieldset>
+                    <legend>
+                      <span data-i18n>settings.ot.fnv.title</span>
+                    </legend>
+
+                    <label for="opentherm-fnv-enable">
+                      <input type="checkbox" id="opentherm-fnv-enable" name="opentherm[filterNumValues][enable]" value="true">
+                      <span data-i18n>settings.ot.fnv.enable.title</span>
+                      <br>
+                      <small data-i18n>settings.ot.fnv.enable.note</small>
+                    </label>
+
+                    <label for="opentherm-fnv-factor">
+                      <span data-i18n>settings.ot.fnv.factor.title</span>
+                      <input type="number" inputmode="numeric" id="opentherm-fnv-factor" name="opentherm[filterNumValues][factor]" min="0.01" max="1" step="0.01">
+                      <small data-i18n>settings.ot.fnv.factor.note</small>
+                    </label>
+                  </fieldset>
+
+                  <hr />
+                  <fieldset>
+                    <label for="opentherm-fault-state-gpio">
+                      <span data-i18n>settings.ot.faultState.gpio</span>
+                      <input type="number" inputmode="numeric" id="opentherm-fault-state-gpio" name="opentherm[faultStateGpio]" min="0" max="254" step="1">
+                      <small data-i18n>settings.ot.faultState.note</small>
+                    </label>
+
+                    <label for="opentherm-invert-fault-state">
+                      <input type="checkbox" id="opentherm-invert-fault-state" name="opentherm[invertFaultState]" value="true">
+                      <span data-i18n>settings.ot.faultState.invert</span>
+                    </label>
+                  </fieldset>
+                </div>
+              </details>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -795,6 +799,7 @@
           setInputValue('#opentherm-fault-state-gpio', data.opentherm.faultStateGpio < 255 ? data.opentherm.faultStateGpio : '');
           setCheckboxValue('#opentherm-invert-fault-state', data.opentherm.invertFaultState);
           setInputValue('#opentherm-member-id-code', data.opentherm.memberIdCode);
+          setInputValue('#opentherm-max-modulation', data.opentherm.maxModulation);
           setInputValue('#opentherm-pressure-factor', data.opentherm.pressureFactor);
           setInputValue('#opentherm-dhw-fr-factor', data.opentherm.dhwFlowRateFactor);
           setInputValue('#opentherm-min-power', data.opentherm.minPower);
@@ -856,7 +861,6 @@
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
           setInputValue('#heating-hysteresis', data.heating.hysteresis);
-          setInputValue('#heating-max-modulation', data.heating.maxModulation);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
           // DHW

@@ -213,8 +213,7 @@
       },
 
       "heating": {
-        "hyst": "Hysteresis <small>(in degrees)</small>",
-        "maxMod": "Max modulation level"
+        "hyst": "Hysteresis <small>(in degrees)</small>"
       },
 
       "emergency": {
@@ -256,10 +255,12 @@
       },
 
       "ot": {
+        "advanced": "Advanced Settings",
         "inGpio": "In GPIO",
         "outGpio": "Out GPIO",
         "ledGpio": "RX LED GPIO",
         "memberIdCode": "Master MemberID code",
+        "maxMod": "Max modulation level",
         "pressureFactor": {
           "title": "Coeff. pressure correction",
           "note": "If the pressure displayed is <b>X10</b> from the real one, set the <b>0.1</b>."

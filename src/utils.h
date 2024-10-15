@@ -345,6 +345,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["faultStateGpio"] = src.opentherm.faultStateGpio;
     dst["opentherm"]["invertFaultState"] = src.opentherm.invertFaultState;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
+    dst["opentherm"]["maxModulation"] = src.opentherm.maxModulation;
     dst["opentherm"]["pressureFactor"] = roundd(src.opentherm.pressureFactor, 2);
     dst["opentherm"]["dhwFlowRateFactor"] = roundd(src.opentherm.dhwFlowRateFactor, 2);
     dst["opentherm"]["minPower"] = roundd(src.opentherm.minPower, 2);
@@ -388,7 +389,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dst["heating"]["hysteresis"] = roundd(src.heating.hysteresis, 2);
   dst["heating"]["minTemp"] = src.heating.minTemp;
   dst["heating"]["maxTemp"] = src.heating.maxTemp;
-  dst["heating"]["maxModulation"] = src.heating.maxModulation;
 
   dst["dhw"]["enable"] = src.dhw.enable;
   dst["dhw"]["target"] = roundd(src.dhw.target, 1);
@@ -696,6 +696,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value >= 0 && value < 65536 && value != dst.opentherm.memberIdCode) {
         dst.opentherm.memberIdCode = value;
+        changed = true;
+      }
+    }
+
+    if (!src["opentherm"]["maxModulation"].isNull()) {
+      unsigned char value = src["opentherm"]["maxModulation"].as<unsigned char>();
+
+      if (value > 0 && value <= 100 && value != dst.opentherm.maxModulation) {
+        dst.opentherm.maxModulation = value;
         changed = true;
       }
     }
@@ -1201,15 +1210,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
     if (value != dst.heating.maxTemp && value > vars.parameters.heatingMinTemp && value <= vars.parameters.heatingMaxTemp && value != dst.heating.maxTemp) {
       dst.heating.maxTemp = value;
-      changed = true;
-    }
-  }
-
-  if (!src["heating"]["maxModulation"].isNull()) {
-    unsigned char value = src["heating"]["maxModulation"].as<unsigned char>();
-
-    if (value > 0 && value <= 100 && value != dst.heating.maxModulation) {
-      dst.heating.maxModulation = value;
       changed = true;
     }
   }
