@@ -342,8 +342,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["opentherm"]["inGpio"] = src.opentherm.inGpio;
     dst["opentherm"]["outGpio"] = src.opentherm.outGpio;
     dst["opentherm"]["rxLedGpio"] = src.opentherm.rxLedGpio;
-    dst["opentherm"]["faultStateGpio"] = src.opentherm.faultStateGpio;
-    dst["opentherm"]["invertFaultState"] = src.opentherm.invertFaultState;
     dst["opentherm"]["memberIdCode"] = src.opentherm.memberIdCode;
     dst["opentherm"]["maxModulation"] = src.opentherm.maxModulation;
     dst["opentherm"]["pressureFactor"] = roundd(src.opentherm.pressureFactor, 2);
@@ -447,6 +445,19 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     dst["externalPump"]["postCirculationTime"] = roundd(src.externalPump.postCirculationTime / 60, 0);
     dst["externalPump"]["antiStuckInterval"] = roundd(src.externalPump.antiStuckInterval / 86400, 0);
     dst["externalPump"]["antiStuckTime"] = roundd(src.externalPump.antiStuckTime / 60, 0);
+
+    dst["cascadeControl"]["input"]["enable"] = src.cascadeControl.input.enable;
+    dst["cascadeControl"]["input"]["gpio"] = src.cascadeControl.input.gpio;
+    dst["cascadeControl"]["input"]["invertState"] = src.cascadeControl.input.invertState;
+    dst["cascadeControl"]["input"]["thresholdTime"] = src.cascadeControl.input.thresholdTime;
+
+    dst["cascadeControl"]["output"]["enable"] = src.cascadeControl.output.enable;
+    dst["cascadeControl"]["output"]["gpio"] = src.cascadeControl.output.gpio;
+    dst["cascadeControl"]["output"]["invertState"] = src.cascadeControl.output.invertState;
+    dst["cascadeControl"]["output"]["thresholdTime"] = src.cascadeControl.output.thresholdTime;
+    dst["cascadeControl"]["output"]["onFault"] = src.cascadeControl.output.onFault;
+    dst["cascadeControl"]["output"]["onLossConnection"] = src.cascadeControl.output.onLossConnection;
+    dst["cascadeControl"]["output"]["onEnabledHeating"] = src.cascadeControl.output.onEnabledHeating;
   }
 }
 
@@ -662,32 +673,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
           dst.opentherm.rxLedGpio = value;
           changed = true;
         }
-      }
-    }
-
-    if (!src["opentherm"]["faultStateGpio"].isNull()) {
-      if (src["opentherm"]["faultStateGpio"].is<JsonString>() && src["opentherm"]["faultStateGpio"].as<JsonString>().size() == 0) {
-        if (dst.opentherm.faultStateGpio != GPIO_IS_NOT_CONFIGURED) {
-          dst.opentherm.faultStateGpio = GPIO_IS_NOT_CONFIGURED;
-          changed = true;
-        }
-        
-      } else {
-        unsigned char value = src["opentherm"]["faultStateGpio"].as<unsigned char>();
-
-        if (GPIO_IS_VALID(value) && value != dst.opentherm.faultStateGpio) {
-          dst.opentherm.faultStateGpio = value;
-          changed = true;
-        }
-      }
-    }
-
-    if (src["opentherm"]["invertFaultState"].is<bool>()) {
-      bool value = src["opentherm"]["invertFaultState"].as<bool>();
-
-      if (value != dst.opentherm.invertFaultState) {
-        dst.opentherm.invertFaultState = value;
-        changed = true;
       }
     }
 
@@ -1470,6 +1455,127 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         }
       }
     }
+
+
+    // cascade control
+    if (src["cascadeControl"]["input"]["enable"].is<bool>()) {
+      bool value = src["cascadeControl"]["input"]["enable"].as<bool>();
+
+      if (value != dst.cascadeControl.input.enable) {
+        dst.cascadeControl.input.enable = value;
+        changed = true;
+      }
+    }
+
+    if (!src["cascadeControl"]["input"]["gpio"].isNull()) {
+      if (src["cascadeControl"]["input"]["gpio"].is<JsonString>() && src["cascadeControl"]["input"]["gpio"].as<JsonString>().size() == 0) {
+        if (dst.cascadeControl.input.gpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.cascadeControl.input.gpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["cascadeControl"]["input"]["gpio"].as<unsigned char>();
+
+        if (GPIO_IS_VALID(value) && value != dst.cascadeControl.input.gpio) {
+          dst.cascadeControl.input.gpio = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (src["cascadeControl"]["input"]["invertState"].is<bool>()) {
+      bool value = src["cascadeControl"]["input"]["invertState"].as<bool>();
+
+      if (value != dst.cascadeControl.input.invertState) {
+        dst.cascadeControl.input.invertState = value;
+        changed = true;
+      }
+    }
+
+    if (!src["cascadeControl"]["input"]["thresholdTime"].isNull()) {
+      unsigned short value = src["cascadeControl"]["input"]["thresholdTime"].as<unsigned short>();
+
+      if (value >= 5 && value <= 600) {
+        if (value != dst.cascadeControl.input.thresholdTime) {
+          dst.cascadeControl.input.thresholdTime = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (src["cascadeControl"]["output"]["enable"].is<bool>()) {
+      bool value = src["cascadeControl"]["output"]["enable"].as<bool>();
+
+      if (value != dst.cascadeControl.output.enable) {
+        dst.cascadeControl.output.enable = value;
+        changed = true;
+      }
+    }
+
+    if (!src["cascadeControl"]["output"]["gpio"].isNull()) {
+      if (src["cascadeControl"]["output"]["gpio"].is<JsonString>() && src["cascadeControl"]["output"]["gpio"].as<JsonString>().size() == 0) {
+        if (dst.cascadeControl.output.gpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.cascadeControl.output.gpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src["cascadeControl"]["output"]["gpio"].as<unsigned char>();
+
+        if (GPIO_IS_VALID(value) && value != dst.cascadeControl.output.gpio) {
+          dst.cascadeControl.output.gpio = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (src["cascadeControl"]["output"]["invertState"].is<bool>()) {
+      bool value = src["cascadeControl"]["output"]["invertState"].as<bool>();
+
+      if (value != dst.cascadeControl.output.invertState) {
+        dst.cascadeControl.output.invertState = value;
+        changed = true;
+      }
+    }
+
+    if (!src["cascadeControl"]["output"]["thresholdTime"].isNull()) {
+      unsigned short value = src["cascadeControl"]["output"]["thresholdTime"].as<unsigned short>();
+
+      if (value >= 5 && value <= 600) {
+        if (value != dst.cascadeControl.output.thresholdTime) {
+          dst.cascadeControl.output.thresholdTime = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (src["cascadeControl"]["output"]["onFault"].is<bool>()) {
+      bool value = src["cascadeControl"]["output"]["onFault"].as<bool>();
+
+      if (value != dst.cascadeControl.output.onFault) {
+        dst.cascadeControl.output.onFault = value;
+        changed = true;
+      }
+    }
+
+    if (src["cascadeControl"]["output"]["onLossConnection"].is<bool>()) {
+      bool value = src["cascadeControl"]["output"]["onLossConnection"].as<bool>();
+
+      if (value != dst.cascadeControl.output.onLossConnection) {
+        dst.cascadeControl.output.onLossConnection = value;
+        changed = true;
+      }
+    }
+
+    if (src["cascadeControl"]["output"]["onEnabledHeating"].is<bool>()) {
+      bool value = src["cascadeControl"]["output"]["onEnabledHeating"].as<bool>();
+
+      if (value != dst.cascadeControl.output.onEnabledHeating) {
+        dst.cascadeControl.output.onEnabledHeating = value;
+        changed = true;
+      }
+    }
   }
 
   // force check emergency target
@@ -1586,6 +1692,9 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   dst["temperatures"]["heatingReturn"] = roundd(src.temperatures.heatingReturn, 2);
   dst["temperatures"]["dhw"] = roundd(src.temperatures.dhw, 2);
   dst["temperatures"]["exhaust"] = roundd(src.temperatures.exhaust, 2);
+
+  dst["cascadeControl"]["input"] = src.cascadeControl.input;
+  dst["cascadeControl"]["output"] = src.cascadeControl.output;
 
   dst["parameters"]["heatingEnabled"] = src.parameters.heatingEnabled;
   dst["parameters"]["heatingMinTemp"] = src.parameters.heatingMinTemp;

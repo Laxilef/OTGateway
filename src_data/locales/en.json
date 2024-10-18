@@ -94,6 +94,8 @@
         "outdoorSensorHumidity": "Outdoor sensor humidity",
         "outdoorSensorBattery": "Outdoor sensor battery",
         "indoorSensorConnected": "Indoor sensor connected",
+        "cascadeControlInput": "Cascade control (input)",
+        "cascadeControlOutput": "Cascade control (output)",
         "indoorSensorRssi": "Indoor sensor RSSI",
         "indoorSensorHumidity": "Indoor sensor humidity",
         "indoorSensorBattery": "Indoor sensor battery",
@@ -163,16 +165,14 @@
         "heating": "Heating settings",
         "dhw": "DHW settings",
         "emergency": "Emergency mode settings",
-        "emergency.events": "Events",
-        "emergency.regulators": "Using regulators",
         "equitherm": "Equitherm settings",
         "pid": "PID settings",
         "ot": "OpenTherm settings",
-        "ot.options": "Options",
         "mqtt": "MQTT settings",
         "outdorSensor": "Outdoor sensor settings",
         "indoorSensor": "Indoor sensor settings",
-        "extPump": "External pump settings"
+        "extPump": "External pump settings",
+        "cascadeControl": "Cascade control settings"
       },
 
       "enable": "Enable",
@@ -226,6 +226,7 @@
         "treshold": "Treshold time <small>(sec)</small>",
 
         "events": {
+          "desc": "Events",
           "network": "On network fault",
           "mqtt": "On MQTT fault",
           "indoorSensorDisconnect": "On loss connection with indoor sensor",
@@ -233,6 +234,7 @@
         },
 
         "regulators": {
+          "desc": "Using regulators",
           "equitherm": "Equitherm <small>(requires at least an external (DS18B20) or boiler <u>outdoor</u> sensor)</small>",
           "pid": "PID <small>(requires at least an external (DS18B20) <u>indoor</u> sensor)</small>"
         }
@@ -290,6 +292,7 @@
         },
 
         "options": {
+          "desc": "Options",
           "dhwPresent": "DHW present",
           "summerWinterMode": "Summer/winter mode",
           "heatingCh2Enabled": "Heating CH2 always enabled",
@@ -299,12 +302,6 @@
           "modulationSyncWithHeating": "Sync modulation with heating",
           "getMinMaxTemp": "Get min/max temp from boiler",
           "immergasFix": "Fix for Immergas boilers"
-        },
-
-        "faultState": {
-          "gpio": "Fault state GPIO",
-          "note": "Can be useful to switch on another boiler <u>via relay</u>. Blank - not use.",
-          "invert": "Invert fault state"
         },
 
         "nativeHeating": {
@@ -342,6 +339,29 @@
         "postCirculationTime": "Post circulation time <small>(min)</small>",
         "antiStuckInterval": "Anti stuck interval <small>(days)</small>",
         "antiStuckTime": "Anti stuck time <small>(min)</small>"
+      },
+
+      "cascadeControl": {
+        "input": {
+          "desc": "Can be used to turn on the heating only if another boiler is faulty. The other boiler controller must change the state of the GPIO input in the event of a fault.",
+          "enable": "Enable input",
+          "gpio": "GPIO",
+          "invertState": "Invert GPIO state",
+          "thresholdTime": "State change threshold time <small>(sec)</small>"
+        },
+        "output": {
+          "desc": "Can be used to switch on another boiler <u>via relay</u>.",
+          "enable": "Enable output",
+          "gpio": "GPIO",
+          "invertState": "Invert GPIO state",
+          "thresholdTime": "State change threshold time <small>(sec)</small>",
+          "events": {
+            "title": "Events",
+            "onFault": "If the fault state is active",
+            "onLossConnection": "If the connection via Opentherm is lost",
+            "onEnabledHeating": "If heating is enabled"
+          }
+        }
       }
     },
 

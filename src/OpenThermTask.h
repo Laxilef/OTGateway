@@ -28,8 +28,6 @@ protected:
   unsigned long dhwSetTempTime = 0;
   unsigned long heatingSetTempTime = 0;
   byte configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
-  byte configuredFaultStateGpio = GPIO_IS_NOT_CONFIGURED;
-  bool faultState = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -133,28 +131,7 @@ protected:
       }
     }
 
-    // Fault state setup
-    if (settings.opentherm.faultStateGpio != this->configuredFaultStateGpio) {
-      if (this->configuredFaultStateGpio != GPIO_IS_NOT_CONFIGURED) {
-        digitalWrite(this->configuredFaultStateGpio, LOW);
-      }
-      
-      if (GPIO_IS_VALID(settings.opentherm.faultStateGpio)) {
-        this->configuredFaultStateGpio = settings.opentherm.faultStateGpio;
-        this->faultState = false ^ settings.opentherm.invertFaultState ? HIGH : LOW;
-
-        pinMode(this->configuredFaultStateGpio, OUTPUT);
-        digitalWrite(
-          this->configuredFaultStateGpio,
-          this->faultState
-        );
-
-      } else if (this->configuredFaultStateGpio != GPIO_IS_NOT_CONFIGURED) {
-        this->configuredFaultStateGpio = GPIO_IS_NOT_CONFIGURED;
-      }
-    }
-
-    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && this->isReady();
+    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && vars.cascadeControl.input && this->isReady();
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
       heatingCh2Enabled = heatingEnabled;
@@ -212,16 +189,6 @@ protected:
       vars.states.fault = false;
       vars.states.diagnostic = false;
 
-      // Force fault state = on
-      if (this->configuredFaultStateGpio != GPIO_IS_NOT_CONFIGURED) {
-        bool fState = true ^ settings.opentherm.invertFaultState ? HIGH : LOW;
-
-        if (fState != this->faultState) {
-          this->faultState = fState;
-          digitalWrite(this->configuredFaultStateGpio, this->faultState);
-        }
-      }
-
       return;
     }
 
@@ -250,16 +217,6 @@ protected:
       F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; fault: %hhu; diag: %hhu"),
       vars.states.heating, vars.states.dhw, vars.states.flame, vars.states.fault, vars.states.diagnostic
     );
-
-    // Fault state
-    if (this->configuredFaultStateGpio != GPIO_IS_NOT_CONFIGURED) {
-      bool fState = vars.states.fault ^ settings.opentherm.invertFaultState ? HIGH : LOW;
-      
-      if (fState != this->faultState) {
-        this->faultState = fState;
-        digitalWrite(this->configuredFaultStateGpio, this->faultState);
-      }
-    }
 
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {

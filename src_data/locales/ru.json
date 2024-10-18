@@ -94,6 +94,8 @@
         "outdoorSensorHumidity": "Влажность с наруж. датчика темп.",
         "outdoorSensorBattery": "Заряд наруж. датчика темп.",
         "indoorSensorConnected": "Датчик внутр. темп.",
+        "cascadeControlInput": "Каскадное управление (вход)",
+        "cascadeControlOutput": "Каскадное управление (выход)",
         "indoorSensorRssi": "RSSI датчика внутр. темп.",
         "indoorSensorHumidity": "Влажность с внутр. датчика темп.",
         "indoorSensorBattery": "Заряд внутр. датчика темп.",
@@ -163,16 +165,14 @@
         "heating": "Настройки отопления",
         "dhw": "Настройки ГВС",
         "emergency": "Настройки аварийного режима",
-        "emergency.events": "События",
-        "emergency.regulators": "Используемые регуляторы",
         "equitherm": "Настройки ПЗА",
         "pid": "Настройки ПИД",
         "ot": "Настройки OpenTherm",
-        "ot.options": "Опции",
         "mqtt": "Настройки MQTT",
         "outdorSensor": "Настройки наружного датчика температуры",
         "indoorSensor": "Настройки внутреннего датчика температуры",
-        "extPump": "Настройки дополнительного насоса"
+        "extPump": "Настройки дополнительного насоса",
+        "cascadeControl": "Настройки каскадного управления"
       },
 
       "enable": "Вкл",
@@ -226,6 +226,7 @@
         "treshold": "Пороговое время включения <small>(сек)</small>",
 
         "events": {
+          "desc": "События",
           "network": "При отключении сети",
           "mqtt": "При отключении MQTT",
           "indoorSensorDisconnect": "При потере связи с датчиком внутренней темп.",
@@ -233,6 +234,7 @@
         },
 
         "regulators": {
+          "desc": "Используемые регуляторы",
           "equitherm": "ПЗА <small>(требуется внешний (DS18B20) или подключенный к котлу датчик <u>наружной</u> температуры)</small>",
           "pid": "ПИД <small>(требуется внешний (DS18B20) датчик <u>внутренней</u> температуры)</small>"
         }
@@ -290,6 +292,7 @@
         },
 
         "options": {
+          "desc": "Опции",
           "dhwPresent": "Контур ГВС",
           "summerWinterMode": "Летний/зимний режим",
           "heatingCh2Enabled": "Канал 2 отопления всегда вкл.",
@@ -299,12 +302,6 @@
           "modulationSyncWithHeating": "Синхронизировать модуляцию с отоплением",
           "getMinMaxTemp": "Получать мин. и макс. температуру от котла",
           "immergasFix": "Фикс для котлов Immergas"
-        },
-
-        "faultState": {
-          "gpio": "Fault state GPIO",
-          "note": "Can be useful to switch on another boiler <u>via relay</u>. Blank - not use.",
-          "invert": "Invert fault state"
         },
 
         "nativeHeating": {
@@ -342,6 +339,29 @@
         "postCirculationTime": "Время постциркуляции <small>(в минутах)</small>",
         "antiStuckInterval": "Интервал защиты от блокировки <small>(в днях)</small>",
         "antiStuckTime": "Время работы насоса <small>(в минутах)</small>"
+      },
+
+      "cascadeControl": {
+        "input": {
+          "desc": "Может использоваться для включения отопления только при неисправности другого котла. Контроллер другого котла должен изменить состояние входа GPIO в случае неисправности.",
+          "enable": "Включить вход",
+          "gpio": "GPIO",
+          "invertState": "Инвертировать состояние GPIO",
+          "thresholdTime": "Пороговое время изменения состояния <small>(сек)</small>"
+        },
+        "output": {
+          "desc": "Может использоваться для включения другого котла <u>через реле</u>.",
+          "enable": "Включить выход",
+          "gpio": "GPIO",
+          "invertState": "Инвертировать состояние GPIO",
+          "thresholdTime": "Пороговое время изменения состояния <small>(сек)</small>",
+          "events": {
+            "title": "События",
+            "onFault": "Если состояние fault (ошибки) активно",
+            "onLossConnection": "Если соединение по OpenTherm потеряно",
+            "onEnabledHeating": "Если отопление включено"
+          }
+        }
       }
     },
 

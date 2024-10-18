@@ -135,6 +135,14 @@
                   <td><input type="radio" id="indoor-sensor-connected" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.state.cascadeControlInput</th>
+                  <td><input type="radio" id="cc-input" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.state.cascadeControlOutput</th>
+                  <td><input type="radio" id="cc-output" aria-invalid="false" checked disabled /></td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.state.indoorSensorRssi</th>
                   <td><b id="indoor-sensor-rssi"></b> <span data-i18n>dbm</span></td>
                 </tr>
@@ -427,6 +435,8 @@
             setState('#ot-external-pump', result.states.externalPump);
             setState('#outdoor-sensor-connected', result.sensors.outdoor.connected);
             setState('#indoor-sensor-connected', result.sensors.indoor.connected);
+            setState('#cc-input', result.cascadeControl.input);
+            setState('#cc-output', result.cascadeControl.output);
 
             setValue('#outdoor-sensor-rssi', result.sensors.outdoor.rssi);
             setValue('#outdoor-sensor-humidity', result.sensors.outdoor.humidity);

@@ -119,6 +119,7 @@ protected:
 
     this->emergency();
     this->ledStatus();
+    this->cascadeControl();
     this->externalPump();
     this->yield();
 
@@ -334,6 +335,170 @@ protected:
     }
 
     this->blinker->tick();
+  }
+
+  void cascadeControl() {
+    static uint8_t configuredInputGpio = GPIO_IS_NOT_CONFIGURED;
+    static uint8_t configuredOutputGpio = GPIO_IS_NOT_CONFIGURED;
+    static bool inputTempValue = false;
+    static unsigned long inputChangedTs = 0;
+    static bool outputTempValue = false;
+    static unsigned long outputChangedTs = 0;
+
+    // input
+    if (settings.cascadeControl.input.enable) {
+      if (settings.cascadeControl.input.gpio != configuredInputGpio) {
+        if (configuredInputGpio != GPIO_IS_NOT_CONFIGURED) {
+          pinMode(configuredInputGpio, OUTPUT);
+          digitalWrite(configuredInputGpio, LOW);
+
+          Log.sinfoln(FPSTR(L_CASCADE_INPUT), F("Deinitialized on GPIO %hhu"), configuredInputGpio);
+        }
+        
+        if (GPIO_IS_VALID(settings.cascadeControl.input.gpio)) {
+          configuredInputGpio = settings.cascadeControl.input.gpio;
+          pinMode(configuredInputGpio, INPUT);
+
+          Log.sinfoln(FPSTR(L_CASCADE_INPUT), F("Initialized on GPIO %hhu"), configuredInputGpio);
+
+        } else if (configuredInputGpio != GPIO_IS_NOT_CONFIGURED) {
+          configuredInputGpio = GPIO_IS_NOT_CONFIGURED;
+
+          Log.swarningln(FPSTR(L_CASCADE_INPUT), F("Failed initialize: GPIO %hhu is not valid!"), configuredInputGpio);
+        }
+      }
+
+      if (configuredInputGpio != GPIO_IS_NOT_CONFIGURED) {
+        bool value;
+        if (digitalRead(configuredInputGpio) == HIGH) {
+          value = true ^ settings.cascadeControl.input.invertState;
+        } else {
+          value = false ^ settings.cascadeControl.input.invertState;
+        }
+
+        if (value != vars.cascadeControl.input) {
+          if (value != inputTempValue) {
+            inputTempValue = value;
+            inputChangedTs = millis();
+
+          } else if (millis() - inputChangedTs >= settings.cascadeControl.input.thresholdTime * 1000u) {
+            vars.cascadeControl.input = value;
+
+            Log.sinfoln(
+              FPSTR(L_CASCADE_INPUT),
+              F("State changed to %s"),
+              value ? F("TRUE") : F("FALSE")
+            );
+          }
+
+        } else if (value != inputTempValue) {
+          inputTempValue = value;
+        }
+      }
+    }
+    
+    if (!settings.cascadeControl.input.enable || configuredInputGpio == GPIO_IS_NOT_CONFIGURED) {
+      if (!vars.cascadeControl.input) {
+        vars.cascadeControl.input = true;
+
+        Log.sinfoln(
+          FPSTR(L_CASCADE_INPUT),
+          F("Disabled, state changed to %s"),
+          vars.cascadeControl.input ? F("TRUE") : F("FALSE")
+        );
+      }
+    }
+
+
+    // output
+    if (settings.cascadeControl.output.enable) {
+      if (settings.cascadeControl.output.gpio != configuredOutputGpio) {
+        if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
+          pinMode(configuredOutputGpio, OUTPUT);
+          digitalWrite(configuredOutputGpio, LOW);
+
+          Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Deinitialized on GPIO %hhu"), configuredOutputGpio);
+        }
+        
+        if (GPIO_IS_VALID(settings.cascadeControl.output.gpio)) {
+          configuredOutputGpio = settings.cascadeControl.output.gpio;
+          pinMode(configuredOutputGpio, OUTPUT);
+          digitalWrite(
+            configuredOutputGpio,
+            settings.cascadeControl.output.invertState
+              ? HIGH 
+              : LOW
+          );
+
+          Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Initialized on GPIO %hhu"), configuredOutputGpio);
+
+        } else if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
+          configuredOutputGpio = GPIO_IS_NOT_CONFIGURED;
+
+          Log.swarningln(FPSTR(L_CASCADE_OUTPUT), F("Failed initialize: GPIO %hhu is not valid!"), configuredOutputGpio);
+        }
+      }
+
+      if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
+        bool value = false;
+        if (settings.cascadeControl.output.onFault && vars.states.fault) {
+          value = true;
+
+        } else if (settings.cascadeControl.output.onLossConnection && !vars.states.otStatus) {
+          value = true;
+
+        } else if (settings.cascadeControl.output.onEnabledHeating && settings.heating.enable && vars.cascadeControl.input) {
+          value = true;
+        }
+
+        if (value != vars.cascadeControl.output) {
+          if (value != outputTempValue) {
+            outputTempValue = value;
+            outputChangedTs = millis();
+            
+          } else if (millis() - outputChangedTs >= settings.cascadeControl.output.thresholdTime * 1000u) {
+            vars.cascadeControl.output = value;
+
+            digitalWrite(
+              configuredOutputGpio,
+              vars.cascadeControl.output ^ settings.cascadeControl.output.invertState
+                ? HIGH
+                : LOW
+            );
+
+            Log.sinfoln(
+              FPSTR(L_CASCADE_OUTPUT),
+              F("State changed to %s"),
+              value ? F("TRUE") : F("FALSE")
+            );
+          }
+
+        } else if (value != outputTempValue) {
+          outputTempValue = value;
+        }
+      }
+    }
+
+    if (!settings.cascadeControl.output.enable || configuredOutputGpio == GPIO_IS_NOT_CONFIGURED) {
+      if (vars.cascadeControl.output) {
+        vars.cascadeControl.output = false;
+
+        if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
+          digitalWrite(
+            configuredOutputGpio,
+            vars.cascadeControl.output ^ settings.cascadeControl.output.invertState
+              ? HIGH
+              : LOW
+          );
+        }
+
+        Log.sinfoln(
+          FPSTR(L_CASCADE_OUTPUT),
+          F("Disabled, state changed to %s"),
+          vars.cascadeControl.output ? F("TRUE") : F("FALSE")
+        );
+      }
+    }
   }
 
   void externalPump() {

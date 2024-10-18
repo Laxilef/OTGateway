@@ -51,8 +51,6 @@ struct Settings {
     byte inGpio = DEFAULT_OT_IN_GPIO;
     byte outGpio = DEFAULT_OT_OUT_GPIO;
     byte rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
-    byte faultStateGpio = DEFAULT_OT_FAULT_STATE_GPIO;
-    byte invertFaultState = false;
     unsigned int memberIdCode = 0;
     uint8_t maxModulation = 100;
     float pressureFactor = 1.0f;
@@ -156,6 +154,25 @@ struct Settings {
     unsigned short antiStuckTime = 300;
   } externalPump;
 
+  struct {
+    struct {
+      bool enable = false;
+      byte gpio = GPIO_IS_NOT_CONFIGURED;
+      byte invertState = false;
+      unsigned short thresholdTime = 60;
+    } input;
+
+    struct {
+      bool enable = false;
+      byte gpio = GPIO_IS_NOT_CONFIGURED;
+      byte invertState = false;
+      unsigned short thresholdTime = 60;
+      bool onFault = true;
+      bool onLossConnection = true;
+      bool onEnabledHeating = false;
+    } output;
+  } cascadeControl;
+
   char validationValue[8] = SETTINGS_VALID_VALUE;
 } settings;
 
@@ -204,6 +221,11 @@ struct Variables {
     float dhw = 0.0f;
     float exhaust = 0.0f;
   } temperatures;
+
+  struct {
+    bool input = false;
+    bool output = false;
+  } cascadeControl;
 
   struct {
     bool heatingEnabled = false;
