@@ -86,6 +86,12 @@ protected:
     vars.states.mqtt = tMqtt->isConnected();
     vars.sensors.rssi = network->isConnected() ? WiFi.RSSI() : 0;
 
+    if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
+      if (Log.getLevel() != settings.system.logLevel) {
+        Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
+      }
+    }
+
     if (network->isConnected()) {
       if (!this->telnetStarted && telnetStream != nullptr) {
         telnetStream->begin(23, false);
@@ -97,12 +103,6 @@ protected:
 
       } else if (!settings.mqtt.enable && tMqtt->isEnabled()) {
         tMqtt->disable();
-      }
-
-      if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
-        if (Log.getLevel() != settings.system.logLevel) {
-          Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
-        } 
       }
 
     } else {
