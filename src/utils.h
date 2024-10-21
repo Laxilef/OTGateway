@@ -1084,7 +1084,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["pid"]["dt"].isNull()) {
     unsigned short value = src["pid"]["dt"].as<unsigned short>();
 
-    if (value >= 30 && value <= 600 && value != dst.pid.dt) {
+    if (value >= 30 && value <= 1800 && value != dst.pid.dt) {
       dst.pid.dt = value;
       changed = true;
     }

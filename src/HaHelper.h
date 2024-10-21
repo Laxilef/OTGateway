@@ -546,7 +546,7 @@ public:
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"pid\": {\"dt\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 30;
-    doc[FPSTR(HA_MAX)] = 600;
+    doc[FPSTR(HA_MAX)] = 1800;
     doc[FPSTR(HA_STEP)] = 1;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
