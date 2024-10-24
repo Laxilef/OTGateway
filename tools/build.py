@@ -6,10 +6,11 @@ Import("env")
 
 def post_build(source, target, env):
   copy_to_build_dir({
-    source[0].get_abspath(): "firmware_%s_%s.bin" % (env["PIOENV"], env.GetProjectOption("version")),
-    env.subst("$BUILD_DIR/${PROGNAME}.factory.bin"): "firmware_%s_%s.factory.bin" % (env["PIOENV"], env.GetProjectOption("version")),
+    source[0].get_abspath():                          "firmware_%s_%s.bin" % (env["PIOENV"], env.GetProjectOption("version")),
+    env.subst("$BUILD_DIR/${PROGNAME}.factory.bin"):  "firmware_%s_%s.factory.bin" % (env["PIOENV"], env.GetProjectOption("version")),
+    env.subst("$BUILD_DIR/${PROGNAME}.elf"):          "firmware_%s_%s.elf" % (env["PIOENV"], env.GetProjectOption("version"))
   }, os.path.join(env["PROJECT_DIR"], "build"));
-      
+  
   env.Execute("pio run --target buildfs --environment %s" % env["PIOENV"]);
 
 
