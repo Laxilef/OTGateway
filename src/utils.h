@@ -188,6 +188,22 @@ String getResetReason() {
   return value;
 }
 
+template <class T>
+void arr2str(String &str, T arr[], size_t length) {
+  char buffer[12];
+  for (size_t i = 0; i < length; i++) {
+    auto addr = arr[i];
+    if (!addr) {
+      continue;
+    }
+    
+    sprintf(buffer, "0x%08X ", addr);
+    str.concat(buffer);
+  }
+
+  str.trim();
+}
+
 void networkSettingsToJson(const NetworkSettings& src, JsonVariant dst) {
   dst["hostname"] = src.hostname;
 

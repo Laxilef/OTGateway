@@ -101,36 +101,40 @@
                 <td>
                   Env: <b id="build-env"></b><br />
                   <span data-i18n>index.system.build.date</span>: <b id="build-date"></b><br />
-                  <span data-i18n>index.system.build.sdk</span>: <b id="core-version"></b>
+                  <span data-i18n>index.system.build.core</span>: <b id="build-core"></b><br />
+                  <span data-i18n>index.system.build.sdk</span>: <b id="build-sdk"></b>
                 </td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>index.system.uptime</th>
                 <td>
-                  <b id="uptime-days"></b> days, 
-                  <b id="uptime-hours"></b> hours, 
-                  <b id="uptime-min"></b> min., 
-                  <b id="uptime-sec"></b> sec.
+                  <b id="uptime-days"></b> <span data-i18n>time.days</span>, 
+                  <b id="uptime-hours"></b> <span data-i18n>time.hours</span>, 
+                  <b id="uptime-min"></b> <span data-i18n>time.min</span>, 
+                  <b id="uptime-sec"></b> <span data-i18n>time.sec</span>
                 </td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>index.system.memory.title</th>
                 <td>
-                  <b id="free-heap"></b> of <b id="total-heap"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="min-free-heap"></b> bytes)<br />
-                  <span data-i18n>index.system.memory.maxFreeBlock</span>: <b id="max-free-block-heap"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="min-max-free-block-heap"></b> bytes)
+                  <b id="heap-free"></b> of <b id="heap-total"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="heap-min-free"></b> bytes)<br />
+                  <span data-i18n>index.system.memory.maxFreeBlock</span>: <b id="heap-max-free-block"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="heap-min-max-free-block"></b> bytes)
                 </td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>index.system.board</th>
                 <td>
-                  <span data-i18n>index.system.chip.model</span>: <b id="chip-model"></b> (rev. <span id="chip-revision"></span>)<br />
-                  <span data-i18n>index.system.chip.cores</span>: <b id="chip-cores"></b>, <span data-i18n>index.system.chip.freq</span>: <b id="cpu-freq"></b> mHz<br />
+                  <span data-i18n>index.system.chip.model</span>: <b id="chip-model"></b> (rev. <span id="chip-rev"></span>)<br />
+                  <span data-i18n>index.system.chip.cores</span>: <b id="chip-cores"></b>, <span data-i18n>index.system.chip.freq</span>: <b id="chip-freq"></b> mHz<br />
                   <span data-i18n>index.system.flash.size</span>: <b id="flash-size"></b> MB (<span data-i18n>index.system.flash.realSize</span>: <b id="flash-real-size"></b> MB)
                 </td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>index.system.lastResetReason</th>
-                <td><b id="reset-reason"></b></td>
+                <td>
+                  <b id="reset-reason"></b><br />
+                  <a href="/api/debug" target="_blank"><small>Save debug data</small></a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -170,6 +174,13 @@
             }
 
             const result = await response.json();
+            setValue('#reset-reason', result.system.resetReason);
+            setValue('#uptime', result.system.uptime);
+            setValue('#uptime-days', Math.floor(result.system.uptime / 86400));
+            setValue('#uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
+            setValue('#uptime-min', Math.floor(result.system.uptime % 3600 / 60));
+            setValue('#uptime-sec', Math.floor(result.system.uptime % 60));
+
             setValue('#network-hostname', result.network.hostname);
             setValue('#network-mac', result.network.mac);
             setState('#network-connected', result.network.connected);
@@ -181,28 +192,24 @@
             setValue('#network-dns', result.network.dns);
             setBusy('#main-busy', '#main-table', false);
 
-            setValue('#build-version', result.system.buildVersion);
-            setValue('#build-date', result.system.buildDate);
-            setValue('#build-env', result.system.buildEnv);
-            setValue('#uptime', result.system.uptime);
-            setValue('#uptime-days', Math.floor(result.system.uptime / 86400));
-            setValue('#uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
-            setValue('#uptime-min', Math.floor(result.system.uptime % 3600 / 60));
-            setValue('#uptime-sec', Math.floor(result.system.uptime % 60));
-            setValue('#total-heap', result.system.totalHeap);
-            setValue('#free-heap', result.system.freeHeap);
-            setValue('#min-free-heap', result.system.minFreeHeap);
-            setValue('#max-free-block-heap', result.system.maxFreeBlockHeap);
-            setValue('#min-max-free-block-heap', result.system.minMaxFreeBlockHeap);
-            setValue('#reset-reason', result.system.resetReason);
+            setValue('#build-version', result.build.version);
+            setValue('#build-date', result.build.date);
+            setValue('#build-env', result.build.env);
+            setValue('#build-core', result.build.core);
+            setValue('#build-sdk', result.build.sdk);
 
-            setValue('#chip-model', result.system.chipModel);
-            setValue('#chip-revision', result.system.chipRevision);
-            setValue('#chip-cores', result.system.chipCores);
-            setValue('#cpu-freq', result.system.cpuFreq);
-            setValue('#core-version', result.system.coreVersion);
-            setValue('#flash-size', result.system.flashSize / 1024 / 1024);
-            setValue('#flash-real-size', result.system.flashRealSize / 1024 / 1024);
+            setValue('#heap-total', result.heap.total);
+            setValue('#heap-free', result.heap.free);
+            setValue('#heap-min-free', result.heap.minFree);
+            setValue('#heap-max-free-block', result.heap.maxFreeBlock);
+            setValue('#heap-min-max-free-block', result.heap.minMaxFreeBlock);
+
+            setValue('#chip-model', result.chip.model);
+            setValue('#chip-rev', result.chip.rev);
+            setValue('#chip-cores', result.chip.cores);
+            setValue('#chip-freq', result.chip.freq);
+            setValue('#flash-size', result.flash.size / 1024 / 1024);
+            setValue('#flash-real-size', result.flash.realSize / 1024 / 1024);
 
             setBusy('#system-busy', '#system-table', false);
 

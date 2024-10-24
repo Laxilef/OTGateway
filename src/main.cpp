@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "defines.h"
 #include "strings.h"
+#include "CrashRecorder.h"
 #include <ArduinoJson.h>
 #include <FileData.h>
 #include <LittleFS.h>
@@ -45,6 +46,7 @@ MainTask* tMain;
 
 
 void setup() {
+  CrashRecorder::init();
   LittleFS.begin();
 
   Log.setLevel(TinyLogger::Level::VERBOSE);

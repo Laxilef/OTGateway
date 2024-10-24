@@ -10,6 +10,12 @@
     },
     "dbm": "dBm",
     "kw": "kW",
+    "time": {
+      "days": "d.",
+      "hours": "h.",
+      "min": "min.",
+      "sec": "sec."
+    },
 
     "button": {
       "upgrade": "Upgrade",
@@ -39,7 +45,8 @@
           "title": "Build",
           "version": "Version",
           "date": "Date",
-          "sdk": "Core/SDK"
+          "core": "Core",
+          "sdk": "SDK"
         },
         "uptime": "Uptime",
         "memory": {

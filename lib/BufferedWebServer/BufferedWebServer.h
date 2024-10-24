@@ -10,7 +10,7 @@ public:
     free(this->buffer);
   }
 
-  void send(int code, const char* contentType, JsonDocument& content) {
+  void send(int code, const char* contentType, JsonDocument& content, bool pretty = false) {
     #ifdef ARDUINO_ARCH_ESP8266
     if (!this->webServer->chunkedResponseModeStart(code, contentType)) {
       this->webServer->send(505, F("text/html"), F("HTTP1.1 required"));
@@ -24,7 +24,13 @@ public:
     this->webServer->send(code, contentType, emptyString);
     #endif
 
-    serializeJson(content, *this);
+    if (pretty) {
+      serializeJsonPretty(content, *this);
+      
+    } else {
+      serializeJson(content, *this);
+    }
+
     this->flush();
 
     #ifdef ARDUINO_ARCH_ESP8266
