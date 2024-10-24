@@ -27,13 +27,13 @@ struct Settings {
     uint8_t logLevel = DEFAULT_LOG_LEVEL;
 
     struct {
-      bool enable = USE_SERIAL;
-      unsigned int baudrate = 115200;
+      bool enable = DEFAULT_SERIAL_ENABLE;
+      unsigned int baudrate = DEFAULT_SERIAL_BAUD;
     } serial;
 
     struct {
-      bool enable = USE_TELNET;
-      unsigned short port = 23;
+      bool enable = DEFAULT_TELNET_ENABLE;
+      unsigned short port = DEFAULT_TELNET_PORT;
     } telnet;
 
     UnitSystem unitSystem = UnitSystem::METRIC;

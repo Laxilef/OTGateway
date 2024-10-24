@@ -30,12 +30,20 @@
   #define BUILD_ENV                     "undefined"
 #endif
 
-#ifndef USE_SERIAL
-  #define USE_SERIAL true
+#ifndef DEFAULT_SERIAL_ENABLE
+  #define DEFAULT_SERIAL_ENABLE true
 #endif
 
-#ifndef USE_TELNET
-  #define USE_TELNET true
+#ifndef DEFAULT_SERIAL_BAUD
+  #define DEFAULT_SERIAL_BAUD 115200
+#endif
+
+#ifndef DEFAULT_TELNET_ENABLE
+  #define DEFAULT_TELNET_ENABLE true
+#endif
+
+#ifndef DEFAULT_TELNET_PORT
+  #define DEFAULT_TELNET_PORT 23
 #endif
 
 #ifndef USE_BLE
