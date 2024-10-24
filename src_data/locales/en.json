@@ -287,7 +287,7 @@
           "note": "<b>0</b> - try detect automatically. Typically found in the boiler specification as \"maximum useful heat output\"."
         },
         "fnv": {
-          "title": "Filtering numeric values",
+          "desc": "Filtering numeric values",
           "enable": {
             "title": "Enable filtering",
             "note": "It can be useful if there is a lot of sharp noise on the charts. The filter used is \"Running Average\"."
@@ -363,7 +363,7 @@
           "invertState": "Invert GPIO state",
           "thresholdTime": "State change threshold time <small>(sec)</small>",
           "events": {
-            "title": "Events",
+            "desc": "Events",
             "onFault": "If the fault state is active",
             "onLossConnection": "If the connection via Opentherm is lost",
             "onEnabledHeating": "If heating is enabled"
