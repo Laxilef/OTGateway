@@ -59,7 +59,12 @@ protected:
     }
 
     if (!GPIO_IS_VALID(settings.opentherm.inGpio) || !GPIO_IS_VALID(settings.opentherm.outGpio)) {
-      Log.swarningln(FPSTR(L_OT), F("Not started. GPIO IN: %hhu or GPIO OUT: %hhu is not valid"), settings.opentherm.inGpio, settings.opentherm.outGpio);
+      Log.swarningln(
+        FPSTR(L_OT),
+        F("Not started. GPIO IN: %hhu or GPIO OUT: %hhu is not valid"),
+        settings.opentherm.inGpio,
+        settings.opentherm.outGpio
+      );
       return;
     }
 
@@ -340,7 +345,7 @@ protected:
         if (this->updateFaultCode()) {
           Log.snoticeln(
             FPSTR(L_OT),
-            F("Received fault code: %hhu%% (0x%02X)"),
+            F("Received fault code: %hhu (0x%02X)"),
             vars.sensors.faultCode,
             vars.sensors.faultCode
           );
@@ -360,7 +365,7 @@ protected:
         if (this->updateDiagCode()) {
           Log.snoticeln(
             FPSTR(L_OT),
-            F("Received diag code: %hhu%% (0x%02X)"),
+            F("Received diag code: %hu (0x%02X)"),
             vars.sensors.diagnosticCode,
             vars.sensors.diagnosticCode
           );
