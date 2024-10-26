@@ -769,7 +769,7 @@ protected:
       return;
     }
 
-    this->webServer->handleClient();
+    //this->webServer->handleClient();
     this->webServer->stop();
     this->webServerEnabled = false;
     this->webServerChangeState = millis();
@@ -794,7 +794,7 @@ protected:
       return;
     }
 
-    this->dnsServer->processNextRequest();
+    //this->dnsServer->processNextRequest();
     this->dnsServer->stop();
     this->dnsServerEnabled = false;
     this->dnsServerChangeState = millis();

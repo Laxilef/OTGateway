@@ -247,11 +247,19 @@ namespace NetworkUtils {
       this->delayCallback(250);
       #endif
 
-      if (!this->useDhcp) {
-        WiFi.config(this->staticIp, this->staticGateway, this->staticSubnet, this->staticDns);
-      }
+      #ifdef ARDUINO_ARCH_ESP32
+      WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+      WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
+      #endif
 
-      WiFi.begin(this->staSsid, this->staPassword, this->staChannel);
+      if (!this->useDhcp) {
+        WiFi.begin(this->staSsid, this->staPassword, this->staChannel, nullptr, false);
+        WiFi.config(this->staticIp, this->staticGateway, this->staticSubnet, this->staticDns);
+        WiFi.reconnect();
+
+      } else {
+        WiFi.begin(this->staSsid, this->staPassword, this->staChannel, nullptr, true);
+      }
 
       unsigned long beginConnectionTime = millis();
       while (millis() - beginConnectionTime < timeout) {
@@ -267,7 +275,16 @@ namespace NetworkUtils {
     }
 
     void disconnect() {
+      #ifdef ARDUINO_ARCH_ESP32
+      WiFi.disconnectAsync(false, true);
+
+      const unsigned long start = millis();
+      while (WiFi.isConnected() && (millis() - start) < 5000) {
+        this->delayCallback(100);
+      }
+      #else
       WiFi.disconnect(false, true);
+      #endif
     }
 
     void loop() {
@@ -365,10 +382,10 @@ namespace NetworkUtils {
     }
 
   protected:
-    const unsigned int reconnectInterval = 5000;
-    const unsigned int failedConnectTimeout = 120000;
-    const unsigned int connectionTimeout = 15000;
-    const unsigned int resetConnectionTimeout = 30000;
+    const unsigned int reconnectInterval = 15000;
+    const unsigned int failedConnectTimeout = 185000;
+    const unsigned int connectionTimeout = 5000;
+    const unsigned int resetConnectionTimeout = 90000;
 
     YieldCallback yieldCallback = []() {
       ::yield();
