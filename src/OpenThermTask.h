@@ -166,7 +166,7 @@ protected:
       statusLb
     );
 
-    if (!CustomOpenTherm::isValidResponse(response)) {
+    if (!CustomOpenTherm::isValidResponse(response) || !CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Status)) {
       Log.swarningln(
         FPSTR(L_OT),
         F("Failed receive boiler status: %s"),
@@ -717,6 +717,9 @@ protected:
     
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::SConfigSMemberIDcode)) {
+      return false;
     }
 
     vars.parameters.slaveMemberId = response & 0xFF;
@@ -776,7 +779,7 @@ protected:
       request
     ));
 
-    return CustomOpenTherm::isValidResponse(response);
+    return CustomOpenTherm::isValidResponse(response) && CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MConfigMMemberIDcode);
   }
 
   bool setMaxModulationLevel(byte value) {
@@ -787,6 +790,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxRelModLevelSetting)) {
       return false;
     }
 
@@ -803,6 +809,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OpenThermVersionSlave)) {
+      return false;
     }
 
     vars.parameters.slaveOtVersion = CustomOpenTherm::getFloat(response);
@@ -817,6 +826,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OpenThermVersionMaster)) {
       return false;
     }
 
@@ -833,6 +845,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::SlaveVersion)) {
       return false;
     }
 
@@ -851,6 +866,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MasterVersion)) {
+      return false;
     }
 
     vars.parameters.masterVersion = response & 0xFF;
@@ -867,6 +885,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TdhwSetUBTdhwSetLB)) {
       return false;
     }
 
@@ -892,6 +913,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxTSetUBMaxTSetLB)) {
+      return false;
     }
 
     byte minTemp = response & 0xFF;
@@ -913,7 +937,7 @@ protected:
       CustomOpenTherm::temperatureToData(value)
     ));
 
-    return CustomOpenTherm::isValidResponse(response);
+    return CustomOpenTherm::isValidResponse(response) && CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxTSet);
   }
 
   bool updateOutdoorTemp() {
@@ -924,6 +948,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Toutside)) {
       return false;
     }
     
@@ -951,6 +978,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Texhaust)) {
       return false;
     }
 
@@ -984,6 +1014,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tboiler)) {
+      return false;
     }
 
     float value = CustomOpenTherm::getFloat(response);
@@ -1016,6 +1049,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tret)) {
+      return false;
     }
 
     float value = convertTemp(
@@ -1044,6 +1080,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tdhw)) {
       return false;
     }
 
@@ -1076,6 +1115,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWFlowRate)) {
       return false;
     }
 
@@ -1116,6 +1158,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::ASFflags)) {
+      return false;
     }
 
     vars.sensors.faultCode = response & 0xFF;
@@ -1131,6 +1176,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OEMDiagnosticCode)) {
+      return false;
     }
 
     vars.sensors.diagnosticCode = CustomOpenTherm::getUInt(response);
@@ -1145,6 +1193,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::RelModLevel)) {
       return false;
     }
 
@@ -1172,6 +1223,9 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxCapacityMinModLevel)) {
+      return false;
     }
 
     vars.parameters.minModulation = response & 0xFF;
@@ -1188,6 +1242,9 @@ protected:
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CHPressure)) {
       return false;
     }
 

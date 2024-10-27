@@ -105,7 +105,7 @@ public:
       temperatureToData(temperature)
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TSet);
   }
 
   bool setHeatingCh2Temp(float temperature) {
@@ -115,7 +115,7 @@ public:
       temperatureToData(temperature)
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TsetCH2);
   }
 
   bool setDhwTemp(float temperature) {
@@ -125,7 +125,7 @@ public:
       temperatureToData(temperature)
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TdhwSet);
   }
 
   bool setRoomSetpoint(float temperature) {
@@ -135,7 +135,7 @@ public:
       temperatureToData(temperature)
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TrSet);
   }
 
   bool setRoomSetpointCh2(float temperature) {
@@ -145,7 +145,7 @@ public:
       temperatureToData(temperature)
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TrSetCH2);
   }
 
   bool setRoomTemp(float temperature) {
@@ -155,7 +155,7 @@ public:
       temperatureToData(temperature)
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::Tr);
   }
 
   bool sendBoilerReset() {
@@ -167,7 +167,7 @@ public:
       data
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
   }
 
   bool sendServiceReset() {
@@ -179,7 +179,7 @@ public:
       data
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
   }
 
   bool sendWaterFilling() {
@@ -191,7 +191,13 @@ public:
       data
     ));
 
-    return isValidResponse(response);
+    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
+  }
+
+  static bool isValidResponseId(unsigned long response, OpenThermMessageID id) {
+    byte responseId = (response >> 16) & 0xFF;
+    
+    return (byte)id == responseId;
   }
 
   // converters
