@@ -1080,17 +1080,29 @@ protected:
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (value < 0 || value > convertVolume(16, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
+    if (value < 0) {
       return false;
     }
 
-    value = convertVolume(
-      value * settings.opentherm.dhwFlowRateFactor,
+    // correction
+    value = value * settings.opentherm.dhwFlowRateFactor;
+
+    // no minuscule values
+    // some boilers send a response of 0.06 when there is no flow
+    if (value < 0.1f) {
+      value = 0.0f;
+    }
+
+    // protocol declares a maximum of 16 l/m
+    //if (value > convertVolume(16.0f, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
+    //  value = 0.0f;
+    //}
+
+    vars.sensors.dhwFlowRate = convertVolume(
+      value,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
-
-    vars.sensors.dhwFlowRate = value > 0.09f ? value : 0.0f;
     
     return true;
   }
@@ -1180,12 +1192,20 @@ protected:
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (value < 0 || value > convertPressure(5, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
+    if (value < 0) {
       return false;
     }
 
+    // correction
+    value = value * settings.opentherm.pressureFactor;
+
+    // protocol declares a maximum of 5 bar
+    //if (value > convertPressure(5.0f, UnitSystem::METRIC, settings.opentherm.unitSystem)) {
+    //  value = 0.0f;
+    //}
+
     value = convertPressure(
-      value * settings.opentherm.pressureFactor,
+      value,
       settings.opentherm.unitSystem,
       settings.system.unitSystem
     );
