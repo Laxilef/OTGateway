@@ -607,9 +607,9 @@ function memberIdToVendor(memberId) {
   // https://github.com/Jeroen88/EasyOpenTherm/blob/main/src/EasyOpenTherm.h
   // https://github.com/Evgen2/SmartTherm/blob/v0.7/src/Web.cpp
   const vendorList = {
-    1:    "Baxi Fourtech/Luna 3",
-    2:    "AWB/Brink",
-    4:    "ATAG/Brötje/ELCO/GEMINOX",
+    1:    "Baxi",
+    2:    "AWB/Brink/Viessmann",
+    4:    "ATAG/Baxi/Brötje/ELCO/GEMINOX",
     5:    "Itho Daalderop",
     6:    "IDEAL",
     8:    "Buderus/Bosch/Hoval",
@@ -621,7 +621,7 @@ function memberIdToVendor(memberId) {
     29:   "Itho Daalderop",
     33:   "Viessmann",
     41:   "Italtherm/Radiant",
-    56:   "Baxi Luna Duo-Tec",
+    56:   "Baxi",
     131:  "Nefit",
     148:  "Navien",
     173:  "Intergas",
