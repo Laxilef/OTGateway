@@ -27,7 +27,7 @@ public:
   }
 
   // лимит выходной величины
-  void setLimits(int min_output, int max_output) {
+  void setLimits(unsigned short min_output, unsigned short max_output) {
     _minOut = min_output;
     _maxOut = max_output;
   }
@@ -40,7 +40,7 @@ public:
   }
 
 private:
-  int _minOut = 20, _maxOut = 90;
+  unsigned short _minOut = 20, _maxOut = 90;
 
   // температура контура отопления в зависимости от наружной температуры
   datatype getResultN() {

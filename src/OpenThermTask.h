@@ -22,11 +22,11 @@ protected:
   bool isInitialized = false;
   unsigned long initializedTime = 0;
   unsigned int initializedMemberIdCode = 0;
-  bool pump = true;
   unsigned long lastSuccessResponse = 0;
   unsigned long prevUpdateNonEssentialVars = 0;
   unsigned long dhwSetTempTime = 0;
   unsigned long heatingSetTempTime = 0;
+  bool heatingBlocking = false;
   byte configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
 
   #if defined(ARDUINO_ARCH_ESP32)
@@ -136,7 +136,10 @@ protected:
       }
     }
 
-    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) && this->pump && vars.cascadeControl.input && this->isReady();
+    bool heatingEnabled = (vars.states.emergency || settings.heating.enable) 
+      && vars.cascadeControl.input 
+      && this->isReady() 
+      && !this->heatingBlocking;
     bool heatingCh2Enabled = settings.opentherm.heatingCh2Enabled;
     if (settings.opentherm.heatingCh1ToCh2) {
       heatingCh2Enabled = heatingEnabled;
@@ -181,6 +184,10 @@ protected:
       
     } else if (vars.states.otStatus && millis() - this->lastSuccessResponse > 1150) {
       Log.swarningln(FPSTR(L_OT), F("Disconnected"));
+
+      if (settings.sensors.outdoor.type == SensorType::BOILER) {
+        vars.sensors.outdoor.connected = false;
+      }
 
       vars.states.otStatus = false;
       this->isInitialized = false;
@@ -386,9 +393,17 @@ protected:
         // Get outdoor temp (if necessary)
         if (settings.sensors.outdoor.type == SensorType::BOILER) {
           if (this->updateOutdoorTemp()) {
+            if (!vars.sensors.outdoor.connected) {
+              vars.sensors.outdoor.connected = true;
+            }
+
             Log.snoticeln(FPSTR(L_OT), F("Received outdoor temp: %.2f"), vars.temperatures.outdoor);
 
           } else {
+            if (vars.sensors.outdoor.connected) {
+              vars.sensors.outdoor.connected = false;
+            }
+
             Log.swarningln(FPSTR(L_OT), F("Failed receive outdoor temp"));
           }
         }
@@ -489,9 +504,17 @@ protected:
       // Get outdoor temp (if necessary)
       if (settings.sensors.outdoor.type == SensorType::BOILER) {
         if (this->updateOutdoorTemp()) {
+          if (!vars.sensors.outdoor.connected) {
+            vars.sensors.outdoor.connected = true;
+          }
+
           Log.snoticeln(FPSTR(L_OT), F("Received outdoor temp: %.2f"), vars.temperatures.outdoor);
 
         } else {
+          if (vars.sensors.outdoor.connected) {
+            vars.sensors.outdoor.connected = false;
+          }
+
           Log.swarningln(FPSTR(L_OT), F("Failed receive outdoor temp"));
         }
       }
@@ -564,7 +587,7 @@ protected:
       float indoorTemp = 0.0f;
       float convertedTemp = 0.0f;
 
-      if (!vars.states.emergency || settings.sensors.indoor.type != SensorType::MANUAL) {
+      if (!vars.sensors.indoor.connected) {
         indoorTemp = vars.temperatures.indoor;
         convertedTemp = convertTemp(indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
       }
@@ -593,11 +616,6 @@ protected:
             Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target indoor temp to CH2"));
           }
         }
-      }
-
-      // force enable pump
-      if (!this->pump) {
-        this->pump = true;
       }
 
     } else {
@@ -634,18 +652,22 @@ protected:
 
 
       // Hysteresis
-      // Only if enabled PID or/and Equitherm
-      if (settings.heating.hysteresis > 0 && (!vars.states.emergency || settings.emergency.usePid) && (settings.equitherm.enable || settings.pid.enable)) {
-        float halfHyst = settings.heating.hysteresis / 2;
-        if (this->pump && vars.temperatures.indoor - settings.heating.target + 0.0001f >= halfHyst) {
-          this->pump = false;
+      // Only if enabled PID or/and Equitherm or Native heating control via OT
+      bool useHyst = false;
+      if (settings.heating.hysteresis > 0.01f && vars.sensors.indoor.connected) {
+        useHyst = settings.equitherm.enable || settings.pid.enable || settings.opentherm.nativeHeatingControl;
+      }
 
-        } else if (!this->pump && vars.temperatures.indoor - settings.heating.target - 0.0001f <= -(halfHyst)) {
-          this->pump = true;
+      if (useHyst) {
+        if (!this->heatingBlocking && vars.temperatures.indoor - settings.heating.target + 0.0001f >= settings.heating.hysteresis) {
+          this->heatingBlocking = true;
+
+        } else if (this->heatingBlocking && vars.temperatures.indoor - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis)) {
+          this->heatingBlocking = false;
         }
 
-      } else if (!this->pump) {
-        this->pump = true;
+      } else if (this->heatingBlocking) {
+        this->heatingBlocking = false;
       }
     }
   }

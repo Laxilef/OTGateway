@@ -105,6 +105,14 @@ protected:
         tMqtt->disable();
       }
 
+      if (settings.sensors.indoor.type == SensorType::MANUAL) {
+        vars.sensors.indoor.connected = !settings.mqtt.enable || vars.states.mqtt;
+      }
+
+      if (settings.sensors.outdoor.type == SensorType::MANUAL) {
+        vars.sensors.outdoor.connected = !settings.mqtt.enable || vars.states.mqtt;
+      }
+
     } else {
       if (this->telnetStarted) {
         telnetStream->stop();
@@ -113,6 +121,14 @@ protected:
 
       if (tMqtt->isEnabled()) {
         tMqtt->disable();
+      }
+
+      if (settings.sensors.indoor.type == SensorType::MANUAL) {
+        vars.sensors.indoor.connected = false;
+      }
+
+      if (settings.sensors.outdoor.type == SensorType::MANUAL) {
+        vars.sensors.outdoor.connected = false;
       }
     }
     this->yield();
@@ -189,42 +205,22 @@ protected:
   }
 
   void emergency() {
-    if (!settings.emergency.enable && vars.states.emergency) {
-      this->emergencyDetected = false;
-      vars.states.emergency = false;
-
-      Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode disabled"));
-    }
-
-    if (!settings.emergency.enable) {
-      return;
-    }
-
     // flags
     uint8_t emergencyFlags = 0b00000000;
 
-    // set network flag
-    if (settings.emergency.onNetworkFault && !network->isConnected()) {
+    // set outdoor sensor flag
+    if (settings.equitherm.enable && !vars.sensors.outdoor.connected) {
       emergencyFlags |= 0b00000001;
     }
 
-    // set mqtt flag
-    if (settings.emergency.onMqttFault && (!tMqtt->isEnabled() || !tMqtt->isConnected())) {
+    // set indoor sensor flag
+    if (!settings.equitherm.enable && settings.pid.enable && !vars.sensors.indoor.connected) {
       emergencyFlags |= 0b00000010;
     }
 
-    // set outdoor sensor flag
-    if (settings.sensors.outdoor.type == SensorType::DS18B20 || settings.sensors.outdoor.type == SensorType::BLUETOOTH) {
-      if (settings.emergency.onOutdoorSensorDisconnect && !vars.sensors.outdoor.connected) {
-        emergencyFlags |= 0b00000100;
-      }
-    }
-
-    // set indoor sensor flag
-    if (settings.sensors.indoor.type == SensorType::DS18B20 || settings.sensors.indoor.type == SensorType::BLUETOOTH) {
-      if (settings.emergency.onIndoorSensorDisconnect && !vars.sensors.indoor.connected) {
-        emergencyFlags |= 0b00001000;
-      }
+    // set indoor sensor flag for OT native heating control
+    if (settings.opentherm.nativeHeatingControl && !vars.sensors.indoor.connected) {
+      emergencyFlags |= 0b00000100;
     }
 
     // if any flags is true

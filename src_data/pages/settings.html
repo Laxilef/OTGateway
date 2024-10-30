@@ -208,11 +208,6 @@
             <div id="emergency-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="emergency-settings" class="hidden">
               <fieldset>
-                <label for="emergency-enable">
-                  <input type="checkbox" id="emergency-enable" name="emergency[enable]" value="true">
-                  <span data-i18n>settings.enable</span>
-                </label>
-
                 <small data-i18n>settings.emergency.desc</small>
               </fieldset>
 
@@ -228,43 +223,6 @@
                   <input type="number" inputmode="numeric" id="emergency-treshold-time" name="emergency[tresholdTime]" min="60" max="1800" step="1" required>
                 </label>
               </div>
-
-              <fieldset>
-                <legend data-i18n>settings.emergency.events.desc</legend>
-
-                <label for="emergency-on-network-fault">
-                  <input type="checkbox" id="emergency-on-network-fault" name="emergency[onNetworkFault]" value="true">
-                  <span data-i18n>settings.emergency.events.network</span>
-                </label>
-
-                <label for="emergency-on-mqtt-fault">
-                  <input type="checkbox" id="emergency-on-mqtt-fault" name="emergency[onMqttFault]" value="true">
-                  <span data-i18n>settings.emergency.events.mqtt</span>
-                </label>
-
-                <label for="emergency-on-indoor-sensor-disconnect">
-                  <input type="checkbox" id="emergency-on-indoor-sensor-disconnect" name="emergency[onIndoorSensorDisconnect]" value="true">
-                  <span data-i18n>settings.emergency.events.indoorSensorDisconnect</span>
-                </label>
-
-                <label for="emergency-on-outdoor-sensor-disconnect">
-                  <input type="checkbox" id="emergency-on-outdoor-sensor-disconnect" name="emergency[onOutdoorSensorDisconnect]" value="true">
-                  <span data-i18n>settings.emergency.events.outdoorSensorDisconnect</span>
-                </label>
-              </fieldset>
-
-              <fieldset>
-                <legend data-i18n>settings.emergency.regulators.desc</legend>
-
-                <label for="emergency-use-equitherm">
-                  <input type="checkbox" id="emergency-use-equitherm" name="emergency[useEquitherm]" value="true">
-                  <span data-i18n>settings.emergency.regulators.equitherm</span>
-                </label>
-                <label for="emergency-use-pid">
-                  <input type="checkbox" id="emergency-use-pid" name="emergency[usePid]" value="true">
-                  <span data-i18n>settings.emergency.regulators.pid</span>
-                </label>
-              </fieldset>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -357,6 +315,8 @@
                   <input type="number" inputmode="numeric" id="pid-max-temp" name="pid[maxTemp]" min="0" max="0" step="1" required>
                 </label>
               </div>
+
+              <small data-i18n>settings.pid.noteMinMaxTemp</small>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -958,18 +918,20 @@
           setBusy('#dhw-settings-busy', '#dhw-settings', false);
 
           // Emergency mode
-          setCheckboxValue('#emergency-enable', data.emergency.enable);
           setInputValue('#emergency-treshold-time', data.emergency.tresholdTime);
-          setCheckboxValue('#emergency-use-equitherm', data.emergency.useEquitherm);
-          setCheckboxValue('#emergency-use-pid', data.emergency.usePid);
-          setCheckboxValue('#emergency-on-network-fault', data.emergency.onNetworkFault);
-          setCheckboxValue('#emergency-on-mqtt-fault', data.emergency.onMqttFault);
-          setCheckboxValue('#emergency-on-indoor-sensor-disconnect', data.emergency.onIndoorSensorDisconnect);
-          setCheckboxValue('#emergency-on-outdoor-sensor-disconnect', data.emergency.onOutdoorSensorDisconnect);
-          setInputValue('#emergency-target', data.emergency.target, {
-            "min": (!data.emergency.useEquitherm && !data.emergency.usePid) ? data.heating.minTemp : 10,
-            "max": (!data.emergency.useEquitherm && !data.emergency.usePid) ? data.heating.maxTemp : 30,
-          });
+          if (data.opentherm.nativeHeatingControl) {
+            setInputValue('#emergency-target', data.emergency.target, {
+              "min": data.system.unitSystem == 0 ? 5 : 41,
+              "max": data.system.unitSystem == 0 ? 30 : 86
+            });
+
+          } else {
+            setInputValue('#emergency-target', data.emergency.target, {
+              "min": data.heating.minTemp,
+              "max": data.heating.maxTemp,
+            });
+          }
+
           setBusy('#emergency-settings-busy', '#emergency-settings', false);
 
           // Equitherm
@@ -986,12 +948,12 @@
           setInputValue('#pid-d-factor', data.pid.d_factor);
           setInputValue('#pid-dt', data.pid.dt);
           setInputValue('#pid-min-temp', data.pid.minTemp, {
-            "min": 0,
-            "max": data.system.unitSystem == 0 ? 99 : 211
+            "min": data.equitherm.enable ? (data.system.unitSystem == 0 ? -100 : -146) : (data.system.unitSystem == 0 ? 0 : 32),
+            "max": (data.system.unitSystem == 0 ? 99 : 211)
           });
           setInputValue('#pid-max-temp', data.pid.maxTemp, {
-            "min": 1,
-            "max": data.system.unitSystem == 0 ? 100 : 212
+            "min": (data.system.unitSystem == 0 ? 0 : 33),
+            "max": (data.system.unitSystem == 0 ? 100 : 212)
           });
           setBusy('#pid-settings-busy', '#pid-settings', false);
         };

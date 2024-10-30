@@ -224,27 +224,13 @@
       },
 
       "emergency": {
-        "desc": "<b>!</b> Emergency mode can be useful <u>only</u> when using Equitherm and/or PID (when normal work) and when reporting indoor/outdoor temperature via MQTT/API/BLE. In this mode, sensor values that are reported via MQTT/API/BLE are not used.",
+        "desc": "Emergency mode is activated automatically when «PID» or «Equitherm» cannot calculate the heat carrier setpoint:<br />- if «Equitherm» is enabled and the outdoor temperature sensor is disconnected;<br />- if «PID» or OT option <i>«Native heating control»</i> is enabled and the indoor temperature sensor is disconnected.<br /><b>Note:</b> On network fault or MQTT fault, sensors with <i>«Manual via MQTT/API»</i> type will be in DISCONNECTED state.",
         
         "target": {
           "title": "Target temperature",
-          "note": "<u>Indoor temperature</u> if Equitherm or PID is <b>enabled</b><br /><u>Heat carrier temperature</u> if Equitherm and PID <b>is disabled</b>"
+          "note": "<b>Important:</b> <u>Target indoor temperature</u> if OT option <i>«Native heating control»</i> is enabled.<br />In all other cases, the <u>target heat carrier temperature</u>."
         },
-        "treshold": "Treshold time <small>(sec)</small>",
-
-        "events": {
-          "desc": "Events",
-          "network": "On network fault",
-          "mqtt": "On MQTT fault",
-          "indoorSensorDisconnect": "On loss connection with indoor sensor",
-          "outdoorSensorDisconnect": "On loss connection with outdoor sensor"
-        },
-
-        "regulators": {
-          "desc": "Using regulators",
-          "equitherm": "Equitherm <small>(requires at least an external (DS18B20) or boiler <u>outdoor</u> sensor)</small>",
-          "pid": "PID <small>(requires at least an external (DS18B20) <u>indoor</u> sensor)</small>"
-        }
+        "treshold": "Treshold time <small>(sec)</small>"
       },
 
       "equitherm": {
@@ -260,7 +246,8 @@
         "p": "P factor",
         "i": "I factor",
         "d": "D factor",
-        "dt": "DT <small>in seconds</small>"
+        "dt": "DT <small>in seconds</small>",
+        "noteMinMaxTemp": "<b>Important:</b> When using «Equitherm» and «PID» at the same time, the min and max temperatures limit the influence on the «Equitherm» result temperature.<br />Thus, if the min temperature is set to -15 and the max temperature is set to 15, then the final heat carrier setpoint will be from <code>equitherm_result - 15</code> to <code>equitherm_result + 15</code>."
       },
 
       "ot": {
@@ -313,7 +300,7 @@
 
         "nativeHeating": {
           "title": "Native heating control (boiler)",
-          "note": "Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators and hysteresis in firmware."
+          "note": "Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators in firmware."
         }
       },
 

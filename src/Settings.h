@@ -86,15 +86,8 @@ struct Settings {
   } mqtt;
 
   struct {
-    bool enable = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
     unsigned short tresholdTime = 120;
-    bool useEquitherm = false;
-    bool usePid = false;
-    bool onNetworkFault = true;
-    bool onMqttFault = true;
-    bool onIndoorSensorDisconnect = false;
-    bool onOutdoorSensorDisconnect = false;
   } emergency;
 
   struct {
@@ -119,8 +112,8 @@ struct Settings {
     float i_factor = 0.0055f;
     float d_factor = 0;
     unsigned short dt = 180;
-    byte minTemp = 0;
-    byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
+    short minTemp = 0;
+    short maxTemp = DEFAULT_HEATING_MAX_TEMP;
   } pid;
 
   struct {
