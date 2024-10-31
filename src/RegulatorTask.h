@@ -36,7 +36,7 @@ protected:
     }
 
     if (settings.heating.turbo) {
-      if (!settings.heating.enable || vars.states.emergency) {
+      if (!settings.heating.enable || vars.states.emergency || !vars.sensors.indoor.connected) {
         settings.heating.turbo = false;
 
       } else if (!settings.pid.enable && !settings.equitherm.enable) {
@@ -77,7 +77,7 @@ protected:
       Log.sinfoln(FPSTR(L_REGULATOR), F("New target: %.2f"), settings.heating.target);
 
       /*if (settings.pid.enable) {
-        pidRegulator.integral = 0;
+        pidRegulator.integral = 0.0f;
         Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
       }*/
     }
@@ -99,13 +99,11 @@ protected:
       }
 
       if (!vars.sensors.indoor.connected || settings.pid.enable) {
-        etRegulator.Kt = 0;
-        etRegulator.indoorTemp = 0;
+        etRegulator.Kt = 0.0f;
+        etRegulator.indoorTemp = 0.0f;
 
       } else {
-        etRegulator.Kt = settings.heating.turbo 
-          ? settings.equitherm.t_factor * settings.heating.turboFactor
-          : settings.equitherm.t_factor;
+        etRegulator.Kt = settings.heating.turbo ? 0.0f : settings.equitherm.t_factor;
         etRegulator.indoorTemp = indoorTemp;
       }
 
@@ -135,9 +133,7 @@ protected:
     if (settings.pid.enable) {
       //if (vars.parameters.heatingEnabled) {
       if (settings.heating.enable && vars.sensors.indoor.connected) {
-        pidRegulator.Kp = settings.heating.turbo 
-          ? settings.pid.p_factor * settings.heating.turboFactor
-          : settings.pid.p_factor;
+        pidRegulator.Kp = settings.heating.turbo ? 0.0f : settings.pid.p_factor;
         pidRegulator.Kd = settings.pid.d_factor;
 
         pidRegulator.setLimits(settings.pid.minTemp, settings.pid.maxTemp);
@@ -147,7 +143,7 @@ protected:
 
         if (fabs(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
           pidRegulator.Ki = settings.pid.i_factor;
-          pidRegulator.integral = 0;
+          pidRegulator.integral = 0.0f;
           pidRegulator.getResultNow();
 
           Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
@@ -168,6 +164,15 @@ protected:
       } else {
         newTemp += prevPidResult;
       }
+    }
+
+    // Turbo mode
+    if (settings.heating.turbo && (settings.equitherm.enable || settings.pid.enable)) {
+      newTemp += constrain(
+        settings.heating.target - vars.temperatures.indoor,
+        -3.0f,
+        3.0f
+      ) * settings.heating.turboFactor;
     }
 
     // default temp, manual mode

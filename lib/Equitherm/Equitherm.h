@@ -58,6 +58,6 @@ private:
 
   // Расчет поправки (ошибки) термостата
   datatype getResultT() {
-    return constrain((targetTemp - indoorTemp), -2, 2) * Kt;
+    return constrain((targetTemp - indoorTemp), -3, 3) * Kt;
   }
 };

@@ -95,7 +95,7 @@ struct Settings {
     bool turbo = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
     float hysteresis = 0.5f;
-    float turboFactor = 3.0f;
+    float turboFactor = 7.5f;
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
   } heating;
