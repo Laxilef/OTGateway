@@ -72,7 +72,7 @@ protected:
   MqttWriter* writer = nullptr;
   UnitSystem currentUnitSystem = UnitSystem::METRIC;
   bool currentHomeAssistantDiscovery = false;
-  unsigned short readyForSendTime = 15000;
+  unsigned short readyForSendTime = 30000;
   unsigned long lastReconnectTime = 0;
   unsigned long connectedTime = 0;
   unsigned long disconnectedTime = 0;
