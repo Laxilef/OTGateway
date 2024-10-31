@@ -248,6 +248,11 @@ protected:
 
         if (fabsf(settings.opentherm.maxPower) < 0.1f && vars.parameters.maxPower > 0) {
           settings.opentherm.maxPower = vars.parameters.maxPower;
+
+          if (vars.parameters.minModulation > 0) {
+            settings.opentherm.minPower = vars.parameters.minModulation * vars.parameters.maxPower;
+          }
+
           fsSettings.update();
           Log.swarningln(FPSTR(L_SETTINGS_OT), F("Updated max power: %.2f kW"), settings.opentherm.maxPower);
         }
