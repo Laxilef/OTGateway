@@ -322,48 +322,58 @@ protected:
   void publishHaEntities() {
     // heating
     this->haHelper->publishSwitchHeating(false);
-    this->haHelper->publishSwitchHeatingTurbo();
-    this->haHelper->publishNumberHeatingHysteresis(settings.system.unitSystem);
+    this->haHelper->publishSwitchHeatingTurbo(false);
+    this->haHelper->publishInputHeatingHysteresis(settings.system.unitSystem);
+    this->haHelper->publishInputHeatingTurboFactor(false);
+    this->haHelper->publishInputHeatingMinTemp(settings.system.unitSystem);
+    this->haHelper->publishInputHeatingMaxTemp(settings.system.unitSystem);
     this->haHelper->publishSensorHeatingSetpoint(settings.system.unitSystem, false);
     this->haHelper->publishSensorBoilerHeatingMinTemp(settings.system.unitSystem, false);
     this->haHelper->publishSensorBoilerHeatingMaxTemp(settings.system.unitSystem, false);
-    this->haHelper->publishNumberHeatingMinTemp(settings.system.unitSystem, false);
-    this->haHelper->publishNumberHeatingMaxTemp(settings.system.unitSystem, false);
 
     // pid
     this->haHelper->publishSwitchPid();
-    this->haHelper->publishNumberPidFactorP();
-    this->haHelper->publishNumberPidFactorI();
-    this->haHelper->publishNumberPidFactorD();
-    this->haHelper->publishNumberPidDt(false);
-    this->haHelper->publishNumberPidMinTemp(settings.system.unitSystem, false);
-    this->haHelper->publishNumberPidMaxTemp(settings.system.unitSystem, false);
+    this->haHelper->publishInputPidFactorP(false);
+    this->haHelper->publishInputPidFactorI(false);
+    this->haHelper->publishInputPidFactorD(false);
+    this->haHelper->publishInputPidDt(false);
+    this->haHelper->publishInputPidMinTemp(settings.system.unitSystem, false);
+    this->haHelper->publishInputPidMaxTemp(settings.system.unitSystem, false);
 
     // equitherm
     this->haHelper->publishSwitchEquitherm();
-    this->haHelper->publishNumberEquithermFactorN();
-    this->haHelper->publishNumberEquithermFactorK();
-    this->haHelper->publishNumberEquithermFactorT();
+    this->haHelper->publishInputEquithermFactorN(false);
+    this->haHelper->publishInputEquithermFactorK(false);
+    this->haHelper->publishInputEquithermFactorT(false);
 
     // states
-    this->haHelper->publishBinSensorStatus();
-    this->haHelper->publishBinSensorOtStatus();
-    this->haHelper->publishBinSensorHeating();
-    this->haHelper->publishBinSensorFlame();
-    this->haHelper->publishBinSensorFault();
-    this->haHelper->publishBinSensorDiagnostic();
+    this->haHelper->publishStateStatus();
+    this->haHelper->publishStateEmergency();
+    this->haHelper->publishStateOtStatus();
+    this->haHelper->publishStateHeating();
+    this->haHelper->publishStateFlame();
+    this->haHelper->publishStateFault();
+    this->haHelper->publishStateDiagnostic();
+    this->haHelper->publishStateExtPump(false);
 
     // sensors
-    this->haHelper->publishSensorModulation(false);
+    this->haHelper->publishSensorModulation();
     this->haHelper->publishSensorPressure(settings.system.unitSystem, false);
     this->haHelper->publishSensorPower();
     this->haHelper->publishSensorFaultCode();
     this->haHelper->publishSensorDiagnosticCode();
     this->haHelper->publishSensorRssi(false);
     this->haHelper->publishSensorUptime(false);
+    this->haHelper->publishOutdoorSensorConnected();
+    this->haHelper->publishOutdoorSensorRssi(false);
+    this->haHelper->publishOutdoorSensorBattery(false);
+    this->haHelper->publishOutdoorSensorHumidity(false);
+    this->haHelper->publishIndoorSensorConnected();
+    this->haHelper->publishIndoorSensorRssi(false);
+    this->haHelper->publishIndoorSensorBattery(false);
+    this->haHelper->publishIndoorSensorHumidity(false);
 
     // temperatures
-    this->haHelper->publishNumberIndoorTemp(settings.system.unitSystem);
     this->haHelper->publishSensorHeatingTemp(settings.system.unitSystem);
     this->haHelper->publishSensorHeatingReturnTemp(settings.system.unitSystem, false);
     this->haHelper->publishSensorExhaustTemp(settings.system.unitSystem, false);
@@ -401,21 +411,21 @@ protected:
         this->haHelper->publishSwitchDhw(false);
         this->haHelper->publishSensorBoilerDhwMinTemp(settings.system.unitSystem, false);
         this->haHelper->publishSensorBoilerDhwMaxTemp(settings.system.unitSystem, false);
-        this->haHelper->publishNumberDhwMinTemp(settings.system.unitSystem, false);
-        this->haHelper->publishNumberDhwMaxTemp(settings.system.unitSystem, false);
-        this->haHelper->publishBinSensorDhw();
+        this->haHelper->publishInputDhwMinTemp(settings.system.unitSystem);
+        this->haHelper->publishInputDhwMaxTemp(settings.system.unitSystem);
+        this->haHelper->publishStateDhw();
         this->haHelper->publishSensorDhwTemp(settings.system.unitSystem);
-        this->haHelper->publishSensorDhwFlowRate(settings.system.unitSystem, false);
+        this->haHelper->publishSensorDhwFlowRate(settings.system.unitSystem);
 
       } else {
         this->haHelper->deleteSwitchDhw();
         this->haHelper->deleteSensorBoilerDhwMinTemp();
         this->haHelper->deleteSensorBoilerDhwMaxTemp();
-        this->haHelper->deleteNumberDhwMinTemp();
-        this->haHelper->deleteNumberDhwMaxTemp();
-        this->haHelper->deleteBinSensorDhw();
+        this->haHelper->deleteInputDhwMinTemp();
+        this->haHelper->deleteInputDhwMaxTemp();
+        this->haHelper->deleteStateDhw();
         this->haHelper->deleteSensorDhwTemp();
-        this->haHelper->deleteNumberDhwTarget();
+        this->haHelper->deleteInputDhwTarget();
         this->haHelper->deleteClimateDhw();
         this->haHelper->deleteSensorDhwFlowRate();
       }
@@ -428,7 +438,7 @@ protected:
       _heatingMaxTemp = heatingMaxTemp;
       _noRegulators = noRegulators;
 
-      this->haHelper->publishNumberHeatingTarget(settings.system.unitSystem, heatingMinTemp, heatingMaxTemp, false);
+      this->haHelper->publishInputHeatingTarget(settings.system.unitSystem, heatingMinTemp, heatingMaxTemp, false);
       this->haHelper->publishClimateHeating(
         settings.system.unitSystem,
         heatingMinTemp,
@@ -443,7 +453,7 @@ protected:
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
 
-      this->haHelper->publishNumberDhwTarget(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp, false);
+      this->haHelper->publishInputDhwTarget(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp, false);
       this->haHelper->publishClimateDhw(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp);
 
       published = true;
@@ -454,9 +464,9 @@ protected:
 
       if (editableOutdoorTemp) {
         this->haHelper->deleteSensorOutdoorTemp();
-        this->haHelper->publishNumberOutdoorTemp(settings.system.unitSystem);
+        this->haHelper->publishInputOutdoorTemp(settings.system.unitSystem);
       } else {
-        this->haHelper->deleteNumberOutdoorTemp();
+        this->haHelper->deleteInputOutdoorTemp();
         this->haHelper->publishSensorOutdoorTemp(settings.system.unitSystem);
       }
 
@@ -468,9 +478,9 @@ protected:
 
       if (editableIndoorTemp) {
         this->haHelper->deleteSensorIndoorTemp();
-        this->haHelper->publishNumberIndoorTemp(settings.system.unitSystem);
+        this->haHelper->publishInputIndoorTemp(settings.system.unitSystem);
       } else {
-        this->haHelper->deleteNumberIndoorTemp();
+        this->haHelper->deleteInputIndoorTemp();
         this->haHelper->publishSensorIndoorTemp(settings.system.unitSystem);
       }
 

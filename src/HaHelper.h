@@ -50,7 +50,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("heating_turbo")).c_str(), doc);
   }
 
-  bool publishNumberHeatingTarget(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
+  bool publishInputHeatingTarget(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -82,7 +82,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_target")).c_str(), doc);
   }
 
-  bool publishNumberHeatingHysteresis(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputHeatingHysteresis(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_hysteresis"));
@@ -100,18 +100,107 @@ public:
     doc[FPSTR(HA_NAME)] = F("Heating hysteresis");
     doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.hysteresis|float(0)|round(1) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.hysteresis|float(0)|round(2) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"hysteresis\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 5;
-    doc[FPSTR(HA_STEP)] = 0.1f;
+    doc[FPSTR(HA_MAX)] = 15;
+    doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = "box";
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_hysteresis")).c_str(), doc);
   }
+
+  bool publishInputHeatingTurboFactor(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_turbo_factor"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_turbo_factor"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
+    doc[FPSTR(HA_NAME)] = F("Heating turbo factor");
+    doc[FPSTR(HA_ICON)] = F("mdi:multiplication-box");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.turboFactor|float(0)|round(2) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"turboFactor\" : {{ value }}}}");
+    doc[FPSTR(HA_MIN)] = 1.5;
+    doc[FPSTR(HA_MAX)] = 10;
+    doc[FPSTR(HA_STEP)] = 0.01f;
+    doc[FPSTR(HA_MODE)] = "box";
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_turbo_factor")).c_str(), doc);
+  }
+  bool publishInputHeatingMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_min_temp"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_min_temp"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 0;
+      doc[FPSTR(HA_MAX)] = 99;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 32;
+      doc[FPSTR(HA_MAX)] = 211;
+    }
+
+    doc[FPSTR(HA_NAME)] = F("Heating min temp");
+    doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.minTemp|float(0)|round(1) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"minTemp\" : {{ value }}}}");
+    doc[FPSTR(HA_STEP)] = 1;
+    doc[FPSTR(HA_MODE)] = "box";
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_min_temp")).c_str(), doc);
+  }
+
+  bool publishInputHeatingMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_max_temp"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_max_temp"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+      doc[FPSTR(HA_MIN)] = 1;
+      doc[FPSTR(HA_MAX)] = 100;
+      
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+      doc[FPSTR(HA_MIN)] = 33;
+      doc[FPSTR(HA_MAX)] = 212;
+    }
+
+    doc[FPSTR(HA_NAME)] = F("Heating max temp");
+    doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.maxTemp|float(0)|round(1) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"maxTemp\" : {{ value }}}}");
+    doc[FPSTR(HA_STEP)] = 1;
+    doc[FPSTR(HA_MODE)] = "box";
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_max_temp")).c_str(), doc);
+  }
+
 
   bool publishSensorHeatingSetpoint(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
@@ -200,72 +289,6 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_heating_max_temp")).c_str(), doc);
   }
 
-  bool publishNumberHeatingMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_min_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_min_temp"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-
-    if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
-      doc[FPSTR(HA_MIN)] = 0;
-      doc[FPSTR(HA_MAX)] = 99;
-      
-    } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
-      doc[FPSTR(HA_MIN)] = 32;
-      doc[FPSTR(HA_MAX)] = 211;
-    }
-
-    doc[FPSTR(HA_NAME)] = F("Heating min temp");
-    doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.minTemp|float(0)|round(1) }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"minTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_STEP)] = 1;
-    doc[FPSTR(HA_MODE)] = "box";
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_min_temp")).c_str(), doc);
-  }
-
-  bool publishNumberHeatingMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("heating_max_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("heating_max_temp"));
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("config");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
-
-    if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
-      doc[FPSTR(HA_MIN)] = 1;
-      doc[FPSTR(HA_MAX)] = 100;
-      
-    } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
-      doc[FPSTR(HA_MIN)] = 33;
-      doc[FPSTR(HA_MAX)] = 212;
-    }
-
-    doc[FPSTR(HA_NAME)] = F("Heating max temp");
-    doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("settings"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.maxTemp|float(0)|round(1) }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("settings/set"));
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"maxTemp\" : {{ value }}}}");
-    doc[FPSTR(HA_STEP)] = 1;
-    doc[FPSTR(HA_MODE)] = "box";
-    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
-    doc.shrinkToFit();
-
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("heating_max_temp")).c_str(), doc);
-  }
-
 
   bool publishSwitchDhw(bool enabledByDefault = true) {
     JsonDocument doc;
@@ -289,7 +312,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("dhw")).c_str(), doc);
   }
 
-  bool publishNumberDhwTarget(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishInputDhwTarget(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -381,7 +404,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_dhw_max_temp")).c_str(), doc);
   }
 
-  bool publishNumberDhwMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputDhwMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_min_temp"));
@@ -414,7 +437,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_min_temp")).c_str(), doc);
   }
 
-  bool publishNumberDhwMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputDhwMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_max_temp"));
@@ -469,7 +492,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("pid")).c_str(), doc);
   }
 
-  bool publishNumberPidFactorP(bool enabledByDefault = true) {
+  bool publishInputPidFactorP(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_p"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pid_p"));
@@ -490,7 +513,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_p_factor")).c_str(), doc);
   }
 
-  bool publishNumberPidFactorI(bool enabledByDefault = true) {
+  bool publishInputPidFactorI(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_i"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pid_i"));
@@ -511,7 +534,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_i_factor")).c_str(), doc);
   }
 
-  bool publishNumberPidFactorD(bool enabledByDefault = true) {
+  bool publishInputPidFactorD(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_d"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pid_d"));
@@ -532,7 +555,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_d_factor")).c_str(), doc);
   }
 
-  bool publishNumberPidDt(bool enabledByDefault = true) {
+  bool publishInputPidDt(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_dt"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pid_dt"));
@@ -555,7 +578,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_dt")).c_str(), doc);
   }
 
-  bool publishNumberPidMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputPidMinTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_min_temp"));
@@ -588,7 +611,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("pid_min_temp")).c_str(), doc);
   }
 
-  bool publishNumberPidMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputPidMaxTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pid_max_temp"));
@@ -643,7 +666,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SWITCH), F("equitherm")).c_str(), doc);
   }
 
-  bool publishNumberEquithermFactorN(bool enabledByDefault = true) {
+  bool publishInputEquithermFactorN(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("equitherm_n"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("equitherm_n"));
@@ -664,7 +687,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_n_factor")).c_str(), doc);
   }
 
-  bool publishNumberEquithermFactorK(bool enabledByDefault = true) {
+  bool publishInputEquithermFactorK(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("equitherm_k"));
     doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("equitherm_k"));
@@ -685,7 +708,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_k_factor")).c_str(), doc);
   }
 
-  bool publishNumberEquithermFactorT(bool enabledByDefault = true) {
+  bool publishInputEquithermFactorT(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("settings"));
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.pid.enable, 'offline', 'online') }}");
@@ -709,7 +732,7 @@ public:
   }
 
 
-  bool publishBinSensorStatus(bool enabledByDefault = true) {
+  bool publishStateStatus(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("status"));
@@ -726,7 +749,25 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("status")).c_str(), doc);
   }
 
-  bool publishBinSensorOtStatus(bool enabledByDefault = true) {
+  bool publishStateEmergency(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("emergency"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("emergency"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
+    doc[FPSTR(HA_NAME)] = F("Emergency mode");
+    doc[FPSTR(HA_ICON)] = F("mdi:alert-rhombus-outline");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.emergency, 'ON', 'OFF') }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("emergency")).c_str(), doc);
+  }
+
+  bool publishStateOtStatus(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("ot_status"));
@@ -743,7 +784,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("ot_status")).c_str(), doc);
   }
 
-  bool publishBinSensorHeating(bool enabledByDefault = true) {
+  bool publishStateHeating(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -764,7 +805,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("heating")).c_str(), doc);
   }
 
-  bool publishBinSensorDhw(bool enabledByDefault = true) {
+  bool publishStateDhw(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -785,7 +826,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dhw")).c_str(), doc);
   }
 
-  bool publishBinSensorFlame(bool enabledByDefault = true) {
+  bool publishStateFlame(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -806,7 +847,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("flame")).c_str(), doc);
   }
 
-  bool publishBinSensorFault(bool enabledByDefault = true) {
+  bool publishStateFault(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -827,7 +868,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("fault")).c_str(), doc);
   }
 
-  bool publishBinSensorDiagnostic(bool enabledByDefault = true) {
+  bool publishStateDiagnostic(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
@@ -846,6 +887,108 @@ public:
     doc.shrinkToFit();
 
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("diagnostic")).c_str(), doc);
+  }
+
+  bool publishStateExtPump(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("ext_pump"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("ext_pump"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
+    doc[FPSTR(HA_NAME)] = F("External pump");
+    doc[FPSTR(HA_ICON)] = F("mdi:pump");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.externalPump, 'ON', 'OFF') }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("ext_pump")).c_str(), doc);
+  }
+
+
+  bool publishSensorModulation(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("modulation_level"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("modulation_level"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("%");
+    doc[FPSTR(HA_NAME)] = F("Modulation level");
+    doc[FPSTR(HA_ICON)] = F("mdi:fire-circle");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.modulation|float(0)|round(0) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("modulation")).c_str(), doc);
+  }
+
+  bool publishSensorPressure(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pressure"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pressure"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("pressure");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("bar");
+
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("psi");
+    }
+
+    doc[FPSTR(HA_NAME)] = F("Pressure");
+    doc[FPSTR(HA_ICON)] = F("mdi:gauge");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.pressure|float(0)|round(2) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("pressure")).c_str(), doc);
+  }
+
+  bool publishSensorDhwFlowRate(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_flow_rate"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_flow_rate"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("volume_flow_rate");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+
+    if (unit == UnitSystem::METRIC) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
+
+    } else if (unit == UnitSystem::IMPERIAL) {
+      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("gal/min");
+    }
+
+    doc[FPSTR(HA_NAME)] = F("DHW flow rate");
+    doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.dhwFlowRate|float(0)|round(2) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("dhw_flow_rate")).c_str(), doc);
   }
 
   bool publishSensorPower(bool enabledByDefault = true) {
@@ -951,92 +1094,158 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("uptime")).c_str(), doc);
   }
 
-
-  bool publishSensorModulation(bool enabledByDefault = true) {
+  bool publishOutdoorSensorConnected(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
-    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("modulation_level"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("modulation_level"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_sensor_connected"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_sensor_connected"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
-    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("%");
-    doc[FPSTR(HA_NAME)] = F("Modulation level");
-    doc[FPSTR(HA_ICON)] = F("mdi:fire-circle");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("connectivity");
+    doc[FPSTR(HA_NAME)] = F("Outdoor sensor connected");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.modulation|float(0)|round(0) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.outdoor.connected, 'ON', 'OFF') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("modulation")).c_str(), doc);
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("outdoor_sensor_connected")).c_str(), doc);
   }
 
-  bool publishSensorPressure(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishOutdoorSensorRssi(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
-    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("pressure"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("pressure"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_sensor_rssi"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_sensor_rssi"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("pressure");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-
-    if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("bar");
-
-    } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("psi");
-    }
-
-    doc[FPSTR(HA_NAME)] = F("Pressure");
-    doc[FPSTR(HA_ICON)] = F("mdi:gauge");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("dBm");
+    doc[FPSTR(HA_NAME)] = F("Outdoor sensor RSSI");
+    doc[FPSTR(HA_ICON)] = F("mdi:signal");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.pressure|float(0)|round(2) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.outdoor.rssi|float(0)|round(1) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("pressure")).c_str(), doc);
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("outdoor_sensor_rssi")).c_str(), doc);
   }
 
-  bool publishSensorDhwFlowRate(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishOutdoorSensorBattery(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.states.otStatus, 'online', 'offline') }}");
-    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("dhw_flow_rate"));
-    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("dhw_flow_rate"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_sensor_battery"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_sensor_battery"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("volume_flow_rate");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("battery");
     doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
-
-    if (unit == UnitSystem::METRIC) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("L/min");
-
-    } else if (unit == UnitSystem::IMPERIAL) {
-      doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("gal/min");
-    }
-
-    doc[FPSTR(HA_NAME)] = F("DHW flow rate");
-    doc[FPSTR(HA_ICON)] = F("mdi:water-pump");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR("%");
+    doc[FPSTR(HA_NAME)] = F("Outdoor sensor battery");
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.dhwFlowRate|float(0)|round(2) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.outdoor.battery|float(0)|round(1) }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
     doc.shrinkToFit();
 
-    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("dhw_flow_rate")).c_str(), doc);
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("outdoor_sensor_battery")).c_str(), doc);
+  }
+
+  bool publishOutdoorSensorHumidity(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_sensor_humidity"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("outdoor_sensor_humidity"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("humidity");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR("%");
+    doc[FPSTR(HA_NAME)] = F("Outdoor sensor humidity");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.outdoor.humidity|float(0)|round(1) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("outdoor_sensor_humidity")).c_str(), doc);
+  }
+
+  bool publishIndoorSensorConnected(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_sensor_connected"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_sensor_connected"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("connectivity");
+    doc[FPSTR(HA_NAME)] = F("Indoor sensor connected");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.sensors.indoor.connected, 'ON', 'OFF') }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("indoor_sensor_connected")).c_str(), doc);
+  }
+
+  bool publishIndoorSensorRssi(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_sensor_rssi"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_sensor_rssi"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("dBm");
+    doc[FPSTR(HA_NAME)] = F("Indoor sensor RSSI");
+    doc[FPSTR(HA_ICON)] = F("mdi:signal");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.indoor.rssi|float(0)|round(1) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("indoor_sensor_rssi")).c_str(), doc);
+  }
+
+  bool publishIndoorSensorBattery(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_sensor_battery"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_sensor_battery"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("battery");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR("%");
+    doc[FPSTR(HA_NAME)] = F("Indoor sensor battery");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.indoor.battery|float(0)|round(1) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("indoor_sensor_battery")).c_str(), doc);
+  }
+
+  bool publishIndoorSensorHumidity(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->getDeviceTopic(F("status"));
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_sensor_humidity"));
+    doc[FPSTR(HA_OBJECT_ID)] = this->getObjectId(F("indoor_sensor_humidity"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = F("diagnostic");
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("humidity");
+    doc[FPSTR(HA_STATE_CLASS)] = F("measurement");
+    doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR("%");
+    doc[FPSTR(HA_NAME)] = F("Indoor sensor humidity");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("state"));
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.sensors.indoor.humidity|float(0)|round(1) }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = 120;
+    doc.shrinkToFit();
+
+    return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("indoor_sensor_humidity")).c_str(), doc);
   }
 
 
-  bool publishNumberIndoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputIndoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("indoor_temp"));
@@ -1095,7 +1304,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("indoor_temp")).c_str(), doc);
   }
 
-  bool publishNumberOutdoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+  bool publishInputOutdoorTemp(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectId(F("outdoor_temp"));
@@ -1433,7 +1642,7 @@ public:
   }
 
 
-  bool deleteNumberOutdoorTemp() {
+  bool deleteInputOutdoorTemp() {
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("outdoor_temp")).c_str());
   }
 
@@ -1441,7 +1650,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("outdoor_temp")).c_str());
   }
 
-  bool deleteNumberIndoorTemp() {
+  bool deleteInputIndoorTemp() {
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("indoor_temp")).c_str());
   }
 
@@ -1461,15 +1670,15 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("boiler_dhw_max_temp")).c_str());
   }
 
-  bool deleteNumberDhwMinTemp() {
+  bool deleteInputDhwMinTemp() {
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_min_temp")).c_str());
   }
 
-  bool deleteNumberDhwMaxTemp() {
+  bool deleteInputDhwMaxTemp() {
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_max_temp")).c_str());
   }
 
-  bool deleteBinSensorDhw() {
+  bool deleteStateDhw() {
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dhw")).c_str());
   }
 
@@ -1477,7 +1686,7 @@ public:
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_SENSOR), F("dhw_temp")).c_str());
   }
 
-  bool deleteNumberDhwTarget() {
+  bool deleteInputDhwTarget() {
     return this->publish(this->getTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_target")).c_str());
   }
 

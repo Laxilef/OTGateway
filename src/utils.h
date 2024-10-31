@@ -1101,7 +1101,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["heating"]["hysteresis"].isNull()) {
     float value = src["heating"]["hysteresis"].as<float>();
 
-    if (value >= 0 && value <= 5 && fabs(value - dst.heating.hysteresis) > 0.0001f) {
+    if (value >= 0.0f && value <= 15.0f && fabs(value - dst.heating.hysteresis) > 0.0001f) {
       dst.heating.hysteresis = roundd(value, 2);
       changed = true;
     }
