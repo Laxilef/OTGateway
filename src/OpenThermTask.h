@@ -250,7 +250,7 @@ protected:
           settings.opentherm.maxPower = vars.parameters.maxPower;
 
           if (vars.parameters.minModulation > 0) {
-            settings.opentherm.minPower = vars.parameters.minModulation * vars.parameters.maxPower;
+            settings.opentherm.minPower = (vars.parameters.minModulation / 100.0f) * vars.parameters.maxPower;
           }
 
           fsSettings.update();
