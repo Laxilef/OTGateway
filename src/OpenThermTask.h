@@ -447,9 +447,6 @@ protected:
         );
 
       } else {
-        vars.sensors.modulation = 0;
-        vars.sensors.power = 0;
-
         Log.swarningln(FPSTR(L_OT), F("Failed receive modulation level"));
       }
 
