@@ -394,6 +394,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dst["heating"]["turbo"] = src.heating.turbo;
   dst["heating"]["target"] = roundd(src.heating.target, 2);
   dst["heating"]["hysteresis"] = roundd(src.heating.hysteresis, 2);
+  dst["heating"]["turboFactor"] = roundd(src.heating.turboFactor, 2);
   dst["heating"]["minTemp"] = src.heating.minTemp;
   dst["heating"]["maxTemp"] = src.heating.maxTemp;
 
@@ -1102,6 +1103,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
     if (value >= 0 && value <= 5 && fabs(value - dst.heating.hysteresis) > 0.0001f) {
       dst.heating.hysteresis = roundd(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src["heating"]["turboFactor"].isNull()) {
+    float value = src["heating"]["turboFactor"].as<float>();
+
+    if (value >= 1.5f && value <= 10.0f && fabs(value - dst.heating.turboFactor) > 0.0001f) {
+      dst.heating.turboFactor = roundd(value, 2);
       changed = true;
     }
   }

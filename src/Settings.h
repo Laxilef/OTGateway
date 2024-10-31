@@ -95,6 +95,7 @@ struct Settings {
     bool turbo = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
     float hysteresis = 0.5f;
+    float turboFactor = 3.0f;
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
   } heating;
@@ -108,9 +109,9 @@ struct Settings {
 
   struct {
     bool enable = false;
-    float p_factor = 2;
+    float p_factor = 2.0f;
     float i_factor = 0.0055f;
-    float d_factor = 0;
+    float d_factor = 0.0f;
     unsigned short dt = 180;
     short minTemp = 0;
     short maxTemp = DEFAULT_HEATING_MAX_TEMP;

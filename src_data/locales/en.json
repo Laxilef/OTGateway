@@ -220,7 +220,8 @@
       },
 
       "heating": {
-        "hyst": "Hysteresis <small>(in degrees)</small>"
+        "hyst": "Hysteresis <small>(in degrees)</small>",
+        "turboFactor": "Turbo mode coeff."
       },
 
       "emergency": {

@@ -29,31 +29,9 @@ protected:
   #endif
   
   void loop() {
-    bool pidIntergralResetted = false;
-    if (fabs(pidRegulator.Kp - settings.pid.p_factor) >= 0.0001f) {
-      pidRegulator.Kp = settings.pid.p_factor;
-      pidRegulator.integral = 0;
-      pidIntergralResetted = true;
-    }
-
-    if (fabs(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
-      pidRegulator.Ki = settings.pid.i_factor;
-      pidRegulator.integral = 0;
-      pidIntergralResetted = true;
-    }
-
-    if (fabs(pidRegulator.Kd - settings.pid.d_factor) >= 0.0001f) {
-      pidRegulator.Kd = settings.pid.d_factor;
-      pidRegulator.integral = 0;
-      pidIntergralResetted = true;
-    }
-
     if (!settings.pid.enable && fabs(pidRegulator.integral) > 0.01f) {
       pidRegulator.integral = 0.0f;
-      pidIntergralResetted = true;
-    }
 
-    if (pidIntergralResetted) {
       Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
     }
 
@@ -61,10 +39,10 @@ protected:
       if (!settings.heating.enable || vars.states.emergency) {
         settings.heating.turbo = false;
 
-      } else if (settings.pid.enable) {
-        settings.heating.turbo = false; // not implemented
+      } else if (!settings.pid.enable && !settings.equitherm.enable) {
+        settings.heating.turbo = false;
 
-      } else if (fabs(settings.heating.target - vars.temperatures.indoor) < 1.0f) {
+      } else if (fabs(settings.heating.target - vars.temperatures.indoor) <= 1.0f) {
         settings.heating.turbo = false;
       }
 
@@ -125,7 +103,9 @@ protected:
         etRegulator.indoorTemp = 0;
 
       } else {
-        etRegulator.Kt = settings.heating.turbo ? 10.0f : settings.equitherm.t_factor;
+        etRegulator.Kt = settings.heating.turbo 
+          ? settings.equitherm.t_factor * settings.heating.turboFactor
+          : settings.equitherm.t_factor;
         etRegulator.indoorTemp = indoorTemp;
       }
 
@@ -155,10 +135,23 @@ protected:
     if (settings.pid.enable) {
       //if (vars.parameters.heatingEnabled) {
       if (settings.heating.enable && vars.sensors.indoor.connected) {
+        pidRegulator.Kp = settings.heating.turbo 
+          ? settings.pid.p_factor * settings.heating.turboFactor
+          : settings.pid.p_factor;
+        pidRegulator.Kd = settings.pid.d_factor;
+
         pidRegulator.setLimits(settings.pid.minTemp, settings.pid.maxTemp);
         pidRegulator.setDt(settings.pid.dt * 1000u);
         pidRegulator.input = vars.temperatures.indoor;
         pidRegulator.setpoint = settings.heating.target;
+
+        if (fabs(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
+          pidRegulator.Ki = settings.pid.i_factor;
+          pidRegulator.integral = 0;
+          pidRegulator.getResultNow();
+
+          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+        }
 
         float pidResult = pidRegulator.getResultTimer();
         if (fabs(prevPidResult - pidResult) > 0.09f) {
