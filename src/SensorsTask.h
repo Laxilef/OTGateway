@@ -186,24 +186,25 @@ protected:
     }
 
     if (!pClient->connect(address)) {
-      Log.swarningln(FPSTR(L_SENSORS_BLE), "Device %s: failed connecting", address.toString().c_str());
+      Log.swarningln(FPSTR(L_SENSORS_BLE), F("Device %s: failed connecting"), address.toString().c_str());
 
       NimBLEDevice::deleteClient(pClient);
       return false;
     }
 
-    Log.sinfoln(FPSTR(L_SENSORS_BLE), "Device %s: connected", address.toString().c_str());
+    Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Device %s: connected"), address.toString().c_str());
     NimBLERemoteService* pService = nullptr;
     NimBLERemoteCharacteristic* pChar = nullptr;
 
     // ENV Service (0x181A)
-    pService = pClient->getService(NimBLEUUID((uint16_t) 0x181AU));
+    NimBLEUUID serviceUuid((uint16_t) 0x181AU);
+    pService = pClient->getService(serviceUuid);
     if (!pService) {
       Log.straceln(
         FPSTR(L_SENSORS_BLE),
         F("Device %s: failed to find env service (%s)"),
         address.toString().c_str(),
-        pService->getUUID().toString().c_str()
+        serviceUuid.toString().c_str()
       );
 
     } else {
@@ -211,25 +212,38 @@ protected:
         FPSTR(L_SENSORS_BLE),
         F("Device %s: found env service (%s)"),
         address.toString().c_str(),
-        pService->getUUID().toString().c_str()
+        serviceUuid.toString().c_str()
       );
 
 
       // 0x2A6E - Notify temperature x0.01C (pvvx)
       bool tempNotifyCreated = false;
       if (!tempNotifyCreated) {
-        pChar = pService->getCharacteristic(NimBLEUUID((uint16_t) 0x2A6E));
+        NimBLEUUID charUuid((uint16_t) 0x2A6E);
+        pChar = pService->getCharacteristic(charUuid);
 
         if (pChar && pChar->canNotify()) {
           Log.straceln(
             FPSTR(L_SENSORS_BLE),
             F("Device %s: found temperature char (%s) in env service"),
             address.toString().c_str(),
-            pChar->getUUID().toString().c_str()
+            charUuid.toString().c_str()
           );
 
           tempNotifyCreated = pChar->subscribe(true, [pTemperature](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-            NimBLEClient* pClient = pChar->getRemoteService()->getClient();
+            if (pChar == nullptr) {
+              return;
+            }
+
+            NimBLERemoteService* pService = pChar->getRemoteService();
+            if (pService == nullptr) {
+              return;
+            }
+
+            NimBLEClient* pClient = pService->getClient();
+            if (pClient == nullptr) {
+              return;
+            }
 
             if (length != 2) {
               Log.swarningln(
@@ -264,7 +278,7 @@ protected:
               FPSTR(L_SENSORS_BLE),
               F("Device %s: subscribed to temperature char (%s) in env service"),
               address.toString().c_str(),
-              pChar->getUUID().toString().c_str()
+              charUuid.toString().c_str()
             );
 
           } else {
@@ -272,7 +286,7 @@ protected:
               FPSTR(L_SENSORS_BLE),
               F("Device %s: failed to subscribe to temperature char (%s) in env service"),
               address.toString().c_str(),
-              pChar->getUUID().toString().c_str()
+              charUuid.toString().c_str()
             );
           }
         }
@@ -281,18 +295,31 @@ protected:
 
       // 0x2A1F - Notify temperature x0.1C (atc1441/pvvx)
       if (!tempNotifyCreated) {
-        pChar = pService->getCharacteristic(NimBLEUUID((uint16_t) 0x2A1F));
+        NimBLEUUID charUuid((uint16_t) 0x2A1F);
+        pChar = pService->getCharacteristic(charUuid);
 
         if (pChar && pChar->canNotify()) {
           Log.straceln(
             FPSTR(L_SENSORS_BLE),
             F("Device %s: found temperature char (%s) in env service"),
             address.toString().c_str(),
-            pChar->getUUID().toString().c_str()
+            charUuid.toString().c_str()
           );
 
           tempNotifyCreated = pChar->subscribe(true, [pTemperature](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-            NimBLEClient* pClient = pChar->getRemoteService()->getClient();
+            if (pChar == nullptr) {
+              return;
+            }
+
+            NimBLERemoteService* pService = pChar->getRemoteService();
+            if (pService == nullptr) {
+              return;
+            }
+
+            NimBLEClient* pClient = pService->getClient();
+            if (pClient == nullptr) {
+              return;
+            }
 
             if (length != 2) {
               Log.swarningln(
@@ -327,7 +354,7 @@ protected:
               FPSTR(L_SENSORS_BLE),
               F("Device %s: subscribed to temperature char (%s) in env service"),
               address.toString().c_str(),
-              pChar->getUUID().toString().c_str()
+              charUuid.toString().c_str()
             );
 
           } else {
@@ -335,7 +362,7 @@ protected:
               FPSTR(L_SENSORS_BLE),
               F("Device %s: failed to subscribe to temperature char (%s) in env service"),
               address.toString().c_str(),
-              pChar->getUUID().toString().c_str()
+              charUuid.toString().c_str()
             );
           }
         }
@@ -357,18 +384,31 @@ protected:
       if (pHumidity != nullptr) {
         bool humidityNotifyCreated = false;
         if (!humidityNotifyCreated) {
-          pChar = pService->getCharacteristic(NimBLEUUID((uint16_t) 0x2A6F));
+          NimBLEUUID charUuid((uint16_t) 0x2A6F);
+          pChar = pService->getCharacteristic(charUuid);
 
           if (pChar && pChar->canNotify()) {
             Log.straceln(
               FPSTR(L_SENSORS_BLE),
               F("Device %s: found humidity char (%s) in env service"),
               address.toString().c_str(),
-              pChar->getUUID().toString().c_str()
+              charUuid.toString().c_str()
             );
 
             humidityNotifyCreated = pChar->subscribe(true, [pHumidity](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-              NimBLEClient* pClient = pChar->getRemoteService()->getClient();
+              if (pChar == nullptr) {
+                return;
+              }
+
+              NimBLERemoteService* pService = pChar->getRemoteService();
+              if (pService == nullptr) {
+                return;
+              }
+
+              NimBLEClient* pClient = pService->getClient();
+              if (pClient == nullptr) {
+                return;
+              }
 
               if (length != 2) {
                 Log.swarningln(
@@ -403,7 +443,7 @@ protected:
                 FPSTR(L_SENSORS_BLE),
                 F("Device %s: subscribed to humidity char (%s) in env service"),
                 address.toString().c_str(),
-                pChar->getUUID().toString().c_str()
+                charUuid.toString().c_str()
               );
 
             } else {
@@ -411,7 +451,7 @@ protected:
                 FPSTR(L_SENSORS_BLE),
                 F("Device %s: failed to subscribe to humidity char (%s) in env service"),
                 address.toString().c_str(),
-                pChar->getUUID().toString().c_str()
+                charUuid.toString().c_str()
               );
             }
           }
@@ -430,13 +470,14 @@ protected:
 
     // Battery Service (0x180F)
     if (pBattery != nullptr) {
-      pService = pClient->getService(NimBLEUUID((uint16_t) 0x180F));
+      NimBLEUUID serviceUuid((uint16_t) 0x180F);
+      pService = pClient->getService(serviceUuid);
       if (!pService) {
         Log.straceln(
           FPSTR(L_SENSORS_BLE),
           F("Device %s: failed to find battery service (%s)"),
           address.toString().c_str(),
-          pService->getUUID().toString().c_str()
+          serviceUuid.toString().c_str()
         );
 
       } else {
@@ -444,24 +485,37 @@ protected:
           FPSTR(L_SENSORS_BLE),
           F("Device %s: found battery service (%s)"),
           address.toString().c_str(),
-          pService->getUUID().toString().c_str()
+          serviceUuid.toString().c_str()
         );
 
         // 0x2A19 - Notify the battery charge level 0..99% (pvvx)
         bool batteryNotifyCreated = false;
         if (!batteryNotifyCreated) {
-          pChar = pService->getCharacteristic(NimBLEUUID((uint16_t) 0x2A19));
+          NimBLEUUID charUuid((uint16_t) 0x2A19);
+          pChar = pService->getCharacteristic(charUuid);
 
           if (pChar && pChar->canNotify()) {
             Log.straceln(
               FPSTR(L_SENSORS_BLE),
               F("Device %s: found battery char (%s) in battery service"),
               address.toString().c_str(),
-              pChar->getUUID().toString().c_str()
+              charUuid.toString().c_str()
             );
 
             batteryNotifyCreated = pChar->subscribe(true, [pBattery](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-              NimBLEClient* pClient = pChar->getRemoteService()->getClient();
+              if (pChar == nullptr) {
+                return;
+              }
+
+              NimBLERemoteService* pService = pChar->getRemoteService();
+              if (pService == nullptr) {
+                return;
+              }
+
+              NimBLEClient* pClient = pService->getClient();
+              if (pClient == nullptr) {
+                return;
+              }
 
               if (length != 1) {
                 Log.swarningln(
@@ -496,7 +550,7 @@ protected:
                 FPSTR(L_SENSORS_BLE),
                 F("Device %s: subscribed to battery char (%s) in battery service"),
                 address.toString().c_str(),
-                pChar->getUUID().toString().c_str()
+                charUuid.toString().c_str()
               );
 
             } else {
@@ -504,7 +558,7 @@ protected:
                 FPSTR(L_SENSORS_BLE),
                 F("Device %s: failed to subscribe to battery char (%s) in battery service"),
                 address.toString().c_str(),
-                pChar->getUUID().toString().c_str()
+                charUuid.toString().c_str()
               );
             }
           }
