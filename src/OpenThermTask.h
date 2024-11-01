@@ -605,7 +605,7 @@ protected:
       float indoorTemp = 0.0f;
       float convertedTemp = 0.0f;
 
-      if (!vars.sensors.indoor.connected) {
+      if (vars.sensors.indoor.connected) {
         indoorTemp = vars.temperatures.indoor;
         convertedTemp = convertTemp(indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
       }
