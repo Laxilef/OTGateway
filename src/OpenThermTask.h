@@ -667,26 +667,25 @@ protected:
           }
         }
       }
+    }
 
+    // Hysteresis
+    // Only if enabled PID or/and Equitherm or Native heating control via OT
+    bool useHyst = false;
+    if (settings.heating.hysteresis > 0.01f && vars.sensors.indoor.connected) {
+      useHyst = settings.equitherm.enable || settings.pid.enable || settings.opentherm.nativeHeatingControl;
+    }
 
-      // Hysteresis
-      // Only if enabled PID or/and Equitherm or Native heating control via OT
-      bool useHyst = false;
-      if (settings.heating.hysteresis > 0.01f && vars.sensors.indoor.connected) {
-        useHyst = settings.equitherm.enable || settings.pid.enable || settings.opentherm.nativeHeatingControl;
-      }
+    if (useHyst) {
+      if (!this->heatingBlocking && vars.temperatures.indoor - settings.heating.target + 0.0001f >= settings.heating.hysteresis) {
+        this->heatingBlocking = true;
 
-      if (useHyst) {
-        if (!this->heatingBlocking && vars.temperatures.indoor - settings.heating.target + 0.0001f >= settings.heating.hysteresis) {
-          this->heatingBlocking = true;
-
-        } else if (this->heatingBlocking && vars.temperatures.indoor - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis)) {
-          this->heatingBlocking = false;
-        }
-
-      } else if (this->heatingBlocking) {
+      } else if (this->heatingBlocking && vars.temperatures.indoor - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis)) {
         this->heatingBlocking = false;
       }
+
+    } else if (this->heatingBlocking) {
+      this->heatingBlocking = false;
     }
   }
 
