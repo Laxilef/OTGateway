@@ -246,7 +246,7 @@ protected:
 
       } else if (!this->emergencyDetected && vars.states.emergency) {
         // disable emergency
-        if (millis() - this->emergencyFlipTime > 30000) {
+        if (millis() - this->emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
           vars.states.emergency = false;
           Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode disabled"));
         }
