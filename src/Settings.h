@@ -126,7 +126,7 @@ struct Settings {
 
   struct {
     struct {
-      SensorType type = SensorType::BOILER;
+      SensorType type = SensorType::BOILER_OUTDOOR;
       byte gpio = DEFAULT_SENSOR_OUTDOOR_GPIO;
       uint8_t bleAddress[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       float offset = 0.0f;

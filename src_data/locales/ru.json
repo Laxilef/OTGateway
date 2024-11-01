@@ -332,7 +332,8 @@
       "tempSensor": {
         "source": {
           "type": "Источник данных",
-          "boiler": "От котла через OpenTherm",
+          "boilerOutdoor": "От котла через OpenTherm",
+          "boilerReturn": "Температура обратки через OpenTherm",
           "manual": "Вручную через MQTT/API",
           "ext": "Внешний датчик (DS18B20)",
           "ble": "BLE устройство"

@@ -185,8 +185,12 @@ protected:
     } else if (vars.states.otStatus && millis() - this->lastSuccessResponse > 1150) {
       Log.swarningln(FPSTR(L_OT), F("Disconnected"));
 
-      if (settings.sensors.outdoor.type == SensorType::BOILER) {
+      if (settings.sensors.outdoor.type == SensorType::BOILER_OUTDOOR) {
         vars.sensors.outdoor.connected = false;
+      }
+
+      if (settings.sensors.indoor.type == SensorType::BOILER_RETURN) {
+        vars.sensors.indoor.connected = false;
       }
 
       vars.states.otStatus = false;
@@ -396,7 +400,7 @@ protected:
       // update these parameters once a minute
       if (!settings.opentherm.filterNumValues.enable) {
         // Get outdoor temp (if necessary)
-        if (settings.sensors.outdoor.type == SensorType::BOILER) {
+        if (settings.sensors.outdoor.type == SensorType::BOILER_OUTDOOR) {
           if (this->updateOutdoorTemp()) {
             if (!vars.sensors.outdoor.connected) {
               vars.sensors.outdoor.connected = true;
@@ -486,9 +490,21 @@ protected:
 
     // Get heating return temp
     if (this->updateHeatingReturnTemp()) {
+      if (settings.sensors.indoor.type == SensorType::BOILER_RETURN) {
+        vars.temperatures.indoor = settings.sensors.outdoor.offset + vars.temperatures.heatingReturn;
+
+        if (!vars.sensors.outdoor.connected) {
+          vars.sensors.indoor.connected = true;
+        }
+      }
+
       Log.snoticeln(FPSTR(L_OT_HEATING), F("Received return temp: %.2f"), vars.temperatures.heatingReturn);
 
     } else {
+      if (settings.sensors.indoor.type == SensorType::BOILER_RETURN && vars.sensors.outdoor.connected) {
+        vars.sensors.indoor.connected = false;
+      }
+
       Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive return temp"));
     }
 
@@ -504,7 +520,7 @@ protected:
     // must be updated every time.
     if (settings.opentherm.filterNumValues.enable) {
       // Get outdoor temp (if necessary)
-      if (settings.sensors.outdoor.type == SensorType::BOILER) {
+      if (settings.sensors.outdoor.type == SensorType::BOILER_OUTDOOR) {
         if (this->updateOutdoorTemp()) {
           if (!vars.sensors.outdoor.connected) {
             vars.sensors.outdoor.connected = true;

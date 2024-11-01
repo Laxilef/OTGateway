@@ -318,7 +318,8 @@
       "tempSensor": {
         "source": {
           "type": "Source type",
-          "boiler": "From boiler via OpenTherm",
+          "boilerOutdoor": "From boiler via OpenTherm",
+          "boilerReturn": "Return heat carrier temp via OpenTherm",
           "manual": "Manual via MQTT/API",
           "ext": "External (DS18B20)",
           "ble": "BLE device"

@@ -1178,9 +1178,9 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     byte value = src["sensors"]["outdoor"]["type"].as<unsigned char>();
 
     switch (value) {
-      case static_cast<byte>(SensorType::BOILER):
-        if (dst.sensors.outdoor.type != SensorType::BOILER) {
-          dst.sensors.outdoor.type = SensorType::BOILER;
+      case static_cast<byte>(SensorType::BOILER_OUTDOOR):
+        if (dst.sensors.outdoor.type != SensorType::BOILER_OUTDOOR) {
+          dst.sensors.outdoor.type = SensorType::BOILER_OUTDOOR;
           changed = true;
         }
         break;
@@ -1248,7 +1248,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["sensors"]["outdoor"]["offset"].isNull()) {
     float value = src["sensors"]["outdoor"]["offset"].as<float>();
 
-    if (value >= -10 && value <= 10 && fabs(value - dst.sensors.outdoor.offset) > 0.0001f) {
+    if (value >= -20.0f && value <= 20.0f && fabs(value - dst.sensors.outdoor.offset) > 0.0001f) {
       dst.sensors.outdoor.offset = roundd(value, 2);
       changed = true;
     }
@@ -1258,6 +1258,13 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     byte value = src["sensors"]["indoor"]["type"].as<unsigned char>();
 
     switch (value) {
+      case static_cast<byte>(SensorType::BOILER_RETURN):
+        if (dst.sensors.indoor.type != SensorType::BOILER_RETURN) {
+          dst.sensors.indoor.type = SensorType::BOILER_RETURN;
+          changed = true;
+        }
+        break;
+
       case static_cast<byte>(SensorType::MANUAL):
         if (dst.sensors.indoor.type != SensorType::MANUAL) {
           dst.sensors.indoor.type = SensorType::MANUAL;
@@ -1321,7 +1328,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src["sensors"]["indoor"]["offset"].isNull()) {
     float value = src["sensors"]["indoor"]["offset"].as<float>();
 
-    if (value >= -10 && value <= 10 && fabs(value - dst.sensors.indoor.offset) > 0.0001f) {
+    if (value >= -20.0f && value <= 20.0f && fabs(value - dst.sensors.indoor.offset) > 0.0001f) {
       dst.sensors.indoor.offset = roundd(value, 2);
       changed = true;
     }

@@ -566,7 +566,7 @@
 
                 <label>
                   <input type="radio" class="outdoor-sensor-type" name="sensors[outdoor][type]" value="0" />
-                  <span data-i18n>settings.tempSensor.source.boiler</span>
+                  <span data-i18n>settings.tempSensor.source.boilerOutdoor</span>
                 </label>
 
                 <label>
@@ -599,7 +599,7 @@
 
               <label for="outdoor-sensor-offset">
                 <span data-i18n>settings.tempSensor.offset</span>
-                <input type="number" inputmode="numeric" id="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-10" max="10" step="0.01" required>
+                <input type="number" inputmode="numeric" id="outdoor-sensor-offset" name="sensors[outdoor][offset]" min="-20" max="20" step="0.01" required>
               </label>
               
               <fieldset>
@@ -620,6 +620,11 @@
             <form action="/api/settings" id="indoor-sensor-settings" class="hidden">
               <fieldset>
                 <legend data-i18n>settings.tempSensor.source.type</legend>
+
+                <label>
+                  <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="4" />
+                  <span data-i18n>settings.tempSensor.source.boilerReturn</span>
+                </label>
 
                 <label>
                   <input type="radio" class="indoor-sensor-type" name="sensors[indoor][type]" value="1" />
@@ -651,7 +656,7 @@
 
               <label for="indoor-sensor-offset">
                 <span data-i18n>settings.tempSensor.offset</span>
-                <input type="number" inputmode="numeric" id="indoor-sensor-offset" name="sensors[indoor][offset]" min="-10" max="10" step="0.01" required>
+                <input type="number" inputmode="numeric" id="indoor-sensor-offset" name="sensors[indoor][offset]" min="-20" max="20" step="0.01" required>
               </label>
 
               <fieldset>

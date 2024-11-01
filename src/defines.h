@@ -147,10 +147,11 @@
 #define GPIO_IS_VALID(gpioNum) (gpioNum != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_GPIO(gpioNum))
 
 enum class SensorType : byte {
-  BOILER,
-  MANUAL,
-  DS18B20,
-  BLUETOOTH
+  BOILER_OUTDOOR  = 0,
+  BOILER_RETURN   = 4,
+  MANUAL          = 1,
+  DS18B20         = 2,
+  BLUETOOTH       = 3
 };
 
 enum class UnitSystem : byte {
