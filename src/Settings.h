@@ -152,14 +152,14 @@ struct Settings {
 Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
   {
     false,
-    "Indoor temp",
+    "Outdoor temp",
     Sensors::Purpose::OUTDOOR_TEMP,
     Sensors::Type::DALLAS_TEMP,
     DEFAULT_SENSOR_OUTDOOR_GPIO
   },
   {
     false,
-    "Outdoor temp",
+    "Indoor temp",
     Sensors::Purpose::INDOOR_TEMP,
     Sensors::Type::DALLAS_TEMP,
     DEFAULT_SENSOR_INDOOR_GPIO
