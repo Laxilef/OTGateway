@@ -119,7 +119,10 @@ protected:
   }
 
   void cleanDallasInstances() {
-    for (auto& [gpio, instance] : this->dallasInstances) {
+    // for (auto& [gpio, instance] : this->dallasInstances) {
+    auto it = this->dallasInstances.begin();
+    while (it != this->dallasInstances.end()) {
+      auto gpio = it->first;
       bool instanceUsed = false;
 
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
@@ -135,8 +138,8 @@ protected:
         }
       }
 
-      if (!instanceUsed) {;
-        this->dallasInstances.erase(gpio);
+      if (!instanceUsed) {
+        it = this->dallasInstances.erase(it);
         this->owInstances.erase(gpio);
         this->dallasSearchTime.erase(gpio);
         this->dallasPolling.erase(gpio);
@@ -145,6 +148,8 @@ protected:
         Log.sinfoln(FPSTR(L_SENSORS_DALLAS), F("Stopped on GPIO %hhu"), gpio);
         continue;
       }
+
+      it++;
     }
   }
 
