@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -5,50 +6,40 @@
   #include <NimBLEDevice.h>
 #endif
 
+extern FileData fsSensorsSettings;
+
 class SensorsTask : public LeanTask {
 public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
-    this->oneWireOutdoorSensor = new OneWire();
-    this->outdoorSensor = new DallasTemperature(this->oneWireOutdoorSensor);
-    this->outdoorSensor->setWaitForConversion(false);
-
-    this->oneWireIndoorSensor = new OneWire();
-    this->indoorSensor = new DallasTemperature(this->oneWireIndoorSensor);
-    this->indoorSensor->setWaitForConversion(false);
+    this->owInstances.reserve(2);
+    this->dallasInstances.reserve(2);
+    this->dallasSearchTime.reserve(2);
+    this->dallasPolling.reserve(2);
+    this->dallasLastPollingTime.reserve(2);
   }
 
   ~SensorsTask() {
-    delete this->outdoorSensor;
-    delete this->oneWireOutdoorSensor;
-    delete this->indoorSensor;
-    delete this->oneWireIndoorSensor;
+    this->dallasInstances.clear();
+    this->owInstances.clear();
+    this->dallasSearchTime.clear();
+    this->dallasPolling.clear();
+    this->dallasLastPollingTime.clear();
   }
 
 protected:
-  OneWire* oneWireOutdoorSensor = nullptr;
-  OneWire* oneWireIndoorSensor = nullptr;
+  const unsigned int disconnectedTimeout = 120000;
+  const unsigned short dallasSearchInterval = 60000;
+  const unsigned short dallasPollingInterval = 10000;
+  const unsigned short globalPollingInterval = 15000;
 
-  DallasTemperature* outdoorSensor = nullptr;
-  DallasTemperature* indoorSensor = nullptr;
-
-  bool initOutdoorSensor = false;
-  unsigned long initOutdoorSensorTime = 0;
-  unsigned long startOutdoorConversionTime = 0;
-  float filteredOutdoorTemp = 0;
-  float prevFilteredOutdoorTemp = 0;
-  
-  bool initIndoorSensor = false;
-  unsigned long initIndoorSensorTime = 0;
-  unsigned long startIndoorConversionTime = 0;
-  float filteredIndoorTemp = 0;
-  float prevFilteredIndoorTemp = 0;
+  std::unordered_map<uint8_t, OneWire> owInstances;
+  std::unordered_map<uint8_t, DallasTemperature> dallasInstances;
+  std::unordered_map<uint8_t, unsigned long> dallasSearchTime;
+  std::unordered_map<uint8_t, bool> dallasPolling;
+  std::unordered_map<uint8_t, unsigned long> dallasLastPollingTime;
+  unsigned long globalLastPollingTime = 0;
 
   #if defined(ARDUINO_ARCH_ESP32)
-  #if USE_BLE
-  unsigned long outdoorConnectedTime = 0;
-  unsigned long indoorConnectedTime = 0;
-  #endif
-
   const char* getTaskName() override {
     return "Sensors";
   }
@@ -68,102 +59,359 @@ protected:
   #endif
 
   void loop() {
-    #if USE_BLE
-    if (!NimBLEDevice::getInitialized() && millis() > 5000) {
-      Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Init BLE"));
-      BLEDevice::init("");
-      NimBLEDevice::setPower(ESP_PWR_LVL_P9);
-    }
-    #endif
-
-    if (settings.sensors.outdoor.type == SensorType::DS18B20 && GPIO_IS_VALID(settings.sensors.outdoor.gpio)) {
-      outdoorDallasSensor();
-    }
-    #if USE_BLE
-    else if (settings.sensors.outdoor.type == SensorType::BLUETOOTH) {
-      bool connected = this->bluetoothSensor(
-        BLEAddress(settings.sensors.outdoor.bleAddress),
-        &vars.sensors.outdoor.rssi,
-        &this->filteredOutdoorTemp,
-        &vars.sensors.outdoor.humidity,
-        &vars.sensors.outdoor.battery
-      );
-
-      if (connected) {
-        this->outdoorConnectedTime = millis();
-        vars.sensors.outdoor.connected = true;
-
-      } else if (millis() - this->outdoorConnectedTime > 60000) {
-        vars.sensors.outdoor.connected = false;
-      }
-    }
-    #endif
-
-    if (settings.sensors.indoor.type == SensorType::DS18B20 && GPIO_IS_VALID(settings.sensors.indoor.gpio)) {
-      indoorDallasSensor();
-    }
-    #if USE_BLE
-    else if (settings.sensors.indoor.type == SensorType::BLUETOOTH) {
-      bool connected = this->bluetoothSensor(
-        BLEAddress(settings.sensors.indoor.bleAddress),
-        &vars.sensors.indoor.rssi,
-        &this->filteredIndoorTemp,
-        &vars.sensors.indoor.humidity,
-        &vars.sensors.indoor.battery
-      );
-
-      if (connected) {
-        this->indoorConnectedTime = millis();
-        vars.sensors.indoor.connected = true;
-
-      } else if (millis() - this->indoorConnectedTime > 60000) {
-        vars.sensors.indoor.connected = false;
-      }
-    }
-    #endif
-
-    // convert
-    if (fabs(this->prevFilteredOutdoorTemp - this->filteredOutdoorTemp) >= 0.1f) {
-      float newTemp = settings.sensors.outdoor.offset;
-      if (settings.system.unitSystem == UnitSystem::METRIC) {
-        newTemp += this->filteredOutdoorTemp;
-
-      } else if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
-        newTemp += c2f(this->filteredOutdoorTemp);
-      }
-
-      if (fabs(vars.temperatures.outdoor - newTemp) > 0.099f) {
-        vars.temperatures.outdoor = newTemp;
-        Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("New temp: %f"), vars.temperatures.outdoor);
-      }
-
-      this->prevFilteredOutdoorTemp = this->filteredOutdoorTemp;
+    if (isPollingDallasSensors()) {
+      pollingDallasSensors(false);
     }
 
-    if (fabs(this->prevFilteredIndoorTemp - this->filteredIndoorTemp) > 0.1f) {
-      float newTemp = settings.sensors.indoor.offset;
-      if (settings.system.unitSystem == UnitSystem::METRIC) {
-        newTemp += this->filteredIndoorTemp;
+    if (millis() - this->globalLastPollingTime > this->globalPollingInterval) {
+      makeDallasInstances();
+      cleanDallasInstances();
+      searchDallasSensors();
+      fillingAddressesDallasSensors();
+      pollingDallasSensors();
+      pollingNtcSensors();
+      pollingBleSensors();
 
-      } else if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
-        newTemp += c2f(this->filteredIndoorTemp);
+      this->globalLastPollingTime = millis();
+    }
+
+    updateConnectionStatus();
+    updateMasterValues();
+  }
+
+  void updateMasterValues() {
+    vars.master.heating.outdoorTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::OUTDOOR_TEMP, Sensors::ValueType::PRIMARY);
+    vars.master.heating.indoorTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY);
+
+    vars.master.heating.currentTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_TEMP, Sensors::ValueType::PRIMARY);
+    vars.master.heating.returnTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_RETURN_TEMP, Sensors::ValueType::PRIMARY);
+
+    vars.master.dhw.currentTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::DHW_TEMP, Sensors::ValueType::PRIMARY);
+    vars.master.dhw.returnTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::DHW_RETURN_TEMP, Sensors::ValueType::PRIMARY);
+  }
+
+  void makeDallasInstances() {
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      auto& sSensor = Sensors::settings[sensorId];
+
+      if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        continue;
+
+      } else if (this->dallasInstances.count(sSensor.gpio)) {
+        // no need to make instances
+        continue;
       }
 
-      if (fabs(vars.temperatures.indoor - newTemp) > 0.099f) {
-        vars.temperatures.indoor = newTemp;
-        Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("New temp: %f"), vars.temperatures.indoor);
-      }
+      auto& owInstance = this->owInstances[sSensor.gpio];
+      owInstance.begin(sSensor.gpio);
+      owInstance.reset();
 
-      this->prevFilteredIndoorTemp = this->filteredIndoorTemp;
+      this->dallasSearchTime[sSensor.gpio] = 0;
+      this->dallasPolling[sSensor.gpio] = false;
+      this->dallasLastPollingTime[sSensor.gpio] = 0;
+
+      auto& instance = this->dallasInstances[sSensor.gpio];
+      instance.setOneWire(&owInstance);
+      instance.setWaitForConversion(false);
+
+      Log.sinfoln(FPSTR(L_SENSORS_DALLAS), F("Started on GPIO %hhu"), sSensor.gpio);
     }
   }
 
-#if USE_BLE
-  bool bluetoothSensor(const BLEAddress& address, int8_t* const pRssi, float* const pTemperature, float* const pHumidity = nullptr, float* const pBattery = nullptr) {
+  void cleanDallasInstances() {
+    for (auto& [gpio, instance] : this->dallasInstances) {
+      bool instanceUsed = false;
+
+      for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+        auto& sSensor = Sensors::settings[sensorId];
+        
+        if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+          continue;
+        }
+
+        if (Sensors::settings[sensorId].gpio == gpio) {
+          instanceUsed = true;
+          break;
+        }
+      }
+
+      if (!instanceUsed) {;
+        this->dallasInstances.erase(gpio);
+        this->owInstances.erase(gpio);
+        this->dallasSearchTime.erase(gpio);
+        this->dallasPolling.erase(gpio);
+        this->dallasLastPollingTime.erase(gpio);
+
+        Log.sinfoln(FPSTR(L_SENSORS_DALLAS), F("Stopped on GPIO %hhu"), gpio);
+        continue;
+      }
+    }
+  }
+
+  void searchDallasSensors() {
+    // search sensors on bus
+    for (auto& [gpio, instance] : this->dallasInstances) {
+      // do not search if polling!
+      if (this->dallasPolling[gpio]) {
+        continue;
+      }
+
+      if (millis() - this->dallasSearchTime[gpio] > this->dallasSearchInterval) {
+        this->dallasSearchTime[gpio] = millis();
+        instance.begin();
+
+        Log.straceln(
+          FPSTR(L_SENSORS_DALLAS),
+          F("GPIO %hhu, devices on bus: %hhu, DS18* devices: %hhu"),
+          gpio, instance.getDeviceCount(), instance.getDS18Count()
+        );
+      }
+    }
+  }
+
+  void fillingAddressesDallasSensors() {
+    // check & filling sensors address
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      auto& sSensor = Sensors::settings[sensorId];
+      
+      if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        continue;
+
+      } else if (!this->dallasInstances.count(sSensor.gpio)) {
+        continue;
+      }
+
+      // do nothing if address not empty
+      if (!isEmptyAddress(sSensor.address)) {
+        continue;
+      }
+
+      // do nothing if polling
+      if (this->dallasPolling[sSensor.gpio]) {
+        continue;
+      }
+
+      auto& instance = this->dallasInstances[sSensor.gpio];
+      DeviceAddress devAddr;
+      for (uint8_t devId = 0; devId < instance.getDeviceCount(); devId++) {
+        if (!instance.getAddress(devAddr, devId)) {
+          continue;
+        }
+
+        bool freeAddress = true;
+
+        // checking address usage
+        for (uint8_t checkingSensorId = 0; checkingSensorId <= Sensors::getMaxSensorId(); checkingSensorId++) {
+          auto& sCheckingSensor = Sensors::settings[checkingSensorId];
+          if (sCheckingSensor.type != Sensors::Type::DALLAS_TEMP || checkingSensorId == sensorId) {
+            continue;
+          }
+          
+          if (sCheckingSensor.gpio != sSensor.gpio || isEmptyAddress(sCheckingSensor.address)) {
+            continue;
+          }
+
+          if (isEqualAddress(sCheckingSensor.address, devAddr)) {
+            freeAddress = false;
+            break;
+          }
+        }
+
+        // address already in use
+        if (!freeAddress) {
+          continue;
+        }
+
+        // set address
+        for (uint8_t i = 0; i < 8; i++) {
+          sSensor.address[i] = devAddr[i];
+        }
+
+        fsSensorsSettings.update();
+        Log.straceln(
+          FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', set address: %hhX:%hhX:%hhX:%hhX:%hhX:%hhX:%hhX:%hhX"),
+          sSensor.gpio, sensorId, sSensor.name,
+          sSensor.address[0], sSensor.address[1], sSensor.address[2], sSensor.address[3],
+          sSensor.address[4], sSensor.address[5], sSensor.address[6], sSensor.address[7]
+        );
+
+        break;
+      }
+    }
+  }
+
+  bool isPollingDallasSensors() {
+    for (auto& [gpio, instance] : this->dallasInstances) {
+      if (this->dallasPolling.count(gpio) && this->dallasPolling[gpio]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  void pollingDallasSensors(bool newPolling = true) {
+    for (auto& [gpio, instance] : this->dallasInstances) {
+      unsigned long ts = millis();
+
+      if (this->dallasPolling[gpio]) {
+        auto minPollingTime = instance.millisToWaitForConversion(12);
+        unsigned long estimatePollingTime = ts - this->dallasLastPollingTime[gpio];
+
+        // check conversion time
+        if (estimatePollingTime < minPollingTime) {
+          continue;
+        }
+        
+        // check conversion
+        bool conversionComplete = instance.isConversionComplete();
+        if (!conversionComplete) {
+          if (estimatePollingTime > (minPollingTime * 2)) {
+            this->dallasPolling[gpio] = false;
+
+            Log.swarningln(FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, timeout receiving data"), gpio);
+          }
+
+          continue;
+        }
+
+        // read sensors data for current instance
+        for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+          auto& sSensor = Sensors::settings[sensorId];
+          
+          // only target & valid sensors
+          if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+            continue;
+
+          } else if (sSensor.gpio != gpio || isEmptyAddress(sSensor.address)) {
+            continue;
+          }
+          
+          float value = instance.getTempC(sSensor.address);
+          if (value == DEVICE_DISCONNECTED_C) {
+            Log.swarningln(
+              FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s': failed receiving data"),
+              sSensor.gpio, sensorId, sSensor.name
+            );
+
+            continue;
+          }
+
+          Log.straceln(
+            FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', received data: %.2f"),
+            sSensor.gpio, sensorId, sSensor.name, value
+          );
+
+          // set sensor value
+          Sensors::setValueById(sensorId, value, Sensors::ValueType::TEMPERATURE, true, true);
+        }
+
+        // reset polling flag
+        this->dallasPolling[gpio] = false;
+
+      } else if (newPolling) {
+        auto estimateLastPollingTime = ts - this->dallasLastPollingTime[gpio];
+
+        // check last polling time
+        if (estimateLastPollingTime < this->dallasPollingInterval) {
+          continue;
+        }
+
+        // check sensors on bus
+        if (!instance.getDeviceCount()) {
+          continue;
+        }
+
+        // start polling
+        instance.setResolution(12);
+        instance.requestTemperatures();
+        this->dallasPolling[gpio] = true;
+        this->dallasLastPollingTime[gpio] = ts;
+
+        Log.straceln(FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, polling..."), gpio);
+      }
+    }
+  }
+
+  void pollingBleSensors() {
+    #if USE_BLE
+    if (!NimBLEDevice::getInitialized() && millis() > 5000) {
+      Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
+      BLEDevice::init("");
+      NimBLEDevice::setPower(ESP_PWR_LVL_P9);
+    }
+
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      auto& sSensor = Sensors::settings[sensorId];
+      
+      if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        continue;
+      }
+
+      connectToBleDevice(sensorId);
+    }
+    #endif
+  }
+
+  void pollingNtcSensors() {
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      auto& sSensor = Sensors::settings[sensorId];
+      
+      if (!sSensor.enabled || sSensor.type != Sensors::Type::NTC_10K_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        continue;
+      }
+
+      const auto value = analogReadMilliVolts(sSensor.gpio);
+      if (value < DEFAULT_NTC_VLOW_TRESHOLD) {
+        if (Sensors::getConnectionStatusById(sensorId)) {
+          Sensors::setConnectionStatusById(sensorId, false, false);
+        }
+
+        Log.swarningln(
+          FPSTR(L_SENSORS_NTC), F("GPIO %hhu, sensor #%hhu '%s', voltage too low: %.2f"),
+          sSensor.gpio, sensorId, sSensor.name, (value / 1000.0f)
+        );
+
+        continue;
+      }
+
+      const float sensorResistance = value > 0.001f
+        ? DEFAULT_NTC_REF_RESISTANCE / (DEFAULT_NTC_VREF / (float) value - 1.0f)
+        : 0.0f;
+      const float rawTemp = 1.0f / (
+        1.0f / (DEFAULT_NTC_NOMINAL_TEMP + 273.15f) +
+        log(sensorResistance / DEFAULT_NTC_NOMINAL_RESISTANCE) / DEFAULT_NTC_BETA_FACTOR
+      ) - 273.15f;
+
+      Log.straceln(
+        FPSTR(L_SENSORS_NTC), F("GPIO %hhu, sensor #%hhu '%s', raw temp: %.2f, raw voltage: %.3f, raw resistance: %.2f"),
+        sSensor.gpio, sensorId, sSensor.name, rawTemp, (value / 1000.0f), sensorResistance
+      );
+
+      // set temp
+      Sensors::setValueById(sensorId, rawTemp, Sensors::ValueType::TEMPERATURE, true, true);
+    }
+  }
+
+  bool connectToBleDevice(const uint8_t sensorId) {
+    #if USE_BLE
     if (!NimBLEDevice::getInitialized()) {
       return false;
     }
 
+    auto& sSensor = Sensors::settings[sensorId];
+    auto& rSensor = Sensors::results[sensorId];
+
+    if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+      return false;
+    }
+    
+    uint8_t addr[6] = {
+      sSensor.address[0], sSensor.address[1], sSensor.address[2],
+      sSensor.address[3], sSensor.address[4], sSensor.address[5]
+    };
+    const NimBLEAddress address = NimBLEAddress(addr);
+    
     NimBLEClient* pClient = nullptr;
     pClient = NimBLEDevice::getClientByPeerAddress(address);
 
@@ -181,18 +429,28 @@ protected:
     }
 
     if(pClient->isConnected()) {
-      *pRssi = pClient->getRssi();
+      if (!rSensor.connected) {
+        rSensor.connected = true;
+      }
+
       return true;
     }
 
     if (!pClient->connect(address)) {
-      Log.swarningln(FPSTR(L_SENSORS_BLE), F("Device %s: failed connecting"), address.toString().c_str());
+      Log.swarningln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed connecting to %s"),
+        sensorId, sSensor.name, address.toString().c_str()
+      );
 
       NimBLEDevice::deleteClient(pClient);
       return false;
     }
 
-    Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Device %s: connected"), address.toString().c_str());
+    Log.sinfoln(
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': connected to %s"),
+      sensorId, sSensor.name, address.toString().c_str()
+    );
+
     NimBLERemoteService* pService = nullptr;
     NimBLERemoteCharacteristic* pChar = nullptr;
 
@@ -201,20 +459,15 @@ protected:
     pService = pClient->getService(serviceUuid);
     if (!pService) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE),
-        F("Device %s: failed to find env service (%s)"),
-        address.toString().c_str(),
-        serviceUuid.toString().c_str()
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to find env service (%s) on device %s"),
+        sensorId, sSensor.name, serviceUuid.toString().c_str(), address.toString().c_str()
       );
 
     } else {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE),
-        F("Device %s: found env service (%s)"),
-        address.toString().c_str(),
-        serviceUuid.toString().c_str()
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found env service (%s) on device %s"),
+        sensorId, sSensor.name, serviceUuid.toString().c_str(), address.toString().c_str()
       );
-
 
       // 0x2A6E - Notify temperature x0.01C (pvvx)
       bool tempNotifyCreated = false;
@@ -224,13 +477,11 @@ protected:
 
         if (pChar && pChar->canNotify()) {
           Log.straceln(
-            FPSTR(L_SENSORS_BLE),
-            F("Device %s: found temperature char (%s) in env service"),
-            address.toString().c_str(),
-            charUuid.toString().c_str()
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found temp char (%s) in env service on device %s"),
+            sensorId, sSensor.name, charUuid.toString().c_str(), address.toString().c_str()
           );
 
-          tempNotifyCreated = pChar->subscribe(true, [pTemperature](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
+          tempNotifyCreated = pChar->subscribe(true, [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
             if (pChar == nullptr) {
               return;
             }
@@ -245,48 +496,47 @@ protected:
               return;
             }
 
+            auto& sSensor = Sensors::settings[sensorId];
+
             if (length != 2) {
               Log.swarningln(
                 FPSTR(L_SENSORS_BLE),
-                F("Device %s: invalid notification data at temperature char (%s)"),
-                pClient->getPeerAddress().toString().c_str(),
-                pChar->getUUID().toString().c_str()
+                F("Sensor #%hhu '%s': invalid notification data at temp char (%s) on device %s"),
+                sensorId,
+                sSensor.name,
+                pChar->getUUID().toString().c_str(),
+                pClient->getPeerAddress().toString().c_str()
               );
+
               return;
             }
 
             float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.01f);
             Log.straceln(
-              FPSTR(L_SENSORS_INDOOR),
-              F("Device %s: raw temp %f"),
-              pClient->getPeerAddress().toString().c_str(),
-              rawTemp
+              FPSTR(L_SENSORS_BLE),
+              F("Sensor #%hhu '%s': received temp: %.2f"),
+              sensorId, sSensor.name, rawTemp
             );
 
-            if (fabs(*pTemperature) < 0.1f) {
-              *pTemperature = rawTemp;
+            // set temp
+            Sensors::setValueById(sensorId, rawTemp, Sensors::ValueType::TEMPERATURE, true, true);
 
-            } else {
-              *pTemperature += (rawTemp - (*pTemperature)) * EXT_SENSORS_FILTER_K;
-            }
-
-            *pTemperature = floor((*pTemperature) * 100) / 100;
+            // update rssi
+            Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
           });
 
           if (tempNotifyCreated) {
             Log.straceln(
-              FPSTR(L_SENSORS_BLE),
-              F("Device %s: subscribed to temperature char (%s) in env service"),
-              address.toString().c_str(),
-              charUuid.toString().c_str()
+              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to temp char (%s) in env service on device %s"),
+              sensorId, sSensor.name,
+              charUuid.toString().c_str(), address.toString().c_str()
             );
 
           } else {
             Log.swarningln(
-              FPSTR(L_SENSORS_BLE),
-              F("Device %s: failed to subscribe to temperature char (%s) in env service"),
-              address.toString().c_str(),
-              charUuid.toString().c_str()
+              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to temp char (%s) in env service on device %s"),
+              sensorId, sSensor.name,
+              charUuid.toString().c_str(), address.toString().c_str()
             );
           }
         }
@@ -300,13 +550,11 @@ protected:
 
         if (pChar && pChar->canNotify()) {
           Log.straceln(
-            FPSTR(L_SENSORS_BLE),
-            F("Device %s: found temperature char (%s) in env service"),
-            address.toString().c_str(),
-            charUuid.toString().c_str()
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found temp char (%s) in env service on device %s"),
+            sensorId, sSensor.name, charUuid.toString().c_str(), address.toString().c_str()
           );
 
-          tempNotifyCreated = pChar->subscribe(true, [pTemperature](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
+          tempNotifyCreated = pChar->subscribe(true, [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
             if (pChar == nullptr) {
               return;
             }
@@ -321,48 +569,47 @@ protected:
               return;
             }
 
+            auto& sSensor = Sensors::settings[sensorId];
+
             if (length != 2) {
               Log.swarningln(
                 FPSTR(L_SENSORS_BLE),
-                F("Device %s: invalid notification data at temperature char (%s)"),
-                pClient->getPeerAddress().toString().c_str(),
-                pChar->getUUID().toString().c_str()
+                F("Sensor #%hhu '%s': invalid notification data at temp char (%s) on device %s"),
+                sensorId,
+                sSensor.name,
+                pChar->getUUID().toString().c_str(),
+                pClient->getPeerAddress().toString().c_str()
               );
+
               return;
             }
 
             float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.1f);
             Log.straceln(
-              FPSTR(L_SENSORS_INDOOR),
-              F("Device %s: raw temp %f"),
-              pClient->getPeerAddress().toString().c_str(),
-              rawTemp
+              FPSTR(L_SENSORS_BLE),
+              F("Sensor #%hhu '%s': received temp: %.2f"),
+              sensorId, sSensor.name, rawTemp
             );
 
-            if (fabs(*pTemperature) < 0.1f) {
-              *pTemperature = rawTemp;
+            // set temp
+            Sensors::setValueById(sensorId, rawTemp, Sensors::ValueType::TEMPERATURE, true, true);
 
-            } else {
-              *pTemperature += (rawTemp - (*pTemperature)) * EXT_SENSORS_FILTER_K;
-            }
-
-            *pTemperature = floor((*pTemperature) * 100) / 100;
+            // update rssi
+            Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
           });
 
           if (tempNotifyCreated) {
             Log.straceln(
-              FPSTR(L_SENSORS_BLE),
-              F("Device %s: subscribed to temperature char (%s) in env service"),
-              address.toString().c_str(),
-              charUuid.toString().c_str()
+              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to temp char (%s) in env service on device %s"),
+              sensorId, sSensor.name,
+              charUuid.toString().c_str(), address.toString().c_str()
             );
 
           } else {
             Log.swarningln(
-              FPSTR(L_SENSORS_BLE),
-              F("Device %s: failed to subscribe to temperature char (%s) in env service"),
-              address.toString().c_str(),
-              charUuid.toString().c_str()
+              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to temp char (%s) in env service on device %s"),
+              sensorId, sSensor.name,
+              charUuid.toString().c_str(), address.toString().c_str()
             );
           }
         }
@@ -370,9 +617,8 @@ protected:
 
       if (!tempNotifyCreated) {
         Log.swarningln(
-          FPSTR(L_SENSORS_BLE),
-          F("Device %s: not found supported temperature chars in env service"),
-          address.toString().c_str()
+          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported temp chars in env service on device %s"),
+          sensorId, sSensor.name, address.toString().c_str()
         );
 
         pClient->disconnect();
@@ -381,7 +627,7 @@ protected:
 
 
       // 0x2A6F - Notify about humidity x0.01% (pvvx)
-      if (pHumidity != nullptr) {
+      {
         bool humidityNotifyCreated = false;
         if (!humidityNotifyCreated) {
           NimBLEUUID charUuid((uint16_t) 0x2A6F);
@@ -389,13 +635,11 @@ protected:
 
           if (pChar && pChar->canNotify()) {
             Log.straceln(
-              FPSTR(L_SENSORS_BLE),
-              F("Device %s: found humidity char (%s) in env service"),
-              address.toString().c_str(),
-              charUuid.toString().c_str()
+              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found humidity char (%s) in env service on device %s"),
+              sensorId, sSensor.name, charUuid.toString().c_str(), address.toString().c_str()
             );
 
-            humidityNotifyCreated = pChar->subscribe(true, [pHumidity](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
+            humidityNotifyCreated = pChar->subscribe(true, [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
               if (pChar == nullptr) {
                 return;
               }
@@ -410,48 +654,47 @@ protected:
                 return;
               }
 
+              auto& sSensor = Sensors::settings[sensorId];
+
               if (length != 2) {
                 Log.swarningln(
                   FPSTR(L_SENSORS_BLE),
-                  F("Device %s: invalid notification data at humidity char (%s)"),
-                  pClient->getPeerAddress().toString().c_str(),
-                  pChar->getUUID().toString().c_str()
+                  F("Sensor #%hhu '%s': invalid notification data at humidity char (%s) on device %s"),
+                  sensorId,
+                  sSensor.name,
+                  pChar->getUUID().toString().c_str(),
+                  pClient->getPeerAddress().toString().c_str()
                 );
+
                 return;
               }
 
               float rawHumidity = ((pData[0] | (pData[1] << 8)) * 0.01f);
               Log.straceln(
-                FPSTR(L_SENSORS_INDOOR),
-                F("Device %s: raw humidity %f"),
-                pClient->getPeerAddress().toString().c_str(),
-                rawHumidity
+                FPSTR(L_SENSORS_BLE),
+                F("Sensor #%hhu '%s': received humidity: %.2f"),
+                sensorId, sSensor.name, rawHumidity
               );
 
-              if (fabs(*pHumidity) < 0.1f) {
-                *pHumidity = rawHumidity;
+              // set humidity
+              Sensors::setValueById(sensorId, rawHumidity, Sensors::ValueType::HUMIDITY, true, true);
 
-              } else {
-                *pHumidity += (rawHumidity - (*pHumidity)) * EXT_SENSORS_FILTER_K;
-              }
-
-              *pHumidity = floor((*pHumidity) * 100) / 100;
+              // update rssi
+              Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
             });
 
             if (humidityNotifyCreated) {
               Log.straceln(
-                FPSTR(L_SENSORS_BLE),
-                F("Device %s: subscribed to humidity char (%s) in env service"),
-                address.toString().c_str(),
-                charUuid.toString().c_str()
+                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to humidity char (%s) in env service on device %s"),
+                sensorId, sSensor.name,
+                charUuid.toString().c_str(), address.toString().c_str()
               );
 
             } else {
               Log.swarningln(
-                FPSTR(L_SENSORS_BLE),
-                F("Device %s: failed to subscribe to humidity char (%s) in env service"),
-                address.toString().c_str(),
-                charUuid.toString().c_str()
+                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to humidity char (%s) in env service on device %s"),
+                sensorId, sSensor.name,
+                charUuid.toString().c_str(), address.toString().c_str()
               );
             }
           }
@@ -459,9 +702,8 @@ protected:
 
         if (!humidityNotifyCreated) {
           Log.swarningln(
-            FPSTR(L_SENSORS_BLE),
-            F("Device %s: not found supported humidity chars in env service"),
-            address.toString().c_str()
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported humidity chars in env service on device %s"),
+            sensorId, sSensor.name, address.toString().c_str()
           );
         }
       }
@@ -469,23 +711,19 @@ protected:
 
 
     // Battery Service (0x180F)
-    if (pBattery != nullptr) {
+    {
       NimBLEUUID serviceUuid((uint16_t) 0x180F);
       pService = pClient->getService(serviceUuid);
       if (!pService) {
         Log.straceln(
-          FPSTR(L_SENSORS_BLE),
-          F("Device %s: failed to find battery service (%s)"),
-          address.toString().c_str(),
-          serviceUuid.toString().c_str()
+          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to find battery service (%s) on device %s"),
+          sensorId, sSensor.name, serviceUuid.toString().c_str(), address.toString().c_str()
         );
 
       } else {
         Log.straceln(
-          FPSTR(L_SENSORS_BLE),
-          F("Device %s: found battery service (%s)"),
-          address.toString().c_str(),
-          serviceUuid.toString().c_str()
+          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found battery service (%s) on device %s"),
+          sensorId, sSensor.name, serviceUuid.toString().c_str(), address.toString().c_str()
         );
 
         // 0x2A19 - Notify the battery charge level 0..99% (pvvx)
@@ -496,13 +734,11 @@ protected:
 
           if (pChar && pChar->canNotify()) {
             Log.straceln(
-              FPSTR(L_SENSORS_BLE),
-              F("Device %s: found battery char (%s) in battery service"),
-              address.toString().c_str(),
-              charUuid.toString().c_str()
+              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found battery char (%s) in battery service on device %s"),
+              sensorId, sSensor.name, charUuid.toString().c_str(), address.toString().c_str()
             );
 
-            batteryNotifyCreated = pChar->subscribe(true, [pBattery](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
+            batteryNotifyCreated = pChar->subscribe(true, [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
               if (pChar == nullptr) {
                 return;
               }
@@ -517,48 +753,47 @@ protected:
                 return;
               }
 
+              auto& sSensor = Sensors::settings[sensorId];
+
               if (length != 1) {
                 Log.swarningln(
                   FPSTR(L_SENSORS_BLE),
-                  F("Device %s: invalid notification data at battery char (%s)"),
-                  pClient->getPeerAddress().toString().c_str(),
-                  pChar->getUUID().toString().c_str()
+                  F("Sensor #%hhu '%s': invalid notification data at battery char (%s) on device %s"),
+                  sensorId,
+                  sSensor.name,
+                  pChar->getUUID().toString().c_str(),
+                  pClient->getPeerAddress().toString().c_str()
                 );
+
                 return;
               }
 
               uint8_t rawBattery = pData[0];
               Log.straceln(
-                FPSTR(L_SENSORS_INDOOR),
-                F("Device %s: raw battery %hhu"),
-                pClient->getPeerAddress().toString().c_str(),
-                rawBattery
+                FPSTR(L_SENSORS_BLE),
+                F("Sensor #%hhu '%s': received battery: %.2f"),
+                sensorId, sSensor.name, rawBattery
               );
 
-              if (fabs(*pBattery) < 0.1f) {
-                *pBattery = rawBattery;
-
-              } else {
-                *pBattery += (rawBattery - (*pBattery)) * EXT_SENSORS_FILTER_K;
-              }
-
-              *pBattery = floor((*pBattery) * 100) / 100;
+              // set battery
+              Sensors::setValueById(sensorId, rawBattery, Sensors::ValueType::BATTERY, true, true);
+              
+              // update rssi
+              Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
             });
 
             if (batteryNotifyCreated) {
               Log.straceln(
-                FPSTR(L_SENSORS_BLE),
-                F("Device %s: subscribed to battery char (%s) in battery service"),
-                address.toString().c_str(),
-                charUuid.toString().c_str()
+                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to battery char (%s) in battery service on device %s"),
+                sensorId, sSensor.name,
+                charUuid.toString().c_str(), address.toString().c_str()
               );
 
             } else {
               Log.swarningln(
-                FPSTR(L_SENSORS_BLE),
-                F("Device %s: failed to subscribe to battery char (%s) in battery service"),
-                address.toString().c_str(),
-                charUuid.toString().c_str()
+                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to battery char (%s) in battery service on device %s"),
+                sensorId, sSensor.name,
+                charUuid.toString().c_str(), address.toString().c_str()
               );
             }
           }
@@ -566,173 +801,65 @@ protected:
 
         if (!batteryNotifyCreated) {
           Log.swarningln(
-            FPSTR(L_SENSORS_BLE),
-            F("Device %s: not found supported battery chars in battery service"),
-            address.toString().c_str()
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported battery chars in battery service on device %s"),
+            sensorId, sSensor.name, address.toString().c_str()
           );
         }
       }
     }
 
     return true;
+    #else
+    return false;
+    #endif
   }
-#endif
 
-  void outdoorDallasSensor() {
-    if (!this->initOutdoorSensor) {
-      if (this->initOutdoorSensorTime && millis() - this->initOutdoorSensorTime < EXT_SENSORS_INTERVAL * 10) {
-        return;
-      }
+  void updateConnectionStatus() {
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      auto& sSensor = Sensors::settings[sensorId];
+      auto& rSensor = Sensors::results[sensorId];
 
-      Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Starting on GPIO %hhu..."), settings.sensors.outdoor.gpio);
+      if (rSensor.connected && !sSensor.enabled) {
+        rSensor.connected = false;
 
-      this->oneWireOutdoorSensor->begin(settings.sensors.outdoor.gpio);
-      this->oneWireOutdoorSensor->reset();
-      this->outdoorSensor->begin();
-      this->initOutdoorSensorTime = millis();
+      } else if (rSensor.connected && sSensor.type == Sensors::Type::NOT_CONFIGURED) {
+        rSensor.connected = false;
 
-      Log.straceln(
-        FPSTR(L_SENSORS_OUTDOOR),
-        F("Devices on bus: %hhu, DS18* devices: %hhu"),
-        this->outdoorSensor->getDeviceCount(),
-        this->outdoorSensor->getDS18Count()
-      );
+      } else if (rSensor.connected && sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        rSensor.connected = false;
 
-      if (this->outdoorSensor->getDeviceCount() > 0) {
-        this->initOutdoorSensor = true;
-        this->outdoorSensor->setResolution(12);
-        this->outdoorSensor->requestTemperatures();
-        this->startOutdoorConversionTime = millis();
+      } else if (sSensor.type != Sensors::Type::MANUAL && rSensor.connected && (millis() - rSensor.activityTime) > this->disconnectedTimeout) {
+        rSensor.connected = false;
 
-        Log.sinfoln(FPSTR(L_SENSORS_OUTDOOR), F("Started"));
-
-      } else {
-        if (vars.sensors.outdoor.connected) {
-          vars.sensors.outdoor.connected = false;
-        }
-
-        return;
-      }
-    }
-
-    unsigned long estimateConversionTime = millis() - this->startOutdoorConversionTime;
-    if (estimateConversionTime < this->outdoorSensor->millisToWaitForConversion()) {
-      return;
-    }
-
-    bool completed = this->outdoorSensor->isConversionComplete();
-    if (!completed && estimateConversionTime >= 1000) {
-      this->initOutdoorSensor = false;
-
-      Log.serrorln(FPSTR(L_SENSORS_OUTDOOR), F("Could not read temperature data (no response)"));
-    }
-
-    if (!completed) {
-      return;
-    }
-
-    float rawTemp = this->outdoorSensor->getTempCByIndex(0);
-    if (rawTemp == DEVICE_DISCONNECTED_C) {
-      this->initOutdoorSensor = false;
-
-      Log.serrorln(FPSTR(L_SENSORS_OUTDOOR), F("Could not read temperature data (not connected)"));
-
-    } else {
-      Log.straceln(FPSTR(L_SENSORS_OUTDOOR), F("Raw temp: %f"), rawTemp);
-
-      if (!vars.sensors.outdoor.connected) {
-        vars.sensors.outdoor.connected = true;
-      }
-
-      if (fabs(this->filteredOutdoorTemp) < 0.1f) {
-        this->filteredOutdoorTemp = rawTemp;
-
-      } else {
-        this->filteredOutdoorTemp += (rawTemp - this->filteredOutdoorTemp) * EXT_SENSORS_FILTER_K;
-      }
-
-      this->filteredOutdoorTemp = floor(this->filteredOutdoorTemp * 100) / 100;
-      this->outdoorSensor->requestTemperatures();
-      this->startOutdoorConversionTime = millis();
+      }/* else if (!rSensor.connected) {
+        rSensor.connected = true;
+      }*/
     }
   }
 
-  void indoorDallasSensor() {
-    if (!this->initIndoorSensor) {
-      if (this->initIndoorSensorTime && millis() - this->initIndoorSensorTime < EXT_SENSORS_INTERVAL * 10) {
-        return;
-      }
-      
-      Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Starting on GPIO %hhu..."), settings.sensors.indoor.gpio);
+  static bool isEqualAddress(const uint8_t *addr1, const uint8_t *addr2, const uint8_t length = 8) {
+    bool result = true;
 
-      this->oneWireIndoorSensor->begin(settings.sensors.indoor.gpio);
-      this->oneWireIndoorSensor->reset();
-      this->indoorSensor->begin();
-      this->initIndoorSensorTime = millis();
-
-      Log.straceln(
-        FPSTR(L_SENSORS_INDOOR),
-        F("Devices on bus: %hhu, DS18* devices: %hhu"),
-        this->indoorSensor->getDeviceCount(),
-        this->indoorSensor->getDS18Count()
-      );
-
-      if (this->indoorSensor->getDeviceCount() > 0) {
-        this->initIndoorSensor = true;
-        this->indoorSensor->setResolution(12);
-        this->indoorSensor->requestTemperatures();
-        this->startIndoorConversionTime = millis();
-
-        Log.sinfoln(FPSTR(L_SENSORS_INDOOR), F("Started"));
-
-      } else {
-        if (vars.sensors.indoor.connected) {
-          vars.sensors.indoor.connected = false;
-        }
-
-        return;
+    for (uint8_t i = 0; i < length; i++) {
+      if (addr1[i] != addr2[i]) {
+        result = false;
+        break;
       }
     }
 
-    unsigned long estimateConversionTime = millis() - this->startIndoorConversionTime;
-    if (estimateConversionTime < this->indoorSensor->millisToWaitForConversion()) {
-      return;
-    }
+    return result;
+  }
 
-    bool completed = this->indoorSensor->isConversionComplete();
-    if (!completed && estimateConversionTime >= 1000) {
-      this->initIndoorSensor = false;
+  static bool isEmptyAddress(const uint8_t *addr, const uint8_t length = 8) {
+    bool result = true;
 
-      Log.serrorln(FPSTR(L_SENSORS_INDOOR), F("Could not read temperature data (no response)"));
-    }
-
-    if (!completed) {
-      return;
-    }
-
-    float rawTemp = this->indoorSensor->getTempCByIndex(0);
-    if (rawTemp == DEVICE_DISCONNECTED_C) {
-      this->initIndoorSensor = false;
-
-      Log.serrorln(FPSTR(L_SENSORS_INDOOR), F("Could not read temperature data (not connected)"));
-
-    } else {
-      Log.straceln(FPSTR(L_SENSORS_INDOOR), F("Raw temp: %f"), rawTemp);
-
-      if (!vars.sensors.indoor.connected) {
-        vars.sensors.indoor.connected = true;
+    for (uint8_t i = 0; i < length; i++) {
+      if (addr[i] != 0) {
+        result = false;
+        break;
       }
-
-      if (fabs(this->filteredIndoorTemp) < 0.1f) {
-        this->filteredIndoorTemp = rawTemp;
-
-      } else {
-        this->filteredIndoorTemp += (rawTemp - this->filteredIndoorTemp) * EXT_SENSORS_FILTER_K;
-      }
-
-      this->filteredIndoorTemp = floor(this->filteredIndoorTemp * 100) / 100;
-      this->indoorSensor->requestTemperatures();
-      this->startIndoorConversionTime = millis();
     }
+
+    return result;
   }
 };

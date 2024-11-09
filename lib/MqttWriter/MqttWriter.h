@@ -77,7 +77,7 @@ public:
 #endif
   }
 
-  bool publish(const char* topic, JsonDocument& doc, bool retained = false) {
+  bool publish(const char* topic, const JsonVariantConst doc, bool retained = false) {
     if (!this->client->connected()) {
       this->bufferPos = 0;
       return false;

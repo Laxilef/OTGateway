@@ -17,7 +17,7 @@ using WebServer = ESP8266WebServer;
 using namespace NetworkUtils;
 
 extern NetworkMgr* network;
-extern FileData fsSettings, fsNetworkSettings;
+extern FileData fsNetworkSettings, fsSettings, fsSensorsSettings;
 extern MqttTask* tMqtt;
 
 
@@ -140,6 +140,18 @@ protected:
       });
     this->webServer->addHandler(settingsPage);
 
+    // sensors page
+    auto sensorsPage = (new StaticPage("/sensors.html", &LittleFS, "/pages/sensors.html", PORTAL_CACHE))
+      ->setBeforeSendCallback([this]() {
+        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+          this->webServer->requestAuthentication(DIGEST_AUTH);
+          return false;
+        }
+
+        return true;
+      });
+    this->webServer->addHandler(sensorsPage);
+
     // upgrade page
     auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, "/pages/upgrade.html", PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
@@ -194,17 +206,19 @@ protected:
         }
       }
 
-      JsonDocument networkSettingsDoc;
-      networkSettingsToJson(networkSettings, networkSettingsDoc);
-      networkSettingsDoc.shrinkToFit();
-
-      JsonDocument settingsDoc;
-      settingsToJson(settings, settingsDoc);
-      settingsDoc.shrinkToFit();
-
       JsonDocument doc;
-      doc["network"] = networkSettingsDoc;
-      doc["settings"] = settingsDoc;
+
+      auto networkDoc = doc["network"].to<JsonObject>();
+      networkSettingsToJson(networkSettings, networkDoc);
+
+      auto settingskDoc = doc["settings"].to<JsonObject>();
+      settingsToJson(settings, settingskDoc);
+
+      for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+        auto sensorSettingskDoc = doc["sensors"][sensorId].to<JsonObject>();
+        sensorSettingsToJson(sensorId, Sensors::settings[sensorId], sensorSettingskDoc);
+      }
+
       doc.shrinkToFit();
 
       this->webServer->sendHeader(F("Content-Disposition"), F("attachment; filename=\"backup.json\""));
@@ -240,13 +254,13 @@ protected:
       }
 
       bool changed = false;
-      if (doc["settings"] && jsonToSettings(doc["settings"], settings)) {
+      if (!doc["settings"].isNull() && jsonToSettings(doc["settings"], settings)) {
         vars.actions.restart = true;
         fsSettings.update();
         changed = true;
       }
 
-      if (doc["network"] && jsonToNetworkSettings(doc["network"], networkSettings)) {
+      if (!doc["network"].isNull() && jsonToNetworkSettings(doc["network"], networkSettings)) {
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
@@ -260,6 +274,19 @@ protected:
           )
           ->reconnect();
         changed = true;
+      }
+
+      if (!doc["sensors"].isNull()) {
+        for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+          if (doc["sensors"][sensorId].isNull()) {
+            continue;
+          }
+
+          auto sensorSettingsDoc = doc["sensors"][sensorId].to<JsonObject>();
+          if (jsonToSensorSettings(sensorId, sensorSettingsDoc, Sensors::settings[sensorId])){
+            changed = true;
+          }
+        }
       }
 
       doc.clear();
@@ -442,6 +469,135 @@ protected:
 
         fsSettings.update();
         tMqtt->resetPublishedSettingsTime();
+      }
+    });
+
+
+    // sensors list
+    this->webServer->on("/api/sensors", HTTP_GET, [this]() {
+      if (this->isAuthRequired()) {
+        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+          return this->webServer->send(401);
+        }
+      }
+
+      bool detailed = false;
+      if (this->webServer->hasArg("detailed")) {
+        detailed = this->webServer->arg("detailed").toInt() > 0;
+      }
+      
+      JsonDocument doc;
+      for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+        if (detailed) {
+          auto& sSensor = Sensors::settings[sensorId];
+          doc[sensorId]["name"] = sSensor.name;
+          doc[sensorId]["purpose"] = static_cast<uint8_t>(sSensor.purpose);
+          sensorResultToJson(sensorId, doc[sensorId]);
+
+        } else {
+          doc[sensorId] = Sensors::settings[sensorId].name;
+        }
+      }
+      
+      doc.shrinkToFit();
+      this->bufferedWebServer->send(200, "application/json", doc);
+    });
+
+    // sensor settings
+    this->webServer->on("/api/sensor", HTTP_GET, [this]() {
+      if (this->isAuthRequired()) {
+        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+          return this->webServer->send(401);
+        }
+      }
+      
+      if (!this->webServer->hasArg("id")) {
+        return this->webServer->send(400);
+      }
+
+      auto id = this->webServer->arg("id");
+      if (!isDigit(id.c_str())) {
+        return this->webServer->send(400);
+      }
+
+      uint8_t sensorId = id.toInt();
+      id.clear();
+      if (!Sensors::isValidSensorId(sensorId)) {
+        return this->webServer->send(404);
+      }
+
+      JsonDocument doc;
+      sensorSettingsToJson(sensorId, Sensors::settings[sensorId], doc);
+      doc.shrinkToFit();
+      this->bufferedWebServer->send(200, "application/json", doc);
+    });
+    
+    this->webServer->on("/api/sensor", HTTP_POST, [this]() {
+      if (this->isAuthRequired()) {
+        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+          return this->webServer->send(401);
+        }
+      }
+
+      #ifdef ARDUINO_ARCH_ESP8266
+      if (!this->webServer->hasArg("id") || this->webServer->args() != 1) {
+        return this->webServer->send(400);
+      }
+      #else
+      if (!this->webServer->hasArg("id") || this->webServer->args() != 2) {
+        return this->webServer->send(400);
+      }
+      #endif
+
+      auto id = this->webServer->arg("id");
+      if (!isDigit(id.c_str())) {
+        return this->webServer->send(400);
+      }
+
+      uint8_t sensorId = id.toInt();
+      id.clear();
+      if (!Sensors::isValidSensorId(sensorId)) {
+        return this->webServer->send(404);
+      }
+
+      auto plain = this->webServer->arg(1);
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/sensor/?id=%hhu %d bytes: %s"), sensorId, plain.length(), plain.c_str());
+
+      if (plain.length() < 5) {
+        return this->webServer->send(406);
+
+      } else if (plain.length() > 1024) {
+        return this->webServer->send(413);
+      }
+
+      bool changed = false;
+      auto prevSettings = Sensors::settings[sensorId];
+      {
+        JsonDocument doc;
+        DeserializationError dErr = deserializeJson(doc, plain);
+        plain.clear();
+
+        if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
+          return this->webServer->send(400);
+        }
+
+        if (jsonToSensorSettings(sensorId, doc, Sensors::settings[sensorId])) {
+          changed = true;
+        }
+      }
+
+      {
+        JsonDocument doc;
+        auto& sSettings = Sensors::settings[sensorId];
+        sensorSettingsToJson(sensorId, sSettings, doc);
+        doc.shrinkToFit();
+        
+        this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+      }
+
+      if (changed) {
+        tMqtt->rebuildHaEntity(sensorId, prevSettings);
+        fsSensorsSettings.update();
       }
     });
 

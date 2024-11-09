@@ -10,9 +10,12 @@ public:
   RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
-  float prevHeatingTarget = 0;
-  float prevEtResult = 0;
-  float prevPidResult = 0;
+  float prevHeatingTarget = 0.0f;
+  float prevEtResult = 0.0f;
+  float prevPidResult = 0.0f;
+
+  bool indoorSensorsConnected = false;
+  //bool outdoorSensorsConnected = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -29,20 +32,50 @@ protected:
   #endif
   
   void loop() {
-    if (!settings.pid.enable && fabs(pidRegulator.integral) > 0.01f) {
+    this->indoorSensorsConnected = Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP);
+    //this->outdoorSensorsConnected = Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::OUTDOOR_TEMP);
+
+    if (settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.nativeHeatingControl) {
+      vars.master.heating.indoorTempControl = true;
+      vars.master.heating.minTemp = THERMOSTAT_INDOOR_MIN_TEMP;
+      vars.master.heating.maxTemp = THERMOSTAT_INDOOR_MAX_TEMP;
+
+    } else {
+      vars.master.heating.indoorTempControl = false;
+      vars.master.heating.minTemp = settings.heating.minTemp;
+      vars.master.heating.maxTemp = settings.heating.maxTemp;
+    }
+
+    if (!settings.pid.enabled && fabsf(pidRegulator.integral) > 0.01f) {
       pidRegulator.integral = 0.0f;
 
       Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
     }
 
+    this->turbo();
+    this->hysteresis();
+
+    vars.master.heating.targetTemp = constrain(
+      this->getHeatingSetpoint(),
+      vars.master.heating.minTemp,
+      vars.master.heating.maxTemp
+    );
+
+    Sensors::setValueByType(
+      Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.targetTemp,
+      Sensors::ValueType::PRIMARY, true, true
+    );
+  }
+
+  void turbo() {
     if (settings.heating.turbo) {
-      if (!settings.heating.enable || vars.states.emergency || !vars.sensors.indoor.connected) {
+      if (!settings.heating.enabled || vars.emergency.state || !this->indoorSensorsConnected) {
         settings.heating.turbo = false;
 
-      } else if (!settings.pid.enable && !settings.equitherm.enable) {
+      } else if (!settings.pid.enabled && !settings.equitherm.enabled) {
         settings.heating.turbo = false;
 
-      } else if (fabs(settings.heating.target - vars.temperatures.indoor) <= 1.0f) {
+      } else if (fabsf(settings.heating.target - vars.master.heating.indoorTemp) <= 1.0f) {
         settings.heating.turbo = false;
       }
 
@@ -50,45 +83,58 @@ protected:
         Log.sinfoln(FPSTR(L_REGULATOR), F("Turbo mode auto disabled"));
       }
     }
+  }
 
+  void hysteresis() {
+    bool useHyst = false;
+    if (settings.heating.hysteresis > 0.01f && this->indoorSensorsConnected) {
+      useHyst = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.nativeHeatingControl;
+    }
 
-    float newTemp = vars.states.emergency
-      ? settings.emergency.target
-      : this->getNormalModeTemp();
+    if (useHyst) {
+      if (!vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target + 0.0001f >= settings.heating.hysteresis) {
+        vars.master.heating.blocking = true;
 
-    // Limits
-    newTemp = constrain(
-      newTemp,
-      !settings.opentherm.nativeHeatingControl ? settings.heating.minTemp : THERMOSTAT_INDOOR_MIN_TEMP,
-      !settings.opentherm.nativeHeatingControl ? settings.heating.maxTemp : THERMOSTAT_INDOOR_MAX_TEMP
-    );
+      } else if (vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis)) {
+        vars.master.heating.blocking = false;
+      }
 
-    if (fabs(vars.parameters.heatingSetpoint - newTemp) > 0.09f) {
-      vars.parameters.heatingSetpoint = newTemp;
+    } else if (vars.master.heating.blocking) {
+      vars.master.heating.blocking = false;
     }
   }
 
 
-  float getNormalModeTemp() {
+  float getHeatingSetpoint() {
     float newTemp = 0;
 
-    if (fabs(prevHeatingTarget - settings.heating.target) > 0.0001f) {
+    if (fabsf(prevHeatingTarget - settings.heating.target) > 0.0001f) {
       prevHeatingTarget = settings.heating.target;
       Log.sinfoln(FPSTR(L_REGULATOR), F("New target: %.2f"), settings.heating.target);
 
-      /*if (settings.pid.enable) {
+      /*if (settings.pid.enabled) {
         pidRegulator.integral = 0.0f;
         Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
       }*/
     }
 
+    if (vars.emergency.state) {
+      return settings.emergency.target;
+
+    } else if (settings.opentherm.nativeHeatingControl) {
+      return settings.heating.target;
+
+    } else if (!settings.equitherm.enabled && !settings.pid.enabled) {
+      return settings.heating.target;
+    }
+
     // if use equitherm
-    if (settings.equitherm.enable) {
+    if (settings.equitherm.enabled) {
       unsigned short minTemp = settings.heating.minTemp;
       unsigned short maxTemp = settings.heating.maxTemp;
       float targetTemp = settings.heating.target;
-      float indoorTemp = vars.temperatures.indoor;
-      float outdoorTemp = vars.temperatures.outdoor;
+      float indoorTemp = vars.master.heating.indoorTemp;
+      float outdoorTemp = vars.master.heating.outdoorTemp;
 
       if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
         minTemp = f2c(minTemp);
@@ -98,7 +144,7 @@ protected:
         outdoorTemp = f2c(outdoorTemp);
       }
 
-      if (!vars.sensors.indoor.connected || settings.pid.enable) {
+      if (!this->indoorSensorsConnected || settings.pid.enabled) {
         etRegulator.Kt = 0.0f;
         etRegulator.indoorTemp = 0.0f;
 
@@ -118,7 +164,7 @@ protected:
         etResult = c2f(etResult);
       }
 
-      if (fabs(prevEtResult - etResult) > 0.09f) {
+      if (fabsf(prevEtResult - etResult) > 0.09f) {
         prevEtResult = etResult;
         newTemp += etResult;
 
@@ -130,18 +176,18 @@ protected:
     }
 
     // if use pid
-    if (settings.pid.enable) {
+    if (settings.pid.enabled) {
       //if (vars.parameters.heatingEnabled) {
-      if (settings.heating.enable && vars.sensors.indoor.connected) {
+      if (settings.heating.enabled && this->indoorSensorsConnected) {
         pidRegulator.Kp = settings.heating.turbo ? 0.0f : settings.pid.p_factor;
         pidRegulator.Kd = settings.pid.d_factor;
 
         pidRegulator.setLimits(settings.pid.minTemp, settings.pid.maxTemp);
         pidRegulator.setDt(settings.pid.dt * 1000u);
-        pidRegulator.input = vars.temperatures.indoor;
+        pidRegulator.input = vars.master.heating.indoorTemp;
         pidRegulator.setpoint = settings.heating.target;
 
-        if (fabs(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
+        if (fabsf(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
           pidRegulator.Ki = settings.pid.i_factor;
           pidRegulator.integral = 0.0f;
           pidRegulator.getResultNow();
@@ -150,7 +196,7 @@ protected:
         }
 
         float pidResult = pidRegulator.getResultTimer();
-        if (fabs(prevPidResult - pidResult) > 0.09f) {
+        if (fabsf(prevPidResult - pidResult) > 0.09f) {
           prevPidResult = pidResult;
           newTemp += pidResult;
 
@@ -167,17 +213,12 @@ protected:
     }
 
     // Turbo mode
-    if (settings.heating.turbo && (settings.equitherm.enable || settings.pid.enable)) {
+    if (settings.heating.turbo && (settings.equitherm.enabled || settings.pid.enabled)) {
       newTemp += constrain(
-        settings.heating.target - vars.temperatures.indoor,
+        settings.heating.target - vars.master.heating.indoorTemp,
         -3.0f,
         3.0f
       ) * settings.heating.turboFactor;
-    }
-
-    // default temp, manual mode
-    if (!settings.equitherm.enable && !settings.pid.enable) {
-      newTemp = settings.heating.target;
     }
 
     return newTemp;

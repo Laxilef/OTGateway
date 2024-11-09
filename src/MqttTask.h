@@ -1,3 +1,4 @@
+#include <unordered_map>
 #include <MqttClient.h>
 #include <MqttWiFiClient.h>
 #include <MqttWriter.h>
@@ -61,8 +62,16 @@ public:
     this->prevPubSettingsTime = 0;
   }
 
+  inline void resetPublishedSensorTime(uint8_t sensorId) {
+    this->prevPubSensorTime[sensorId] = 0;
+  }
+
   inline void resetPublishedVarsTime() {
     this->prevPubVarsTime = 0;
+  }
+
+  inline void rebuildHaEntity(uint8_t sensorId, Sensors::Settings& prevSettings) {
+    this->queueRebuildingHaEntities[sensorId] = prevSettings;
   }
 
 protected:
@@ -72,12 +81,14 @@ protected:
   MqttWriter* writer = nullptr;
   UnitSystem currentUnitSystem = UnitSystem::METRIC;
   bool currentHomeAssistantDiscovery = false;
+  std::unordered_map<uint8_t, Sensors::Settings> queueRebuildingHaEntities;
   unsigned short readyForSendTime = 30000;
   unsigned long lastReconnectTime = 0;
   unsigned long connectedTime = 0;
   unsigned long disconnectedTime = 0;
   unsigned long prevPubVarsTime = 0;
   unsigned long prevPubSettingsTime = 0;
+  std::unordered_map<uint8_t, unsigned long> prevPubSensorTime;
   bool connected = false;
   bool newConnection = false;
 
@@ -173,11 +184,6 @@ protected:
   }
 
   void loop() {
-    if (settings.mqtt.interval > 120) {
-      settings.mqtt.interval = 5;
-      fsSettings.update();
-    }
-
     if (this->connected && !this->client->connected()) {
       this->connected = false;
       this->onDisconnect();
@@ -226,6 +232,28 @@ protected:
       this->prevPubSettingsTime = millis();
     }
 
+    // publish sensors
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      if (!Sensors::hasEnabledAndValid(sensorId)) {
+        continue;
+      }
+
+      auto& rSensor = Sensors::results[sensorId];
+      bool needUpdate = false;
+      if (millis() - this->prevPubSensorTime[sensorId] > ((this->haHelper->getExpireAfter() - 10) * 1000u)) {
+        needUpdate = true;
+
+      } else if (rSensor.activityTime >= this->prevPubSensorTime[sensorId]) {
+        auto estimated = rSensor.activityTime - this->prevPubSensorTime[sensorId];
+        needUpdate = estimated > 1000u;
+      }
+
+      if (this->newConnection || needUpdate) {
+        this->publishSensor(sensorId);
+        this->prevPubSensorTime[sensorId] = millis();
+      }
+    }
+
     // publish ha entities if not published
     if (settings.mqtt.homeAssistantDiscovery) {
       if (this->newConnection || !this->currentHomeAssistantDiscovery || this->currentUnitSystem != settings.system.unitSystem) {
@@ -238,6 +266,79 @@ protected:
         // publish non static ha entities
         this->publishNonStaticHaEntities();
       }
+
+
+      for (auto& [sensorId, prevSettings] : this->queueRebuildingHaEntities) {
+        Log.sinfoln(FPSTR(L_MQTT_HA), F("Rebuilding config for sensor #%hhu '%s'"), sensorId, prevSettings.name);
+
+        // delete old config
+        if (strlen(prevSettings.name) && prevSettings.enabled) {
+          switch (prevSettings.type) {
+            case Sensors::Type::BLUETOOTH:
+              this->haHelper->deleteConnectionDynamicSensor(prevSettings);
+              this->haHelper->deleteSignalQualityDynamicSensor(prevSettings);
+              this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::TEMPERATURE);
+              this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::HUMIDITY);
+              this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::BATTERY);
+              this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::RSSI);
+              break;
+
+            case Sensors::Type::DALLAS_TEMP:
+              this->haHelper->deleteConnectionDynamicSensor(prevSettings);
+              this->haHelper->deleteSignalQualityDynamicSensor(prevSettings);
+              this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::TEMPERATURE);
+              break;
+            
+            case Sensors::Type::MANUAL: {
+              String topic = this->haHelper->getDeviceTopic(
+                F("sensors"),
+                Sensors::makeObjectId(prevSettings.name),
+                F("set")
+              );
+              this->client->unsubscribe(topic.c_str());
+            }
+
+            default:
+              this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::PRIMARY);
+          }
+        }
+
+        if (!Sensors::hasEnabledAndValid(sensorId)) {
+          continue;
+        }
+
+        // make new config
+        auto& sSettings = Sensors::settings[sensorId];
+        switch (sSettings.type) {
+          case Sensors::Type::BLUETOOTH:
+            this->haHelper->publishConnectionDynamicSensor(sSettings);
+            this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
+            this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
+            this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::HUMIDITY, settings.system.unitSystem);
+            this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::BATTERY, settings.system.unitSystem);
+            this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::RSSI, settings.system.unitSystem, false);
+            break;
+
+          case Sensors::Type::DALLAS_TEMP:
+            this->haHelper->publishConnectionDynamicSensor(sSettings);
+            this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
+            this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
+            break;
+
+          case Sensors::Type::MANUAL: {
+            String topic = this->haHelper->getDeviceTopic(
+              F("sensors"),
+              Sensors::makeObjectId(prevSettings.name),
+              F("set")
+            );
+            this->client->subscribe(topic.c_str());
+          }
+          
+          default:
+            this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
+        }
+      }
+      this->queueRebuildingHaEntities.clear();
 
     } else if (this->currentHomeAssistantDiscovery) {
       this->currentHomeAssistantDiscovery = false;
@@ -303,33 +404,51 @@ protected:
     doc.shrinkToFit();
 
     if (this->haHelper->getDeviceTopic("state/set").equals(topic)) {
-      this->writer->publish(this->haHelper->getDeviceTopic("state/set").c_str(), nullptr, 0, true);
+      this->writer->publish(topic, nullptr, 0, true);
       
       if (jsonToVars(doc, vars)) {
         this->resetPublishedVarsTime();
       }
 
     } else if (this->haHelper->getDeviceTopic("settings/set").equals(topic)) {
-      this->writer->publish(this->haHelper->getDeviceTopic("settings/set").c_str(), nullptr, 0, true);
+      this->writer->publish(topic, nullptr, 0, true);
       
       if (safeJsonToSettings(doc, settings)) {
         this->resetPublishedSettingsTime();
         fsSettings.update();
+      }
+
+    } else {
+      this->writer->publish(topic, nullptr, 0, true);
+
+      String _topic = topic;
+      String sensorsTopic = this->haHelper->getDeviceTopic("sensors/");
+      unsigned short stLength = sensorsTopic.length();
+
+      if (_topic.startsWith(sensorsTopic) && _topic.endsWith("/set")) {
+        if (_topic.length() > stLength + 4) {
+          String name = _topic.substring(stLength, _topic.indexOf('/', stLength));
+          int16_t id = Sensors::getIdByObjectId(name.c_str());
+
+          if (id == -1) {
+            return;
+          }
+
+          if (jsonToSensorResult(id, doc)) {
+            this->resetPublishedSensorTime(id);
+          }
+        }
       }
     }
   }
 
   void publishHaEntities() {
     // heating
-    this->haHelper->publishSwitchHeating(false);
     this->haHelper->publishSwitchHeatingTurbo(false);
     this->haHelper->publishInputHeatingHysteresis(settings.system.unitSystem);
     this->haHelper->publishInputHeatingTurboFactor(false);
     this->haHelper->publishInputHeatingMinTemp(settings.system.unitSystem);
     this->haHelper->publishInputHeatingMaxTemp(settings.system.unitSystem);
-    this->haHelper->publishSensorHeatingSetpoint(settings.system.unitSystem, false);
-    this->haHelper->publishSensorBoilerHeatingMinTemp(settings.system.unitSystem, false);
-    this->haHelper->publishSensorBoilerHeatingMaxTemp(settings.system.unitSystem, false);
 
     // pid
     this->haHelper->publishSwitchPid();
@@ -347,103 +466,98 @@ protected:
     this->haHelper->publishInputEquithermFactorT(false);
 
     // states
-    this->haHelper->publishStateStatus();
-    this->haHelper->publishStateEmergency();
-    this->haHelper->publishStateOtStatus();
-    this->haHelper->publishStateHeating();
-    this->haHelper->publishStateFlame();
-    this->haHelper->publishStateFault();
-    this->haHelper->publishStateDiagnostic();
-    this->haHelper->publishStateExtPump(false);
+    this->haHelper->publishStatusState();
+    this->haHelper->publishEmergencyState();
+    this->haHelper->publishOpenthermConnectedState();
+    this->haHelper->publishHeatingState();
+    this->haHelper->publishFlameState();
+    this->haHelper->publishFaultState();
+    this->haHelper->publishDiagState();
+    this->haHelper->publishExternalPumpState(false);
 
     // sensors
-    this->haHelper->publishSensorModulation();
-    this->haHelper->publishSensorPressure(settings.system.unitSystem, false);
-    this->haHelper->publishSensorPower();
-    this->haHelper->publishSensorFaultCode();
-    this->haHelper->publishSensorDiagnosticCode();
-    this->haHelper->publishSensorRssi(false);
-    this->haHelper->publishSensorUptime(false);
-    this->haHelper->publishOutdoorSensorConnected();
-    this->haHelper->publishOutdoorSensorRssi(false);
-    this->haHelper->publishOutdoorSensorBattery(false);
-    this->haHelper->publishOutdoorSensorHumidity(false);
-    this->haHelper->publishIndoorSensorConnected();
-    this->haHelper->publishIndoorSensorRssi(false);
-    this->haHelper->publishIndoorSensorBattery(false);
-    this->haHelper->publishIndoorSensorHumidity(false);
-
-    // temperatures
-    this->haHelper->publishSensorHeatingTemp(settings.system.unitSystem);
-    this->haHelper->publishSensorHeatingReturnTemp(settings.system.unitSystem, false);
-    this->haHelper->publishSensorExhaustTemp(settings.system.unitSystem, false);
+    this->haHelper->publishFaultCode();
+    this->haHelper->publishDiagCode();
+    this->haHelper->publishNetworkRssi(false);
+    this->haHelper->publishUptime(false);
 
     // buttons
-    this->haHelper->publishButtonRestart(false);
-    this->haHelper->publishButtonResetFault();
-    this->haHelper->publishButtonResetDiagnostic();
+    this->haHelper->publishRestartButton(false);
+    this->haHelper->publishResetFaultButton();
+    this->haHelper->publishResetDiagButton();
+
+    // dynamic sensors
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      if (!Sensors::hasEnabledAndValid(sensorId)) {
+        continue;
+      }
+
+      auto& sSettings = Sensors::settings[sensorId];
+      switch (sSettings.type) {
+        case Sensors::Type::BLUETOOTH:
+          this->haHelper->publishConnectionDynamicSensor(sSettings);
+          this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
+          this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
+          this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::HUMIDITY, settings.system.unitSystem);
+          this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::BATTERY, settings.system.unitSystem);
+          this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::RSSI, settings.system.unitSystem, false);
+          break;
+
+        case Sensors::Type::DALLAS_TEMP:
+          this->haHelper->publishConnectionDynamicSensor(sSettings);
+          this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
+          this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
+          break;
+
+        case Sensors::Type::MANUAL: {
+          String topic = this->haHelper->getDeviceTopic(
+            F("sensors"),
+            Sensors::makeObjectId(sSettings.name),
+            F("set")
+          );
+          this->client->subscribe(topic.c_str());
+        }
+        
+        default:
+          this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
+      }
+    }
   }
 
   bool publishNonStaticHaEntities(bool force = false) {
     static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
-    static bool _noRegulators, _editableOutdoorTemp, _editableIndoorTemp, _dhwPresent = false;
+    static bool _indoorTempControl, _dhwPresent = false;
 
     bool published = false;
-    bool noRegulators = !settings.opentherm.nativeHeatingControl && !settings.pid.enable && !settings.equitherm.enable;
-    byte heatingMinTemp = 0;
-    byte heatingMaxTemp = 0;
-    bool editableOutdoorTemp = settings.sensors.outdoor.type == SensorType::MANUAL;
-    bool editableIndoorTemp = settings.sensors.indoor.type == SensorType::MANUAL;
-
-    if (noRegulators) {
-      heatingMinTemp = settings.heating.minTemp;
-      heatingMaxTemp = settings.heating.maxTemp;
-
-    } else {
-      heatingMinTemp = convertTemp(THERMOSTAT_INDOOR_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
-      heatingMaxTemp = convertTemp(THERMOSTAT_INDOOR_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
-    }
-
     if (force || _dhwPresent != settings.opentherm.dhwPresent) {
       _dhwPresent = settings.opentherm.dhwPresent;
 
       if (_dhwPresent) {
-        this->haHelper->publishSwitchDhw(false);
-        this->haHelper->publishSensorBoilerDhwMinTemp(settings.system.unitSystem, false);
-        this->haHelper->publishSensorBoilerDhwMaxTemp(settings.system.unitSystem, false);
         this->haHelper->publishInputDhwMinTemp(settings.system.unitSystem);
         this->haHelper->publishInputDhwMaxTemp(settings.system.unitSystem);
-        this->haHelper->publishStateDhw();
-        this->haHelper->publishSensorDhwTemp(settings.system.unitSystem);
-        this->haHelper->publishSensorDhwFlowRate(settings.system.unitSystem);
+        this->haHelper->publishDhwState();
 
       } else {
         this->haHelper->deleteSwitchDhw();
-        this->haHelper->deleteSensorBoilerDhwMinTemp();
-        this->haHelper->deleteSensorBoilerDhwMaxTemp();
         this->haHelper->deleteInputDhwMinTemp();
         this->haHelper->deleteInputDhwMaxTemp();
-        this->haHelper->deleteStateDhw();
-        this->haHelper->deleteSensorDhwTemp();
+        this->haHelper->deleteDhwState();
         this->haHelper->deleteInputDhwTarget();
         this->haHelper->deleteClimateDhw();
-        this->haHelper->deleteSensorDhwFlowRate();
       }
 
       published = true;
     }
 
-    if (force || _noRegulators != noRegulators || _heatingMinTemp != heatingMinTemp || _heatingMaxTemp != heatingMaxTemp) {
-      _heatingMinTemp = heatingMinTemp;
-      _heatingMaxTemp = heatingMaxTemp;
-      _noRegulators = noRegulators;
+    if (force || _indoorTempControl != vars.master.heating.indoorTempControl || _heatingMinTemp != vars.master.heating.minTemp || _heatingMaxTemp != vars.master.heating.maxTemp) {
+      _heatingMinTemp = vars.master.heating.minTemp;
+      _heatingMaxTemp = vars.master.heating.maxTemp;
+      _indoorTempControl = vars.master.heating.indoorTempControl;
 
-      this->haHelper->publishInputHeatingTarget(settings.system.unitSystem, heatingMinTemp, heatingMaxTemp, false);
       this->haHelper->publishClimateHeating(
         settings.system.unitSystem,
-        heatingMinTemp,
-        heatingMaxTemp,
-        noRegulators ? HaHelper::TEMP_SOURCE_HEATING : HaHelper::TEMP_SOURCE_INDOOR
+        vars.master.heating.minTemp,
+        vars.master.heating.maxTemp
       );
 
       published = true;
@@ -453,36 +567,7 @@ protected:
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
 
-      this->haHelper->publishInputDhwTarget(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp, false);
       this->haHelper->publishClimateDhw(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp);
-
-      published = true;
-    }
-
-    if (force || _editableOutdoorTemp != editableOutdoorTemp) {
-      _editableOutdoorTemp = editableOutdoorTemp;
-
-      if (editableOutdoorTemp) {
-        this->haHelper->deleteSensorOutdoorTemp();
-        this->haHelper->publishInputOutdoorTemp(settings.system.unitSystem);
-      } else {
-        this->haHelper->deleteInputOutdoorTemp();
-        this->haHelper->publishSensorOutdoorTemp(settings.system.unitSystem);
-      }
-
-      published = true;
-    }
-
-    if (force || _editableIndoorTemp != editableIndoorTemp) {
-      _editableIndoorTemp = editableIndoorTemp;
-
-      if (editableIndoorTemp) {
-        this->haHelper->deleteSensorIndoorTemp();
-        this->haHelper->publishInputIndoorTemp(settings.system.unitSystem);
-      } else {
-        this->haHelper->deleteInputIndoorTemp();
-        this->haHelper->publishSensorIndoorTemp(settings.system.unitSystem);
-      }
 
       published = true;
     }
@@ -496,6 +581,25 @@ protected:
     doc.shrinkToFit();
 
     return this->writer->publish(topic, doc, true);
+  }
+
+  bool publishSensor(uint8_t sensorId) {
+    auto& sSettings = Sensors::settings[sensorId];
+
+    if (!Sensors::isValidSensorId(sensorId)) {
+      return false;
+
+    } else if (!strlen(sSettings.name)) {
+      return false;
+    }
+
+    JsonDocument doc;
+    sensorResultToJson(sensorId, doc);
+    doc.shrinkToFit();
+
+    String objId = Sensors::makeObjectId(sSettings.name);
+    String topic = this->haHelper->getDeviceTopic(F("sensors"), objId);
+    return this->writer->publish(topic.c_str(), doc, true);
   }
 
   bool publishVariables(const char* topic) {

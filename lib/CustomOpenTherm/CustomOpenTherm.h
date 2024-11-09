@@ -98,66 +98,6 @@ public:
     ));
   }
 
-  bool setHeatingCh1Temp(float temperature) {
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TSet,
-      temperatureToData(temperature)
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TSet);
-  }
-
-  bool setHeatingCh2Temp(float temperature) {
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TsetCH2,
-      temperatureToData(temperature)
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TsetCH2);
-  }
-
-  bool setDhwTemp(float temperature) {
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TdhwSet,
-      temperatureToData(temperature)
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TdhwSet);
-  }
-
-  bool setRoomSetpoint(float temperature) {
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TrSet,
-      temperatureToData(temperature)
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TrSet);
-  }
-
-  bool setRoomSetpointCh2(float temperature) {
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TrSetCH2,
-      temperatureToData(temperature)
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::TrSetCH2);
-  }
-
-  bool setRoomTemp(float temperature) {
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::Tr,
-      temperatureToData(temperature)
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::Tr);
-  }
-
   bool sendBoilerReset() {
     unsigned int data = 1;
     data <<= 8;
