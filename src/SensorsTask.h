@@ -361,7 +361,12 @@ protected:
         continue;
       }
 
+      #ifdef ARDUINO_ARCH_ESP32
       const auto value = analogReadMilliVolts(sSensor.gpio);
+      #else
+      const auto value = analogRead(sSensor.gpio) / 1023 * DEFAULT_NTC_VREF;
+      #endif
+
       if (value < DEFAULT_NTC_VLOW_TRESHOLD) {
         if (Sensors::getConnectionStatusById(sensorId)) {
           Sensors::setConnectionStatusById(sensorId, false, false);
