@@ -8,7 +8,8 @@ public:
   typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
   typedef std::function<bool()> BeforeSendCallback;
   
-  StaticPage(const char* uri, FS* fs, const char* path, const char* cacheHeader = nullptr) {
+  template <class T>
+  StaticPage(const char* uri, FS* fs, T path, const char* cacheHeader = nullptr) {
     this->uri = uri;
     this->fs = fs;
     this->path = path;
@@ -55,7 +56,7 @@ public:
         this->eTag = esp8266webserver::calcETag(*this->fs, this->path);
       }
 
-      if (server.header("If-None-Match").equals(this->eTag.c_str())) {
+      if (server.header(F("If-None-Match")).equals(this->eTag.c_str())) {
         server.send(304);
         return true;
       }
@@ -80,12 +81,12 @@ public:
     }
 
     if (this->cacheHeader != nullptr) {
-      server.sendHeader("Cache-Control", this->cacheHeader);
+      server.sendHeader(F("Cache-Control"), this->cacheHeader);
     }
 
     #if defined(ARDUINO_ARCH_ESP8266)
     if (server._eTagEnabled && this->eTag.length() > 0) {
-      server.sendHeader("ETag", this->eTag);
+      server.sendHeader(F("ETag"), this->eTag);
     }
     
     server.streamFile(file, F("text/html"), method);

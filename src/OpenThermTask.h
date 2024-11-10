@@ -244,13 +244,13 @@ protected:
     if (vars.master.heating.enabled != vars.slave.heating.enabled) {
       this->prevUpdateNonEssentialVars = 0;
       vars.slave.heating.enabled = vars.master.heating.enabled;
-      Log.sinfoln(FPSTR(L_OT_HEATING), "%s", vars.master.heating.enabled ? F("Enabled") : F("Disabled"));
+      Log.sinfoln(FPSTR(L_OT_HEATING), vars.master.heating.enabled ? F("Enabled") : F("Disabled"));
     }
 
     if (vars.master.dhw.enabled != vars.slave.dhw.enabled) {
       this->prevUpdateNonEssentialVars = 0;
       vars.slave.dhw.enabled = vars.master.heating.enabled;
-      Log.sinfoln(FPSTR(L_OT_DHW), "%s", vars.master.heating.enabled ? F("Enabled") : F("Disabled"));
+      Log.sinfoln(FPSTR(L_OT_DHW), vars.master.heating.enabled ? F("Enabled") : F("Disabled"));
     }
 
     vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);

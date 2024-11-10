@@ -61,7 +61,7 @@ public:
     }
 
     if (this->cacheHeader != nullptr) {
-      server.sendHeader("Cache-Control", this->cacheHeader);
+      server.sendHeader(F("Cache-Control"), this->cacheHeader);
     }
 
     #ifdef ARDUINO_ARCH_ESP8266

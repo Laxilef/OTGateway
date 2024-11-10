@@ -93,10 +93,12 @@ public:
 
   void upload(WebServer& server, const String& uri, HTTPUpload& upload) override {
     UpgradeResult* result;
-    if (upload.name.equals("firmware")) {
+    if (upload.name.equals(F("firmware"))) {
       result = &this->firmwareResult;
-    } else if (upload.name.equals("filesystem")) {
+
+    } else if (upload.name.equals(F("filesystem"))) {
       result = &this->filesystemResult;
+      
     } else {
       return;
     }

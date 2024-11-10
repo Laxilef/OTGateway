@@ -192,6 +192,7 @@ protected:
       Log.sinfoln(FPSTR(L_MQTT), F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
 
       this->haHelper->setDevicePrefix(settings.mqtt.prefix);
+      this->haHelper->updateCachedTopics();
       this->client->stop();
       this->client->setId(networkSettings.hostname);
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
@@ -221,14 +222,14 @@ protected:
 
     // publish variables and status
     if (this->newConnection || millis() - this->prevPubVarsTime > (settings.mqtt.interval * 1000u)) {
-      this->writer->publish(this->haHelper->getDeviceTopic("status").c_str(), "online", false);
-      this->publishVariables(this->haHelper->getDeviceTopic("state").c_str());
+      this->writer->publish(this->haHelper->getDeviceTopic(F("status")).c_str(), "online", false);
+      this->publishVariables(this->haHelper->getDeviceTopic(F("state")).c_str());
       this->prevPubVarsTime = millis();
     }
 
     // publish settings
     if (this->newConnection || millis() - this->prevPubSettingsTime > (settings.mqtt.interval * 10000u)) {
-      this->publishSettings(this->haHelper->getDeviceTopic("settings").c_str());
+      this->publishSettings(this->haHelper->getDeviceTopic(F("settings")).c_str());
       this->prevPubSettingsTime = millis();
     }
 
@@ -292,7 +293,7 @@ protected:
             case Sensors::Type::MANUAL: {
               String topic = this->haHelper->getDeviceTopic(
                 F("sensors"),
-                Sensors::makeObjectId(prevSettings.name),
+                Sensors::makeObjectId(prevSettings.name).c_str(),
                 F("set")
               );
               this->client->unsubscribe(topic.c_str());
@@ -328,7 +329,7 @@ protected:
           case Sensors::Type::MANUAL: {
             String topic = this->haHelper->getDeviceTopic(
               F("sensors"),
-              Sensors::makeObjectId(prevSettings.name),
+              Sensors::makeObjectId(prevSettings.name).c_str(),
               F("set")
             );
             this->client->subscribe(topic.c_str());
@@ -355,15 +356,15 @@ protected:
     unsigned long downtime = (millis() - this->disconnectedTime) / 1000;
     Log.sinfoln(FPSTR(L_MQTT), F("Connected (downtime: %u s.)"), downtime);
 
-    this->client->subscribe(this->haHelper->getDeviceTopic("settings/set").c_str());
-    this->client->subscribe(this->haHelper->getDeviceTopic("state/set").c_str());
+    this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
+    this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
   }
 
   void onDisconnect() {
     this->disconnectedTime = millis();
 
     unsigned long uptime = (millis() - this->connectedTime) / 1000;
-    Log.swarningln(FPSTR(L_MQTT), F("Disconnected (reason: %d uptime: %u s.)"), this->client->connectError(), uptime);
+    Log.swarningln(FPSTR(L_MQTT), F("Disconnected (reason: %d uptime: %lu s.)"), this->client->connectError(), uptime);
   }
 
   void onMessage(const char* topic, uint8_t* payload, size_t length) {
@@ -380,12 +381,12 @@ protected:
           } else if (payload[i] == 13) {
             continue;
           } else if (payload[i] == 10) {
-            Log.print("\r\n>  ");
+            Log.print(F("\r\n>  "));
           } else {
             Log.print((char) payload[i]);
           }
         }
-        Log.print("\r\n\n");
+        Log.print(F("\r\n\n"));
         Log.flush();
         Log.unlock();
       }
@@ -403,14 +404,14 @@ protected:
     }
     doc.shrinkToFit();
 
-    if (this->haHelper->getDeviceTopic("state/set").equals(topic)) {
+    if (this->haHelper->getDeviceTopic(F("state/set")).equals(topic)) {
       this->writer->publish(topic, nullptr, 0, true);
       
       if (jsonToVars(doc, vars)) {
         this->resetPublishedVarsTime();
       }
 
-    } else if (this->haHelper->getDeviceTopic("settings/set").equals(topic)) {
+    } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
       this->writer->publish(topic, nullptr, 0, true);
       
       if (safeJsonToSettings(doc, settings)) {
@@ -422,10 +423,10 @@ protected:
       this->writer->publish(topic, nullptr, 0, true);
 
       String _topic = topic;
-      String sensorsTopic = this->haHelper->getDeviceTopic("sensors/");
-      unsigned short stLength = sensorsTopic.length();
+      String sensorsTopic = this->haHelper->getDeviceTopic(F("sensors/"));
+      auto stLength = sensorsTopic.length();
 
-      if (_topic.startsWith(sensorsTopic) && _topic.endsWith("/set")) {
+      if (_topic.startsWith(sensorsTopic) && _topic.endsWith(F("/set"))) {
         if (_topic.length() > stLength + 4) {
           String name = _topic.substring(stLength, _topic.indexOf('/', stLength));
           int16_t id = Sensors::getIdByObjectId(name.c_str());
@@ -512,7 +513,7 @@ protected:
         case Sensors::Type::MANUAL: {
           String topic = this->haHelper->getDeviceTopic(
             F("sensors"),
-            Sensors::makeObjectId(sSettings.name),
+            Sensors::makeObjectId(sSettings.name).c_str(),
             F("set")
           );
           this->client->subscribe(topic.c_str());
@@ -597,8 +598,11 @@ protected:
     sensorResultToJson(sensorId, doc);
     doc.shrinkToFit();
 
-    String objId = Sensors::makeObjectId(sSettings.name);
-    String topic = this->haHelper->getDeviceTopic(F("sensors"), objId);
+    String topic = this->haHelper->getDeviceTopic(
+      F("sensors"),
+      Sensors::makeObjectId(sSettings.name).c_str()
+    );
+    
     return this->writer->publish(topic.c_str(), doc, true);
   }
 

@@ -1,3 +1,6 @@
+#define ARDUINOJSON_USE_DOUBLE 0
+#define ARDUINOJSON_USE_LONG_LONG 0
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <FileData.h>

@@ -61,16 +61,26 @@ protected:
   void loop() {
     if (isPollingDallasSensors()) {
       pollingDallasSensors(false);
+      this->yield();
     }
 
     if (millis() - this->globalLastPollingTime > this->globalPollingInterval) {
-      makeDallasInstances();
       cleanDallasInstances();
+      makeDallasInstances();
+      this->yield();
+
       searchDallasSensors();
       fillingAddressesDallasSensors();
+      this->yield();
+
       pollingDallasSensors();
+      this->yield();
+
       pollingNtcSensors();
+      this->yield();
+
       pollingBleSensors();
+      this->yield();
 
       this->globalLastPollingTime = millis();
     }

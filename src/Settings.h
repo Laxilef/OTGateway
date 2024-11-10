@@ -236,7 +236,7 @@ struct Variables {
 
   struct {
     bool state = false;
-    unsigned long lastEnableTime = 0;
+    unsigned long lastEnabledTime = 0;
   } externalPump;
 
   struct {

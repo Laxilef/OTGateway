@@ -517,7 +517,7 @@ protected:
     if (configuredGpio == GPIO_IS_NOT_CONFIGURED) {
       if (vars.externalPump.state) {
         vars.externalPump.state = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.externalPump.lastEnabledTime = millis();
 
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
       }
@@ -538,7 +538,7 @@ protected:
         digitalWrite(configuredGpio, LOW);
 
         vars.externalPump.state = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.externalPump.lastEnabledTime = millis();
 
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
       }
@@ -551,7 +551,7 @@ protected:
         digitalWrite(configuredGpio, LOW);
 
         vars.externalPump.state = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.externalPump.lastEnabledTime = millis();
 
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired post circulation time"));
 
@@ -559,7 +559,7 @@ protected:
         digitalWrite(configuredGpio, LOW);
 
         vars.externalPump.state = false;
-        vars.externalPump.lastEnableTime = millis();
+        vars.externalPump.lastEnabledTime = millis();
 
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired anti stuck time"));
       }
@@ -576,7 +576,7 @@ protected:
 
       Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: heating on"));
 
-    } else if (!vars.externalPump.state && (vars.externalPump.lastEnableTime == 0 || millis() - vars.externalPump.lastEnableTime >= (settings.externalPump.antiStuckInterval * 1000ul))) {
+    } else if (!vars.externalPump.state && (vars.externalPump.lastEnabledTime == 0 || millis() - vars.externalPump.lastEnabledTime >= (settings.externalPump.antiStuckInterval * 1000lu))) {
       vars.externalPump.state = true;
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;

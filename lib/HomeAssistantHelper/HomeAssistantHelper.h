@@ -110,7 +110,7 @@ public:
     topic.concat(this->devicePrefix);
     topic.concat(nameSeparator);
     topic.concat(name);
-    topic.concat("/config");
+    topic.concat(F("/config"));
     return topic;
   }
 

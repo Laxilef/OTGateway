@@ -88,10 +88,10 @@ protected:
         return result;
       });
     this->webServer->addHandler(indexPage);*/
-    this->webServer->addHandler(new StaticPage("/", &LittleFS, "/pages/index.html", PORTAL_CACHE));
+    this->webServer->addHandler(new StaticPage("/", &LittleFS, F("/pages/index.html"), PORTAL_CACHE));
 
     // dashboard page
-    auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, "/pages/dashboard.html", PORTAL_CACHE))
+    auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, F("/pages/dashboard.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -103,7 +103,7 @@ protected:
     this->webServer->addHandler(dashboardPage);
 
     // restart
-    this->webServer->on("/restart.html", HTTP_GET, [this]() {
+    this->webServer->on(F("/restart.html"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->send(401);
@@ -112,12 +112,12 @@ protected:
       }
 
       vars.actions.restart = true;
-      this->webServer->sendHeader("Location", "/");
+      this->webServer->sendHeader(F("Location"), "/");
       this->webServer->send(302);
     });
 
     // network settings page
-    auto networkPage = (new StaticPage("/network.html", &LittleFS, "/pages/network.html", PORTAL_CACHE))
+    auto networkPage = (new StaticPage("/network.html", &LittleFS, F("/pages/network.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -129,7 +129,7 @@ protected:
     this->webServer->addHandler(networkPage);
 
     // settings page
-    auto settingsPage = (new StaticPage("/settings.html", &LittleFS, "/pages/settings.html", PORTAL_CACHE))
+    auto settingsPage = (new StaticPage("/settings.html", &LittleFS, F("/pages/settings.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -141,7 +141,7 @@ protected:
     this->webServer->addHandler(settingsPage);
 
     // sensors page
-    auto sensorsPage = (new StaticPage("/sensors.html", &LittleFS, "/pages/sensors.html", PORTAL_CACHE))
+    auto sensorsPage = (new StaticPage("/sensors.html", &LittleFS, F("/pages/sensors.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -153,7 +153,7 @@ protected:
     this->webServer->addHandler(sensorsPage);
 
     // upgrade page
-    auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, "/pages/upgrade.html", PORTAL_CACHE))
+    auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, F("/pages/upgrade.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
         if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->requestAuthentication(DIGEST_AUTH);
@@ -167,7 +167,7 @@ protected:
     // OTA
     auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadCallback([this](const String& uri) {
       if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-        this->webServer->sendHeader("Connection", "close");
+        this->webServer->sendHeader(F("Connection"), F("close"));
         this->webServer->send(401);
         return false;
       }
@@ -184,22 +184,22 @@ protected:
         status = 400;
       }
 
-      String response = "{\"firmware\": {\"status\": ";
+      String response = F("{\"firmware\": {\"status\": ");
       response.concat((short int) fwResult.status);
-      response.concat(", \"error\": \"");
+      response.concat(F(", \"error\": \""));
       response.concat(fwResult.error);
-      response.concat("\"}, \"filesystem\": {\"status\": ");
+      response.concat(F("\"}, \"filesystem\": {\"status\": "));
       response.concat((short int) fsResult.status);
-      response.concat(", \"error\": \"");
+      response.concat(F(", \"error\": \""));
       response.concat(fsResult.error);
-      response.concat("\"}}");
-      this->webServer->send(status, "application/json", response);
+      response.concat(F("\"}}"));
+      this->webServer->send(status, F("application/json"), response);
     });
     this->webServer->addHandler(upgradeHandler);
 
 
     // backup
-    this->webServer->on("/api/backup/save", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/backup/save"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -208,24 +208,24 @@ protected:
 
       JsonDocument doc;
 
-      auto networkDoc = doc["network"].to<JsonObject>();
+      auto networkDoc = doc[FPSTR(S_NETWORK)].to<JsonObject>();
       networkSettingsToJson(networkSettings, networkDoc);
 
-      auto settingskDoc = doc["settings"].to<JsonObject>();
-      settingsToJson(settings, settingskDoc);
+      auto settingsDoc = doc[FPSTR(S_SETTINGS)].to<JsonObject>();
+      settingsToJson(settings, settingsDoc);
 
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-        auto sensorSettingskDoc = doc["sensors"][sensorId].to<JsonObject>();
-        sensorSettingsToJson(sensorId, Sensors::settings[sensorId], sensorSettingskDoc);
+        auto sensorsettingsDoc = doc[FPSTR(S_SENSORS)][sensorId].to<JsonObject>();
+        sensorSettingsToJson(sensorId, Sensors::settings[sensorId], sensorsettingsDoc);
       }
 
       doc.shrinkToFit();
 
       this->webServer->sendHeader(F("Content-Disposition"), F("attachment; filename=\"backup.json\""));
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
-    this->webServer->on("/api/backup/restore", HTTP_POST, [this]() {
+    this->webServer->on(F("/api/backup/restore"), HTTP_POST, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -254,13 +254,13 @@ protected:
       }
 
       bool changed = false;
-      if (!doc["settings"].isNull() && jsonToSettings(doc["settings"], settings)) {
+      if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
         vars.actions.restart = true;
         fsSettings.update();
         changed = true;
       }
 
-      if (!doc["network"].isNull() && jsonToNetworkSettings(doc["network"], networkSettings)) {
+      if (!doc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(doc[FPSTR(S_NETWORK)], networkSettings)) {
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
@@ -276,13 +276,13 @@ protected:
         changed = true;
       }
 
-      if (!doc["sensors"].isNull()) {
+      if (!doc[FPSTR(S_SENSORS)].isNull()) {
         for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-          if (doc["sensors"][sensorId].isNull()) {
+          if (doc[FPSTR(S_SENSORS)][sensorId].isNull()) {
             continue;
           }
 
-          auto sensorSettingsDoc = doc["sensors"][sensorId].to<JsonObject>();
+          auto sensorSettingsDoc = doc[FPSTR(S_SENSORS)][sensorId].to<JsonObject>();
           if (jsonToSensorSettings(sensorId, sensorSettingsDoc, Sensors::settings[sensorId])){
             changed = true;
           }
@@ -296,7 +296,7 @@ protected:
     });
 
     // network
-    this->webServer->on("/api/network/settings", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/network/settings"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -307,10 +307,10 @@ protected:
       networkSettingsToJson(networkSettings, doc);
       doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
-    this->webServer->on("/api/network/settings", HTTP_POST, [this]() {
+    this->webServer->on(F("/api/network/settings"), HTTP_POST, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -345,7 +345,7 @@ protected:
       networkSettingsToJson(networkSettings, doc);
       doc.shrinkToFit();
       
-      this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+      this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
         doc.clear();
@@ -366,7 +366,7 @@ protected:
       }
     });
 
-    this->webServer->on("/api/network/scan", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/network/scan"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           this->webServer->send(401);
@@ -391,28 +391,28 @@ protected:
       JsonDocument doc;
       for (short int i = 0; i < apCount; i++) {
         String ssid = WiFi.SSID(i);
-        doc[i]["ssid"] = ssid;
-        doc[i]["bssid"] = WiFi.BSSIDstr(i);
-        doc[i]["signalQuality"] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
-        doc[i]["channel"] = WiFi.channel(i);
-        doc[i]["hidden"] = !ssid.length();
+        doc[i][FPSTR(S_SSID)] = ssid;
+        doc[i][FPSTR(S_BSSID)] = WiFi.BSSIDstr(i);
+        doc[i][FPSTR(S_SIGNAL_QUALITY)] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
+        doc[i][FPSTR(S_CHANNEL)] = WiFi.channel(i);
+        doc[i][FPSTR(S_HIDDEN)] = !ssid.length();
         #ifdef ARDUINO_ARCH_ESP8266
         const bss_info* info = WiFi.getScanInfoByIndex(i);
-        doc[i]["auth"] = info->authmode;
+        doc[i][FPSTR(S_AUTH)] = info->authmode;
         #else
-        doc[i]["auth"] = WiFi.encryptionType(i);
+        doc[i][FPSTR(S_AUTH)] = WiFi.encryptionType(i);
         #endif
       }
       doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
 
       WiFi.scanDelete();
     });
 
 
     // settings
-    this->webServer->on("/api/settings", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/settings"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -423,10 +423,10 @@ protected:
       settingsToJson(settings, doc);
       doc.shrinkToFit();
       
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
-    this->webServer->on("/api/settings", HTTP_POST, [this]() {
+    this->webServer->on(F("/api/settings"), HTTP_POST, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -461,7 +461,7 @@ protected:
       settingsToJson(settings, doc);
       doc.shrinkToFit();
 
-      this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+      this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
         doc.clear();
@@ -474,7 +474,7 @@ protected:
 
 
     // sensors list
-    this->webServer->on("/api/sensors", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/sensors"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -482,16 +482,16 @@ protected:
       }
 
       bool detailed = false;
-      if (this->webServer->hasArg("detailed")) {
-        detailed = this->webServer->arg("detailed").toInt() > 0;
+      if (this->webServer->hasArg(F("detailed"))) {
+        detailed = this->webServer->arg(F("detailed")).toInt() > 0;
       }
       
       JsonDocument doc;
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         if (detailed) {
           auto& sSensor = Sensors::settings[sensorId];
-          doc[sensorId]["name"] = sSensor.name;
-          doc[sensorId]["purpose"] = static_cast<uint8_t>(sSensor.purpose);
+          doc[sensorId][FPSTR(S_NAME)] = sSensor.name;
+          doc[sensorId][FPSTR(S_PURPOSE)] = static_cast<uint8_t>(sSensor.purpose);
           sensorResultToJson(sensorId, doc[sensorId]);
 
         } else {
@@ -500,22 +500,22 @@ protected:
       }
       
       doc.shrinkToFit();
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
     // sensor settings
-    this->webServer->on("/api/sensor", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/sensor"), HTTP_GET, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
       }
       
-      if (!this->webServer->hasArg("id")) {
+      if (!this->webServer->hasArg(F("id"))) {
         return this->webServer->send(400);
       }
 
-      auto id = this->webServer->arg("id");
+      auto id = this->webServer->arg(F("id"));
       if (!isDigit(id.c_str())) {
         return this->webServer->send(400);
       }
@@ -529,10 +529,10 @@ protected:
       JsonDocument doc;
       sensorSettingsToJson(sensorId, Sensors::settings[sensorId], doc);
       doc.shrinkToFit();
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
     
-    this->webServer->on("/api/sensor", HTTP_POST, [this]() {
+    this->webServer->on(F("/api/sensor"), HTTP_POST, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -540,16 +540,16 @@ protected:
       }
 
       #ifdef ARDUINO_ARCH_ESP8266
-      if (!this->webServer->hasArg("id") || this->webServer->args() != 1) {
+      if (!this->webServer->hasArg(F("id")) || this->webServer->args() != 1) {
         return this->webServer->send(400);
       }
       #else
-      if (!this->webServer->hasArg("id") || this->webServer->args() != 2) {
+      if (!this->webServer->hasArg(F("id")) || this->webServer->args() != 2) {
         return this->webServer->send(400);
       }
       #endif
 
-      auto id = this->webServer->arg("id");
+      auto id = this->webServer->arg(F("id"));
       if (!isDigit(id.c_str())) {
         return this->webServer->send(400);
       }
@@ -592,7 +592,7 @@ protected:
         sensorSettingsToJson(sensorId, sSettings, doc);
         doc.shrinkToFit();
         
-        this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+        this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
       }
 
       if (changed) {
@@ -603,15 +603,15 @@ protected:
 
 
     // vars
-    this->webServer->on("/api/vars", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/vars"), HTTP_GET, [this]() {
       JsonDocument doc;
       varsToJson(vars, doc);
       doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
-    this->webServer->on("/api/vars", HTTP_POST, [this]() {
+    this->webServer->on(F("/api/vars"), HTTP_POST, [this]() {
       if (this->isAuthRequired()) {
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
@@ -646,7 +646,7 @@ protected:
       varsToJson(vars, doc);
       doc.shrinkToFit();
       
-      this->bufferedWebServer->send(changed ? 201 : 200, "application/json", doc);
+      this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
         doc.clear();
@@ -656,78 +656,138 @@ protected:
       }
     });
 
-    this->webServer->on("/api/info", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/info"), HTTP_GET, [this]() {
       bool isConnected = network->isConnected();
 
       JsonDocument doc;
-      doc["system"]["resetReason"] = getResetReason();
-      doc["system"]["uptime"] = millis() / 1000ul;
 
-      doc["network"]["hostname"] = networkSettings.hostname;
-      doc["network"]["mac"] = network->getStaMac();
-      doc["network"]["connected"] = isConnected;
-      doc["network"]["ssid"] = network->getStaSsid();
-      doc["network"]["signalQuality"] = isConnected ? NetworkMgr::rssiToSignalQuality(network->getRssi()) : 0;
-      doc["network"]["channel"] = isConnected ? network->getStaChannel() : 0;
-      doc["network"]["ip"] = isConnected ? network->getStaIp().toString() : "";
-      doc["network"]["subnet"] = isConnected ? network->getStaSubnet().toString() : "";
-      doc["network"]["gateway"] = isConnected ? network->getStaGateway().toString() : "";
-      doc["network"]["dns"] = isConnected ? network->getStaDns().toString() : "";
+      auto docSystem = doc[FPSTR(S_SYSTEM)].to<JsonObject>();
+      docSystem[FPSTR(S_RESET_REASON)] = getResetReason();
+      docSystem[FPSTR(S_UPTIME)] = millis() / 1000;
 
-      doc["build"]["version"] = BUILD_VERSION;
-      doc["build"]["date"] = __DATE__ " " __TIME__;
-      doc["build"]["env"] = BUILD_ENV;
+      auto docNetwork = doc[FPSTR(S_NETWORK)].to<JsonObject>();
+      docNetwork[FPSTR(S_HOSTNAME)] = networkSettings.hostname;
+      docNetwork[FPSTR(S_MAC)] = network->getStaMac();
+      docNetwork[FPSTR(S_CONNECTED)] = isConnected;
+      docNetwork[FPSTR(S_SSID)] = network->getStaSsid();
+      docNetwork[FPSTR(S_SIGNAL_QUALITY)] = isConnected ? NetworkMgr::rssiToSignalQuality(network->getRssi()) : 0;
+      docNetwork[FPSTR(S_CHANNEL)] = isConnected ? network->getStaChannel() : 0;
+      docNetwork[FPSTR(S_IP)] = isConnected ? network->getStaIp().toString() : "";
+      docNetwork[FPSTR(S_SUBNET)] = isConnected ? network->getStaSubnet().toString() : "";
+      docNetwork[FPSTR(S_GATEWAY)] = isConnected ? network->getStaGateway().toString() : "";
+      docNetwork[FPSTR(S_DNS)] = isConnected ? network->getStaDns().toString() : "";
 
-      doc["heap"]["total"] = getTotalHeap();
-      doc["heap"]["free"] = getFreeHeap();
-      doc["heap"]["minFree"] = getFreeHeap(true);
-      doc["heap"]["maxFreeBlock"] = getMaxFreeBlockHeap();
-      doc["heap"]["minMaxFreeBlock"] = getMaxFreeBlockHeap(true);
-      
+      auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
+      docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
+      docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
+      docBuild[FPSTR(S_ENV)] = BUILD_ENV;
       #ifdef ARDUINO_ARCH_ESP8266
-      doc["build"]["core"] = ESP.getCoreVersion();
-      doc["build"]["sdk"] = ESP.getSdkVersion();
-      doc["chip"]["model"] = esp_is_8285() ? "ESP8285" : "ESP8266";
-      doc["chip"]["rev"] = 0;
-      doc["chip"]["cores"] = 1;
-      doc["chip"]["freq"] = ESP.getCpuFreqMHz();
-      doc["flash"]["size"] = ESP.getFlashChipSize();
-      doc["flash"]["realSize"] = ESP.getFlashChipRealSize();
+      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
+      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
       #elif ARDUINO_ARCH_ESP32
-      doc["build"]["core"] = ESP.getCoreVersion();
-      doc["build"]["sdk"] = ESP.getSdkVersion();
-      doc["chip"]["model"] = ESP.getChipModel();
-      doc["chip"]["rev"] = ESP.getChipRevision();
-      doc["chip"]["cores"] = ESP.getChipCores();
-      doc["chip"]["freq"] = ESP.getCpuFreqMHz();
-      doc["flash"]["size"] = ESP.getFlashChipSize();
-      doc["flash"]["realSize"] = doc["flash"]["size"];
+      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
+      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
       #else
-      doc["build"]["core"] = 0;
-      doc["build"]["sdk"] = 0;
-      doc["chip"]["model"] = 0;
-      doc["chip"]["rev"] = 0;
-      doc["chip"]["cores"] = 0;
-      doc["chip"]["freq"] = 0;
-      doc["flash"]["size"] = 0;
-      doc["flash"]["realSize"] = 0;
+      docBuild[FPSTR(S_CORE)] = 0;
+      docBuild[FPSTR(S_SDK)] = 0;
+      #endif
+
+      auto docHeap = doc[FPSTR(S_HEAP)].to<JsonObject>();
+      docHeap[FPSTR(S_TOTAL)] = getTotalHeap();
+      docHeap[FPSTR(S_FREE)] = getFreeHeap();
+      docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
+      docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
+      docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
+      
+      auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
+      #ifdef ARDUINO_ARCH_ESP8266
+      docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
+      docChip[FPSTR(S_REV)] = 0;
+      docChip[FPSTR(S_CORES)] = 1;
+      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
+      #elif ARDUINO_ARCH_ESP32
+      docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
+      docChip[FPSTR(S_REV)] = ESP.getChipRevision();
+      docChip[FPSTR(S_CORES)] = ESP.getChipCores();
+      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
+      #else
+      docChip[FPSTR(S_MODEL)] = 0;
+      docChip[FPSTR(S_REV)] = 0;
+      docChip[FPSTR(S_CORES)] = 0;
+      docChip[FPSTR(S_FREQ)] = 0;
+      #endif
+
+      auto docFlash = doc[FPSTR(S_FLASH)].to<JsonObject>();
+      #ifdef ARDUINO_ARCH_ESP8266
+      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
+      docFlash[FPSTR(S_REAL_SIZE)] = ESP.getFlashChipRealSize();
+      #elif ARDUINO_ARCH_ESP32
+      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
+      docFlash[FPSTR(S_REAL_SIZE)] = docFlash[FPSTR(S_SIZE)];
+      #else
+      docFlash[FPSTR(S_SIZE)] = 0;
+      docFlash[FPSTR(S_REAL_SIZE)] = 0;
       #endif
 
       doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, "application/json", doc);
+      this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
-    this->webServer->on("/api/debug", HTTP_GET, [this]() {
+    this->webServer->on(F("/api/debug"), HTTP_GET, [this]() {
       JsonDocument doc;
-      doc["build"]["version"] = BUILD_VERSION;
-      doc["build"]["date"] = __DATE__ " " __TIME__;
-      doc["build"]["env"] = BUILD_ENV;
-      doc["heap"]["total"] = getTotalHeap();
-      doc["heap"]["free"] = getFreeHeap();
-      doc["heap"]["minFree"] = getFreeHeap(true);
-      doc["heap"]["maxFreeBlock"] = getMaxFreeBlockHeap();
-      doc["heap"]["minMaxFreeBlock"] = getMaxFreeBlockHeap(true);
+
+      auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
+      docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
+      docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
+      docBuild[FPSTR(S_ENV)] = BUILD_ENV;
+      #ifdef ARDUINO_ARCH_ESP8266
+      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
+      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
+      #elif ARDUINO_ARCH_ESP32
+      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
+      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
+      #else
+      docBuild[FPSTR(S_CORE)] = 0;
+      docBuild[FPSTR(S_SDK)] = 0;
+      #endif
+
+      auto docHeap = doc[FPSTR(S_HEAP)].to<JsonObject>();
+      docHeap[FPSTR(S_TOTAL)] = getTotalHeap();
+      docHeap[FPSTR(S_FREE)] = getFreeHeap();
+      docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
+      docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
+      docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
+      
+      auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
+      #ifdef ARDUINO_ARCH_ESP8266
+      docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
+      docChip[FPSTR(S_REV)] = 0;
+      docChip[FPSTR(S_CORES)] = 1;
+      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
+      #elif ARDUINO_ARCH_ESP32
+      docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
+      docChip[FPSTR(S_REV)] = ESP.getChipRevision();
+      docChip[FPSTR(S_CORES)] = ESP.getChipCores();
+      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
+      #else
+      docChip[FPSTR(S_MODEL)] = 0;
+      docChip[FPSTR(S_REV)] = 0;
+      docChip[FPSTR(S_CORES)] = 0;
+      docChip[FPSTR(S_FREQ)] = 0;
+      #endif
+
+      auto docFlash = doc[FPSTR(S_FLASH)].to<JsonObject>();
+      #ifdef ARDUINO_ARCH_ESP8266
+      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
+      docFlash[FPSTR(S_REAL_SIZE)] = ESP.getFlashChipRealSize();
+      #elif ARDUINO_ARCH_ESP32
+      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
+      docFlash[FPSTR(S_REAL_SIZE)] = docFlash[FPSTR(S_SIZE)];
+      #else
+      docFlash[FPSTR(S_SIZE)] = 0;
+      docFlash[FPSTR(S_REAL_SIZE)] = 0;
+      #endif
 
       #if defined(ARDUINO_ARCH_ESP32)
       auto reason = esp_reset_reason();
@@ -738,58 +798,30 @@ protected:
       #else
       if (false) {
       #endif
-        doc["crash"]["reason"] = getResetReason();
-        doc["crash"]["core"] = CrashRecorder::ext.core;
-        doc["crash"]["heap"] = CrashRecorder::ext.heap;
-        doc["crash"]["uptime"] = CrashRecorder::ext.uptime;
+        auto docCrash = doc[FPSTR(S_CRASH)].to<JsonObject>();
+        docCrash[FPSTR(S_REASON)] = getResetReason();
+        docCrash[FPSTR(S_CORE)] = CrashRecorder::ext.core;
+        docCrash[FPSTR(S_HEAP)] = CrashRecorder::ext.heap;
+        docCrash[FPSTR(S_UPTIME)] = CrashRecorder::ext.uptime;
 
         if (CrashRecorder::backtrace.length > 0 && CrashRecorder::backtrace.length <= CrashRecorder::backtraceMaxLength) {
           String backtraceStr;
           arr2str(backtraceStr, CrashRecorder::backtrace.data, CrashRecorder::backtrace.length);
-          doc["crash"]["backtrace"]["data"] = backtraceStr;
-          doc["crash"]["backtrace"]["continues"] = CrashRecorder::backtrace.continues;
+          docCrash[FPSTR(S_BACKTRACE)][FPSTR(S_DATA)] = backtraceStr;
+          docCrash[FPSTR(S_BACKTRACE)][FPSTR(S_CONTINUES)] = CrashRecorder::backtrace.continues;
         }
 
         if (CrashRecorder::epc.length > 0 && CrashRecorder::epc.length <= CrashRecorder::epcMaxLength) {
           String epcStr;
           arr2str(epcStr, CrashRecorder::epc.data, CrashRecorder::epc.length);
-          doc["crash"]["epc"] = epcStr;
+          docCrash[FPSTR(S_EPC)] = epcStr;
         }
       }
-      
-      #ifdef ARDUINO_ARCH_ESP8266
-      doc["build"]["core"] = ESP.getCoreVersion();
-      doc["build"]["sdk"] = ESP.getSdkVersion();
-      doc["chip"]["model"] = esp_is_8285() ? "ESP8285" : "ESP8266";
-      doc["chip"]["rev"] = 0;
-      doc["chip"]["cores"] = 1;
-      doc["chip"]["freq"] = ESP.getCpuFreqMHz();
-      doc["flash"]["size"] = ESP.getFlashChipSize();
-      doc["flash"]["realSize"] = ESP.getFlashChipRealSize();
-      #elif ARDUINO_ARCH_ESP32
-      doc["build"]["core"] = ESP.getCoreVersion();
-      doc["build"]["sdk"] = ESP.getSdkVersion();
-      doc["chip"]["model"] = ESP.getChipModel();
-      doc["chip"]["rev"] = ESP.getChipRevision();
-      doc["chip"]["cores"] = ESP.getChipCores();
-      doc["chip"]["freq"] = ESP.getCpuFreqMHz();
-      doc["flash"]["size"] = ESP.getFlashChipSize();
-      doc["flash"]["realSize"] = doc["flash"]["size"];
-      #else
-      doc["build"]["core"] = 0;
-      doc["build"]["sdk"] = 0;
-      doc["chip"]["model"] = 0;
-      doc["chip"]["rev"] = 0;
-      doc["chip"]["cores"] = 0;
-      doc["chip"]["freq"] = 0;
-      doc["flash"]["size"] = 0;
-      doc["flash"]["realSize"] = 0;
-      #endif
       
       doc.shrinkToFit();
 
       this->webServer->sendHeader(F("Content-Disposition"), F("attachment; filename=\"debug.json\""));
-      this->bufferedWebServer->send(200, "application/json", doc, true);
+      this->bufferedWebServer->send(200, F("application/json"), doc, true);
     });
 
 
@@ -798,14 +830,14 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Page not found, uri: %s"), this->webServer->uri().c_str());
 
       const String uri = this->webServer->uri();
-      if (uri.equals("/")) {
-        this->webServer->send(200, "text/plain", F("The file system is not flashed!"));
+      if (uri.equals(F("/"))) {
+        this->webServer->send(200, F("text/plain"), F("The file system is not flashed!"));
 
       } else if (network->isApEnabled()) {
         this->onCaptivePortal();
 
       } else {
-        this->webServer->send(404, "text/plain", F("Page not found"));
+        this->webServer->send(404, F("text/plain"), F("Page not found"));
       }
     });
 
@@ -877,26 +909,28 @@ protected:
   void onCaptivePortal() {
     const String uri = this->webServer->uri();
 
-    if (uri.equals("/connecttest.txt")) {
+    if (uri.equals(F("/connecttest.txt"))) {
       this->webServer->sendHeader(F("Location"), F("http://logout.net"));
       this->webServer->send(302);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to http://logout.net with 302 code"));
 
-    } else if (uri.equals("/wpad.dat")) {
+    } else if (uri.equals(F("/wpad.dat"))) {
       this->webServer->send(404);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 404 code"));
 
-    } else if (uri.equals("/success.txt")) {
+    } else if (uri.equals(F("/success.txt"))) {
       this->webServer->send(200);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 200 code"));
 
     } else {
-      String portalUrl = "http://" + network->getApIp().toString() + '/';
+      String portalUrl = F("http://");
+      portalUrl += network->getApIp().toString();
+      portalUrl += '/';
 
-      this->webServer->sendHeader("Location", portalUrl.c_str());
+      this->webServer->sendHeader(F("Location"), portalUrl.c_str());
       this->webServer->send(302);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to portal page with 302 code"));
