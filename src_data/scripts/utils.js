@@ -314,7 +314,7 @@ const setupRestoreBackupForm = (formSelector) => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data.network)
+            body: JSON.stringify({"network": data.network})
           });
 
           if (!response.ok) {
@@ -330,7 +330,7 @@ const setupRestoreBackupForm = (formSelector) => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data.settings)
+            body: JSON.stringify({"settings": data.settings})
           });
 
           if (!response.ok) {
