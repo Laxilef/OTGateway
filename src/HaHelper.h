@@ -59,10 +59,10 @@ public:
       case Sensors::Purpose::DHW_FLOW_RATE:
         doc[FPSTR(HA_DEVICE_CLASS)] = F("volume_flow_rate");
         if (unit == UnitSystem::METRIC) {
-          doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
+          doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_L_MIN);
           
         } else if (unit == UnitSystem::IMPERIAL) {
-          doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
+          doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_GAL_MIN);
         }
         break;
 
