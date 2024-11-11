@@ -129,7 +129,7 @@ protected:
     #endif
 
     this->client->onMessage([this] (void*, size_t length) {
-      String topic = this->client->messageTopic();
+      const String& topic = this->client->messageTopic();
       if (!length || length > 2048 || !topic.length()) {
         return;
       }
@@ -139,7 +139,7 @@ protected:
         payload[i] = this->client->read();
       }
       
-      this->onMessage(topic.c_str(), payload, length);
+      this->onMessage(topic, payload, length);
     });
 
     // writer settings
@@ -153,7 +153,7 @@ protected:
       Log.straceln(FPSTR(L_MQTT), F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::delay(0);
+      ::optimistic_yield(1000);
       #endif
 
       //this->client->poll();
@@ -162,13 +162,13 @@ protected:
 
     #ifdef ARDUINO_ARCH_ESP8266
     this->writer->setFlushEventCallback([this] (size_t, size_t) {
-      ::delay(0);
+      ::optimistic_yield(1000);
 
       if (this->wifiClient->connected()) {
         this->wifiClient->flush();
       }
 
-      ::delay(0);
+      ::optimistic_yield(1000);
     });
     #endif
 
@@ -222,7 +222,7 @@ protected:
     }
 
     #ifdef ARDUINO_ARCH_ESP8266
-    ::delay(0);
+    ::optimistic_yield(1000);
     #endif
 
     // publish variables and status
@@ -295,14 +295,14 @@ protected:
               this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::TEMPERATURE);
               break;
             
-            case Sensors::Type::MANUAL: {
-              String topic = this->haHelper->getDeviceTopic(
-                F("sensors"),
-                Sensors::makeObjectId(prevSettings.name).c_str(),
-                F("set")
+            case Sensors::Type::MANUAL:
+              this->client->unsubscribe(
+                this->haHelper->getDeviceTopic(
+                  F("sensors"),
+                  Sensors::makeObjectId(prevSettings.name).c_str(),
+                  F("set")
+                ).c_str()
               );
-              this->client->unsubscribe(topic.c_str());
-            }
 
             default:
               this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::PRIMARY);
@@ -331,14 +331,14 @@ protected:
             this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
             break;
 
-          case Sensors::Type::MANUAL: {
-            String topic = this->haHelper->getDeviceTopic(
-              F("sensors"),
-              Sensors::makeObjectId(prevSettings.name).c_str(),
-              F("set")
+          case Sensors::Type::MANUAL: 
+            this->client->subscribe(
+              this->haHelper->getDeviceTopic(
+                F("sensors"),
+                Sensors::makeObjectId(prevSettings.name).c_str(),
+                F("set")
+              ).c_str()
             );
-            this->client->subscribe(topic.c_str());
-          }
           
           default:
             this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
@@ -372,13 +372,13 @@ protected:
     Log.swarningln(FPSTR(L_MQTT), F("Disconnected (reason: %d uptime: %lu s.)"), this->client->connectError(), uptime);
   }
 
-  void onMessage(const char* topic, uint8_t* payload, size_t length) {
+  void onMessage(const String& topic, uint8_t* payload, size_t length) {
     if (!length) {
       return;
     }
 
     if (settings.system.logLevel >= TinyLogger::Level::TRACE) {
-      Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic);
+      Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
       if (Log.lock()) {
         for (size_t i = 0; i < length; i++) {
           if (payload[i] == 0) {
@@ -409,31 +409,27 @@ protected:
     }
     doc.shrinkToFit();
 
+    // delete topic
+    this->writer->publish(topic.c_str(), nullptr, 0, true);
+
     if (this->haHelper->getDeviceTopic(F("state/set")).equals(topic)) {
-      this->writer->publish(topic, nullptr, 0, true);
-      
       if (jsonToVars(doc, vars)) {
         this->resetPublishedVarsTime();
       }
 
     } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
-      this->writer->publish(topic, nullptr, 0, true);
-      
       if (safeJsonToSettings(doc, settings)) {
         this->resetPublishedSettingsTime();
         fsSettings.update();
       }
 
     } else {
-      this->writer->publish(topic, nullptr, 0, true);
-
-      String _topic = topic;
-      String sensorsTopic = this->haHelper->getDeviceTopic(F("sensors/"));
+      const String& sensorsTopic = this->haHelper->getDeviceTopic(F("sensors/"));
       auto stLength = sensorsTopic.length();
 
-      if (_topic.startsWith(sensorsTopic) && _topic.endsWith(F("/set"))) {
-        if (_topic.length() > stLength + 4) {
-          String name = _topic.substring(stLength, _topic.indexOf('/', stLength));
+      if (topic.startsWith(sensorsTopic) && topic.endsWith(F("/set"))) {
+        if (topic.length() > stLength + 4) {
+          const String& name = topic.substring(stLength, topic.indexOf('/', stLength));
           int16_t id = Sensors::getIdByObjectId(name.c_str());
 
           if (id == -1) {
@@ -515,14 +511,14 @@ protected:
           this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
           break;
 
-        case Sensors::Type::MANUAL: {
-          String topic = this->haHelper->getDeviceTopic(
-            F("sensors"),
-            Sensors::makeObjectId(sSettings.name).c_str(),
-            F("set")
+        case Sensors::Type::MANUAL:
+          this->client->subscribe(
+            this->haHelper->getDeviceTopic(
+              F("sensors"),
+              Sensors::makeObjectId(sSettings.name).c_str(),
+              F("set")
+            ).c_str()
           );
-          this->client->subscribe(topic.c_str());
-        }
         
         default:
           this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
@@ -603,12 +599,14 @@ protected:
     sensorResultToJson(sensorId, doc);
     doc.shrinkToFit();
 
-    String topic = this->haHelper->getDeviceTopic(
-      F("sensors"),
-      Sensors::makeObjectId(sSettings.name).c_str()
+    return this->writer->publish(
+      this->haHelper->getDeviceTopic(
+        F("sensors"),
+        Sensors::makeObjectId(sSettings.name).c_str()
+      ).c_str(),
+      doc,
+      true
     );
-    
-    return this->writer->publish(topic.c_str(), doc, true);
   }
 
   bool publishVariables(const char* topic) {

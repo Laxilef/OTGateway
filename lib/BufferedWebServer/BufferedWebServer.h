@@ -77,10 +77,19 @@ public:
       return;
     }
 
-    this->webServer->sendContent((const char*)this->buffer, this->bufferPos);
-    this->bufferPos = 0;
     #ifdef ARDUINO_ARCH_ESP8266
-    ::delay(0);
+    ::optimistic_yield(1000);
+    #endif
+
+    auto& client = this->webServer->client();
+    if (client.connected()) {
+      this->webServer->sendContent((const char*)this->buffer, this->bufferPos);
+    }
+
+    this->bufferPos = 0;
+
+    #ifdef ARDUINO_ARCH_ESP8266
+    ::optimistic_yield(1000);
     #endif
   }
 

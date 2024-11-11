@@ -232,7 +232,7 @@ protected:
         }
       }
 
-      String plain = this->webServer->arg(0);
+      const String& plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/backup/restore %d bytes: %s"), plain.length(), plain.c_str());
 
       if (plain.length() < 5) {
@@ -246,7 +246,6 @@ protected:
 
       JsonDocument doc;
       DeserializationError dErr = deserializeJson(doc, plain);
-      plain.clear();
 
       if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
         this->webServer->send(400);
@@ -254,12 +253,6 @@ protected:
       }
 
       bool changed = false;
-      if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
-        vars.actions.restart = true;
-        fsSettings.update();
-        changed = true;
-      }
-
       if (!doc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(doc[FPSTR(S_NETWORK)], networkSettings)) {
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
@@ -271,26 +264,39 @@ protected:
             networkSettings.staticConfig.gateway,
             networkSettings.staticConfig.subnet,
             networkSettings.staticConfig.dns
-          )
-          ->reconnect();
+          );
+        changed = true;
+      }
+
+      if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
+        fsSettings.update();
         changed = true;
       }
 
       if (!doc[FPSTR(S_SENSORS)].isNull()) {
-        for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-          if (doc[FPSTR(S_SENSORS)][sensorId].isNull()) {
+        for (auto sensor : doc[FPSTR(S_SENSORS)].as<JsonObject>()) {
+          if (!isDigit(sensor.key().c_str())) {
             continue;
           }
 
-          auto sensorSettingsDoc = doc[FPSTR(S_SENSORS)][sensorId].to<JsonObject>();
-          if (jsonToSensorSettings(sensorId, sensorSettingsDoc, Sensors::settings[sensorId])){
+          int sensorId = atoi(sensor.key().c_str());
+          if (sensorId < 0 || sensorId > 255 || !Sensors::isValidSensorId(sensorId)) {
+            continue;
+          }
+          
+          if (jsonToSensorSettings(sensorId, sensor.value(), Sensors::settings[sensorId])) {
+            fsSensorsSettings.update();
             changed = true;
           }
         }
       }
-
+      
       doc.clear();
       doc.shrinkToFit();
+
+      if (changed) {
+        vars.actions.restart = true;
+      }
 
       this->webServer->send(changed ? 201 : 200);
     });
@@ -317,7 +323,7 @@ protected:
         }
       }
 
-      String plain = this->webServer->arg(0);
+      const String& plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/network/settings %d bytes: %s"), plain.length(), plain.c_str());
 
       if (plain.length() < 5) {
@@ -331,7 +337,6 @@ protected:
 
       JsonDocument doc;
       DeserializationError dErr = deserializeJson(doc, plain);
-      plain.clear();
 
       if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
         this->webServer->send(400);
@@ -390,7 +395,7 @@ protected:
       
       JsonDocument doc;
       for (short int i = 0; i < apCount; i++) {
-        String ssid = WiFi.SSID(i);
+        const String& ssid = WiFi.SSID(i);
         doc[i][FPSTR(S_SSID)] = ssid;
         doc[i][FPSTR(S_BSSID)] = WiFi.BSSIDstr(i);
         doc[i][FPSTR(S_SIGNAL_QUALITY)] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
@@ -433,7 +438,7 @@ protected:
         }
       }
 
-      String plain = this->webServer->arg(0);
+      const String& plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/settings %d bytes: %s"), plain.length(), plain.c_str());
 
       if (plain.length() < 5) {
@@ -447,7 +452,6 @@ protected:
 
       JsonDocument doc;
       DeserializationError dErr = deserializeJson(doc, plain);
-      plain.clear();
 
       if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
         this->webServer->send(400);
@@ -618,7 +622,7 @@ protected:
         }
       }
 
-      String plain = this->webServer->arg(0);
+      const String& plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/vars %d bytes: %s"), plain.length(), plain.c_str());
 
       if (plain.length() < 5) {
@@ -632,7 +636,6 @@ protected:
 
       JsonDocument doc;
       DeserializationError dErr = deserializeJson(doc, plain);
-      plain.clear();
 
       if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
         this->webServer->send(400);
@@ -829,7 +832,7 @@ protected:
     this->webServer->onNotFound([this]() {
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Page not found, uri: %s"), this->webServer->uri().c_str());
 
-      const String uri = this->webServer->uri();
+      const String& uri = this->webServer->uri();
       if (uri.equals(F("/"))) {
         this->webServer->send(200, F("text/plain"), F("The file system is not flashed!"));
 
@@ -856,7 +859,7 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::delay(0);
+      ::optimistic_yield(1000);
       #endif
 
     } else if (this->stateWebServer() && !network->isApEnabled() && !network->isStaEnabled()) {
@@ -864,7 +867,7 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::delay(0);
+      ::optimistic_yield(1000);
       #endif
     }
 
@@ -874,7 +877,7 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
       
       #ifdef ARDUINO_ARCH_ESP8266
-      ::delay(0);
+      ::optimistic_yield(1000);
       #endif
 
     } else if (this->stateDnsServer() && (!network->isApEnabled() || !this->stateWebServer())) {
@@ -882,14 +885,15 @@ protected:
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down"));
 
       #ifdef ARDUINO_ARCH_ESP8266
-      ::delay(0);
+      ::optimistic_yield(1000);
       #endif
     }
 
     if (this->stateDnsServer()) {
       this->dnsServer->processNextRequest();
+
       #ifdef ARDUINO_ARCH_ESP8266
-      ::delay(0);
+      ::optimistic_yield(1000);
       #endif
     }
 
@@ -907,7 +911,7 @@ protected:
   }
 
   void onCaptivePortal() {
-    const String uri = this->webServer->uri();
+    const String& uri = this->webServer->uri();
 
     if (uri.equals(F("/connecttest.txt"))) {
       this->webServer->sendHeader(F("Location"), F("http://logout.net"));
@@ -927,10 +931,10 @@ protected:
 
     } else {
       String portalUrl = F("http://");
-      portalUrl += network->getApIp().toString();
+      portalUrl += network->getApIp().toString().c_str();
       portalUrl += '/';
 
-      this->webServer->sendHeader(F("Location"), portalUrl.c_str());
+      this->webServer->sendHeader(F("Location"), portalUrl);
       this->webServer->send(302);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to portal page with 302 code"));

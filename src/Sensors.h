@@ -146,9 +146,10 @@ public:
       return 0;
     }
 
+    String refObjectId;
     for (uint8_t id = 0; id < getMaxSensorId(); id++) {
-      String _objectId = Sensors::makeObjectId(settings[id].name);
-      if (strcmp(_objectId.c_str(), objectId) == 0) {
+      Sensors::makeObjectId(refObjectId, settings[id].name);
+      if (refObjectId.equals(objectId)) {
         return id;
       }
     }
@@ -351,13 +352,10 @@ public:
     return false;
   }
 
-  template <class T> 
-  static String cleanName(T value, char space = ' ') {
-    String clean = value;
-
+  static String& cleanName(String& value, char space = ' ') {
     // only valid symbols
-    for (uint8_t pos = 0; pos < clean.length(); pos++) {
-      char symbol = clean.charAt(pos);
+    for (uint8_t pos = 0; pos < value.length(); pos++) {
+      char symbol = value.charAt(pos);
 
       // 0..9
       if (symbol >= 48 && symbol <= 57) {
@@ -379,39 +377,68 @@ public:
         continue;
       }
 
-      clean.setCharAt(pos, space);
+      value.setCharAt(pos, space);
     }
 
-    clean.trim();
+    value.trim();
 
-    return clean;
+    return value;
+  }
+
+  template <class T> 
+  static String cleanName(T value, char space = ' ') {
+    String res = value;
+    return cleanName(res, space);
+  }
+
+  template <class T> 
+  static String& makeObjectId(String& res, T value, char separator = '_') {
+    res = value;
+    cleanName(res);
+    res.toLowerCase();
+    res.replace(' ', separator);
+
+    return res;
   }
 
   template <class T> 
   static String makeObjectId(T value, char separator = '_') {
-    auto objId = cleanName(value);
-    objId.toLowerCase();
-    objId.replace(' ', separator);
+    String res;
+    makeObjectId(res, value, separator);
 
-    return objId;
+    return res;
   }
 
   template <class TV, class TS> 
-  static auto makeObjectIdWithSuffix(TV value, TS suffix, char separator = '_') {
-    auto objId = makeObjectId(value, separator);
-    objId += separator;
-    objId += suffix;
+  static String& makeObjectIdWithSuffix(String& res, TV value, TS suffix, char separator = '_') {
+    res.clear();
+    makeObjectId(res, value, separator);
+    res += separator;
+    res += suffix;
 
-    return objId;
+    return res;
+  }
+
+  template <class TV, class TS> 
+  static String makeObjectIdWithSuffix(TV value, TS suffix, char separator = '_') {
+    String res;
+    makeObjectIdWithSuffix(res, value, suffix, separator);
+    return res;
   }
 
   template <class TV, class TP> 
-  static auto makeObjectIdWithPrefix(TV value, TP prefix, char separator = '_') {
-    String objId = prefix;
-    objId += separator;
-    objId += makeObjectId(value, separator);
+  static String& makeObjectIdWithPrefix(String& res, TV value, TP prefix, char separator = '_') {
+    res = prefix;
+    res += separator;
+    res += makeObjectId(value, separator).c_str();
 
-    return objId;
+    return res;
+  }
+
+  template <class TV, class TP> 
+  static String makeObjectIdWithPrefix(TV value, TP prefix, char separator = '_') {
+    String res;
+    return makeObjectIdWithPrefix(res, value, prefix, separator);
   }
 
   static uint8_t bluetoothRssiToQuality(int rssi) {

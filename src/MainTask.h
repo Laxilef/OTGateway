@@ -76,17 +76,6 @@ protected:
       vars.actions.restart = false;
       this->restartSignalTime = millis();
 
-      // save settings
-      fsSettings.updateNow();
-
-      // save sensors settings
-      fsSensorsSettings.updateNow();
-
-      // force save network settings
-      if (fsNetworkSettings.updateNow() == FD_FILE_ERR && LittleFS.begin()) {
-        fsNetworkSettings.write();
-      }
-
       Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
     }
 
@@ -147,8 +136,9 @@ protected:
     for (Stream* stream : Log.getStreams()) {
       while (stream->available() > 0) {
         stream->read();
+
         #ifdef ARDUINO_ARCH_ESP8266
-        ::delay(0);
+        ::optimistic_yield(1000);
         #endif
       }
     }
@@ -159,7 +149,19 @@ protected:
 
     // restart
     if (this->restartSignalTime > 0 && millis() - this->restartSignalTime > 10000) {
+      // save settings
+      fsSettings.updateNow();
+
+      // save sensors settings
+      fsSensorsSettings.updateNow();
+
+      // force save network settings
+      if (fsNetworkSettings.updateNow() == FD_FILE_ERR && LittleFS.begin()) {
+        fsNetworkSettings.write();
+      }
+
       this->restartSignalTime = 0;
+      this->delay(500);
       ESP.restart();
     }
   }

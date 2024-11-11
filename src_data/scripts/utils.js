@@ -306,22 +306,6 @@ const setupRestoreBackupForm = (formSelector) => {
       try {
         const data = JSON.parse(event.target.result);
         console.log("Backup: ", data);
-        
-        if (data.network != undefined) {
-          let response = await fetch(url, {
-            method: 'POST',
-            cache: 'no-cache',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({"network": data.network})
-          });
-
-          if (!response.ok) {
-            onFailed();
-            return;
-          }
-        }
 
         if (data.settings != undefined) {
           let response = await fetch(url, {
@@ -359,6 +343,22 @@ const setupRestoreBackupForm = (formSelector) => {
               onFailed();
               return;
             }
+          }
+        }
+
+        if (data.network != undefined) {
+          let response = await fetch(url, {
+            method: 'POST',
+            cache: 'no-cache',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({"network": data.network})
+          });
+
+          if (!response.ok) {
+            onFailed();
+            return;
           }
         }
 

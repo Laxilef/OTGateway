@@ -154,7 +154,7 @@ Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
     false,
     "Outdoor temp",
     Sensors::Purpose::OUTDOOR_TEMP,
-    Sensors::Type::DALLAS_TEMP,
+    Sensors::Type::OT_OUTDOOR_TEMP,
     DEFAULT_SENSOR_OUTDOOR_GPIO
   },
   {

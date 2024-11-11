@@ -37,7 +37,7 @@ public:
       case Sensors::Purpose::DHW_RETURN_TEMP:
       case Sensors::Purpose::EXHAUST_TEMP:
       case Sensors::Purpose::TEMPERATURE:
-        doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+        doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
         if (unit == UnitSystem::METRIC) {
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
 
@@ -87,7 +87,7 @@ public:
         break;
 
       case Sensors::Purpose::HUMIDITY:
-        doc[FPSTR(HA_DEVICE_CLASS)] = F("humidity");
+        doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_HUMIDITY);
         doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
         break;
 
@@ -156,23 +156,25 @@ public:
     String objId = Sensors::makeObjectId(sSensor.name);
 
     // state topic
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(F("sensors"), objId.c_str());
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
+      F("sensors"),
+      objId.c_str()
+    );
 
     // set device class, name, value template for bluetooth sensors
     // or name & value template for another sensors
-    String sName = sSensor.name;
-    
     if (sSensor.type == Sensors::Type::BLUETOOTH) {
       // available state topic
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_SENSOR_CONN;
 
+      String sName = sSensor.name;
       switch (vType) {
         case Sensors::ValueType::TEMPERATURE:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("temp"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, F("temp"));
           sName += F(" temperature");
 
-          doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+          doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
           if (unit == UnitSystem::METRIC) {
             doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
             
@@ -184,20 +186,20 @@ public:
           break;
 
         case Sensors::ValueType::HUMIDITY:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("humidity"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_HUMIDITY));
           sName += F(" humidity");
 
-          doc[FPSTR(HA_DEVICE_CLASS)] = F("humidity");
+          doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_HUMIDITY);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
           doc[FPSTR(HA_NAME)] = sName;
           doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.humidity|float(0)|round(2) }}");
           break;
 
         case Sensors::ValueType::BATTERY:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("battery"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_BATTERY));
           sName += F(" battery");
           
-          doc[FPSTR(HA_DEVICE_CLASS)] = F("battery");
+          doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_BATTERY);
           doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
           doc[FPSTR(HA_NAME)] = sName;
@@ -205,7 +207,7 @@ public:
           break;
 
         case Sensors::ValueType::RSSI:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("rssi"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_RSSI));
           sName += F(" RSSI");
           
           doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
@@ -223,10 +225,14 @@ public:
       doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
       doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
 
-      doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(F("sensors"), objId.c_str(), F("set"));
+      doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(
+        F("sensors"),
+        objId.c_str(),
+        F("set")
+      );
       doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"value\": {{ value }}}");
 
-      doc[FPSTR(HA_NAME)] = sName;
+      doc[FPSTR(HA_NAME)] = sSensor.name;
       doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.value|float(0)|round(2) }}");
 
     } else {
@@ -234,20 +240,15 @@ public:
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_SENSOR_CONN;
 
-      doc[FPSTR(HA_NAME)] = sName;
+      doc[FPSTR(HA_NAME)] = sSensor.name;
       doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.value|float(0)|round(2) }}");
     }
 
-    sName.clear();
-
     // object id's
-    {
-      String objIdWithPrefix = this->getObjectIdWithPrefix(objId.c_str());
-      doc[FPSTR(HA_UNIQUE_ID)] = objIdWithPrefix;
-      doc[FPSTR(HA_OBJECT_ID)] = objIdWithPrefix;
-    }
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(objId.c_str());
+    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
 
-    String configTopic = this->makeConfigTopic(
+    const String& configTopic = this->makeConfigTopic(
       sSensor.type == Sensors::Type::MANUAL ? FPSTR(HA_ENTITY_NUMBER) : FPSTR(HA_ENTITY_SENSOR),
       objId.c_str()
     );
@@ -264,32 +265,35 @@ public:
   }
 
   bool deleteDynamicSensor(Sensors::Settings& sSensor, Sensors::ValueType vType = Sensors::ValueType::PRIMARY) {
-    String objId = Sensors::makeObjectId(sSensor.name);
+    String objId;
 
     if (sSensor.type == Sensors::Type::BLUETOOTH) {
       switch (vType) {
         case Sensors::ValueType::TEMPERATURE:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("temp"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, F("temp"));
           break;
 
         case Sensors::ValueType::HUMIDITY:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("humidity"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_HUMIDITY));
           break;
 
         case Sensors::ValueType::BATTERY:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("battery"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_BATTERY));
           break;
 
         case Sensors::ValueType::RSSI:
-          objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("rssi"));
+          Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_RSSI));
           break;
 
         default:
           return false;
       }
+
+    } else {
+      Sensors::makeObjectId(objId, sSensor.name);
     }
 
-    String configTopic = this->makeConfigTopic(
+    const String& configTopic = this->makeConfigTopic(
       sSensor.type == Sensors::Type::MANUAL ? FPSTR(HA_ENTITY_NUMBER) : FPSTR(HA_ENTITY_SENSOR),
       objId.c_str()
     );
@@ -303,18 +307,14 @@ public:
     String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("connected"));
 
     // object id's
-    {
-      String objIdWithPrefix = this->getObjectIdWithPrefix(objId.c_str());
-      doc[FPSTR(HA_UNIQUE_ID)] = objIdWithPrefix;
-      doc[FPSTR(HA_OBJECT_ID)] = objIdWithPrefix;
-    }
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(objId.c_str());
+    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
 
     // state topic
-    {
-      String parentObjId = Sensors::makeObjectId(sSensor.name);
-      String stateTopic = this->getDeviceTopic(F("sensors"), parentObjId.c_str());
-      doc[FPSTR(HA_STATE_TOPIC)] = stateTopic;
-    }
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
+      F("sensors"),
+      Sensors::makeObjectId(sSensor.name).c_str()
+    );
 
     // sensor name
     {
@@ -325,7 +325,7 @@ public:
       doc[FPSTR(HA_NAME)] = sName;
     }
     
-    String configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), objId.c_str());
+    const String& configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), objId.c_str());
     objId.clear();
 
 
@@ -341,9 +341,10 @@ public:
   }
 
   bool deleteConnectionDynamicSensor(Sensors::Settings& sSensor) {
-    String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("connected"));
-    String configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), objId.c_str());
-    objId.clear();
+    const String& configTopic = this->makeConfigTopic(
+      FPSTR(HA_ENTITY_BINARY_SENSOR),
+      Sensors::makeObjectIdWithSuffix(sSensor.name, F("connected")).c_str()
+    );
 
     return this->publish(configTopic.c_str());
   }
@@ -353,18 +354,14 @@ public:
     String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("signal_quality"));
 
     // object id's
-    {
-      String objIdWithPrefix = this->getObjectIdWithPrefix(objId.c_str());
-      doc[FPSTR(HA_UNIQUE_ID)] = objIdWithPrefix;
-      doc[FPSTR(HA_OBJECT_ID)] = objIdWithPrefix;
-    }
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(objId.c_str());
+    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
 
     // state topic
-    {
-      String parentObjId = Sensors::makeObjectId(sSensor.name);
-      String stateTopic = this->getDeviceTopic(F("sensors"), parentObjId.c_str());
-      doc[FPSTR(HA_STATE_TOPIC)] = stateTopic;
-    }
+    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
+      F("sensors"),
+      Sensors::makeObjectId(sSensor.name).c_str()
+    );
 
     // sensor name
     {
@@ -375,7 +372,7 @@ public:
       doc[FPSTR(HA_NAME)] = sName;
     }
     
-    String configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), objId.c_str());
+    const String& configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), objId.c_str());
     objId.clear();
 
 
@@ -395,9 +392,10 @@ public:
 
   bool deleteSignalQualityDynamicSensor(Sensors::Settings& sSensor) {
     JsonDocument doc;
-    String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("signal_quality"));
-    String configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), objId.c_str());
-    objId.clear();
+    const String& configTopic = this->makeConfigTopic(
+      FPSTR(HA_ENTITY_SENSOR),
+      Sensors::makeObjectIdWithSuffix(sSensor.name, F("signal_quality")).c_str()
+    );
 
     return this->publish(configTopic.c_str());
   }
@@ -432,7 +430,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_hysteresis"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -488,7 +486,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -522,7 +520,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -557,7 +555,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -591,7 +589,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -742,7 +740,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_min_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -776,7 +774,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_max_temp"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("temperature");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
@@ -1119,7 +1117,7 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("rssi"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(FPSTR(S_RSSI));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
@@ -1132,7 +1130,7 @@ public:
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), F("rssi")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), FPSTR(S_RSSI)).c_str(), doc);
   }
 
   bool publishUptime(bool enabledByDefault = true) {
@@ -1257,17 +1255,17 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("restart"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(FPSTR(S_RESTART));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("restart");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
     doc[FPSTR(HA_NAME)] = F("Restart");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setStateTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"restart\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BUTTON), F("restart")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BUTTON), FPSTR(S_RESTART)).c_str(), doc);
   }
 
   bool publishResetFaultButton(bool enabledByDefault = true) {
@@ -1280,7 +1278,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("reset_fault"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("restart");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
     doc[FPSTR(HA_NAME)] = F("Reset fault");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setStateTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetFault\": true}}");
@@ -1300,7 +1298,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("reset_diagnostic"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("restart");
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
     doc[FPSTR(HA_NAME)] = F("Reset diagnostic");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setStateTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetDiagnostic\": true}}");
