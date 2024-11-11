@@ -382,13 +382,13 @@ protected:
       const auto value = analogRead(sSensor.gpio) / 1023 * DEFAULT_NTC_VREF;
       #endif
 
-      if (value < DEFAULT_NTC_VLOW_TRESHOLD) {
+      if (value < DEFAULT_NTC_VLOW_TRESHOLD || value > DEFAULT_NTC_VHIGH_TRESHOLD) {
         if (Sensors::getConnectionStatusById(sensorId)) {
           Sensors::setConnectionStatusById(sensorId, false, false);
         }
 
         Log.swarningln(
-          FPSTR(L_SENSORS_NTC), F("GPIO %hhu, sensor #%hhu '%s', voltage too low: %.2f"),
+          FPSTR(L_SENSORS_NTC), F("GPIO %hhu, sensor #%hhu '%s', voltage is out of threshold: %.3f"),
           sSensor.gpio, sensorId, sSensor.name, (value / 1000.0f)
         );
 
