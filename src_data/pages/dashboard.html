@@ -145,12 +145,12 @@
                   <td><input type="radio" class="sHeatActive" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
-                  <th scope="row" data-i18n>dashboard.states.mHeatSetpointTemp</th>
-                  <td><b class="mHeatSetpointTemp"></b> <span class="tempUnit"></span></td>
-                </tr>
-                <tr>
                   <th scope="row" data-i18n>dashboard.states.mHeatTargetTemp</th>
                   <td><b class="mHeatTargetTemp"></b> <span class="tempUnit"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.states.mHeatSetpointTemp</th>
+                  <td><b class="mHeatSetpointTemp"></b> <span class="tempUnit"></span></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mHeatCurrTemp</th>
@@ -409,7 +409,7 @@
             const result = await response.json();
             
             // Graph
-            setValue('#tHeatCurrentTemp', result.master.indoorTempControl 
+            setValue('#tHeatCurrentTemp', result.master.heating.indoorTempControl 
               ? result.master.heating.indoorTemp 
               : result.master.heating.currentTemp
             );
