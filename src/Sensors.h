@@ -70,7 +70,7 @@ public:
   typedef struct {
     bool connected = false;
     unsigned long activityTime = 0;
-    uint8_t signalQuality = 0;
+    uint8_t signalQuality = 100;
     //float raw[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     float values[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   } Result;

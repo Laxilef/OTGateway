@@ -302,12 +302,17 @@ protected:
             continue;
           }
           
+          auto& rSensor = Sensors::results[sensorId];
           float value = instance.getTempC(sSensor.address);
           if (value == DEVICE_DISCONNECTED_C) {
             Log.swarningln(
               FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s': failed receiving data"),
               sSensor.gpio, sensorId, sSensor.name
             );
+
+            if (rSensor.signalQuality > 0) {
+              rSensor.signalQuality--;
+            }
 
             continue;
           }
@@ -316,6 +321,10 @@ protected:
             FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', received data: %.2f"),
             sSensor.gpio, sensorId, sSensor.name, value
           );
+
+          if (rSensor.signalQuality < 100) {
+            rSensor.signalQuality++;
+          }
 
           // set sensor value
           Sensors::setValueById(sensorId, value, Sensors::ValueType::TEMPERATURE, true, true);
@@ -334,6 +343,23 @@ protected:
 
         // check sensors on bus
         if (!instance.getDeviceCount()) {
+          for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+            auto& sSensor = Sensors::settings[sensorId];
+            
+            // only target & valid sensors
+            if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+              continue;
+
+            } else if (sSensor.gpio != gpio || isEmptyAddress(sSensor.address)) {
+              continue;
+            }
+            
+            auto& rSensor = Sensors::results[sensorId];
+            if (rSensor.signalQuality > 0) {
+              rSensor.signalQuality--;
+            }
+          }
+
           continue;
         }
 
