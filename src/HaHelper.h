@@ -223,6 +223,7 @@ public:
 
     } else if (sSensor.type == Sensors::Type::MANUAL) {
       doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
+      doc[FPSTR(HA_STEP)] = 0.01f;
       doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
 
       doc[FPSTR(HA_COMMAND_TOPIC)] = this->getDeviceTopic(
