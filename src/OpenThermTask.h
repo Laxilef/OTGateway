@@ -454,20 +454,16 @@ protected:
       Sensors::getAmountByType(Sensors::Type::OT_MODULATION_LEVEL) ||
       Sensors::getAmountByType(Sensors::Type::OT_CURRENT_POWER)
     ) {
-      float power = 0.0f;
-      bool result = false;
-
       if (vars.slave.flame) {
-        result = this->updateModulationLevel();
-
-        if (result) {
-          if (settings.opentherm.maxPower > 0.1f) {
+        if (this->updateModulationLevel()) {
+          float power = 0.0f;
+          if (vars.slave.modulation.current > 0 && settings.opentherm.maxPower > 0.1f) {
             float modulatedPower = settings.opentherm.maxPower - settings.opentherm.minPower;
             power = settings.opentherm.minPower + (modulatedPower / 100.0f * vars.slave.modulation.current);
           }
           
           Log.snoticeln(
-            FPSTR(L_OT), F("Received modulation level: %.2f%%, power: %.2f of %.2f kW (min: %.2f kW)"),
+            FPSTR(L_OT), F("Received modulation level: %hhu%%, power: %.2f of %.2f kW (min: %.2f kW)"),
             vars.slave.modulation.current, power, settings.opentherm.maxPower, settings.opentherm.minPower
           );
 
@@ -487,123 +483,101 @@ protected:
           Log.swarningln(FPSTR(L_OT), F("Failed receive modulation level"));
         }
 
-      } else if (vars.slave.modulation.current > 0) {
+      } else {
         vars.slave.modulation.current = 0;
 
         // Modulation level sensors
         Sensors::setValueByType(
-          Sensors::Type::OT_MODULATION_LEVEL, vars.slave.modulation.current,
+          Sensors::Type::OT_MODULATION_LEVEL, 0.0f,
           Sensors::ValueType::PRIMARY, true, true
         );
 
         // Power sensors
         Sensors::setValueByType(
-          Sensors::Type::OT_CURRENT_POWER, power,
+          Sensors::Type::OT_CURRENT_POWER, 0.0f,
           Sensors::ValueType::PRIMARY, true, true
         );
       }
     }
 
     // Update DHW temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP)) {
-      float convertedDhwTemp = 0.0f;
-      bool result = false;
+    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP)) {
+      bool result = this->updateDhwTemp();
 
-      if (settings.opentherm.dhwPresent) {
-        result = this->updateDhwTemp();
+      if (result) {
+        float convertedDhwTemp = convertTemp(
+          vars.slave.dhw.currentTemp,
+          settings.opentherm.unitSystem,
+          settings.system.unitSystem
+        );
 
-        if (result) {
-          convertedDhwTemp = convertTemp(
-            vars.slave.dhw.currentTemp,
-            settings.opentherm.unitSystem,
-            settings.system.unitSystem
-          );
+        Log.snoticeln(
+          FPSTR(L_OT_DHW), F("Received temp: %.2f (converted: %.2f)"),
+          vars.slave.dhw.currentTemp, convertedDhwTemp
+        );
 
-          Log.snoticeln(
-            FPSTR(L_OT_DHW), F("Received temp: %.2f (converted: %.2f)"),
-            vars.slave.dhw.currentTemp, convertedDhwTemp
-          );
+        Sensors::setValueByType(
+          Sensors::Type::OT_DHW_TEMP, convertedDhwTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
 
-          Sensors::setValueByType(
-            Sensors::Type::OT_DHW_TEMP, convertedDhwTemp,
-            Sensors::ValueType::PRIMARY, true, true
-          );
-
-        } else {
-          Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp"));
-        }
+      } else {
+        Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp"));
       }
     }
 
     // Update DHW temp 2
-    if (Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2)) {
-      float convertedDhwTemp2 = 0.0f;
-      bool result = false;
+    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2)) {
+      if (this->updateDhwTemp2()) {
+        float convertedDhwTemp2 = convertTemp(
+          vars.slave.dhw.currentTemp2,
+          settings.opentherm.unitSystem,
+          settings.system.unitSystem
+        );
 
-      if (settings.opentherm.dhwPresent) {
-        result = this->updateDhwTemp2();
+        Log.snoticeln(
+          FPSTR(L_OT_DHW), F("Received temp 2: %.2f (converted: %.2f)"),
+          vars.slave.dhw.currentTemp2, convertedDhwTemp2
+        );
 
-        if (result) {
-          convertedDhwTemp2 = convertTemp(
-            vars.slave.dhw.currentTemp2,
-            settings.opentherm.unitSystem,
-            settings.system.unitSystem
-          );
+        Sensors::setValueByType(
+          Sensors::Type::OT_DHW_TEMP2, convertedDhwTemp2,
+          Sensors::ValueType::PRIMARY, true, true
+        );
 
-          Log.snoticeln(
-            FPSTR(L_OT_DHW), F("Received temp 2: %.2f (converted: %.2f)"),
-            vars.slave.dhw.currentTemp2, convertedDhwTemp2
-          );
-
-          Sensors::setValueByType(
-            Sensors::Type::OT_DHW_TEMP2, convertedDhwTemp2,
-            Sensors::ValueType::PRIMARY, true, true
-          );
-
-        } else {
-          Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp 2"));
-        }
+      } else {
+        Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp 2"));
       }
     }
 
     // Update DHW flow rate
-    if (Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE)) {
-      float convertedDhwFlowRate = 0.0f;
-      bool result = false;
-      
-      if (settings.opentherm.dhwPresent) {
-        result = this->updateDhwFlowRate();
+    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE)) {
+      if (this->updateDhwFlowRate()) {
+        float convertedDhwFlowRate = convertVolume(
+          vars.slave.dhw.flowRate,
+          settings.opentherm.unitSystem,
+          settings.system.unitSystem
+        );
 
-        if (result) {
-          convertedDhwFlowRate = convertVolume(
-            vars.slave.dhw.flowRate,
-            settings.opentherm.unitSystem,
-            settings.system.unitSystem
-          );
+        Log.snoticeln(
+          FPSTR(L_OT_DHW), F("Received flow rate: %.2f (converted: %.2f)"),
+          vars.slave.dhw.flowRate, convertedDhwFlowRate
+        );
 
-          Log.snoticeln(
-            FPSTR(L_OT_DHW), F("Received flow rate: %.2f (converted: %.2f)"),
-            vars.slave.dhw.flowRate, convertedDhwFlowRate
-          );
+        Sensors::setValueByType(
+          Sensors::Type::OT_DHW_FLOW_RATE, convertedDhwFlowRate,
+          Sensors::ValueType::PRIMARY, true, true
+        );
 
-          Sensors::setValueByType(
-            Sensors::Type::OT_DHW_FLOW_RATE, convertedDhwFlowRate,
-            Sensors::ValueType::PRIMARY, true, true
-          );
-
-        } else {
-          Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive flow rate"));
-        }
+      } else {
+        Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive flow rate"));
       }
     }
 
     // Update heating temp
     if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_TEMP)) {
-      float convertedHeatingTemp = 0.0f;
-      bool result = this->updateHeatingTemp();
-
-      if (result) {
-        convertedHeatingTemp = convertTemp(
+      if (this->updateHeatingTemp()) {
+        float convertedHeatingTemp = convertTemp(
           vars.slave.heating.currentTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -626,11 +600,8 @@ protected:
 
     // Update heating return temp
     if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_RETURN_TEMP)) {
-      float convertedHeatingReturnTemp = 0.0f;
-      bool result = this->updateHeatingReturnTemp();
-
-      if (result) {
-        convertedHeatingReturnTemp = convertTemp(
+      if (this->updateHeatingReturnTemp()) {
+        float convertedHeatingReturnTemp = convertTemp(
           vars.slave.heating.returnTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -653,14 +624,9 @@ protected:
 
     // Update CH2 temp
     if (Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP)) {
-      float convertedCh2Temp = 0.0f;
-      bool result = false;
-
       if (vars.master.ch2.enabled && !settings.opentherm.nativeHeatingControl) {
-        result = this->updateCh2Temp();
-
-        if (result) {
-          convertedCh2Temp = convertTemp(
+        if (this->updateCh2Temp()) {
+          float convertedCh2Temp = convertTemp(
             vars.slave.ch2.currentTemp,
             settings.opentherm.unitSystem,
             settings.system.unitSystem
@@ -684,11 +650,8 @@ protected:
 
     // Update exhaust temp
     if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_TEMP)) {
-      float convertedExhaustTemp = 0.0f;
-      bool result = this->updateExhaustTemp();
-
-      if (result) {
-        convertedExhaustTemp = convertTemp(
+      if (this->updateExhaustTemp()) {
+        float convertedExhaustTemp = convertTemp(
           vars.slave.exhaustTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -711,11 +674,8 @@ protected:
 
     // Update heat exchanger temp
     if (Sensors::getAmountByType(Sensors::Type::OT_HEAT_EXCHANGER_TEMP)) {
-      float convertedHeatExchTemp = 0.0f;
-      bool result = this->updateHeatExchangerTemp();
-
-      if (result) {
-        convertedHeatExchTemp = convertTemp(
+      if (this->updateHeatExchangerTemp()) {
+        float convertedHeatExchTemp = convertTemp(
           vars.slave.heatExchangerTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -738,11 +698,8 @@ protected:
 
     // Update outdoor temp
     if (Sensors::getAmountByType(Sensors::Type::OT_OUTDOOR_TEMP)) {
-      bool result = this->updateOutdoorTemp();
-      float convertedOutdoorTemp = 0.0f;
-
-      if (result) {
-        convertedOutdoorTemp = convertTemp(
+      if (this->updateOutdoorTemp()) {
+        float convertedOutdoorTemp = convertTemp(
           vars.slave.heating.outdoorTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -765,11 +722,8 @@ protected:
     
     // Update pressure
     if (Sensors::getAmountByType(Sensors::Type::OT_PRESSURE)) {
-      float convertedPressure = 0.0f;
-      bool result = this->updatePressure();
-
-      if (result) {
-        convertedPressure = convertPressure(
+      if (this->updatePressure()) {
+        float convertedPressure = convertPressure(
           vars.slave.pressure,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
