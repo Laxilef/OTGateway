@@ -114,10 +114,10 @@
                 </label>
               </div>
 
-              <hr />
+              <hr class="correction" />
 
-              <fieldset>
-                <legend><b data-i18n>sensors.correction.desc</b></legend>
+              <details class="correction">
+                <summary><b data-i18n>sensors.correction.desc</b></summary>
 
                 <div class="grid">
                   <label>
@@ -130,27 +130,30 @@
                     <input type="number" inputmode="numeric" name="factor" min="0.01" max="10" step="0.01" required>
                   </label>
                 </div>
-              </fieldset>
+              </details>
 
-              <hr />
+              <hr class="filtering" />
 
-              <fieldset>
-                <legend><b data-i18n>sensors.filtering.desc</b></legend>
+              <details class="filtering">
+                <summary><b data-i18n>sensors.filtering.desc</b></summary>
 
-                <label>
-                  <input type="checkbox" name="filtering" value="true">
-                  <span data-i18n>sensors.filtering.enabled.title</span>
-                  <br />
-                  <small data-i18n>sensors.filtering.enabled.note</small>
-                </label>
-
-                <label>
-                  <span data-i18n>sensors.filtering.factor.title</span>
-                  <input type="number" inputmode="numeric" name="filteringFactor" min="0.01" max="1" step="0.01">
-                  <small data-i18n>sensors.filtering.factor.note</small>
-                </label>
-              </fieldset>
-
+                <div>
+                  <label>
+                    <input type="checkbox" name="filtering" value="true">
+                    <span data-i18n>sensors.filtering.enabled.title</span>
+                    <br />
+                    <small data-i18n>sensors.filtering.enabled.note</small>
+                  </label>
+  
+                  <label>
+                    <span data-i18n>sensors.filtering.factor.title</span>
+                    <input type="number" inputmode="numeric" name="filteringFactor" min="0.01" max="1" step="0.01">
+                    <small data-i18n>sensors.filtering.factor.note</small>
+                  </label>
+                </div>
+              </details>
+              
+              <br/>
               <button type="submit" data-i18n>button.save</button>
             </form>
           </div>
@@ -222,6 +225,20 @@
               const parentAddress = address.parentElement;
 
               switch(parseInt(event.target.value)) {
+                // heating setpoint, manual
+                case 253:
+                case 254:
+                  hide(".correction", sensorForm);
+                  hide(".filtering", sensorForm);
+                  break;
+
+                // other
+                default:
+                  show(".correction", sensorForm);
+                  show(".filtering", sensorForm);
+              }
+
+              switch(parseInt(event.target.value)) {
                 // ntc
                 case 50:
                   parentGpio.classList.remove("hidden");
@@ -251,6 +268,7 @@
                   break;
               }
             });
+
             sensorNode.addEventListener("click", async (event) => {
               if (parseInt(sensorNode.dataset.preloaded)) {
                 return;
