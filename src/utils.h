@@ -1351,20 +1351,24 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // force check heating target
   {
-    float value = !src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].isNull() ? src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].as<float>() : dst.heating.target;
+    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.nativeHeatingControl;
+    float minTemp = indoorTempControl ? THERMOSTAT_INDOOR_MIN_TEMP : dst.heating.minTemp;
+    float maxTemp = indoorTempControl ? THERMOSTAT_INDOOR_MAX_TEMP : dst.heating.maxTemp;
+
+    float value = !src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].isNull() 
+      ? src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].as<float>() 
+      : dst.heating.target;
     bool valid = isValidTemp(
       value,
       dst.system.unitSystem,
-      vars.master.heating.minTemp,
-      vars.master.heating.maxTemp,
+      minTemp,
+      maxTemp,
       dst.system.unitSystem
     );
 
     if (!valid) {
       value = convertTemp(
-        vars.master.heating.indoorTempControl
-        ? THERMOSTAT_INDOOR_DEFAULT_TEMP
-        : DEFAULT_HEATING_TARGET_TEMP,
+        indoorTempControl ? THERMOSTAT_INDOOR_DEFAULT_TEMP : DEFAULT_HEATING_TARGET_TEMP,
         UnitSystem::METRIC,
         dst.system.unitSystem
       );
@@ -1378,7 +1382,9 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // force check dhw target
   {
-    float value = !src[FPSTR(S_DHW)][FPSTR(S_TARGET)].isNull() ? src[FPSTR(S_DHW)][FPSTR(S_TARGET)].as<float>() : dst.dhw.target;
+    float value = !src[FPSTR(S_DHW)][FPSTR(S_TARGET)].isNull() 
+      ? src[FPSTR(S_DHW)][FPSTR(S_TARGET)].as<float>() 
+      : dst.dhw.target;
     bool valid = isValidTemp(
       value,
       dst.system.unitSystem,
