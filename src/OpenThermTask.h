@@ -249,8 +249,8 @@ protected:
 
     if (vars.master.dhw.enabled != vars.slave.dhw.enabled) {
       this->prevUpdateNonEssentialVars = 0;
-      vars.slave.dhw.enabled = vars.master.heating.enabled;
-      Log.sinfoln(FPSTR(L_OT_DHW), vars.master.heating.enabled ? F("Enabled") : F("Disabled"));
+      vars.slave.dhw.enabled = vars.master.dhw.enabled;
+      Log.sinfoln(FPSTR(L_OT_DHW), vars.master.dhw.enabled ? F("Enabled") : F("Disabled"));
     }
 
     vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
@@ -471,25 +471,37 @@ protected:
             vars.slave.modulation.current, power, settings.opentherm.maxPower, settings.opentherm.minPower
           );
 
+          // Modulation level sensors
+          Sensors::setValueByType(
+            Sensors::Type::OT_MODULATION_LEVEL, vars.slave.modulation.current,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
+          // Power sensors
+          Sensors::setValueByType(
+            Sensors::Type::OT_CURRENT_POWER, power,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
         } else {
           Log.swarningln(FPSTR(L_OT), F("Failed receive modulation level"));
         }
 
       } else if (vars.slave.modulation.current > 0) {
         vars.slave.modulation.current = 0;
+
+        // Modulation level sensors
+        Sensors::setValueByType(
+          Sensors::Type::OT_MODULATION_LEVEL, vars.slave.modulation.current,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+        // Power sensors
+        Sensors::setValueByType(
+          Sensors::Type::OT_CURRENT_POWER, power,
+          Sensors::ValueType::PRIMARY, true, true
+        );
       }
-
-      // Modulation level sensors
-      Sensors::setValueByType(
-        Sensors::Type::OT_MODULATION_LEVEL, vars.slave.modulation.current,
-        Sensors::ValueType::PRIMARY, true, true
-      );
-
-      // Power sensors
-      Sensors::setValueByType(
-        Sensors::Type::OT_CURRENT_POWER, power,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update DHW temp
@@ -512,15 +524,15 @@ protected:
             vars.slave.dhw.currentTemp, convertedDhwTemp
           );
 
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_TEMP, convertedDhwTemp,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
         } else {
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp"));
         }
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_DHW_TEMP, convertedDhwTemp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update DHW temp 2
@@ -543,15 +555,15 @@ protected:
             vars.slave.dhw.currentTemp2, convertedDhwTemp2
           );
 
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_TEMP2, convertedDhwTemp2,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
         } else {
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp 2"));
         }
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_DHW_TEMP2, convertedDhwTemp2,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update DHW flow rate
@@ -574,15 +586,15 @@ protected:
             vars.slave.dhw.flowRate, convertedDhwFlowRate
           );
 
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_FLOW_RATE, convertedDhwFlowRate,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
         } else {
           Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive flow rate"));
         }
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_DHW_FLOW_RATE, convertedDhwFlowRate,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update heating temp
@@ -602,14 +614,14 @@ protected:
           vars.slave.heating.currentTemp, convertedHeatingTemp
         );
 
+        Sensors::setValueByType(
+          Sensors::Type::OT_HEATING_TEMP, convertedHeatingTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
       } else {
         Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive temp"));
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_HEATING_TEMP, convertedHeatingTemp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update heating return temp
@@ -629,14 +641,14 @@ protected:
           vars.slave.heating.returnTemp, convertedHeatingReturnTemp
         );
 
+        Sensors::setValueByType(
+          Sensors::Type::OT_HEATING_RETURN_TEMP, convertedHeatingReturnTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
       } else {
         Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive return temp"));
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_HEATING_RETURN_TEMP, convertedHeatingReturnTemp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update CH2 temp
@@ -659,15 +671,15 @@ protected:
             vars.slave.ch2.currentTemp, convertedCh2Temp
           );
 
+          Sensors::setValueByType(
+            Sensors::Type::OT_CH2_TEMP, convertedCh2Temp,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
         } else {
           Log.swarningln(FPSTR(L_OT_CH2), F("Failed receive temp"));
         }
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_CH2_TEMP, convertedCh2Temp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update exhaust temp
@@ -687,14 +699,14 @@ protected:
           vars.slave.exhaustTemp, convertedExhaustTemp
         );
 
+        Sensors::setValueByType(
+          Sensors::Type::OT_EXHAUST_TEMP, convertedExhaustTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
       } else {
         Log.swarningln(FPSTR(L_OT), F("Failed receive exhaust temp"));
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_EXHAUST_TEMP, convertedExhaustTemp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update heat exchanger temp
@@ -714,14 +726,14 @@ protected:
           vars.slave.heatExchangerTemp, convertedHeatExchTemp
         );
 
+        Sensors::setValueByType(
+          Sensors::Type::OT_HEAT_EXCHANGER_TEMP, convertedHeatExchTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
       } else {
         Log.swarningln(FPSTR(L_OT), F("Failed receive heat exchanger temp"));
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_HEAT_EXCHANGER_TEMP, convertedHeatExchTemp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
     // Update outdoor temp
@@ -741,14 +753,14 @@ protected:
           vars.slave.heating.outdoorTemp, convertedOutdoorTemp
         );
 
+        Sensors::setValueByType(
+          Sensors::Type::OT_OUTDOOR_TEMP, convertedOutdoorTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
       } else {
         Log.swarningln(FPSTR(L_OT), F("Failed receive outdoor temp"));
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_OUTDOOR_TEMP, convertedOutdoorTemp,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
     
     // Update pressure
@@ -768,14 +780,14 @@ protected:
           vars.slave.pressure, convertedPressure
         );
 
+        Sensors::setValueByType(
+          Sensors::Type::OT_PRESSURE, convertedPressure,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
       } else {
         Log.swarningln(FPSTR(L_OT), F("Failed receive pressure"));
       }
-
-      Sensors::setValueByType(
-        Sensors::Type::OT_PRESSURE, convertedPressure,
-        Sensors::ValueType::PRIMARY, true, true
-      );
     }
 
 

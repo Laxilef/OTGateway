@@ -190,7 +190,7 @@ public:
         }
       }
 
-      if (sSensor.filtering && fabs(rSensor.values[valueId]) >= 0.1f) {
+      if (sSensor.filtering && fabsf(rSensor.values[valueId]) >= 0.1f) {
         rSensor.values[valueId] += (compensatedValue - rSensor.values[valueId]) * sSensor.filteringFactor;
         
       } else {
@@ -202,15 +202,13 @@ public:
       rSensor.activityTime = millis();
     }
 
-    if (markConnected) {
-      if (!rSensor.connected) {        
-        rSensor.connected = true;
+    if (markConnected && !rSensor.connected) {
+      rSensor.connected = true;
 
-        Log.snoticeln(
-          FPSTR(L_SENSORS), F("#%hhu '%s' new status: CONNECTED"),
-          sensorId, sSensor.name
-        );
-      }
+      Log.snoticeln(
+        FPSTR(L_SENSORS), F("#%hhu '%s' new status: CONNECTED"),
+        sensorId, sSensor.name
+      );
     }
 
     Log.snoticeln(
