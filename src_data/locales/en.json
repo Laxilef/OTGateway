@@ -105,7 +105,8 @@
         "mHeatEnabled": "Heating enabled",
         "mHeatBlocking": "Heating blocked",
         "sHeatActive": "Heating active",
-        "mHeatTargetTemp": "Heating setpoint temp",
+        "mHeatSetpointTemp": "Heating setpoint temp",
+        "mHeatTargetTemp": "Heating target temp",
         "mHeatCurrTemp": "Heating current temp",
         "mHeatRetTemp": "Heating return temp",
         "mHeatIndoorTemp": "Heating, indoor temp",
@@ -113,7 +114,7 @@
 
         "mDhwEnabled": "DHW enabled",
         "sDhwActive": "DHW active",
-        "mDhwTargetTemp": "DHW setpoint temp",
+        "mDhwTargetTemp": "DHW target temp",
         "mDhwCurrTemp": "DHW current temp",
         "mDhwRetTemp": "DHW return temp"
       }

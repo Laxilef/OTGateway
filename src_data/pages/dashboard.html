@@ -145,6 +145,10 @@
                   <td><input type="radio" class="sHeatActive" aria-invalid="false" checked disabled /></td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.states.mHeatSetpointTemp</th>
+                  <td><b class="mHeatSetpointTemp"></b> <span class="tempUnit"></span></td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.states.mHeatTargetTemp</th>
                   <td><b class="mHeatTargetTemp"></b> <span class="tempUnit"></span></td>
                 </tr>
@@ -458,6 +462,7 @@
             setState('.mHeatEnabled', result.master.heating.enabled);
             setState('.mHeatBlocking', result.master.heating.blocking);
             setState('.mHeatIndoorTempControl', result.master.heating.indoorTempControl);
+            setValue('.mHeatSetpointTemp', result.master.heating.setpointTemp);
             setValue('.mHeatTargetTemp', result.master.heating.targetTemp);
             setValue('.mHeatCurrTemp', result.master.heating.currentTemp);
             setValue('.mHeatRetTemp', result.master.heating.returnTemp);

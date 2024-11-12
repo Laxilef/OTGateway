@@ -255,6 +255,7 @@ struct Variables {
       bool blocking = false;
       bool enabled = false;
       bool indoorTempControl = false;
+      float setpointTemp = 0.0f;
       float targetTemp = 0.0f;
       float currentTemp = 0.0f;
       float returnTemp = 0.0f;

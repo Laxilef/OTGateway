@@ -55,14 +55,15 @@ protected:
     this->turbo();
     this->hysteresis();
 
-    vars.master.heating.targetTemp = constrain(
-      this->getHeatingSetpoint(),
-      vars.master.heating.minTemp,
-      vars.master.heating.maxTemp
+    vars.master.heating.targetTemp = settings.heating.target;
+    vars.master.heating.setpointTemp = constrain(
+      this->getHeatingSetpointTemp(),
+      this->getHeatingMinSetpointTemp(),
+      this->getHeatingMaxSetpointTemp()
     );
 
     Sensors::setValueByType(
-      Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.targetTemp,
+      Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.setpointTemp,
       Sensors::ValueType::PRIMARY, true, true
     );
   }
@@ -104,8 +105,25 @@ protected:
     }
   }
 
+  inline float getHeatingMinSetpointTemp() {
+    if (settings.opentherm.nativeHeatingControl) {
+      return vars.master.heating.minTemp;
 
-  float getHeatingSetpoint() {
+    } else {
+      return settings.heating.minTemp;
+    }
+  }
+
+  inline float getHeatingMaxSetpointTemp() {
+    if (settings.opentherm.nativeHeatingControl) {
+      return vars.master.heating.maxTemp;
+
+    } else {
+      return settings.heating.maxTemp;
+    }
+  }
+
+  float getHeatingSetpointTemp() {
     float newTemp = 0;
 
     if (fabsf(prevHeatingTarget - settings.heating.target) > 0.0001f) {

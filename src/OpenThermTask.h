@@ -81,7 +81,7 @@ protected:
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
 
     this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
-      Log.straceln(
+      Log.sverboseln(
         FPSTR(L_OT),
         F("ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"),
         CustomOpenTherm::getDataID(request), request, response, attempt, CustomOpenTherm::statusToString(status)
@@ -158,7 +158,7 @@ protected:
       || (settings.opentherm.dhwToCh2 && settings.opentherm.dhwPresent && settings.dhw.enabled);
 
     if (settings.opentherm.heatingCh1ToCh2) {
-      vars.master.ch2.targetTemp = vars.master.heating.targetTemp;
+      vars.master.ch2.targetTemp = vars.master.heating.setpointTemp;
 
     } else if (settings.opentherm.dhwToCh2) {
       vars.master.ch2.targetTemp = vars.master.dhw.targetTemp;
@@ -474,6 +474,9 @@ protected:
         } else {
           Log.swarningln(FPSTR(L_OT), F("Failed receive modulation level"));
         }
+
+      } else if (vars.slave.modulation.current > 0) {
+        vars.slave.modulation.current = 0;
       }
 
       // Modulation level sensors
@@ -897,14 +900,14 @@ protected:
     // Normal heating control
     if (!settings.opentherm.nativeHeatingControl && vars.master.heating.enabled) {
       // Converted target heating temp
-      float convertedTemp = convertTemp(vars.master.heating.targetTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      float convertedTemp = convertTemp(vars.master.heating.setpointTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
       if (this->needSetHeatingTemp(convertedTemp)) {
         // Set max heating temp
         if (this->setMaxHeatingTemp(convertedTemp)) {
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set max heating temp: %.2f (converted: %.2f)"),
-            vars.master.heating.targetTemp, convertedTemp
+            vars.master.heating.setpointTemp, convertedTemp
           );
 
         } else {
@@ -917,7 +920,7 @@ protected:
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set target temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.heating.targetTemp, convertedTemp, vars.slave.heating.targetTemp
+            vars.master.heating.setpointTemp, convertedTemp, vars.slave.heating.targetTemp
           );
 
         } else {

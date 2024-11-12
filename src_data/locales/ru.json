@@ -105,6 +105,7 @@
         "mHeatEnabled": "Отопление",
         "mHeatBlocking": "Блокировка отопления",
         "sHeatActive": "Активность отопления",
+        "mHeatSetpointTemp": "Отопление, уставка",
         "mHeatTargetTemp": "Отопление, целевая температура",
         "mHeatCurrTemp": "Отопление, текущая температура",
         "mHeatRetTemp": "Отопление, температура обратки",
