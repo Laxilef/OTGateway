@@ -171,26 +171,31 @@ public:
     auto& rSensor = results[sensorId];
     
     float compensatedValue = value;
-    if (valueType == ValueType::PRIMARY) {
-      if (fabsf(sSensor.factor) > 0.001f) {
-        compensatedValue *= sSensor.factor;
-      }
-
-      if (fabsf(sSensor.offset) > 0.001f) {
-        compensatedValue += sSensor.offset;
-      }
-
-    } else if (valueType == ValueType::RSSI) {
-      if (sSensor.type == Type::BLUETOOTH) {
-        rSensor.signalQuality = Sensors::bluetoothRssiToQuality(value);
-      }
-    }
-
-    if (sSensor.filtering && fabs(rSensor.values[valueId]) >= 0.1f) {
-      rSensor.values[valueId] += (compensatedValue - rSensor.values[valueId]) * sSensor.filteringFactor;
-      
-    } else {
+    if (sSensor.type == Type::HEATING_SETPOINT_TEMP || sSensor.type == Type::MANUAL) {
       rSensor.values[valueId] = compensatedValue;
+
+    } else {
+      if (valueType == ValueType::PRIMARY) {
+        if (fabsf(sSensor.factor) > 0.001f) {
+          compensatedValue *= sSensor.factor;
+        }
+
+        if (fabsf(sSensor.offset) > 0.001f) {
+          compensatedValue += sSensor.offset;
+        }
+
+      } else if (valueType == ValueType::RSSI) {
+        if (sSensor.type == Type::BLUETOOTH) {
+          rSensor.signalQuality = Sensors::bluetoothRssiToQuality(value);
+        }
+      }
+
+      if (sSensor.filtering && fabs(rSensor.values[valueId]) >= 0.1f) {
+        rSensor.values[valueId] += (compensatedValue - rSensor.values[valueId]) * sSensor.filteringFactor;
+        
+      } else {
+        rSensor.values[valueId] = compensatedValue;
+      }
     }
 
     if (updateActivityTime) {

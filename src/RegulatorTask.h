@@ -106,21 +106,15 @@ protected:
   }
 
   inline float getHeatingMinSetpointTemp() {
-    if (settings.opentherm.nativeHeatingControl) {
-      return vars.master.heating.minTemp;
-
-    } else {
-      return settings.heating.minTemp;
-    }
+    return settings.opentherm.nativeHeatingControl
+      ? vars.master.heating.minTemp
+      : settings.heating.minTemp;
   }
 
   inline float getHeatingMaxSetpointTemp() {
-    if (settings.opentherm.nativeHeatingControl) {
-      return vars.master.heating.maxTemp;
-
-    } else {
-      return settings.heating.maxTemp;
-    }
+    return settings.opentherm.nativeHeatingControl
+      ? vars.master.heating.maxTemp
+      : settings.heating.maxTemp;
   }
 
   float getHeatingSetpointTemp() {
