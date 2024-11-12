@@ -12,6 +12,7 @@
     "gulp-html-minifier-terser": "^7.1.0",
     "gulp-jsonminify": "^1.1.0",
     "gulp-postcss": "^10.0.0",
-    "gulp-terser": "^2.1.0"
+    "gulp-terser": "^2.1.0",
+    "gulp-replace": "^1.1.4"
   }
 }

@@ -6,6 +6,7 @@ const cssnano = require('cssnano');
 const terser = require('gulp-terser');
 const jsonminify = require('gulp-jsonminify');
 const htmlmin = require('gulp-html-minifier-terser');
+const replace = require('gulp-replace');
 
 // Paths for tasks
 let paths = {
@@ -119,6 +120,10 @@ const staticFiles = (cb) => {
 
 const pages = () => {
   return src(paths.pages.src)
+    .pipe(replace(
+      "{BUILD_TIME}",
+      Math.floor(Date.now() / 1000)
+    ))
     .pipe(htmlmin({
       html5: true,
       caseSensitive: true,

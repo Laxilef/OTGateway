@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title data-i18n>settings.title</title>
-    <link rel="stylesheet" href="/static/app.css" />
+    <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}" />
   </head>
 
   <body>
@@ -662,7 +662,7 @@
       </small>
     </footer>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?{BUILD_TIME}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
