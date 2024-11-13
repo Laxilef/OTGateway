@@ -6,11 +6,12 @@
 #include <FileData.h>
 #include <LittleFS.h>
 #include <ESPTelnetStream.h>
-#include <TinyLogger.h>
-#include <NetworkMgr.h>
 
 #include "defines.h"
 #include "strings.h"
+
+#include <TinyLogger.h>
+#include <NetworkMgr.h>
 #include "CrashRecorder.h"
 #include "Sensors.h"
 #include "Settings.h"
