@@ -32,7 +32,8 @@ protected:
   unsigned long lastHeapInfo = 0;
   unsigned int minFreeHeap = 0;
   unsigned int minMaxFreeBlockHeap = 0;
-  unsigned long restartSignalTime = 0;
+  bool restartSignalReceived = false;
+  unsigned long restartSignalReceivedTime = 0;
   bool heatingEnabled = false;
   unsigned long heatingDisabledTime = 0;
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
@@ -73,8 +74,14 @@ protected:
     }
 
     if (vars.actions.restart) {
-      this->restartSignalTime = millis();
+      this->restartSignalReceivedTime = millis();
+      this->restartSignalReceived = true;
       vars.actions.restart = false;
+
+      Log.sinfoln(FPSTR(L_MAIN), F("Received restart signal"));
+    }
+
+    if (!vars.states.restarting && this->restartSignalReceived && millis() - this->restartSignalReceivedTime > 5000) {
       vars.states.restarting = true;
 
       // save settings
@@ -88,7 +95,7 @@ protected:
         fsNetworkSettings.write();
       }
 
-      Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
+      Log.sinfoln(FPSTR(L_MAIN), F("Restart scheduled in 10 sec."));
     }
 
     vars.mqtt.connected = tMqtt->isConnected();
@@ -160,8 +167,8 @@ protected:
 
 
     // restart
-    if (vars.states.restarting && millis() - this->restartSignalTime > 10000) {
-      vars.states.restarting = false;
+    if (this->restartSignalReceived && millis() - this->restartSignalReceivedTime > 15000) {
+      this->restartSignalReceived = false;
 
       ESP.restart();
     }
@@ -173,7 +180,7 @@ protected:
 
     // critical heap
     if (!vars.states.restarting && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
-      this->restartSignalTime = millis();
+      this->restartSignalReceivedTime = millis();
       vars.states.restarting = true;
     }
 

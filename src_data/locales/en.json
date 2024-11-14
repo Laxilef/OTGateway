@@ -419,7 +419,7 @@
 
       "note": {
         "disclaimer1": "After a successful upgrade the filesystem, ALL settings will be reset to default values! Save backup before upgrading.",
-        "disclaimer2": "After a successful upgrade, the device will automatically reboot after 10 seconds."
+        "disclaimer2": "After a successful upgrade, the device will automatically reboot after 15 seconds."
       },
 
       "settingsFile": "Settings file",
