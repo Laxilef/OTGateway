@@ -366,4 +366,9 @@ struct Variables {
     bool resetFault = false;
     bool resetDiagnostic = false;
   } actions;
+
+  struct {
+    bool restarting = false;
+    bool upgrading = false;
+  } states;
 } vars;

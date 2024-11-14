@@ -189,6 +189,11 @@ protected:
 
       return true;
     })->setBeforeUpgradeCallback([](UpgradeHandler::UpgradeType type) -> bool {
+      if (vars.states.restarting) {
+        return false;
+      }
+
+      vars.states.upgrading = true;
       return true;
     })->setAfterUpgradeCallback([this](const UpgradeHandler::UpgradeResult& fwResult, const UpgradeHandler::UpgradeResult& fsResult) {
       unsigned short status = 200;
@@ -209,6 +214,8 @@ protected:
       response.concat(fsResult.error);
       response.concat(F("\"}}"));
       this->webServer->send(status, F("application/json"), response);
+
+      vars.states.upgrading = false;
     });
     this->webServer->addHandler(upgradeHandler);
 
@@ -245,6 +252,10 @@ protected:
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
+      }
+
+      if (vars.states.restarting) {
+        return this->webServer->send(503);
       }
 
       const String& plain = this->webServer->arg(0);
@@ -336,6 +347,10 @@ protected:
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
+      }
+      
+      if (vars.states.restarting) {
+        return this->webServer->send(503);
       }
 
       const String& plain = this->webServer->arg(0);
@@ -452,6 +467,10 @@ protected:
           return this->webServer->send(401);
         }
       }
+      
+      if (vars.states.restarting) {
+        return this->webServer->send(503);
+      }
 
       const String& plain = this->webServer->arg(0);
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/settings %d bytes: %s"), plain.length(), plain.c_str());
@@ -556,6 +575,10 @@ protected:
         if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
           return this->webServer->send(401);
         }
+      }
+      
+      if (vars.states.restarting) {
+        return this->webServer->send(503);
       }
 
       #ifdef ARDUINO_ARCH_ESP8266

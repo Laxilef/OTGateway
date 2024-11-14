@@ -106,6 +106,10 @@ protected:
   }
 
   void loop() {
+    if (vars.states.restarting || vars.states.upgrading) {
+      return;
+    }
+
     if (this->instanceInGpio != settings.opentherm.inGpio || this->instanceOutGpio != settings.opentherm.outGpio) {
       this->setup();
 

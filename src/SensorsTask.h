@@ -59,6 +59,10 @@ protected:
   #endif
 
   void loop() {
+    if (vars.states.restarting || vars.states.upgrading) {
+      return;
+    }
+
     if (isPollingDallasSensors()) {
       pollingDallasSensors(false);
       this->yield();

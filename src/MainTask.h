@@ -73,8 +73,20 @@ protected:
     }
 
     if (vars.actions.restart) {
-      vars.actions.restart = false;
       this->restartSignalTime = millis();
+      vars.actions.restart = false;
+      vars.states.restarting = true;
+
+      // save settings
+      fsSettings.updateNow();
+
+      // save sensors settings
+      fsSensorsSettings.updateNow();
+
+      // force save network settings
+      if (fsNetworkSettings.updateNow() == FD_FILE_ERR && LittleFS.begin()) {
+        fsNetworkSettings.write();
+      }
 
       Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
     }
@@ -148,20 +160,9 @@ protected:
 
 
     // restart
-    if (this->restartSignalTime > 0 && millis() - this->restartSignalTime > 10000) {
-      // save settings
-      fsSettings.updateNow();
+    if (vars.states.restarting && millis() - this->restartSignalTime > 10000) {
+      vars.states.restarting = false;
 
-      // save sensors settings
-      fsSensorsSettings.updateNow();
-
-      // force save network settings
-      if (fsNetworkSettings.updateNow() == FD_FILE_ERR && LittleFS.begin()) {
-        fsNetworkSettings.write();
-      }
-
-      this->restartSignalTime = 0;
-      this->delay(500);
       ESP.restart();
     }
   }
@@ -170,8 +171,10 @@ protected:
     unsigned int freeHeap = getFreeHeap();
     unsigned int maxFreeBlockHeap = getMaxFreeBlockHeap();
 
-    if (!this->restartSignalTime && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
+    // critical heap
+    if (!vars.states.restarting && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
       this->restartSignalTime = millis();
+      vars.states.restarting = true;
     }
 
     if (settings.system.logLevel < TinyLogger::Level::VERBOSE) {

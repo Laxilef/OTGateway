@@ -32,6 +32,10 @@ protected:
   #endif
   
   void loop() {
+    if (vars.states.restarting || vars.states.upgrading) {
+      return;
+    }
+
     this->indoorSensorsConnected = Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP);
     //this->outdoorSensorsConnected = Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::OUTDOOR_TEMP);
 

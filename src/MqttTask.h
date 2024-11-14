@@ -184,6 +184,10 @@ protected:
   }
 
   void loop() {
+    if (vars.states.restarting || vars.states.upgrading) {
+      return;
+    }
+
     if (this->connected && !this->client->connected()) {
       this->connected = false;
       this->onDisconnect();
