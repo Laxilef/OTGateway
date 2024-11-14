@@ -1674,13 +1674,13 @@ void sensorResultToJson(const uint8_t sensorId, JsonVariant dst) {
   dst[FPSTR(S_SIGNAL_QUALITY)] = rSensor.signalQuality;
 
   if (sSensor.type == Sensors::Type::BLUETOOTH) {
-    dst[FPSTR(S_TEMPERATURE)] = rSensor.values[static_cast<uint8_t>(Sensors::ValueType::TEMPERATURE)];
-    dst[FPSTR(S_HUMIDITY)] = rSensor.values[static_cast<uint8_t>(Sensors::ValueType::HUMIDITY)];
-    dst[FPSTR(S_BATTERY)] = rSensor.values[static_cast<uint8_t>(Sensors::ValueType::BATTERY)];
-    dst[FPSTR(S_RSSI)] = rSensor.values[static_cast<uint8_t>(Sensors::ValueType::RSSI)];
+    dst[FPSTR(S_TEMPERATURE)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::TEMPERATURE)], 3);
+    dst[FPSTR(S_HUMIDITY)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::HUMIDITY)], 3);
+    dst[FPSTR(S_BATTERY)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::BATTERY)], 1);
+    dst[FPSTR(S_RSSI)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::RSSI)], 0);
 
   } else {
-    dst[FPSTR(S_VALUE)] = rSensor.values[static_cast<uint8_t>(Sensors::ValueType::PRIMARY)];
+    dst[FPSTR(S_VALUE)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::PRIMARY)], 3);
   }
 }
 
