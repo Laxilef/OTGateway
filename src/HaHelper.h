@@ -67,13 +67,23 @@ public:
         break;
 
       case Sensors::Purpose::MODULATION_LEVEL:
+      case Sensors::Purpose::POWER_FACTOR:
         doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
         doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
         break;
 
-      case Sensors::Purpose::CURRENT_POWER:
+      case Sensors::Purpose::POWER:
         doc[FPSTR(HA_DEVICE_CLASS)] = F("power");
         doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("kW");
+        break;
+
+      case Sensors::Purpose::FAN_SPEED:
+        doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("RPM");
+        break;
+
+      case Sensors::Purpose::CO2:
+        doc[FPSTR(HA_DEVICE_CLASS)] = F("carbon_dioxide");
+        doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("ppm");
         break;
 
       case Sensors::Purpose::PRESSURE:
@@ -137,8 +147,13 @@ public:
         doc[FPSTR(HA_ICON)] = F("mdi:fire-circle");
         break;
 
-      case Sensors::Purpose::CURRENT_POWER:
+      case Sensors::Purpose::POWER_FACTOR:
+      case Sensors::Purpose::POWER:
         doc[FPSTR(HA_ICON)] = F("mdi:chart-bar");
+        break;
+
+      case Sensors::Purpose::FAN_SPEED:
+        doc[FPSTR(HA_ICON)] = F("mdi:fan");
         break;
 
       case Sensors::Purpose::PRESSURE:

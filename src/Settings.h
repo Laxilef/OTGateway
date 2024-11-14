@@ -215,7 +215,7 @@ Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
   {
     true,
     "Power",
-    Sensors::Purpose::CURRENT_POWER,
+    Sensors::Purpose::POWER,
     Sensors::Type::OT_CURRENT_POWER,
   }
 };
@@ -288,7 +288,6 @@ struct Variables {
     bool connected = false;
     bool flame = false;
     float pressure = 0.0f;
-    float exhaustTemp = 0.0f;
     float heatExchangerTemp = 0.0f;
 
     struct {
@@ -312,6 +311,23 @@ struct Variables {
       float min = 0.0f;
       float max = 0.0f;
     } power;
+
+    struct {
+      float temp = 0.0f;
+      uint16_t co2 = 0;
+      uint16_t fanSpeed = 0;
+    } exhaust;
+
+    struct {
+      float storage = 0.0f;
+      float collector = 0.0f;
+    } solar;
+
+    struct {
+      uint8_t setpoint = 0;
+      uint8_t current = 0;
+      uint16_t supply = 0;
+    } fanSpeed;
 
     struct {
       bool active = false;

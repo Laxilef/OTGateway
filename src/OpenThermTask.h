@@ -214,6 +214,13 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::OT_PRESSURE, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_MODULATION_LEVEL, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_CURRENT_POWER, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_CO2, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_FAN_SPEED, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_SUPPLY_FAN_SPEED, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_CURRENT, false);
 
       this->initialized = false;
       vars.slave.connected = false;
@@ -652,14 +659,14 @@ protected:
     if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_TEMP)) {
       if (this->updateExhaustTemp()) {
         float convertedExhaustTemp = convertTemp(
-          vars.slave.exhaustTemp,
+          vars.slave.exhaust.temp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
         );
 
         Log.snoticeln(
           FPSTR(L_OT), F("Received exhaust temp: %.2f (converted: %.2f)"),
-          vars.slave.exhaustTemp, convertedExhaustTemp
+          vars.slave.exhaust.temp, convertedExhaustTemp
         );
 
         Sensors::setValueByType(
@@ -720,6 +727,76 @@ protected:
       }
     }
     
+    // Update solar storage temp
+    if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP)) {
+      if (this->updateSolarStorageTemp()) {
+        float convertedSolarStorageTemp = convertTemp(
+          vars.slave.solar.storage,
+          settings.opentherm.unitSystem,
+          settings.system.unitSystem
+        );
+
+        Log.snoticeln(
+          FPSTR(L_OT), F("Received solar storage temp: %.2f (converted: %.2f)"),
+          vars.slave.solar.storage, convertedSolarStorageTemp
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_SOLAR_STORAGE_TEMP, convertedSolarStorageTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+      } else {
+        Log.swarningln(FPSTR(L_OT), F("Failed receive solar storage temp"));
+      }
+    }
+
+    // Update solar collector temp
+    if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP)) {
+      if (this->updateSolarCollectorTemp()) {
+        float convertedSolarCollectorTemp = convertTemp(
+          vars.slave.solar.collector,
+          settings.opentherm.unitSystem,
+          settings.system.unitSystem
+        );
+
+        Log.snoticeln(
+          FPSTR(L_OT), F("Received solar collector temp: %.2f (converted: %.2f)"),
+          vars.slave.solar.collector, convertedSolarCollectorTemp
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, convertedSolarCollectorTemp,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+      } else {
+        Log.swarningln(FPSTR(L_OT), F("Failed receive solar collector temp"));
+      }
+    }
+
+    // Update fan speed
+    if (
+      Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_SETPOINT) ||
+      Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_CURRENT)
+    ) {
+      if (this->updateFanSpeed()) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Received fan speed, setpoint: %hhu%%, current: %hhu%%"),
+          vars.slave.fanSpeed.setpoint, vars.slave.fanSpeed.current
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_FAN_SPEED_SETPOINT, vars.slave.fanSpeed.setpoint,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+        Sensors::setValueByType(
+          Sensors::Type::OT_FAN_SPEED_CURRENT, vars.slave.fanSpeed.current,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+      }
+    }
+
     // Update pressure
     if (Sensors::getAmountByType(Sensors::Type::OT_PRESSURE)) {
       if (this->updatePressure()) {
@@ -744,6 +821,59 @@ protected:
       }
     }
 
+    // Update exhaust CO2
+    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_CO2)) {
+      if (this->updateExhaustCo2()) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Received exhaust CO2: %hu ppm"),
+          vars.slave.exhaust.co2
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_EXHAUST_CO2, vars.slave.exhaust.co2,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+      } else {
+        Log.swarningln(FPSTR(L_OT), F("Failed receive exhaust CO2"));
+      }
+    }
+
+    // Update exhaust fan speed
+    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_FAN_SPEED)) {
+      if (this->updateExhaustFanSpeed()) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Received exhaust fan speed: %hu rpm"),
+          vars.slave.exhaust.fanSpeed
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_EXHAUST_FAN_SPEED, vars.slave.exhaust.fanSpeed,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+      } else {
+        Log.swarningln(FPSTR(L_OT), F("Failed receive exhaust fan speed"));
+      }
+    }
+
+    // Update supply fan speed
+    if (Sensors::getAmountByType(Sensors::Type::OT_SUPPLY_FAN_SPEED)) {
+      if (this->updateSupplyFanSpeed()) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Received supply fan speed: %hu rpm"),
+          vars.slave.fanSpeed.supply
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_SUPPLY_FAN_SPEED, vars.slave.fanSpeed.supply,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+      } else {
+        Log.swarningln(FPSTR(L_OT), F("Failed receive supply fan speed"));
+      }
+    }
 
     // Fault reset action
     if (vars.actions.resetFault) {
@@ -996,42 +1126,59 @@ protected:
       || fabsf(target - vars.slave.ch2.targetTemp) > 0.001f;
   }
 
-  bool setHeatingTemp(const float temperature) {
-    const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TSet,
-      request
+  bool updateSlaveConfig() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::SConfigSMemberIDcode,
+      0
     ));
-
+    
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TSet)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::SConfigSMemberIDcode)) {
       return false;
     }
 
-    vars.slave.heating.targetTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.memberId = response & 0xFF;
+    vars.slave.flags = (response & 0xFFFF) >> 8;
 
-    return CustomOpenTherm::getUInt(response) == request;
+    /*uint8_t flags = (response & 0xFFFF) >> 8;
+    Log.straceln(
+      "OT",
+      F("MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n  Raw: %u"),
+      (bool) (flags & 0x01),
+      (bool) (flags & 0x02),
+      (bool) (flags & 0x04),
+      (bool) (flags & 0x08),
+      (bool) (flags & 0x10),
+      (bool) (flags & 0x20),
+      (bool) (flags & 0x40),
+      (bool) (flags & 0x80),
+      response & 0xFF,
+      response
+    );*/
+
+    return true;
   }
 
-  bool setCh2Temp(const float temperature) {
-    const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
+
+  bool setMaxModulationLevel(const uint8_t value) {
+    const unsigned int request = CustomOpenTherm::toFloat(value);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TsetCH2,
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::MaxRelModLevelSetting,
       request
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TsetCH2)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxRelModLevelSetting)) {
       return false;
     }
 
-    vars.slave.ch2.targetTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.modulation.max = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }
@@ -1052,6 +1199,47 @@ protected:
     }
 
     vars.slave.dhw.targetTemp = CustomOpenTherm::getFloat(response);
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+
+  bool setRoomTemp(float temperature) {
+    const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::Tr,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tr)) {
+      return false;
+    }
+
+    vars.slave.heating.indoorTemp = CustomOpenTherm::getFloat(response);
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+  bool setRoomTempCh2(float temperature) {
+    const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TrCH2,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TrCH2)) {
+      return false;
+    }
+
+    vars.slave.ch2.indoorTemp = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }
@@ -1096,99 +1284,100 @@ protected:
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool setRoomTemp(float temperature) {
+  bool setMaxHeatingTemp(const uint8_t temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::Tr,
+      OpenThermMessageID::MaxTSet,
       request
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tr)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxTSet)) {
       return false;
     }
-
-    vars.slave.heating.indoorTemp = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool setRoomTempCh2(float temperature) {
+  bool setHeatingTemp(const float temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::TrCH2,
+      OpenThermMessageID::TSet,
       request
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TrCH2)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TSet)) {
       return false;
     }
 
-    vars.slave.ch2.indoorTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.heating.targetTemp = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool updateCh2Temp() {
-    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::TflowCH2,
-      0
+  bool setCh2Temp(const float temperature) {
+    const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::TsetCH2,
+      request
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TflowCH2)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TsetCH2)) {
       return false;
     }
 
-    vars.slave.ch2.currentTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.ch2.targetTemp = CustomOpenTherm::getFloat(response);
 
-    return true;
+    return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool updateSlaveConfig() {
-    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::SConfigSMemberIDcode,
-      0
+  bool setMasterVersion(const uint8_t version, const uint8_t type) {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::MasterVersion,
+      (unsigned int) version | (unsigned int) type << 8
     ));
-    
+
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::SConfigSMemberIDcode)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MasterVersion)) {
       return false;
     }
 
-    vars.slave.memberId = response & 0xFF;
-    vars.slave.flags = (response & 0xFFFF) >> 8;
+    uint8_t rVersion = response & 0xFF;
+    uint8_t rType = (response & 0xFFFF) >> 8;
 
-    /*uint8_t flags = (response & 0xFFFF) >> 8;
-    Log.straceln(
-      "OT",
-      F("MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n  Raw: %u"),
-      (bool) (flags & 0x01),
-      (bool) (flags & 0x02),
-      (bool) (flags & 0x04),
-      (bool) (flags & 0x08),
-      (bool) (flags & 0x10),
-      (bool) (flags & 0x20),
-      (bool) (flags & 0x40),
-      (bool) (flags & 0x80),
-      response & 0xFF,
-      response
-    );*/
+    return rVersion == version && rType == type;
+  }
 
-    return true;
+  bool setMasterOtVersion(const float version) {
+    const unsigned int request = CustomOpenTherm::toFloat(version);
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::OpenThermVersionMaster,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OpenThermVersionMaster)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
   }
 
   /**
@@ -1231,26 +1420,6 @@ protected:
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool setMaxModulationLevel(const uint8_t value) {
-    const unsigned int request = CustomOpenTherm::toFloat(value);
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::WRITE_DATA,
-      OpenThermMessageID::MaxRelModLevelSetting,
-      request
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxRelModLevelSetting)) {
-      return false;
-    }
-
-    vars.slave.modulation.max = CustomOpenTherm::getFloat(response);
-
-    return CustomOpenTherm::getUInt(response) == request;
-  }
-
   bool updateSlaveOtVersion() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
@@ -1268,24 +1437,6 @@ protected:
     vars.slave.protocolVersion = CustomOpenTherm::getFloat(response);
 
     return true;
-  }
-
-  bool setMasterOtVersion(const float version) {
-    const unsigned int request = CustomOpenTherm::toFloat(version);
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::WRITE_DATA,
-      OpenThermMessageID::OpenThermVersionMaster,
-      request
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OpenThermVersionMaster)) {
-      return false;
-    }
-
-    return CustomOpenTherm::getUInt(response) == request;
   }
 
   bool updateSlaveVersion() {
@@ -1308,24 +1459,27 @@ protected:
     return true;
   }
 
-  bool setMasterVersion(const uint8_t version, const uint8_t type) {
+  bool updateMinModulationLevel() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::WRITE_DATA,
-      OpenThermMessageID::MasterVersion,
-      (unsigned int) version | (unsigned int) type << 8
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::MaxCapacityMinModLevel,
+      0
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MasterVersion)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxCapacityMinModLevel)) {
       return false;
     }
 
-    uint8_t rVersion = response & 0xFF;
-    uint8_t rType = (response & 0xFFFF) >> 8;
+    vars.slave.modulation.min = response & 0xFF;
+    vars.slave.power.max = (response & 0xFFFF) >> 8;
+    vars.slave.power.min = vars.slave.modulation.min > 0 && vars.slave.power.max > 0.1f
+      ? (vars.slave.modulation.min * 0.01f) * vars.slave.power.max
+      : 0.0f;
 
-    return rVersion == version && rType == type;
+    return true;
   }
 
   bool updateMinMaxDhwTemp() {
@@ -1382,134 +1536,67 @@ protected:
     return false;
   }
 
-  bool setMaxHeatingTemp(const uint8_t temperature) {
-    const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::MaxTSet,
-      request
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxTSet)) {
-      return false;
-    }
-
-    return CustomOpenTherm::getUInt(response) == request;
-  }
-
-  bool updateOutdoorTemp() {
+  bool updateFaultCode() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::Toutside,
+      OpenThermMessageID::ASFflags,
       0
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Toutside)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::ASFflags)) {
       return false;
     }
 
-    vars.slave.heating.outdoorTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.fault.code = response & 0xFF;
 
     return true;
   }
 
-  bool updateExhaustTemp() {
+  bool updateDiagCode() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::Texhaust,
+      OpenThermMessageID::OEMDiagnosticCode,
       0
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Texhaust)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OEMDiagnosticCode)) {
       return false;
     }
 
-    float value = (float) CustomOpenTherm::getInt(response);
-    if (!isValidTemp(value, settings.opentherm.unitSystem, -40, 500)) {
-      return false;
-    }
-
-    vars.slave.exhaustTemp = value;
+    vars.slave.diag.code = CustomOpenTherm::getUInt(response);
 
     return true;
   }
 
-  bool updateHeatExchangerTemp() {
+  bool updateModulationLevel() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::TboilerHeatExchanger,
+      OpenThermMessageID::RelModLevel,
       0
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TboilerHeatExchanger)) {
-      return false;
-    }
-
-    float value = (float) CustomOpenTherm::getInt(response);
-    if (value <= 0) {
-      return false;
-    }
-
-    vars.slave.heatExchangerTemp = value;
-
-    return true;
-  }
-
-  bool updateHeatingTemp() {
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermMessageType::READ_DATA,
-      OpenThermMessageID::Tboiler,
-      0
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tboiler)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::RelModLevel)) {
       return false;
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (value <= 0) {
+    if (value < 0) {
       return false;
     }
 
-    vars.slave.heating.currentTemp = value;
+    vars.slave.modulation.current = value;
 
     return true;
   }
-
-  bool updateHeatingReturnTemp() {
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermMessageType::READ_DATA,
-      OpenThermMessageID::Tret,
-      0
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tret)) {
-      return false;
-    }
-
-    vars.slave.heating.returnTemp = CustomOpenTherm::getFloat(response);
-    
-    return true;
-  }
-
 
   bool updateDhwTemp() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
@@ -1589,87 +1676,191 @@ protected:
     return true;
   }
 
-  bool updateFaultCode() {
+  bool updateHeatingTemp() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::ASFflags,
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Tboiler,
       0
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::ASFflags)) {
-      return false;
-    }
-
-    vars.slave.fault.code = response & 0xFF;
-
-    return true;
-  }
-
-  bool updateDiagCode() {
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::OEMDiagnosticCode,
-      0
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::OEMDiagnosticCode)) {
-      return false;
-    }
-
-    vars.slave.diag.code = CustomOpenTherm::getUInt(response);
-
-    return true;
-  }
-
-  bool updateModulationLevel() {
-    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::RelModLevel,
-      0
-    ));
-
-    if (!CustomOpenTherm::isValidResponse(response)) {
-      return false;
-
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::RelModLevel)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tboiler)) {
       return false;
     }
 
     float value = CustomOpenTherm::getFloat(response);
-    if (value < 0) {
+    if (value <= 0) {
       return false;
     }
 
-    vars.slave.modulation.current = value;
+    vars.slave.heating.currentTemp = value;
 
     return true;
   }
 
-  bool updateMinModulationLevel() {
+  bool updateHeatingReturnTemp() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
-      OpenThermRequestType::READ_DATA,
-      OpenThermMessageID::MaxCapacityMinModLevel,
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Tret,
       0
     ));
 
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
-    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MaxCapacityMinModLevel)) {
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tret)) {
       return false;
     }
 
-    vars.slave.modulation.min = response & 0xFF;
-    vars.slave.power.max = (response & 0xFFFF) >> 8;
-    vars.slave.power.min = vars.slave.modulation.min > 0 && vars.slave.power.max > 0.1f
-      ? (vars.slave.modulation.min * 0.01f) * vars.slave.power.max
-      : 0.0f;
+    vars.slave.heating.returnTemp = CustomOpenTherm::getFloat(response);
+    
+    return true;
+  }
+
+  bool updateCh2Temp() {
+    unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::TflowCH2,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TflowCH2)) {
+      return false;
+    }
+
+    vars.slave.ch2.currentTemp = CustomOpenTherm::getFloat(response);
+
+    return true;
+  }
+
+
+
+  bool updateExhaustTemp() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::Texhaust,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Texhaust)) {
+      return false;
+    }
+
+    float value = (float) CustomOpenTherm::getInt(response);
+    if (!isValidTemp(value, settings.opentherm.unitSystem, -40, 500)) {
+      return false;
+    }
+
+    vars.slave.exhaust.temp = value;
+
+    return true;
+  }
+
+  bool updateHeatExchangerTemp() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::TboilerHeatExchanger,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::TboilerHeatExchanger)) {
+      return false;
+    }
+
+    float value = (float) CustomOpenTherm::getInt(response);
+    if (value <= 0) {
+      return false;
+    }
+
+    vars.slave.heatExchangerTemp = value;
+
+    return true;
+  }
+
+  bool updateOutdoorTemp() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::Toutside,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Toutside)) {
+      return false;
+    }
+
+    vars.slave.heating.outdoorTemp = CustomOpenTherm::getFloat(response);
+
+    return true;
+  }
+
+  bool updateSolarStorageTemp() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Tstorage,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tstorage)) {
+      return false;
+    }
+
+    vars.slave.solar.storage = CustomOpenTherm::getFloat(response);
+    
+    return true;
+  }
+
+  bool updateSolarCollectorTemp() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermMessageType::READ_DATA,
+      OpenThermMessageID::Tcollector,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Tcollector)) {
+      return false;
+    }
+
+    vars.slave.solar.collector = CustomOpenTherm::getFloat(response);
+    
+    return true;
+  }
+
+  bool updateFanSpeed() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::BoilerFanSpeedSetpointAndActual,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::BoilerFanSpeedSetpointAndActual)) {
+      return false;
+    }
+
+    vars.slave.fanSpeed.setpoint = (response & 0xFFFF) >> 8;
+    vars.slave.fanSpeed.current = response & 0xFF;
 
     return true;
   }
@@ -1694,6 +1885,63 @@ protected:
     }
 
     vars.slave.pressure = value;
+
+    return true;
+  }
+
+  bool updateExhaustCo2() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CO2exhaust,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CO2exhaust)) {
+      return false;
+    }
+
+    vars.slave.exhaust.co2 = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateExhaustFanSpeed() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::RPMexhaust,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::RPMexhaust)) {
+      return false;
+    }
+
+    vars.slave.exhaust.fanSpeed = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateSupplyFanSpeed() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::RPMsupply,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::RPMsupply)) {
+      return false;
+    }
+
+    vars.slave.fanSpeed.supply = CustomOpenTherm::getUInt(response);
 
     return true;
   }
