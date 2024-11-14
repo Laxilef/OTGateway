@@ -63,7 +63,7 @@ class Lang {
   }
 
   async fetchTranslations(locale) {
-    const response = await fetch(`/static/locales/${locale}.json`);
+    const response = await fetch(`/static/locales/${locale}.json?{BUILD_TIME}`);
     const data = await response.json();
   
     if (data.values instanceof Object) {

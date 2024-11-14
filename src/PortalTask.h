@@ -1,5 +1,5 @@
-#define PORTAL_CACHE_TIME "max-age=86400"
-#define PORTAL_CACHE (settings.system.logLevel >= TinyLogger::Level::TRACE ? nullptr : PORTAL_CACHE_TIME)
+//#define PORTAL_CACHE "max-age=86400"
+#define PORTAL_CACHE nullptr
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266WebServer.h>
 #include <Updater.h>
@@ -72,9 +72,24 @@ protected:
   void setup() {
     this->dnsServer->setTTL(0);
     this->dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
-    #ifdef ARDUINO_ARCH_ESP8266
-    this->webServer->enableETag(true);
-    #endif
+    this->webServer->enableETag(true, [](FS &fs, const String &fName) -> const String {
+      char buf[32];
+      {
+        MD5Builder md5;
+        md5.begin();
+        md5.add(fName);
+        md5.add(" " BUILD_ENV " " BUILD_VERSION " " __DATE__ " " __TIME__);
+        md5.calculate();
+        md5.getChars(buf);
+      }
+
+      String etag;
+      etag.reserve(34);
+      etag += '\"';
+      etag.concat(buf, 32);
+      etag += '\"';
+      return etag;
+    });
 
     // index page
     /*auto indexPage = (new DynamicPage("/", &LittleFS, "/pages/index.html"))

@@ -218,7 +218,6 @@ protected:
   CanHandleCallback canHandleCallback;
   BeforeSendCallback beforeSendCallback;
   TemplateCallback templateCallback;
-  String eTag;
   const char* uri = nullptr;
   const char* path = nullptr;
   const char* cacheHeader = nullptr;
