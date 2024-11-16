@@ -122,14 +122,14 @@ public:
     return true;
   }
 
-  static uint8_t getAmountByType(Type type) {
+  static uint8_t getAmountByType(Type type, bool onlyEnabled = false) {
     if (settings == nullptr) {
       return 0;
     }
 
     uint8_t amount = 0;
     for (uint8_t id = 0; id < getMaxSensorId(); id++) {
-      if (settings[id].type == type) {
+      if (settings[id].type == type && (!onlyEnabled || settings[id].enabled)) {
         amount++;
       }
     }

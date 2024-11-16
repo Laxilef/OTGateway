@@ -462,8 +462,8 @@ protected:
 
     // Update modulation level
     if (
-      Sensors::getAmountByType(Sensors::Type::OT_MODULATION_LEVEL) ||
-      Sensors::getAmountByType(Sensors::Type::OT_CURRENT_POWER)
+      Sensors::getAmountByType(Sensors::Type::OT_MODULATION_LEVEL, true) ||
+      Sensors::getAmountByType(Sensors::Type::OT_CURRENT_POWER, true)
     ) {
       if (vars.slave.flame) {
         if (this->updateModulationLevel()) {
@@ -512,7 +512,7 @@ protected:
     }
 
     // Update DHW temp
-    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP)) {
+    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP, true)) {
       bool result = this->updateDhwTemp();
 
       if (result) {
@@ -538,7 +538,7 @@ protected:
     }
 
     // Update DHW temp 2
-    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2)) {
+    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2, true)) {
       if (this->updateDhwTemp2()) {
         float convertedDhwTemp2 = convertTemp(
           vars.slave.dhw.currentTemp2,
@@ -562,7 +562,7 @@ protected:
     }
 
     // Update DHW flow rate
-    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE)) {
+    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE, true)) {
       if (this->updateDhwFlowRate()) {
         float convertedDhwFlowRate = convertVolume(
           vars.slave.dhw.flowRate,
@@ -586,7 +586,7 @@ protected:
     }
 
     // Update heating temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_TEMP, true)) {
       if (this->updateHeatingTemp()) {
         float convertedHeatingTemp = convertTemp(
           vars.slave.heating.currentTemp,
@@ -610,7 +610,7 @@ protected:
     }
 
     // Update heating return temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_RETURN_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_RETURN_TEMP, true)) {
       if (this->updateHeatingReturnTemp()) {
         float convertedHeatingReturnTemp = convertTemp(
           vars.slave.heating.returnTemp,
@@ -634,7 +634,7 @@ protected:
     }
 
     // Update CH2 temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP, true)) {
       if (vars.master.ch2.enabled && !settings.opentherm.nativeHeatingControl) {
         if (this->updateCh2Temp()) {
           float convertedCh2Temp = convertTemp(
@@ -660,7 +660,7 @@ protected:
     }
 
     // Update exhaust temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_TEMP, true)) {
       if (this->updateExhaustTemp()) {
         float convertedExhaustTemp = convertTemp(
           vars.slave.exhaust.temp,
@@ -684,7 +684,7 @@ protected:
     }
 
     // Update heat exchanger temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_HEAT_EXCHANGER_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_HEAT_EXCHANGER_TEMP, true)) {
       if (this->updateHeatExchangerTemp()) {
         float convertedHeatExchTemp = convertTemp(
           vars.slave.heatExchangerTemp,
@@ -708,7 +708,7 @@ protected:
     }
 
     // Update outdoor temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_OUTDOOR_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_OUTDOOR_TEMP, true)) {
       if (this->updateOutdoorTemp()) {
         float convertedOutdoorTemp = convertTemp(
           vars.slave.heating.outdoorTemp,
@@ -732,7 +732,7 @@ protected:
     }
     
     // Update solar storage temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP, true)) {
       if (this->updateSolarStorageTemp()) {
         float convertedSolarStorageTemp = convertTemp(
           vars.slave.solar.storage,
@@ -756,7 +756,7 @@ protected:
     }
 
     // Update solar collector temp
-    if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, true)) {
       if (this->updateSolarCollectorTemp()) {
         float convertedSolarCollectorTemp = convertTemp(
           vars.slave.solar.collector,
@@ -781,8 +781,8 @@ protected:
 
     // Update fan speed
     if (
-      Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_SETPOINT) ||
-      Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_CURRENT)
+      Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, true) ||
+      Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_CURRENT, true)
     ) {
       if (this->updateFanSpeed()) {
         Log.snoticeln(
@@ -802,7 +802,7 @@ protected:
     }
 
     // Update pressure
-    if (Sensors::getAmountByType(Sensors::Type::OT_PRESSURE)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_PRESSURE, true)) {
       if (this->updatePressure()) {
         float convertedPressure = convertPressure(
           vars.slave.pressure,
@@ -826,7 +826,7 @@ protected:
     }
 
     // Update exhaust CO2
-    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_CO2)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_CO2, true)) {
       if (this->updateExhaustCo2()) {
         Log.snoticeln(
           FPSTR(L_OT), F("Received exhaust CO2: %hu ppm"),
@@ -844,7 +844,7 @@ protected:
     }
 
     // Update exhaust fan speed
-    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_FAN_SPEED)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_FAN_SPEED, true)) {
       if (this->updateExhaustFanSpeed()) {
         Log.snoticeln(
           FPSTR(L_OT), F("Received exhaust fan speed: %hu rpm"),
@@ -862,7 +862,7 @@ protected:
     }
 
     // Update supply fan speed
-    if (Sensors::getAmountByType(Sensors::Type::OT_SUPPLY_FAN_SPEED)) {
+    if (Sensors::getAmountByType(Sensors::Type::OT_SUPPLY_FAN_SPEED, true)) {
       if (this->updateSupplyFanSpeed()) {
         Log.snoticeln(
           FPSTR(L_OT), F("Received supply fan speed: %hu rpm"),
