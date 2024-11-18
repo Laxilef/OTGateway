@@ -468,9 +468,14 @@ protected:
       if (vars.slave.flame) {
         if (this->updateModulationLevel()) {
           float power = 0.0f;
-          if (vars.slave.modulation.current > 0 && settings.opentherm.maxPower > 0.1f) {
-            float modulatedPower = settings.opentherm.maxPower - settings.opentherm.minPower;
-            power = settings.opentherm.minPower + (modulatedPower / 100.0f * vars.slave.modulation.current);
+          if (settings.opentherm.maxPower > 0.1f) {
+            power += settings.opentherm.minPower;
+            
+            if (vars.slave.modulation.current > 0) {
+              power += (
+                settings.opentherm.maxPower - settings.opentherm.minPower
+              ) / 100.0f * vars.slave.modulation.current;
+            }
           }
           
           Log.snoticeln(
