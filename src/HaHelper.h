@@ -1204,7 +1204,7 @@ public:
     doc[FPSTR(HA_MODES)][1] = F("heat");
 
     doc[FPSTR(HA_ACTION_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_ACTION_TEMPLATE)] = F("{{ iif(value_json.master.heating.enabled, iif(value_json.slave.heating.active, 'heating', 'idle'), 'off') }}");
+    doc[FPSTR(HA_ACTION_TEMPLATE)] = F("{{ iif(value_json.slave.heating.active, 'heating', 'idle') }}");
 
     doc[FPSTR(HA_PRESET_MODE_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
     doc[FPSTR(HA_PRESET_MODE_COMMAND_TEMPLATE)] = F("{% if value == 'boost' %}{\"heating\": {\"turbo\" : true}}"
@@ -1256,7 +1256,7 @@ public:
     doc[FPSTR(HA_MODES)][1] = F("heat");
 
     doc[FPSTR(HA_ACTION_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_ACTION_TEMPLATE)] = F("{{ iif(value_json.master.dhw.enabled, iif(value_json.slave.dhw.active, 'heating', 'idle'), 'off') }}");
+    doc[FPSTR(HA_ACTION_TEMPLATE)] = F("{{ iif(value_json.slave.dhw.active, 'heating', 'idle') }}");
 
     doc[FPSTR(HA_MIN_TEMP)] = minTemp;
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
