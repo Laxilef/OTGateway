@@ -936,6 +936,14 @@ protected:
     }
 
     if (this->stateWebServer()) {
+      #ifdef ARDUINO_ARCH_ESP32
+      // Fix ERR_CONNECTION_RESET for Chrome based browsers
+      auto& client = this->webServer->client();
+      if (!client.getNoDelay()) {
+        client.setNoDelay(true);
+      }
+      #endif
+
       this->webServer->handleClient();
     }
 
