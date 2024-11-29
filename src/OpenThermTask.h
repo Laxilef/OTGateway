@@ -470,17 +470,19 @@ protected:
           float power = 0.0f;
           if (settings.opentherm.maxPower > 0.1f) {
             power += settings.opentherm.minPower;
-            
+
             if (vars.slave.modulation.current > 0) {
               power += (
                 settings.opentherm.maxPower - settings.opentherm.minPower
               ) / 100.0f * vars.slave.modulation.current;
             }
           }
+          vars.slave.power.current = power;
           
           Log.snoticeln(
             FPSTR(L_OT), F("Received modulation level: %hhu%%, power: %.2f of %.2f kW (min: %.2f kW)"),
-            vars.slave.modulation.current, power, settings.opentherm.maxPower, settings.opentherm.minPower
+            vars.slave.modulation.current, vars.slave.power.current,
+            settings.opentherm.maxPower, settings.opentherm.minPower
           );
 
           // Modulation level sensors
@@ -491,7 +493,7 @@ protected:
 
           // Power sensors
           Sensors::setValueByType(
-            Sensors::Type::OT_CURRENT_POWER, power,
+            Sensors::Type::OT_CURRENT_POWER, vars.slave.power.current,
             Sensors::ValueType::PRIMARY, true, true
           );
 
@@ -501,16 +503,17 @@ protected:
 
       } else {
         vars.slave.modulation.current = 0;
+        vars.slave.power.current = 0.0f;
 
         // Modulation level sensors
         Sensors::setValueByType(
-          Sensors::Type::OT_MODULATION_LEVEL, 0.0f,
+          Sensors::Type::OT_MODULATION_LEVEL, vars.slave.modulation.current,
           Sensors::ValueType::PRIMARY, true, true
         );
 
         // Power sensors
         Sensors::setValueByType(
-          Sensors::Type::OT_CURRENT_POWER, 0.0f,
+          Sensors::Type::OT_CURRENT_POWER, vars.slave.power.current,
           Sensors::ValueType::PRIMARY, true, true
         );
       }
