@@ -11,12 +11,13 @@
     <header class="container">
       <nav>
         <ul>
-          <li><a href="/">
+          <li>
+            <a href="/">
               <div class="logo" data-i18n>logo</div>
-            </a></li>
+            </a>
+          </li>
         </ul>
         <ul>
-          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
           <li>
             <select id="lang" aria-label="Lang">
               <option value="en" selected>EN</option>
@@ -48,7 +49,7 @@
               </tr>
               <tr>
                 <th scope="row" data-i18n>network.wifi.connected</th>
-                <td><input type="radio" id="network-connected" aria-invalid="false" checked disabled /></td>
+                <td><i id="network-connected"></i></td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>network.wifi.ssid</th>
@@ -184,7 +185,11 @@
 
             setValue('#network-hostname', result.network.hostname);
             setValue('#network-mac', result.network.mac);
-            setState('#network-connected', result.network.connected);
+            setStatus(
+              '#network-connected',
+              result.network.connected ? "success" : "error",
+              result.network.connected ? "green" : "red"
+            );
             setValue('#network-ssid', result.network.ssid);
             setValue('#network-signal', result.network.signalQuality);
             setValue('#network-ip', result.network.ip);

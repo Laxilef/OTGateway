@@ -11,12 +11,13 @@
     <header class="container">
       <nav>
         <ul>
-          <li><a href="/">
+          <li>
+            <a href="/">
               <div class="logo" data-i18n>logo</div>
-            </a></li>
+            </a>
+          </li>
         </ul>
         <ul>
-          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
           <li>
             <select id="lang" aria-label="Lang">
               <option value="en" selected>EN</option>
@@ -80,43 +81,43 @@
               <tbody>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mNetworkConnected</th>
-                  <td><input type="radio" class="mNetworkConnected" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mNetworkConnected"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mMqttConnected</th>
-                  <td><input type="radio" class="mMqttConnected" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mMqttConnected"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mEmergencyState</th>
-                  <td><input type="radio" class="mEmergencyState" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mEmergencyState"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mExtPumpState</th>
-                  <td><input type="radio" class="mExtPumpState" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mExtPumpState"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mCascadeControlInput</th>
-                  <td><input type="radio" id="mCascadeControlInput" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mCascadeControlInput"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mCascadeControlOutput</th>
-                  <td><input type="radio" id="mCascadeControlOutput" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mCascadeControlOutput"></i></td>
                 </tr>
 
 
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sConnected</th>
-                  <td><input type="radio" class="sConnected" aria-invalid="false" checked disabled /></td>
+                  <td><i class="sConnected"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sFlame</th>
-                  <td><input type="radio" class="sFlame" aria-invalid="false" checked disabled /></td>
+                  <td><i class="sFlame"></i></td>
                 </tr>
 
 
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sFaultActive</th>
-                  <td><input type="radio" class="sFaultActive" aria-invalid="false" checked disabled /></td>
+                  <td><i class="sFaultActive"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sFaultCode</th>
@@ -124,7 +125,7 @@
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sDiagActive</th>
-                  <td><input type="radio" class="sDiagActive" aria-invalid="false" checked disabled /></td>
+                  <td><i class="sDiagActive"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sDiagCode</th>
@@ -134,15 +135,15 @@
 
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mHeatEnabled</th>
-                  <td><input type="radio" class="mHeatEnabled" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mHeatEnabled"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mHeatBlocking</th>
-                  <td><input type="radio" class="mHeatBlocking" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mHeatBlocking"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sHeatActive</th>
-                  <td><input type="radio" class="sHeatActive" aria-invalid="false" checked disabled /></td>
+                  <td><i class="sHeatActive"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mHeatTargetTemp</th>
@@ -172,11 +173,11 @@
 
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mDhwEnabled</th>
-                  <td><input type="radio" class="mDhwEnabled" aria-invalid="false" checked disabled /></td>
+                  <td><i class="mDhwEnabled"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sDhwActive</th>
-                  <td><input type="radio" class="sDhwActive" aria-invalid="false" checked disabled /></td>
+                  <td><i class="sDhwActive"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mDhwTargetTemp</th>
@@ -189,6 +190,25 @@
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mDhwRetTemp</th>
                   <td><b class="mDhwRetTemp"></b> <span class="tempUnit"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <hr />
+
+          <details>
+            <summary><b data-i18n>dashboard.section.sensors</b></summary>
+            <table>
+              <tbody class="sensors">
+                <tr class="sensor template hidden">
+                  <td style="width: 1.35rem">
+                    <span class="sStatusContainer">
+                      <i class="sStatus"></i>
+                    </span>
+                  </td>
+                  <th scope="row" class="sName"></th>
+                  <td class="sValue"></td>
                 </tr>
               </tbody>
             </table>
@@ -335,6 +355,8 @@
         });
 
         setTimeout(async function onLoadPage() {
+          let unitSystem = null;
+
           if (modifiedTime) {
             if ((Date.now() - modifiedTime) < 5000) {
               setTimeout(onLoadPage, 1000);
@@ -372,6 +394,7 @@
             const result = await response.json();
             noRegulators = !result.opentherm.nativeHeatingControl && !result.equitherm.enabled && !result.pid.enabled;
             prevSettings = result;
+            unitSystem = result.system.unitSystem;
             newSettings.heating.enabled = result.heating.enabled;
             newSettings.heating.turbo = result.heating.turbo;
             newSettings.heating.target = result.heating.target;
@@ -391,9 +414,9 @@
             setCheckboxValue('#tDhwEnabled', result.dhw.enabled);
             setValue('#tDhwTargetTemp', result.dhw.target);
 
-            setValue('.tempUnit', temperatureUnit(result.system.unitSystem));
-            setValue('.pressureUnit', pressureUnit(result.system.unitSystem));
-            setValue('.volumeUnit', volumeUnit(result.system.unitSystem));
+            setValue('.tempUnit', temperatureUnit(unitSystem));
+            setValue('.pressureUnit', pressureUnit(unitSystem));
+            setValue('.volumeUnit', volumeUnit(unitSystem));
 
           } catch (error) {
             console.log(error);
@@ -424,7 +447,11 @@
             setValue('.sAppVersion', result.slave.appVersion);
             setValue('.sProtocolVersion', result.slave.protocolVersion);
 
-            setState('.sConnected', result.slave.connected);
+            setStatus(
+              '.sConnected',
+              result.slave.connected ? "success" : "error",
+              result.slave.connected ? "green" : "red"
+            );
             setState('.sFlame', result.slave.flame);
 
             setValue('.sModMin', result.slave.modulation.min);
@@ -441,26 +468,38 @@
             setValue('.sDhwMinTemp', result.slave.dhw.minTemp);
             setValue('.sDhwMaxTemp', result.slave.dhw.maxTemp);
 
-            setState('.sFaultActive', result.slave.fault.active);
+            setStatus(
+              '.sFaultActive',
+              result.slave.fault.active ? "success" : "error",
+              result.slave.fault.active ? "red" : "green"
+            );
             setValue(
               '.sFaultCode',
               result.slave.fault.active
-                ? (result.slave.fault.code + " (0x" + dec2hex(result.slave.fault.code) + ")")
+                ? `${result.slave.fault.code} (0x${dec2hex(result.slave.fault.code)})`
                 : "-"
             );
 
-            setState('.sDiagActive', result.slave.diag.active);
+            setStatus(
+              '.sDiagActive',
+              result.slave.diag.active ? "success" : "error",
+              result.slave.diag.active ? "red" : "green"
+            );
             setValue(
               '.sDiagCode',
               result.slave.diag.active
-                ? (result.slave.diag.code + " (0x" + dec2hex(result.slave.diag.code) + ")")
+                ? `${result.slave.diag.code} (0x${dec2hex(result.slave.diag.code)})`
                 : "-"
             );
 
 
             // MASTER
             setState('.mHeatEnabled', result.master.heating.enabled);
-            setState('.mHeatBlocking', result.master.heating.blocking);
+            setStatus(
+              '.mHeatBlocking',
+              result.master.heating.blocking ? "success" : "error",
+              result.master.heating.blocking ? "red" : "green"
+            );
             setState('.mHeatIndoorTempControl', result.master.heating.indoorTempControl);
             setValue('.mHeatSetpointTemp', result.master.heating.setpointTemp);
             setValue('.mHeatTargetTemp', result.master.heating.targetTemp);
@@ -478,14 +517,100 @@
             setValue('.mDhwMinTemp', result.master.dhw.minTemp);
             setValue('.mDhwMaxTemp', result.master.dhw.maxTemp);
 
-            setState('.mNetworkConnected', result.master.network.connected);
+            setStatus(
+              '.mNetworkConnected',
+              result.master.network.connected ? "success" : "error",
+              result.master.network.connected ? "green" : "red"
+            );
             setState('.mMqttConnected', result.master.mqtt.connected);
-            setState('.mEmergencyState', result.master.emergency.state);
+            setStatus(
+              '.mEmergencyState',
+              result.master.emergency.state ? "success" : "error",
+              result.master.emergency.state ? "red" : "green"
+            );
             setState('.mExtPumpState', result.master.externalPump.state);
             setState('.mCascadeControlInput', result.master.cascadeControl.input);
             setState('.mCascadeControlOutput', result.master.cascadeControl.output);
 
             setBusy('#dashboard-busy', '#dashboard-container', false);
+
+          } catch (error) {
+            console.log(error);
+          }
+
+          // sensors
+          try {
+            const response = await fetch("/api/sensors?detailed=1", { cache: "no-cache" });
+            if (!response.ok) {
+              throw new Error("Response not valid");
+            }
+
+            const container = document.querySelector(".sensors");
+            const templateNode = container.querySelector(".template");
+            const result = await response.json();
+
+            for (const sensorId in result) {
+              let sensorNode = container.querySelector(`.sensor[data-id='${sensorId}']`);
+              if (sensorNode) {
+                continue;
+              }
+
+              sensorNode = templateNode.cloneNode(true);
+              sensorNode.dataset.id = sensorId;
+              sensorNode.classList.remove("template");
+              container.appendChild(sensorNode);
+            }
+
+            for (const sensorId in result) {
+              const sensorNode = container.querySelector(`.sensor[data-id='${sensorId}']`);
+              if (!sensorNode) {
+                continue;
+              }
+              
+              const sData = result[sensorId];
+              if (sData.purpose == 255) {
+                sensorNode.classList.add("hidden");
+                continue;
+              }
+
+              sensorNode.classList.remove("hidden");
+
+              setStatus(
+                ".sStatus",
+                sData.connected ? "success" : "error",
+                sData.connected ? "green" : "red",
+                sensorNode
+              );
+              setValue(".sName", sData.name, sensorNode);
+              setValue(".sValue", "", sensorNode);
+
+              const statusNode = sensorNode.querySelector(`.sStatusContainer`);
+              if (statusNode) {
+                statusNode.dataset.tooltip = `${sData.signalQuality}%`;
+              }
+
+              if (sData.value !== undefined) {
+                const sUnit = purposeUnit(sData.purpose, unitSystem);
+                appendValue(".sValue", `<b>${sData.value.toFixed(2)}</b> ${sUnit !== null ? sUnit : ``}`, `<br />`, sensorNode);
+              }
+
+              if (sData.temperature !== undefined) {
+                const sUnit = temperatureUnit(unitSystem);
+                appendValue(".sValue", `${i18n('dashboard.sensors.values.temp')}: <b>${sData.temperature.toFixed(2)}</b> ${sUnit !== null ? sUnit : ``}`, `<br />`, sensorNode);
+              }
+
+              if (sData.humidity !== undefined) {
+                appendValue(".sValue", `${i18n('dashboard.sensors.values.humidity')}: <b>${sData.humidity.toFixed(2)}</b> %`, `<br />`, sensorNode);
+              }
+
+              if (sData.battery !== undefined) {
+                appendValue(".sValue", `${i18n('dashboard.sensors.values.battery')}: <b>${sData.battery.toFixed(2)}</b> %`, `<br />`, sensorNode);
+              }
+
+              if (sData.rssi !== undefined) {
+                appendValue(".sValue", `${i18n('dashboard.sensors.values.rssi')}: <b>${sData.rssi.toFixed(0)}</b> ${i18n('dbm')}`, `<br />`, sensorNode);
+              }
+            }
 
           } catch (error) {
             console.log(error);

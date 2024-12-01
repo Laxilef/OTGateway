@@ -143,8 +143,8 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
           input.focus();
         };
 
-        row.insertCell().textContent = "#" + (i + 1);
-        row.insertCell().innerHTML = result[i].hidden ? ("<i>" + result[i].bssid + "</i>") : result[i].ssid;
+        row.insertCell().textContent = `#${i + 1}`;
+        row.insertCell().innerHTML = result[i].hidden ? `<i>${result[i].bssid}</i>` : result[i].ssid;
 
         // info cell
         let infoCell = row.insertCell();
@@ -164,7 +164,7 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
         }
         
         let signalQualityContainer = document.createElement("span");
-        signalQualityContainer.setAttribute('data-tooltip', result[i].signalQuality + "%");
+        signalQualityContainer.setAttribute('data-tooltip', `${result[i].signalQuality}%`);
         signalQualityContainer.appendChild(signalQualityIcon);
         infoCell.appendChild(signalQualityContainer);
 
@@ -427,7 +427,7 @@ const setupUpgradeForm = (formSelector) => {
         resItem.classList.add('failed');
 
         if (result.firmware.error != "") {
-          resItem.textContent += ": " + result.firmware.error;
+          resItem.textContent += `: ${result.firmware.error}`;
         }
       }
     }
@@ -445,7 +445,7 @@ const setupUpgradeForm = (formSelector) => {
         resItem.classList.add('failed');
 
         if (result.filesystem.error != "") {
-          resItem.textContent += ": " + result.filesystem.error;
+          resItem.textContent += `: ${result.filesystem.error}`;
         }
       }
     }
@@ -526,8 +526,8 @@ const setBusy = (busySelector, contentSelector, value, parent = undefined) => {
   }
 }
 
-const setState = (selector, value, parent = undefined) => {
-  if (parent == undefined) {
+const setAriaState = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -539,8 +539,40 @@ const setState = (selector, value, parent = undefined) => {
   item.setAttribute('aria-invalid', !value);
 }
 
+const setStatus = (selector, state, color = undefined, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let item = parent.querySelector(selector);
+  if (!item) {
+    return;
+  }
+
+  item.classList.forEach(cName => {
+    if (cName.indexOf("icons-") === 0) {
+      item.classList.remove(cName);
+    }
+  });
+
+  item.classList.add(`icons-${state}`);
+  
+  if (color !== undefined) {
+    item.classList.add(`icons-color-${color}`);
+  }
+}
+
+const setState = (selector, state, parent = undefined) => {
+  return setStatus(
+    selector,
+    state ? "success" : "error",
+    state ? "green" : "gray",
+    parent
+  );
+}
+
 const setValue = (selector, value, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -554,8 +586,32 @@ const setValue = (selector, value, parent = undefined) => {
   }
 }
 
+const appendValue = (selector, value, nl = null, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
+  if (!items.length) {
+    return;
+  }
+
+  for (let item of items) {
+    if (item.innerHTML.trim().length > 0) {
+      if (nl !== null) {
+        item.innerHTML += nl;
+      }
+
+      item.innerHTML += value;
+
+    } else {
+      item.innerHTML = value;
+    }
+  }
+}
+
 const setCheckboxValue = (selector, value, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -568,7 +624,7 @@ const setCheckboxValue = (selector, value, parent = undefined) => {
 }
 
 const setRadioValue = (selector, value, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -583,7 +639,7 @@ const setRadioValue = (selector, value, parent = undefined) => {
 }
 
 const setInputValue = (selector, value, attrs = {}, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -604,7 +660,7 @@ const setInputValue = (selector, value, attrs = {}, parent = undefined) => {
 }
 
 const setSelectValue = (selector, value, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
   
@@ -619,7 +675,7 @@ const setSelectValue = (selector, value, parent = undefined) => {
 }
 
 const show = (selector, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -636,7 +692,7 @@ const show = (selector, parent = undefined) => {
 }
 
 const hide = (selector, parent = undefined) => {
-  if (parent == undefined) {
+  if (parent === undefined) {
     parent = document;
   }
 
@@ -677,6 +733,29 @@ const volumeUnit = (unitSystem) => {
     0: "L",
     1: "gal"
   });
+}
+
+const purposeUnit = (purpose, unitSystem) => {
+  const tUnit = temperatureUnit(unitSystem);
+
+  return unit2str(purpose, {
+    0:    tUnit,
+    1:    tUnit,
+    2:    tUnit,
+    3:    tUnit,
+    4:    tUnit,
+    5:    tUnit,
+    6:    `${volumeUnit(unitSystem)}/${i18n('time.min')}`,
+    7:    tUnit,
+    8:    "%",
+    248:  "%",
+    249:  i18n('kw'),
+    250:  "RPM",
+    251:  "ppm",
+    252:  pressureUnit(unitSystem),
+    253:  "%",
+    254:  tUnit
+  }, null);
 }
 
 const memberIdToVendor = (memberId) => {
@@ -757,7 +836,7 @@ function form2json(data, noCastItems = []) {
 function dec2hex(i) {
   let hex = parseInt(i).toString(16);
   if (hex.length % 2 != 0) {
-    hex = "0" + hex;
+    hex = `0${hex}`;
   }
   
   return hex.toUpperCase();

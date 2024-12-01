@@ -117,6 +117,15 @@
         "mDhwTargetTemp": "DHW target temp",
         "mDhwCurrTemp": "DHW current temp",
         "mDhwRetTemp": "DHW return temp"
+      },
+
+      "sensors": {
+        "values": {
+          "temp": "Temperature",
+          "humidity": "Humidity",
+          "battery": "Battery",
+          "rssi": "RSSI"
+        }
       }
     },
 
