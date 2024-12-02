@@ -194,7 +194,11 @@
         const templateNode = container.querySelector("#template");
 
         try {
-          const response = await fetch("/api/sensors", { cache: "no-cache" });
+          const response = await fetch("/api/sensors", {
+            cache: "no-cache",
+            credentials: "include"
+          });
+
           if (!response.ok) {
             throw new Error("Response not valid");
           }
@@ -287,7 +291,11 @@
               }
 
               try {
-                const response = await fetch(sensorForm.action, { cache: "no-cache" });
+                const response = await fetch(sensorForm.action, {
+                  cache: "no-cache",
+                  credentials: "include"
+                });
+                
                 if (response.status != 200) {
                   return;
                 }

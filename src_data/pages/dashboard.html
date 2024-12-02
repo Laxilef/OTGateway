@@ -380,13 +380,18 @@
               console.log(newSettings);
             }
 
-            let parameters = { cache: 'no-cache' };
+            let parameters = {
+              method: "GET",
+              cache: "no-cache",
+              credentials: "include"
+            };
+
             if (modified) {
               parameters.method = "POST";
               parameters.body = JSON.stringify(newSettings);
             }
 
-            const response = await fetch('/api/settings', parameters);
+            const response = await fetch("/api/settings", parameters);
             if (!response.ok) {
               throw new Error('Response not valid');
             }
@@ -424,7 +429,11 @@
 
           // vars
           try {
-            const response = await fetch('/api/vars', { cache: 'no-cache' });
+            const response = await fetch("/api/vars", {
+              cache: "no-cache",
+              credentials: "include"
+            });
+            
             if (!response.ok) {
               throw new Error('Response not valid');
             }
@@ -540,7 +549,11 @@
 
           // sensors
           try {
-            const response = await fetch("/api/sensors?detailed=1", { cache: "no-cache" });
+            const response = await fetch("/api/sensors?detailed=1", {
+              cache: "no-cache",
+              credentials: "include"
+            });
+            
             if (!response.ok) {
               throw new Error("Response not valid");
             }

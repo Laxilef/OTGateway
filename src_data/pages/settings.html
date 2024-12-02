@@ -808,7 +808,11 @@
         };
 
         try {
-          const response = await fetch('/api/settings', { cache: 'no-cache' });
+          const response = await fetch("/api/settings", {
+            cache: "no-cache",
+            credentials: "include"
+          });
+          
           if (!response.ok) {
             throw new Error('Response not valid');
           }

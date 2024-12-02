@@ -108,8 +108,8 @@ protected:
     // dashboard page
     auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, F("/pages/dashboard.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->requestAuthentication(DIGEST_AUTH);
+        if (this->isAuthRequired() && !this->isValidCredentials()) {
+          this->webServer->requestAuthentication(BASIC_AUTH);
           return false;
         }
 
@@ -119,11 +119,9 @@ protected:
 
     // restart
     this->webServer->on(F("/restart.html"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->send(401);
-          return;
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        this->webServer->requestAuthentication(BASIC_AUTH);
+        return;
       }
 
       vars.actions.restart = true;
@@ -134,8 +132,8 @@ protected:
     // network settings page
     auto networkPage = (new StaticPage("/network.html", &LittleFS, F("/pages/network.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->requestAuthentication(DIGEST_AUTH);
+        if (this->isAuthRequired() && !this->isValidCredentials()) {
+          this->webServer->requestAuthentication(BASIC_AUTH);
           return false;
         }
 
@@ -146,8 +144,8 @@ protected:
     // settings page
     auto settingsPage = (new StaticPage("/settings.html", &LittleFS, F("/pages/settings.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->requestAuthentication(DIGEST_AUTH);
+        if (this->isAuthRequired() && !this->isValidCredentials()) {
+          this->webServer->requestAuthentication(BASIC_AUTH);
           return false;
         }
 
@@ -158,8 +156,8 @@ protected:
     // sensors page
     auto sensorsPage = (new StaticPage("/sensors.html", &LittleFS, F("/pages/sensors.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->requestAuthentication(DIGEST_AUTH);
+        if (this->isAuthRequired() && !this->isValidCredentials()) {
+          this->webServer->requestAuthentication(BASIC_AUTH);
           return false;
         }
 
@@ -170,8 +168,8 @@ protected:
     // upgrade page
     auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, F("/pages/upgrade.html"), PORTAL_CACHE))
       ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->requestAuthentication(DIGEST_AUTH);
+        if (this->isAuthRequired() && !this->isValidCredentials()) {
+          this->webServer->requestAuthentication(BASIC_AUTH);
           return false;
         }
 
@@ -181,7 +179,7 @@ protected:
 
     // OTA
     auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadCallback([this](const String& uri) {
-      if (this->isAuthRequired() && !this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
         this->webServer->sendHeader(F("Connection"), F("close"));
         this->webServer->send(401);
         return false;
@@ -222,10 +220,8 @@ protected:
 
     // backup
     this->webServer->on(F("/api/backup/save"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       JsonDocument doc;
@@ -248,10 +244,8 @@ protected:
     });
 
     this->webServer->on(F("/api/backup/restore"), HTTP_POST, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       if (vars.states.restarting) {
@@ -329,10 +323,8 @@ protected:
 
     // network
     this->webServer->on(F("/api/network/settings"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       JsonDocument doc;
@@ -343,10 +335,8 @@ protected:
     });
 
     this->webServer->on(F("/api/network/settings"), HTTP_POST, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
       
       if (vars.states.restarting) {
@@ -402,11 +392,8 @@ protected:
     });
 
     this->webServer->on(F("/api/network/scan"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          this->webServer->send(401);
-          return;
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       auto apCount = WiFi.scanComplete();
@@ -448,10 +435,8 @@ protected:
 
     // settings
     this->webServer->on(F("/api/settings"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       JsonDocument doc;
@@ -462,10 +447,8 @@ protected:
     });
 
     this->webServer->on(F("/api/settings"), HTTP_POST, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
       
       if (vars.states.restarting) {
@@ -513,10 +496,8 @@ protected:
 
     // sensors list
     this->webServer->on(F("/api/sensors"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       bool detailed = false;
@@ -543,10 +524,8 @@ protected:
 
     // sensor settings
     this->webServer->on(F("/api/sensor"), HTTP_GET, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
       
       if (!this->webServer->hasArg(F("id"))) {
@@ -571,10 +550,8 @@ protected:
     });
     
     this->webServer->on(F("/api/sensor"), HTTP_POST, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
       
       if (vars.states.restarting) {
@@ -654,10 +631,8 @@ protected:
     });
 
     this->webServer->on(F("/api/vars"), HTTP_POST, [this]() {
-      if (this->isAuthRequired()) {
-        if (!this->webServer->authenticate(settings.portal.login, settings.portal.password)) {
-          return this->webServer->send(401);
-        }
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
       }
 
       const String& plain = this->webServer->arg(0);
@@ -954,6 +929,10 @@ protected:
 
   bool isAuthRequired() {
     return !network->isApEnabled() && settings.portal.auth && strlen(settings.portal.password);
+  }
+
+  bool isValidCredentials() {
+    return this->webServer->authenticate(settings.portal.login, settings.portal.password);
   }
 
   void onCaptivePortal() {

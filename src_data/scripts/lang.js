@@ -32,7 +32,7 @@ class Lang {
     }
 
     if (!this.localeIsSupported(this.defaultLocale)) {
-      const selected = this.switcher.selectedIndex ?? 0;
+      const selected = this.switcher.selectedIndex ? this.switcher.selectedIndex : 0;
       this.defaultLocale = this.switcher.options[selected].value;
     }
   

@@ -60,10 +60,11 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
       }
 
       let response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         },
         body: form2json(fd, noCastItems)
       });
@@ -218,7 +219,10 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
       attempts--;
 
       try {
-        let response = await fetch(url, { cache: 'no-cache' });
+        let response = await fetch(url, {
+          cache: "no-cache",
+          credentials: "include"
+        });
 
         if (response.status == 200) {
           await onSuccess(response);
@@ -309,10 +313,11 @@ const setupRestoreBackupForm = (formSelector) => {
 
         if (data.settings != undefined) {
           let response = await fetch(url, {
-            method: 'POST',
-            cache: 'no-cache',
+            method: "POST",
+            cache: "no-cache",
+            credentials: "include",
             headers: {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json"
             },
             body: JSON.stringify({"settings": data.settings})
           });
@@ -331,10 +336,11 @@ const setupRestoreBackupForm = (formSelector) => {
             payload["sensors"][sensorId] = data.sensors[sensorId];
 
             const response = await fetch(url, {
-              method: 'POST',
-              cache: 'no-cache',
+              method: "POST",
+              cache: "no-cache",
+              credentials: "include",
               headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json"
               },
               body: JSON.stringify(payload)
             });
@@ -348,10 +354,11 @@ const setupRestoreBackupForm = (formSelector) => {
 
         if (data.network != undefined) {
           let response = await fetch(url, {
-            method: 'POST',
-            cache: 'no-cache',
+            method: "POST",
+            cache: "no-cache",
+            credentials: "include",
             headers: {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json"
             },
             body: JSON.stringify({"network": data.network})
           });
@@ -496,8 +503,9 @@ const setupUpgradeForm = (formSelector) => {
     try {
       let fd = new FormData(form);
       let response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "include",
         body: fd
       });
 
