@@ -61,7 +61,7 @@ public:
     }
 
     if (this->cacheHeader != nullptr) {
-      server.sendHeader("Cache-Control", this->cacheHeader);
+      server.sendHeader(F("Cache-Control"), this->cacheHeader);
     }
 
     #ifdef ARDUINO_ARCH_ESP8266
@@ -218,7 +218,6 @@ protected:
   CanHandleCallback canHandleCallback;
   BeforeSendCallback beforeSendCallback;
   TemplateCallback templateCallback;
-  String eTag;
   const char* uri = nullptr;
   const char* path = nullptr;
   const char* cacheHeader = nullptr;

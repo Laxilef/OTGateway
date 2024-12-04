@@ -32,7 +32,7 @@ class Lang {
     }
 
     if (!this.localeIsSupported(this.defaultLocale)) {
-      const selected = this.switcher.selectedIndex ?? 0;
+      const selected = this.switcher.selectedIndex ? this.switcher.selectedIndex : 0;
       this.defaultLocale = this.switcher.options[selected].value;
     }
   
@@ -63,7 +63,7 @@ class Lang {
   }
 
   async fetchTranslations(locale) {
-    const response = await fetch(`/static/locales/${locale}.json`);
+    const response = await fetch(`/static/locales/${locale}.json?{BUILD_TIME}`);
     const data = await response.json();
   
     if (data.values instanceof Object) {

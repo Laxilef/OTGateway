@@ -6,6 +6,7 @@ const cssnano = require('cssnano');
 const terser = require('gulp-terser');
 const jsonminify = require('gulp-jsonminify');
 const htmlmin = require('gulp-html-minifier-terser');
+const replace = require('gulp-replace');
 
 // Paths for tasks
 let paths = {
@@ -59,6 +60,10 @@ const styles = (cb) => {
     const items = paths.styles.bundles[name];
 
     src(items)
+      .pipe(replace(
+        "{BUILD_TIME}",
+        Math.floor(Date.now() / 1000)
+      ))
       .pipe(postcss([
         cssnano({ preset: 'advanced' })
       ]))
@@ -77,6 +82,10 @@ const scripts = (cb) => {
     const items = paths.scripts.bundles[name];
 
     src(items)
+      .pipe(replace(
+        "{BUILD_TIME}",
+        Math.floor(Date.now() / 1000)
+      ))
       .pipe(terser().on('error', console.error))
       .pipe(concat(name))
       .pipe(gzip({
@@ -93,6 +102,10 @@ const jsonFiles = (cb) => {
     const item = paths.json[i];
 
     src(item.src)
+      .pipe(replace(
+        "{BUILD_TIME}",
+        Math.floor(Date.now() / 1000)
+      ))
       .pipe(jsonminify())
       .pipe(gzip({
         append: true
@@ -119,6 +132,10 @@ const staticFiles = (cb) => {
 
 const pages = () => {
   return src(paths.pages.src)
+    .pipe(replace(
+      "{BUILD_TIME}",
+      Math.floor(Date.now() / 1000)
+    ))
     .pipe(htmlmin({
       html5: true,
       caseSensitive: true,

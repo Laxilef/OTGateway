@@ -10,7 +10,8 @@ public:
     free(this->buffer);
   }
 
-  void send(int code, const char* contentType, JsonDocument& content, bool pretty = false) {
+  template <class T>
+  void send(int code, T contentType, const JsonVariantConst content, bool pretty = false) {
     #ifdef ARDUINO_ARCH_ESP8266
     if (!this->webServer->chunkedResponseModeStart(code, contentType)) {
       this->webServer->send(505, F("text/html"), F("HTTP1.1 required"));
@@ -76,10 +77,19 @@ public:
       return;
     }
 
-    this->webServer->sendContent((const char*)this->buffer, this->bufferPos);
-    this->bufferPos = 0;
     #ifdef ARDUINO_ARCH_ESP8266
-    ::delay(0);
+    ::optimistic_yield(1000);
+    #endif
+
+    auto& client = this->webServer->client();
+    if (client.connected()) {
+      this->webServer->sendContent((const char*)this->buffer, this->bufferPos);
+    }
+
+    this->bufferPos = 0;
+
+    #ifdef ARDUINO_ARCH_ESP8266
+    ::optimistic_yield(1000);
     #endif
   }
 

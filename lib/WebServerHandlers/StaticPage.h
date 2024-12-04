@@ -1,5 +1,8 @@
 #include <FS.h>
 #include <detail/mimetable.h>
+#if defined(ARDUINO_ARCH_ESP32)
+  #include <detail/RequestHandlersImpl.h>
+#endif
 
 using namespace mime;
 
@@ -8,7 +11,8 @@ public:
   typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
   typedef std::function<bool()> BeforeSendCallback;
   
-  StaticPage(const char* uri, FS* fs, const char* path, const char* cacheHeader = nullptr) {
+  template <class T>
+  StaticPage(const char* uri, FS* fs, T path, const char* cacheHeader = nullptr) {
     this->uri = uri;
     this->fs = fs;
     this->path = path;
@@ -46,21 +50,25 @@ public:
       return true;
     }
 
-    #if defined(ARDUINO_ARCH_ESP8266)
     if (server._eTagEnabled) {
-      if (server._eTagFunction) {
-        this->eTag = (server._eTagFunction)(*this->fs, this->path);
+      if (this->eTag.isEmpty()) {
+        if (server._eTagFunction) {
+          this->eTag = (server._eTagFunction)(*this->fs, this->path);
 
-      } else  if (this->eTag.isEmpty()) {
-        this->eTag = esp8266webserver::calcETag(*this->fs, this->path);
+        } else {
+          #if defined(ARDUINO_ARCH_ESP8266)
+          this->eTag = esp8266webserver::calcETag(*this->fs, this->path);
+          #elif defined(ARDUINO_ARCH_ESP32)
+          this->eTag = StaticRequestHandler::calcETag(*this->fs, this->path);
+          #endif
+        }
       }
 
-      if (server.header("If-None-Match").equals(this->eTag.c_str())) {
+      if (!this->eTag.isEmpty() && server.header(F("If-None-Match")).equals(this->eTag.c_str())) {
         server.send(304);
         return true;
       }
     }
-    #endif
 
     if (!this->path.endsWith(FPSTR(mimeTable[gz].endsWith)) && !this->fs->exists(path))  {
       String pathWithGz = this->path + FPSTR(mimeTable[gz].endsWith);
@@ -80,14 +88,14 @@ public:
     }
 
     if (this->cacheHeader != nullptr) {
-      server.sendHeader("Cache-Control", this->cacheHeader);
+      server.sendHeader(F("Cache-Control"), this->cacheHeader);
     }
 
-    #if defined(ARDUINO_ARCH_ESP8266)
-    if (server._eTagEnabled && this->eTag.length() > 0) {
-      server.sendHeader("ETag", this->eTag);
+    if (server._eTagEnabled && !this->eTag.isEmpty()) {
+      server.sendHeader(F("ETag"), this->eTag);
     }
     
+    #if defined(ARDUINO_ARCH_ESP8266)
     server.streamFile(file, F("text/html"), method);
     #else
     server.streamFile(file, F("text/html"), 200);

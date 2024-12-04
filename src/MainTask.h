@@ -5,7 +5,7 @@ using namespace NetworkUtils;
 extern NetworkMgr* network;
 extern MqttTask* tMqtt;
 extern OpenThermTask* tOt;
-extern FileData fsSettings, fsNetworkSettings;
+extern FileData fsNetworkSettings, fsSettings, fsSensorsSettings;
 extern ESPTelnetStream* telnetStream;
 
 
@@ -32,7 +32,8 @@ protected:
   unsigned long lastHeapInfo = 0;
   unsigned int minFreeHeap = 0;
   unsigned int minMaxFreeBlockHeap = 0;
-  unsigned long restartSignalTime = 0;
+  bool restartSignalReceived = false;
+  unsigned long restartSignalReceivedTime = 0;
   bool heatingEnabled = false;
   unsigned long heatingDisabledTime = 0;
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
@@ -60,31 +61,46 @@ protected:
   void loop() {
     network->loop();
 
-    if (fsSettings.tick() == FD_WRITE) {
-      Log.sinfoln(FPSTR(L_SETTINGS), F("Updated"));
-    }
-
     if (fsNetworkSettings.tick() == FD_WRITE) {
       Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Updated"));
     }
 
+    if (fsSettings.tick() == FD_WRITE) {
+      Log.sinfoln(FPSTR(L_SETTINGS), F("Updated"));
+    }
+
+    if (fsSensorsSettings.tick() == FD_WRITE) {
+      Log.sinfoln(FPSTR(L_SENSORS_SETTINGS), F("Updated"));
+    }
+
     if (vars.actions.restart) {
+      this->restartSignalReceivedTime = millis();
+      this->restartSignalReceived = true;
       vars.actions.restart = false;
-      this->restartSignalTime = millis();
+
+      Log.sinfoln(FPSTR(L_MAIN), F("Received restart signal"));
+    }
+
+    if (!vars.states.restarting && this->restartSignalReceived && millis() - this->restartSignalReceivedTime > 5000) {
+      vars.states.restarting = true;
 
       // save settings
       fsSettings.updateNow();
+
+      // save sensors settings
+      fsSensorsSettings.updateNow();
 
       // force save network settings
       if (fsNetworkSettings.updateNow() == FD_FILE_ERR && LittleFS.begin()) {
         fsNetworkSettings.write();
       }
 
-      Log.sinfoln(FPSTR(L_MAIN), F("Restart signal received. Restart after 10 sec."));
+      Log.sinfoln(FPSTR(L_MAIN), F("Restart scheduled in 10 sec."));
     }
 
-    vars.states.mqtt = tMqtt->isConnected();
-    vars.sensors.rssi = network->isConnected() ? WiFi.RSSI() : 0;
+    vars.mqtt.connected = tMqtt->isConnected();
+    vars.network.connected = network->isConnected();
+    vars.network.rssi = network->isConnected() ? WiFi.RSSI() : 0;
 
     if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
       if (Log.getLevel() != settings.system.logLevel) {
@@ -98,20 +114,14 @@ protected:
         this->telnetStarted = true;
       }
 
-      if (settings.mqtt.enable && !tMqtt->isEnabled()) {
+      if (settings.mqtt.enabled && !tMqtt->isEnabled()) {
         tMqtt->enable();
 
-      } else if (!settings.mqtt.enable && tMqtt->isEnabled()) {
+      } else if (!settings.mqtt.enabled && tMqtt->isEnabled()) {
         tMqtt->disable();
       }
 
-      if (settings.sensors.indoor.type == SensorType::MANUAL) {
-        vars.sensors.indoor.connected = !settings.mqtt.enable || vars.states.mqtt;
-      }
-
-      if (settings.sensors.outdoor.type == SensorType::MANUAL) {
-        vars.sensors.outdoor.connected = !settings.mqtt.enable || vars.states.mqtt;
-      }
+      Sensors::setConnectionStatusByType(Sensors::Type::MANUAL, !settings.mqtt.enabled || vars.mqtt.connected, false);
 
     } else {
       if (this->telnetStarted) {
@@ -123,13 +133,7 @@ protected:
         tMqtt->disable();
       }
 
-      if (settings.sensors.indoor.type == SensorType::MANUAL) {
-        vars.sensors.indoor.connected = false;
-      }
-
-      if (settings.sensors.outdoor.type == SensorType::MANUAL) {
-        vars.sensors.outdoor.connected = false;
-      }
+      Sensors::setConnectionStatusByType(Sensors::Type::MANUAL, false, false);
     }
     this->yield();
 
@@ -151,8 +155,9 @@ protected:
     for (Stream* stream : Log.getStreams()) {
       while (stream->available() > 0) {
         stream->read();
+
         #ifdef ARDUINO_ARCH_ESP8266
-        ::delay(0);
+        ::optimistic_yield(1000);
         #endif
       }
     }
@@ -162,8 +167,9 @@ protected:
 
 
     // restart
-    if (this->restartSignalTime > 0 && millis() - this->restartSignalTime > 10000) {
-      this->restartSignalTime = 0;
+    if (this->restartSignalReceived && millis() - this->restartSignalReceivedTime > 15000) {
+      this->restartSignalReceived = false;
+
       ESP.restart();
     }
   }
@@ -172,8 +178,10 @@ protected:
     unsigned int freeHeap = getFreeHeap();
     unsigned int maxFreeBlockHeap = getMaxFreeBlockHeap();
 
-    if (!this->restartSignalTime && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
-      this->restartSignalTime = millis();
+    // critical heap
+    if (!vars.states.restarting && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
+      this->restartSignalReceivedTime = millis();
+      vars.states.restarting = true;
     }
 
     if (settings.system.logLevel < TinyLogger::Level::VERBOSE) {
@@ -209,18 +217,21 @@ protected:
     uint8_t emergencyFlags = 0b00000000;
 
     // set outdoor sensor flag
-    if (settings.equitherm.enable && !vars.sensors.outdoor.connected) {
-      emergencyFlags |= 0b00000001;
+    if (settings.equitherm.enabled) {
+      if (!Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::OUTDOOR_TEMP)) {
+        emergencyFlags |= 0b00000001;
+      }
     }
 
-    // set indoor sensor flag
-    if (!settings.equitherm.enable && settings.pid.enable && !vars.sensors.indoor.connected) {
-      emergencyFlags |= 0b00000010;
-    }
-
-    // set indoor sensor flag for OT native heating control
-    if (settings.opentherm.nativeHeatingControl && !vars.sensors.indoor.connected) {
-      emergencyFlags |= 0b00000100;
+    // set indoor sensor flags
+    if (!Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
+      if (!settings.equitherm.enabled && settings.pid.enabled) {
+        emergencyFlags |= 0b00000010;
+      }
+      
+      if (settings.opentherm.nativeHeatingControl) {
+        emergencyFlags |= 0b00000100;
+      }
     }
 
     // if any flags is true
@@ -230,10 +241,10 @@ protected:
         this->emergencyDetected = true;
         this->emergencyFlipTime = millis();
 
-      } else if (this->emergencyDetected && !vars.states.emergency) {
+      } else if (this->emergencyDetected && !vars.emergency.state) {
         // enable emergency
         if (millis() - this->emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
-          vars.states.emergency = true;
+          vars.emergency.state = true;
           Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode enabled (%hhu)"), emergencyFlags);
         }
       }
@@ -244,10 +255,10 @@ protected:
         this->emergencyDetected = false;
         this->emergencyFlipTime = millis();
 
-      } else if (!this->emergencyDetected && vars.states.emergency) {
+      } else if (!this->emergencyDetected && vars.emergency.state) {
         // disable emergency
         if (millis() - this->emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
-          vars.states.emergency = false;
+          vars.emergency.state = false;
           Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode disabled"));
         }
       }
@@ -286,15 +297,15 @@ protected:
       errors[errCount++] = 2;
     }
 
-    if (!vars.states.otStatus) {
+    if (!vars.slave.connected) {
       errors[errCount++] = 3;
     }
 
-    if (vars.states.fault) {
+    if (vars.slave.fault.active) {
       errors[errCount++] = 4;
     }
 
-    if (vars.states.emergency) {
+    if (vars.emergency.state) {
       errors[errCount++] = 5;
     }
 
@@ -342,7 +353,7 @@ protected:
     static unsigned long outputChangedTs = 0;
 
     // input
-    if (settings.cascadeControl.input.enable) {
+    if (settings.cascadeControl.input.enabled) {
       if (settings.cascadeControl.input.gpio != configuredInputGpio) {
         if (configuredInputGpio != GPIO_IS_NOT_CONFIGURED) {
           pinMode(configuredInputGpio, OUTPUT);
@@ -393,7 +404,7 @@ protected:
       }
     }
     
-    if (!settings.cascadeControl.input.enable || configuredInputGpio == GPIO_IS_NOT_CONFIGURED) {
+    if (!settings.cascadeControl.input.enabled || configuredInputGpio == GPIO_IS_NOT_CONFIGURED) {
       if (!vars.cascadeControl.input) {
         vars.cascadeControl.input = true;
 
@@ -407,7 +418,7 @@ protected:
 
 
     // output
-    if (settings.cascadeControl.output.enable) {
+    if (settings.cascadeControl.output.enabled) {
       if (settings.cascadeControl.output.gpio != configuredOutputGpio) {
         if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
           pinMode(configuredOutputGpio, OUTPUT);
@@ -437,13 +448,13 @@ protected:
 
       if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
         bool value = false;
-        if (settings.cascadeControl.output.onFault && vars.states.fault) {
+        if (settings.cascadeControl.output.onFault && vars.slave.fault.active) {
           value = true;
 
-        } else if (settings.cascadeControl.output.onLossConnection && !vars.states.otStatus) {
+        } else if (settings.cascadeControl.output.onLossConnection && !vars.slave.connected) {
           value = true;
 
-        } else if (settings.cascadeControl.output.onEnabledHeating && settings.heating.enable && vars.cascadeControl.input) {
+        } else if (settings.cascadeControl.output.onEnabledHeating && settings.heating.enabled && vars.cascadeControl.input) {
           value = true;
         }
 
@@ -475,7 +486,7 @@ protected:
       }
     }
 
-    if (!settings.cascadeControl.output.enable || configuredOutputGpio == GPIO_IS_NOT_CONFIGURED) {
+    if (!settings.cascadeControl.output.enabled || configuredOutputGpio == GPIO_IS_NOT_CONFIGURED) {
       if (vars.cascadeControl.output) {
         vars.cascadeControl.output = false;
 
@@ -516,75 +527,75 @@ protected:
     }
 
     if (configuredGpio == GPIO_IS_NOT_CONFIGURED) {
-      if (vars.states.externalPump) {
-        vars.states.externalPump = false;
-        vars.parameters.extPumpLastEnableTime = millis();
+      if (vars.externalPump.state) {
+        vars.externalPump.state = false;
+        vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln("EXTPUMP", F("Disabled: use = off"));
+        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
       }
 
       return;
     }
 
-    if (!vars.states.heating && this->heatingEnabled) {
+    if (!vars.master.heating.enabled && this->heatingEnabled) {
       this->heatingEnabled = false;
       this->heatingDisabledTime = millis();
 
-    } else if (vars.states.heating && !this->heatingEnabled) {
+    } else if (vars.master.heating.enabled && !this->heatingEnabled) {
       this->heatingEnabled = true;
     }
     
     if (!settings.externalPump.use) {
-      if (vars.states.externalPump) {
+      if (vars.externalPump.state) {
         digitalWrite(configuredGpio, LOW);
 
-        vars.states.externalPump = false;
-        vars.parameters.extPumpLastEnableTime = millis();
+        vars.externalPump.state = false;
+        vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln("EXTPUMP", F("Disabled: use = off"));
+        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
       }
 
       return;
     }
 
-    if (vars.states.externalPump && !this->heatingEnabled) {
+    if (vars.externalPump.state && !this->heatingEnabled) {
       if (this->extPumpStartReason == MainTask::PumpStartReason::HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
         digitalWrite(configuredGpio, LOW);
 
-        vars.states.externalPump = false;
-        vars.parameters.extPumpLastEnableTime = millis();
+        vars.externalPump.state = false;
+        vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln("EXTPUMP", F("Disabled: expired post circulation time"));
+        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired post circulation time"));
 
       } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
         digitalWrite(configuredGpio, LOW);
 
-        vars.states.externalPump = false;
-        vars.parameters.extPumpLastEnableTime = millis();
+        vars.externalPump.state = false;
+        vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln("EXTPUMP", F("Disabled: expired anti stuck time"));
+        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired anti stuck time"));
       }
 
-    } else if (vars.states.externalPump && this->heatingEnabled && this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK) {
+    } else if (vars.externalPump.state && this->heatingEnabled && this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK) {
       this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
-    } else if (!vars.states.externalPump && this->heatingEnabled) {
-      vars.states.externalPump = true;
+    } else if (!vars.externalPump.state && this->heatingEnabled) {
+      vars.externalPump.state = true;
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
       digitalWrite(configuredGpio, HIGH);
 
-      Log.sinfoln("EXTPUMP", F("Enabled: heating on"));
+      Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: heating on"));
 
-    } else if (!vars.states.externalPump && (vars.parameters.extPumpLastEnableTime == 0 || millis() - vars.parameters.extPumpLastEnableTime >= (settings.externalPump.antiStuckInterval * 1000ul))) {
-      vars.states.externalPump = true;
+    } else if (!vars.externalPump.state && (vars.externalPump.lastEnabledTime == 0 || millis() - vars.externalPump.lastEnabledTime >= (settings.externalPump.antiStuckInterval * 1000lu))) {
+      vars.externalPump.state = true;
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;
 
       digitalWrite(configuredGpio, HIGH);
 
-      Log.sinfoln("EXTPUMP", F("Enabled: anti stuck"));
+      Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: anti stuck"));
     }
   }
 };

@@ -1,4 +1,4 @@
-function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
+const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
   const form = document.querySelector(formSelector);
   if (!form) {
     return;
@@ -10,12 +10,12 @@ function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
     })
   });
 
-  const url = form.action;
-  let button = form.querySelector('button[type="submit"]');
-  let defaultText;
-
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    const url = form.action;
+    let button = form.querySelector('button[type="submit"]');
+    let defaultText;
 
     if (button) {
       defaultText = button.textContent;
@@ -60,10 +60,11 @@ function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
       }
 
       let response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         },
         body: form2json(fd, noCastItems)
       });
@@ -86,7 +87,7 @@ function setupForm(formSelector, onResultCallback = null, noCastItems = []) {
   });
 }
 
-function setupNetworkScanForm(formSelector, tableSelector) {
+const setupNetworkScanForm = (formSelector, tableSelector) => {
   const form = document.querySelector(formSelector);
   if (!form) {
     console.error("form not found");
@@ -132,7 +133,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
         let row = tbody.insertRow(-1);
         row.classList.add("network");
         row.setAttribute('data-ssid', result[i].hidden ? '' : result[i].ssid);
-        row.onclick = function () {
+        row.onclick = () => {
           const input = document.querySelector('input#sta-ssid');
           const ssid = this.getAttribute('data-ssid');
           if (!input || !ssid) {
@@ -143,8 +144,8 @@ function setupNetworkScanForm(formSelector, tableSelector) {
           input.focus();
         };
 
-        row.insertCell().textContent = "#" + (i + 1);
-        row.insertCell().innerHTML = result[i].hidden ? ("<i>" + result[i].bssid + "</i>") : result[i].ssid;
+        row.insertCell().textContent = `#${i + 1}`;
+        row.insertCell().innerHTML = result[i].hidden ? `<i>${result[i].bssid}</i>` : result[i].ssid;
 
         // info cell
         let infoCell = row.insertCell();
@@ -164,7 +165,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
         }
         
         let signalQualityContainer = document.createElement("span");
-        signalQualityContainer.setAttribute('data-tooltip', result[i].signalQuality + "%");
+        signalQualityContainer.setAttribute('data-tooltip', `${result[i].signalQuality}%`);
         signalQualityContainer.appendChild(signalQualityIcon);
         infoCell.appendChild(signalQualityContainer);
 
@@ -218,7 +219,10 @@ function setupNetworkScanForm(formSelector, tableSelector) {
       attempts--;
 
       try {
-        let response = await fetch(url, { cache: 'no-cache' });
+        let response = await fetch(url, {
+          cache: "no-cache",
+          credentials: "include"
+        });
 
         if (response.status == 200) {
           await onSuccess(response);
@@ -246,7 +250,7 @@ function setupNetworkScanForm(formSelector, tableSelector) {
   onSubmitFn();
 }
 
-function setupRestoreBackupForm(formSelector) {
+const setupRestoreBackupForm = (formSelector) => {
   const form = document.querySelector(formSelector);
   if (!form) {
     return;
@@ -266,7 +270,7 @@ function setupRestoreBackupForm(formSelector) {
       button.setAttribute('aria-busy', true);
     }
 
-    const onSuccess = (response) => {
+    const onSuccess = () => {
       if (button) {
         button.textContent = i18n('button.restored');
         button.classList.add('success');
@@ -280,7 +284,7 @@ function setupRestoreBackupForm(formSelector) {
       }
     };
 
-    const onFailed = (response) => {
+    const onFailed = () => {
       if (button) {
         button.textContent = i18n('button.error');
         button.classList.add('failed');
@@ -302,35 +306,82 @@ function setupRestoreBackupForm(formSelector) {
 
     let reader = new FileReader();
     reader.readAsText(files[0]);
-    reader.onload = async function () {
+    reader.onload = async (event) => {
       try {
-        let response = await fetch(url, {
-          method: 'POST',
-          cache: 'no-cache',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: reader.result
-        });
+        const data = JSON.parse(event.target.result);
+        console.log("Backup: ", data);
 
-        if (response.ok) {
-          onSuccess(response);
+        if (data.settings != undefined) {
+          let response = await fetch(url, {
+            method: "POST",
+            cache: "no-cache",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({"settings": data.settings})
+          });
 
-        } else {
-          onFailed(response);
+          if (!response.ok) {
+            onFailed();
+            return;
+          }
         }
 
+        if (data.sensors != undefined) {
+          for (const sensorId in data.sensors) {
+            const payload = {
+              "sensors": {}
+            };
+            payload["sensors"][sensorId] = data.sensors[sensorId];
+
+            const response = await fetch(url, {
+              method: "POST",
+              cache: "no-cache",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              onFailed();
+              return;
+            }
+          }
+        }
+
+        if (data.network != undefined) {
+          let response = await fetch(url, {
+            method: "POST",
+            cache: "no-cache",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({"network": data.network})
+          });
+
+          if (!response.ok) {
+            onFailed();
+            return;
+          }
+        }
+
+        onSuccess();
+
       } catch (err) {
-        onFailed(false);
+        onFailed();
       }
     };
-    reader.onerror = function () {
+    reader.onerror = () => {
       console.log(reader.error);
     };
   });
 }
 
-function setupUpgradeForm(formSelector) {
+const setupUpgradeForm = (formSelector) => {
   const form = document.querySelector(formSelector);
   if (!form) {
     return;
@@ -383,7 +434,7 @@ function setupUpgradeForm(formSelector) {
         resItem.classList.add('failed');
 
         if (result.firmware.error != "") {
-          resItem.textContent += ": " + result.firmware.error;
+          resItem.textContent += `: ${result.firmware.error}`;
         }
       }
     }
@@ -401,7 +452,7 @@ function setupUpgradeForm(formSelector) {
         resItem.classList.add('failed');
 
         if (result.filesystem.error != "") {
-          resItem.textContent += ": " + result.filesystem.error;
+          resItem.textContent += `: ${result.filesystem.error}`;
         }
       }
     }
@@ -452,8 +503,9 @@ function setupUpgradeForm(formSelector) {
     try {
       let fd = new FormData(form);
       let response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "include",
         body: fd
       });
 
@@ -471,19 +523,23 @@ function setupUpgradeForm(formSelector) {
 }
 
 
-function setBusy(busySelector, contentSelector, value) {
+const setBusy = (busySelector, contentSelector, value, parent = undefined) => {
   if (!value) {
-    hide(busySelector);
-    show(contentSelector);
+    hide(busySelector, parent);
+    show(contentSelector, parent);
 
   } else {
-    show(busySelector);
-    hide(contentSelector);
+    show(busySelector, parent);
+    hide(contentSelector, parent);
   }
 }
 
-function setState(selector, value) {
-  let item = document.querySelector(selector);
+const setAriaState = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let item = parent.querySelector(selector);
   if (!item) {
     return;
   }
@@ -491,8 +547,44 @@ function setState(selector, value) {
   item.setAttribute('aria-invalid', !value);
 }
 
-function setValue(selector, value) {
-  let items = document.querySelectorAll(selector);
+const setStatus = (selector, state, color = undefined, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let item = parent.querySelector(selector);
+  if (!item) {
+    return;
+  }
+
+  item.classList.forEach(cName => {
+    if (cName.indexOf("icons-") === 0) {
+      item.classList.remove(cName);
+    }
+  });
+
+  item.classList.add(`icons-${state}`);
+  
+  if (color !== undefined) {
+    item.classList.add(`icons-color-${color}`);
+  }
+}
+
+const setState = (selector, state, parent = undefined) => {
+  return setStatus(
+    selector,
+    state ? "success" : "error",
+    state ? "green" : "gray",
+    parent
+  );
+}
+
+const setValue = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
   if (!items.length) {
     return;
   }
@@ -502,8 +594,36 @@ function setValue(selector, value) {
   }
 }
 
-function setCheckboxValue(selector, value) {
-  let item = document.querySelector(selector);
+const appendValue = (selector, value, nl = null, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
+  if (!items.length) {
+    return;
+  }
+
+  for (let item of items) {
+    if (item.innerHTML.trim().length > 0) {
+      if (nl !== null) {
+        item.innerHTML += nl;
+      }
+
+      item.innerHTML += value;
+
+    } else {
+      item.innerHTML = value;
+    }
+  }
+}
+
+const setCheckboxValue = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let item = parent.querySelector(selector);
   if (!item) {
     return;
   }
@@ -511,8 +631,12 @@ function setCheckboxValue(selector, value) {
   item.checked = value;
 }
 
-function setRadioValue(selector, value) {
-  let items = document.querySelectorAll(selector);
+const setRadioValue = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
   if (!items.length) {
     return;
   }
@@ -522,8 +646,12 @@ function setRadioValue(selector, value) {
   }
 }
 
-function setInputValue(selector, value, attrs = {}) {
-  let items = document.querySelectorAll(selector);
+const setInputValue = (selector, value, attrs = {}, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
   if (!items.length) {
     return;
   }
@@ -539,8 +667,12 @@ function setInputValue(selector, value, attrs = {}) {
   }
 }
 
-function setSelectValue(selector, value) {
-  let item = document.querySelector(selector);
+const setSelectValue = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+  
+  let item = parent.querySelector(selector);
   if (!item) {
     return;
   }
@@ -550,8 +682,12 @@ function setSelectValue(selector, value) {
   }
 }
 
-function show(selector) {
-  let items = document.querySelectorAll(selector);
+const show = (selector, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
   if (!items.length) {
     return;
   }
@@ -563,8 +699,12 @@ function show(selector) {
   }
 }
 
-function hide(selector) {
-  let items = document.querySelectorAll(selector);
+const hide = (selector, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
   if (!items.length) {
     return;
   }
@@ -582,28 +722,51 @@ function unit2str(unitSystem, units = {}, defaultValue = '?') {
     : defaultValue;
 }
 
-function temperatureUnit(unitSystem) {
+const temperatureUnit = (unitSystem) => {
   return unit2str(unitSystem, {
     0: "°C",
     1: "°F"
   });
 }
 
-function pressureUnit(unitSystem) {
+const pressureUnit = (unitSystem) => {
   return unit2str(unitSystem, {
     0: "bar",
     1: "psi"
   });
 }
 
-function volumeUnit(unitSystem) {
+const volumeUnit = (unitSystem) => {
   return unit2str(unitSystem, {
     0: "L",
     1: "gal"
   });
 }
 
-function memberIdToVendor(memberId) {
+const purposeUnit = (purpose, unitSystem) => {
+  const tUnit = temperatureUnit(unitSystem);
+
+  return unit2str(purpose, {
+    0:    tUnit,
+    1:    tUnit,
+    2:    tUnit,
+    3:    tUnit,
+    4:    tUnit,
+    5:    tUnit,
+    6:    `${volumeUnit(unitSystem)}/${i18n('time.min')}`,
+    7:    tUnit,
+    8:    "%",
+    248:  "%",
+    249:  i18n('kw'),
+    250:  "RPM",
+    251:  "ppm",
+    252:  pressureUnit(unitSystem),
+    253:  "%",
+    254:  tUnit
+  }, null);
+}
+
+const memberIdToVendor = (memberId) => {
   // https://github.com/Jeroen88/EasyOpenTherm/blob/main/src/EasyOpenTherm.h
   // https://github.com/Evgen2/SmartTherm/blob/v0.7/src/Web.cpp
   const vendorList = {
@@ -681,7 +844,7 @@ function form2json(data, noCastItems = []) {
 function dec2hex(i) {
   let hex = parseInt(i).toString(16);
   if (hex.length % 2 != 0) {
-    hex = "0" + hex;
+    hex = `0${hex}`;
   }
   
   return hex.toUpperCase();

@@ -1,13 +1,19 @@
+#define ARDUINOJSON_USE_DOUBLE 0
+#define ARDUINOJSON_USE_LONG_LONG 0
+
 #include <Arduino.h>
-#include "defines.h"
-#include "strings.h"
-#include "CrashRecorder.h"
 #include <ArduinoJson.h>
 #include <FileData.h>
 #include <LittleFS.h>
 #include <ESPTelnetStream.h>
+
+#include "defines.h"
+#include "strings.h"
+
 #include <TinyLogger.h>
 #include <NetworkMgr.h>
+#include "CrashRecorder.h"
+#include "Sensors.h"
 #include "Settings.h"
 #include "utils.h"
 
@@ -31,10 +37,13 @@
 using namespace NetworkUtils;
 
 // Vars
-FileData fsNetworkSettings(&LittleFS, "/network.conf", 'n', &networkSettings, sizeof(networkSettings), 1000);
-FileData fsSettings(&LittleFS, "/settings.conf", 's', &settings, sizeof(settings), 60000);
 ESPTelnetStream* telnetStream = nullptr;
 NetworkMgr* network = nullptr;
+Sensors::Result sensorsResults[SENSORS_AMOUNT];
+
+FileData fsNetworkSettings(&LittleFS, "/network.conf", 'n', &networkSettings, sizeof(networkSettings), 1000);
+FileData fsSettings(&LittleFS, "/settings.conf", 's', &settings, sizeof(settings), 60000);
+FileData fsSensorsSettings(&LittleFS, "/sensors.conf", 'e', &sensorsSettings, sizeof(sensorsSettings), 60000);
 
 // Tasks
 MqttTask* tMqtt;
@@ -47,6 +56,9 @@ MainTask* tMain;
 
 void setup() {
   CrashRecorder::init();
+  Sensors::setMaxSensors(SENSORS_AMOUNT);
+  Sensors::settings = sensorsSettings;
+  Sensors::results = sensorsResults;
   LittleFS.begin();
 
   Log.setLevel(TinyLogger::Level::VERBOSE);
@@ -64,10 +76,14 @@ void setup() {
   });
   
   Serial.begin(115200);
+  #if ARDUINO_USB_MODE
+  Serial.setTxBufferSize(512);
+  #endif
   Log.addStream(&Serial);
   Log.print("\n\n\r");
 
-  // network settings
+  //
+  // Network settings
   switch (fsNetworkSettings.read()) {
     case FD_FS_ERR:
       Log.swarningln(FPSTR(L_NETWORK_SETTINGS), F("Filesystem error, load default"));
@@ -86,7 +102,27 @@ void setup() {
       break;
   }
 
-  // settings
+  network = (new NetworkMgr)
+    ->setHostname(networkSettings.hostname)
+    ->setStaCredentials(
+      strlen(networkSettings.sta.ssid) ? networkSettings.sta.ssid : nullptr,
+      strlen(networkSettings.sta.password) ? networkSettings.sta.password : nullptr,
+      networkSettings.sta.channel
+    )->setApCredentials(
+      strlen(networkSettings.ap.ssid) ? networkSettings.ap.ssid : nullptr,
+      strlen(networkSettings.ap.password) ? networkSettings.ap.password : nullptr,
+      networkSettings.ap.channel
+    )
+    ->setUseDhcp(networkSettings.useDhcp)
+    ->setStaticConfig(
+      networkSettings.staticConfig.ip,
+      networkSettings.staticConfig.gateway,
+      networkSettings.staticConfig.subnet,
+      networkSettings.staticConfig.dns
+    );
+
+  //
+  // Settings
   switch (fsSettings.read()) {
     case FD_FS_ERR:
       Log.swarningln(FPSTR(L_SETTINGS), F("Filesystem error, load default"));
@@ -112,8 +148,8 @@ void setup() {
       break;
   }
 
-  // logs
-  if (!settings.system.serial.enable) {
+  // Logs settings
+  if (!settings.system.serial.enabled) {
     Serial.end();
     Log.clearStreams();
 
@@ -125,7 +161,7 @@ void setup() {
     Log.addStream(&Serial);
   }
 
-  if (settings.system.telnet.enable) {
+  if (settings.system.telnet.enabled) {
     telnetStream = new ESPTelnetStream;
     telnetStream->setKeepAliveInterval(500);
     Log.addStream(telnetStream);
@@ -135,34 +171,34 @@ void setup() {
     Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
   }
 
-  // network
-  network = (new NetworkMgr)
-    ->setHostname(networkSettings.hostname)
-    ->setStaCredentials(
-      strlen(networkSettings.sta.ssid) ? networkSettings.sta.ssid : nullptr,
-      strlen(networkSettings.sta.password) ? networkSettings.sta.password : nullptr,
-      networkSettings.sta.channel
-    )->setApCredentials(
-      strlen(networkSettings.ap.ssid) ? networkSettings.ap.ssid : nullptr,
-      strlen(networkSettings.ap.password) ? networkSettings.ap.password : nullptr,
-      networkSettings.ap.channel
-    )
-    ->setUseDhcp(networkSettings.useDhcp)
-    ->setStaticConfig(
-      networkSettings.staticConfig.ip,
-      networkSettings.staticConfig.gateway,
-      networkSettings.staticConfig.subnet,
-      networkSettings.staticConfig.dns
-    );
+  //
+  // Sensors settings
+  switch (fsSensorsSettings.read()) {
+    case FD_FS_ERR:
+      Log.swarningln(FPSTR(L_SENSORS), F("Filesystem error, load default"));
+      break;
+    case FD_FILE_ERR:
+      Log.swarningln(FPSTR(L_SENSORS), F("Bad data, load default"));
+      break;
+    case FD_WRITE:
+      Log.sinfoln(FPSTR(L_SENSORS), F("Not found, load default"));
+      break;
+    case FD_ADD:
+    case FD_READ:
+      Log.sinfoln(FPSTR(L_SENSORS), F("Loaded"));
+    default:
+      break;
+  }
 
-  // tasks
+  //
+  // Make tasks
   tMqtt = new MqttTask(false, 500);
   Scheduler.start(tMqtt);
 
   tOt = new OpenThermTask(true, 750);
   Scheduler.start(tOt);
 
-  tSensors = new SensorsTask(true, EXT_SENSORS_INTERVAL);
+  tSensors = new SensorsTask(true, 1000);
   Scheduler.start(tSensors);
 
   tRegulator = new RegulatorTask(true, 10000);

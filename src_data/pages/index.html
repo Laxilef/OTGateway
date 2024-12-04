@@ -4,19 +4,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title data-i18n>index.title</title>
-    <link rel="stylesheet" href="/static/app.css" />
+    <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}" />
   </head>
 
   <body>
     <header class="container">
       <nav>
         <ul>
-          <li><a href="/">
+          <li>
+            <a href="/">
               <div class="logo" data-i18n>logo</div>
-            </a></li>
+            </a>
+          </li>
         </ul>
         <ul>
-          <!--<li><a href="https://github.com/Laxilef/OTGateway/wiki" role="button" class="secondary" target="_blank">Help</a></li>-->
           <li>
             <select id="lang" aria-label="Lang">
               <option value="en" selected>EN</option>
@@ -48,7 +49,7 @@
               </tr>
               <tr>
                 <th scope="row" data-i18n>network.wifi.connected</th>
-                <td><input type="radio" id="network-connected" aria-invalid="false" checked disabled /></td>
+                <td><i id="network-connected"></i></td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>network.wifi.ssid</th>
@@ -139,9 +140,10 @@
             </tbody>
           </table>
 
-          <div class="grid">
+          <div class="grid" style="grid-template-columns: repeat(auto-fit,minmax(12rem,1fr)) !important;">
             <a href="/dashboard.html" role="button" data-i18n>dashboard.name</a>
             <a href="/settings.html" role="button" data-i18n>settings.name</a>
+            <a href="/sensors.html" role="button" data-i18n>sensors.name</a>
             <a href="/upgrade.html" role="button" data-i18n>upgrade.name</a>
             <a href="/restart.html" role="button" class="secondary restart" data-i18n>button.restart</a>
           </div>
@@ -160,7 +162,7 @@
       </small>
     </footer>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?{BUILD_TIME}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
@@ -168,7 +170,11 @@
 
         setTimeout(async function onLoadPage() {
           try {
-            const response = await fetch('/api/info', { cache: 'no-cache' });
+            const response = await fetch("/api/info", {
+              cache: "no-cache",
+              credentials: "include"
+            });
+            
             if (!response.ok) {
               throw new Error('Response not valid');
             }
@@ -183,7 +189,11 @@
 
             setValue('#network-hostname', result.network.hostname);
             setValue('#network-mac', result.network.mac);
-            setState('#network-connected', result.network.connected);
+            setStatus(
+              '#network-connected',
+              result.network.connected ? "success" : "error",
+              result.network.connected ? "green" : "red"
+            );
             setValue('#network-ssid', result.network.ssid);
             setValue('#network-signal', result.network.signalQuality);
             setValue('#network-ip', result.network.ip);

@@ -2,10 +2,6 @@
 #define PROJECT_REPO                    "https://github.com/Laxilef/OTGateway"
 
 #define MQTT_RECONNECT_INTERVAL         15000
-
-#define EXT_SENSORS_INTERVAL            5000
-#define EXT_SENSORS_FILTER_K            0.15
-
 #define CONFIG_URL                      "http://%s/"
 #define SETTINGS_VALID_VALUE            "stvalid" // only 8 chars!
 #define GPIO_IS_NOT_CONFIGURED          0xff
@@ -22,6 +18,14 @@
 #define THERMOSTAT_INDOOR_MIN_TEMP      5
 #define THERMOSTAT_INDOOR_MAX_TEMP      30
 
+#define DEFAULT_NTC_NOMINAL_RESISTANCE  10000.0f
+#define DEFAULT_NTC_NOMINAL_TEMP        25.0f
+#define DEFAULT_NTC_REF_RESISTANCE      10000.0f
+#define DEFAULT_NTC_BETA_FACTOR         3950.0f
+#define DEFAULT_NTC_VREF                3300.0f
+#define DEFAULT_NTC_VLOW_TRESHOLD       25.0f
+#define DEFAULT_NTC_VHIGH_TRESHOLD      3298.0f
+
 #ifndef BUILD_VERSION
   #define BUILD_VERSION                 "0.0.0"
 #endif
@@ -30,16 +34,16 @@
   #define BUILD_ENV                     "undefined"
 #endif
 
-#ifndef DEFAULT_SERIAL_ENABLE
-  #define DEFAULT_SERIAL_ENABLE true
+#ifndef DEFAULT_SERIAL_ENABLED
+  #define DEFAULT_SERIAL_ENABLED true
 #endif
 
 #ifndef DEFAULT_SERIAL_BAUD
   #define DEFAULT_SERIAL_BAUD 115200
 #endif
 
-#ifndef DEFAULT_TELNET_ENABLE
-  #define DEFAULT_TELNET_ENABLE true
+#ifndef DEFAULT_TELNET_ENABLED
+  #define DEFAULT_TELNET_ENABLED true
 #endif
 
 #ifndef DEFAULT_TELNET_PORT
@@ -86,6 +90,10 @@
   #define DEFAULT_PORTAL_PASSWORD ""
 #endif
 
+#ifndef DEFAULT_MQTT_ENABLED
+  #define DEFAULT_MQTT_ENABLED false
+#endif
+
 #ifndef DEFAULT_MQTT_SERVER
   #define DEFAULT_MQTT_SERVER ""
 #endif
@@ -130,6 +138,10 @@
   #define DEFAULT_SENSOR_INDOOR_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
+#ifndef SENSORS_AMOUNT
+  #define SENSORS_AMOUNT 20
+#endif
+
 #ifndef DEFAULT_EXT_PUMP_GPIO
   #define DEFAULT_EXT_PUMP_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
@@ -141,22 +153,14 @@
 #ifdef ARDUINO_ARCH_ESP32
   #include <driver/gpio.h>
 #elif !defined(GPIO_IS_VALID_GPIO)
-  #define GPIO_IS_VALID_GPIO(gpioNum) (gpioNum >= 0 && gpioNum <= 16)
+  #define GPIO_IS_VALID_GPIO(gpioNum) (gpioNum >= 0 && gpioNum <= 17)
 #endif
 
 #define GPIO_IS_VALID(gpioNum) (gpioNum != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_GPIO(gpioNum))
 
-enum class SensorType : byte {
-  BOILER_OUTDOOR  = 0,
-  BOILER_RETURN   = 4,
-  MANUAL          = 1,
-  DS18B20         = 2,
-  BLUETOOTH       = 3
-};
-
-enum class UnitSystem : byte {
-  METRIC,
-  IMPERIAL
+enum class UnitSystem : uint8_t {
+  METRIC    = 0,
+  IMPERIAL  = 1
 };
 
 char buffer[255];

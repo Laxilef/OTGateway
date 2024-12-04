@@ -74,8 +74,9 @@
 
       "section": {
         "control": "Control",
-        "states": "States and sensors",
-        "otDiag": "OpenTherm diagnostic"
+        "states": "States",
+        "sensors": "Sensors",
+        "diag": "OpenTherm diagnostic"
       },
 
       "thermostat": {
@@ -86,39 +87,45 @@
         "turbo": "Turbo mode"
       },
 
-      "state": {
-        "ot": "OpenTherm connected",
-        "mqtt": "MQTT connected",
-        "emergency": "Emergency",
-        "heating": "Heating",
-        "dhw": "DHW",
-        "flame": "Flame",
-        "fault": "Fault",
-        "diag": "Diagnostic",
-        "extpump": "External pump",
-        "outdoorSensorConnected": "Outdoor sensor connected",
-        "outdoorSensorRssi": "Outdoor sensor RSSI",
-        "outdoorSensorHumidity": "Outdoor sensor humidity",
-        "outdoorSensorBattery": "Outdoor sensor battery",
-        "indoorSensorConnected": "Indoor sensor connected",
-        "cascadeControlInput": "Cascade control (input)",
-        "cascadeControlOutput": "Cascade control (output)",
-        "indoorSensorRssi": "Indoor sensor RSSI",
-        "indoorSensorHumidity": "Indoor sensor humidity",
-        "indoorSensorBattery": "Indoor sensor battery",
-        "modulation": "Modulation",
-        "pressure": "Pressure",
-        "dhwFlowRate": "DHW flow rate",
-        "power": "Current power",
-        "faultCode": "Fault code",
-        "diagCode": "Diagnostic code",
-        "indoorTemp": "Indoor temp",
-        "outdoorTemp": "Outdoor temp",
-        "heatingTemp": "Heating temp",
-        "heatingSetpointTemp": "Heating setpoint temp",
-        "heatingReturnTemp": "Heating return temp",
-        "dhwTemp": "DHW temp",
-        "exhaustTemp": "Exhaust temp"
+      "states": {
+        "mNetworkConnected": "Network connection",
+        "mMqttConnected": "MQTT connection",
+        "mEmergencyState": "Emergency mode",
+        "mExtPumpState": "External pump",
+        "mCascadeControlInput": "Cascade control (input)",
+        "mCascadeControlOutput": "Cascade control (output)",
+
+        "sConnected": "OpenTherm connection",
+        "sFlame": "Flame",
+        "sFaultActive": "Fault",
+        "sFaultCode": "Faul code",
+        "sDiagActive": "Diagnostic",
+        "sDiagCode": "Diagnostic code",
+        
+        "mHeatEnabled": "Heating enabled",
+        "mHeatBlocking": "Heating blocked",
+        "sHeatActive": "Heating active",
+        "mHeatSetpointTemp": "Heating setpoint temp",
+        "mHeatTargetTemp": "Heating target temp",
+        "mHeatCurrTemp": "Heating current temp",
+        "mHeatRetTemp": "Heating return temp",
+        "mHeatIndoorTemp": "Heating, indoor temp",
+        "mHeatOutdoorTemp": "Heating, outdoor temp",
+
+        "mDhwEnabled": "DHW enabled",
+        "sDhwActive": "DHW active",
+        "mDhwTargetTemp": "DHW target temp",
+        "mDhwCurrTemp": "DHW current temp",
+        "mDhwRetTemp": "DHW return temp"
+      },
+
+      "sensors": {
+        "values": {
+          "temp": "Temperature",
+          "humidity": "Humidity",
+          "battery": "Battery",
+          "rssi": "RSSI"
+        }
       }
     },
 
@@ -161,6 +168,87 @@
       }
     },
 
+    "sensors": {
+      "title": "Sensors settings - OpenTherm Gateway",
+      "name": "Sensors settings",
+
+      "enabled": "Enabled",
+      "sensorName": {
+        "title": "Sensor name",
+        "note": "May only contain: a-z, A-Z, 0-9, _ and space"
+      },
+      "purpose": "Purpose",
+      "purposes": {
+        "outdoorTemp": "Outdoor temperature",
+        "indoorTemp": "Indoor temperature",
+        "heatTemp": "Heating, temperature",
+        "heatRetTemp": "Heating, return temperature",
+        "dhwTemp": "DHW, temperature",
+        "dhwRetTemp": "DHW, return temperature",
+        "dhwFlowRate": "DHW, flow rate",
+        "exhaustTemp": "Exhaust temperature",
+        "modLevel": "Modulation level (in percents)",
+        "powerFactor": "Power (in percent)",
+        "power": "Power (in kWt)",
+        "fanSpeed": "Fan speed",
+        "co2": "CO2",
+        "pressure": "Pressure",
+        "humidity": "Humidity",
+        "temperature": "Temperature",
+        "notConfigured": "Not configured"
+      },
+      "type": "Type/source",
+      "types": {
+        "otOutdoorTemp": "OpenTherm, outdoor temp",
+        "otHeatTemp": "OpenTherm, heating, temp",
+        "otHeatRetTemp": "OpenTherm, heating, return temp",
+        "otDhwTemp": "OpenTherm, DHW, temperature",
+        "otDhwTemp2": "OpenTherm, DHW, temperature 2",
+        "otDhwFlowRate": "OpenTherm, DHW, flow rate",
+        "otCh2Temp": "OpenTherm, channel 2, temp",
+        "otExhaustTemp": "OpenTherm, exhaust temp",
+        "otHeatExchangerTemp": "OpenTherm, heat exchanger temp",
+        "otPressure": "OpenTherm, pressure",
+        "otModLevel": "OpenTherm, modulation level",
+        "otCurrentPower": "OpenTherm, current power",
+        "otExhaustCo2": "OpenTherm, exhaust CO2",
+        "otExhaustFanSpeed": "OpenTherm, exhaust fan speed",
+        "otSupplyFanSpeed": "OpenTherm, supply fan speed",
+        "otSolarStorageTemp": "OpenTherm, solar storage temp",
+        "otSolarCollectorTemp": "OpenTherm, solar collector temp",
+        "otFanSpeedSetpoint": "OpenTherm, setpoint fan speed",
+        "otFanSpeedCurrent": "OpenTherm, current fan speed",
+        
+        "ntcTemp": "NTC sensor",
+        "dallasTemp": "DALLAS sensor",
+        "bluetooth": "BLE sensor",
+        "heatSetpointTemp": "Heating, setpoint temp",
+        "manual": "Manual via MQTT/API",
+        "notConfigured": "Not configured"
+      },
+      "gpio": "GPIO",
+      "address": {
+        "title": "Sensor address",
+        "note": "For auto detection of DALLAS sensors leave it at default, for BLE devices need a MAC address"
+      },
+      "correction": {
+        "desc": "Correction of values",
+        "offset": "Compensation (offset)",
+        "factor": "Multiplier"
+      },
+      "filtering": {
+        "desc": "Filtering values",
+        "enabled": {
+          "title": "Enabled filtering",
+          "note": "It can be useful if there is a lot of sharp noise on the charts. The filter used is \"Running Average\"."
+        },
+        "factor": {
+          "title": "Filtration factor",
+          "note": "The lower the value, the smoother and <u>longer</u> the change in numeric values."
+        }
+      }
+    },
+
     "settings": {
       "title": "Settings - OpenTherm Gateway",
       "name": "Settings",
@@ -176,8 +264,6 @@
         "pid": "PID settings",
         "ot": "OpenTherm settings",
         "mqtt": "MQTT settings",
-        "outdorSensor": "Outdoor sensor settings",
-        "indoorSensor": "Indoor sensor settings",
         "extPump": "External pump settings",
         "cascadeControl": "Cascade control settings"
       },
@@ -207,11 +293,11 @@
         "statusLedGpio": "Status LED GPIO",
         "logLevel": "Log level",
         "serial": {
-          "enable": "Enable Serial port",
+          "enable": "Enabled Serial port",
           "baud": "Serial port baud rate"
         },
         "telnet": {
-          "enable": "Enable Telnet",
+          "enable": "Enabled Telnet",
           "port": {
             "title": "Telnet port",
             "note": "Default: 23"
@@ -256,16 +342,9 @@
         "inGpio": "In GPIO",
         "outGpio": "Out GPIO",
         "ledGpio": "RX LED GPIO",
-        "memberIdCode": "Master MemberID code",
+        "memberId": "Master member ID",
+        "flags": "Master flags",
         "maxMod": "Max modulation level",
-        "pressureFactor": {
-          "title": "Coeff. pressure correction",
-          "note": "If the pressure displayed is <b>X10</b> from the real one, set the <b>0.1</b>."
-        },
-        "dhwFlowRateFactor": {
-          "title": "Coeff. DHW flow rate correction",
-          "note": "If the DHW flow rate displayed is <b>X10</b> from the real one, set the <b>0.1</b>."
-        },
         "minPower": {
           "title": "Min boiler power <small>(kW)</small>",
           "note": "This value is at 0-1% boiler modulation level. Typically found in the boiler specification as \"minimum useful heat output\"."
@@ -273,17 +352,6 @@
         "maxPower": {
           "title": "Max boiler power <small>(kW)</small>",
           "note": "<b>0</b> - try detect automatically. Typically found in the boiler specification as \"maximum useful heat output\"."
-        },
-        "fnv": {
-          "desc": "Filtering numeric values",
-          "enable": {
-            "title": "Enable filtering",
-            "note": "It can be useful if there is a lot of sharp noise on the charts. The filter used is \"Running Average\"."
-          },
-          "factor": {
-            "title": "Filtration coeff.",
-            "note": "The lower the value, the smoother and <u>longer</u> the change in numeric values."
-          }
         },
 
         "options": {
@@ -315,20 +383,6 @@
         "interval": "Publish interval <small>(sec)</small>"
       },
 
-      "tempSensor": {
-        "source": {
-          "type": "Source type",
-          "boilerOutdoor": "From boiler via OpenTherm",
-          "boilerReturn": "Return heat carrier temp via OpenTherm",
-          "manual": "Manual via MQTT/API",
-          "ext": "External (DS18B20)",
-          "ble": "BLE device"
-        },
-        "gpio": "GPIO",
-        "offset": "Temp offset <small>(calibration)</small>",
-        "bleAddress": "BLE device MAC address"
-      },
-
       "extPump": {
         "use": "Use external pump",
         "gpio": "Relay GPIO",
@@ -340,14 +394,14 @@
       "cascadeControl": {
         "input": {
           "desc": "Can be used to turn on the heating only if another boiler is faulty. The other boiler controller must change the state of the GPIO input in the event of a fault.",
-          "enable": "Enable input",
+          "enable": "Enabled input",
           "gpio": "GPIO",
           "invertState": "Invert GPIO state",
           "thresholdTime": "State change threshold time <small>(sec)</small>"
         },
         "output": {
           "desc": "Can be used to switch on another boiler <u>via relay</u>.",
-          "enable": "Enable output",
+          "enable": "Enabled output",
           "gpio": "GPIO",
           "invertState": "Invert GPIO state",
           "thresholdTime": "State change threshold time <small>(sec)</small>",
@@ -374,7 +428,7 @@
 
       "note": {
         "disclaimer1": "After a successful upgrade the filesystem, ALL settings will be reset to default values! Save backup before upgrading.",
-        "disclaimer2": "After a successful upgrade, the device will automatically reboot after 10 seconds."
+        "disclaimer2": "After a successful upgrade, the device will automatically reboot after 15 seconds."
       },
 
       "settingsFile": "Settings file",

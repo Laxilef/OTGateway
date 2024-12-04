@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n>sensors.title</title>
+    <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}" />
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li>
+            <a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <hgroup>
+          <h2 data-i18n>sensors.name</h2>
+          <p></p>
+        </hgroup>
+
+        <details id="template" class="sensor hidden" data-id="" data-preloaded="0">
+          <summary><b>#<span class="id"></span>: <span class="name"></span></b></summary>
+
+          <div>
+            <div class="form-busy" aria-busy="true"></div>
+            <form action="/api/sensor?id={id}" class="hidden">
+              <fieldset>
+                <label>
+                  <input type="checkbox" role="switch" name="enabled" value="true">
+                  <span data-i18n>sensors.enabled</span>
+                </label>
+
+                <br />
+
+                <label>
+                  <span data-i18n>sensors.sensorName.title</span>
+                  <input type="text" name="name" maxlength="32" required>
+                  <small data-i18n>sensors.sensorName.note</small>
+                </label>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>sensors.purpose</span>
+                    <select name="purpose" required>
+                      <option value="0" data-i18n>sensors.purposes.outdoorTemp</option>
+                      <option value="1" data-i18n>sensors.purposes.indoorTemp</option>
+                      <option value="2" data-i18n>sensors.purposes.heatTemp</option>
+                      <option value="3" data-i18n>sensors.purposes.heatRetTemp</option>
+                      <option value="4" data-i18n>sensors.purposes.dhwTemp</option>
+                      <option value="5" data-i18n>sensors.purposes.dhwRetTemp</option>
+                      <option value="6" data-i18n>sensors.purposes.dhwFlowRate</option>
+                      <option value="7" data-i18n>sensors.purposes.exhaustTemp</option>
+                      <option value="8" data-i18n>sensors.purposes.modLevel</option>
+                      <option value="248" data-i18n>sensors.purposes.powerFactor</option>
+                      <option value="249" data-i18n>sensors.purposes.power</option>
+                      <option value="250" data-i18n>sensors.purposes.fanSpeed</option>
+                      <option value="251" data-i18n>sensors.purposes.co2</option>
+                      <option value="252" data-i18n>sensors.purposes.pressure</option>
+                      <option value="253" data-i18n>sensors.purposes.humidity</option>
+                      <option value="254" data-i18n>sensors.purposes.temperature</option>
+                      <option value="255" data-i18n>sensors.purposes.notConfigured</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    <span data-i18n>sensors.type</span>
+                    <select name="type" required>
+                      <option value="0" data-i18n>sensors.types.otOutdoorTemp</option>
+                      <option value="1" data-i18n>sensors.types.otHeatTemp</option>
+                      <option value="2" data-i18n>sensors.types.otHeatRetTemp</option>
+                      <option value="3" data-i18n>sensors.types.otDhwTemp</option>
+                      <option value="4" data-i18n>sensors.types.otDhwTemp2</option>
+                      <option value="5" data-i18n>sensors.types.otDhwFlowRate</option>
+                      <option value="6" data-i18n>sensors.types.otCh2Temp</option>
+                      <option value="7" data-i18n>sensors.types.otExhaustTemp</option>
+                      <option value="8" data-i18n>sensors.types.otHeatExchangerTemp</option>
+                      <option value="9" data-i18n>sensors.types.otPressure</option>
+                      <option value="10" data-i18n>sensors.types.otModLevel</option>
+                      <option value="11" data-i18n>sensors.types.otCurrentPower</option>
+                      <option value="12" data-i18n>sensors.types.otExhaustCo2</option>
+                      <option value="13" data-i18n>sensors.types.otExhaustFanSpeed</option>
+                      <option value="14" data-i18n>sensors.types.otSupplyFanSpeed</option>
+                      <option value="15" data-i18n>sensors.types.otSolarStorageTemp</option>
+                      <option value="16" data-i18n>sensors.types.otSolarCollectorTemp</option>
+                      <option value="17" data-i18n>sensors.types.otFanSpeedSetpoint</option>
+                      <option value="18" data-i18n>sensors.types.otFanSpeedCurrent</option>
+
+                      <option value="50" data-i18n>sensors.types.ntcTemp</option>
+                      <option value="51" data-i18n>sensors.types.dallasTemp</option>
+                      <option value="52" data-i18n>sensors.types.bluetooth</option>
+                      <option value="253" data-i18n>sensors.types.heatSetpointTemp</option>
+                      <option value="254" data-i18n>sensors.types.manual</option>
+                      <option value="255" data-i18n>sensors.types.notConfigured</option>
+                    </select>
+                  </label>
+                </div>
+              </fieldset>
+
+              <div class="grid">
+                <label>
+                  <span data-i18n>sensors.gpio</span>
+                  <input type="number" outputmode="numeric" name="gpio" min="0" max="254" step="1">
+                </label>
+
+                <label>
+                  <span data-i18n>sensors.address.title</span>
+                  <input type="text" name="address">
+                  <small data-i18n>sensors.address.note</small>
+                </label>
+              </div>
+
+              <hr class="correction" />
+
+              <details class="correction">
+                <summary><b data-i18n>sensors.correction.desc</b></summary>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>sensors.correction.offset</span>
+                    <input type="number" inputmode="numeric" name="offset" min="-20" max="20" step="0.01" required>
+                  </label>
+
+                  <label>
+                    <span data-i18n>sensors.correction.factor</span>
+                    <input type="number" inputmode="numeric" name="factor" min="0.01" max="10" step="0.01" required>
+                  </label>
+                </div>
+              </details>
+
+              <hr class="filtering" />
+
+              <details class="filtering">
+                <summary><b data-i18n>sensors.filtering.desc</b></summary>
+
+                <div>
+                  <label>
+                    <input type="checkbox" name="filtering" value="true">
+                    <span data-i18n>sensors.filtering.enabled.title</span>
+                    <br />
+                    <small data-i18n>sensors.filtering.enabled.note</small>
+                  </label>
+  
+                  <label>
+                    <span data-i18n>sensors.filtering.factor.title</span>
+                    <input type="number" inputmode="numeric" name="filteringFactor" min="0.01" max="1" step="0.01">
+                    <small data-i18n>sensors.filtering.factor.note</small>
+                  </label>
+                </div>
+              </details>
+              
+              <br/>
+              <button type="submit" data-i18n>button.save</button>
+            </form>
+          </div>
+        </details>
+      </article>
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js?{BUILD_TIME}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const lang = new Lang(document.getElementById("lang"));
+        lang.build();
+
+        const container = document.querySelector("article");
+        const templateNode = container.querySelector("#template");
+
+        try {
+          const response = await fetch("/api/sensors", {
+            cache: "no-cache",
+            credentials: "include"
+          });
+
+          if (!response.ok) {
+            throw new Error("Response not valid");
+          }
+
+          const result = await response.json();
+          for (const sensorId in result) {
+            const sensorNode = templateNode.cloneNode(true);
+            sensorNode.removeAttribute("id");
+            sensorNode.classList.remove("hidden");
+            sensorNode.dataset.id = sensorId;
+            setValue(".id", sensorId, sensorNode);
+            setValue(".name", result[sensorId], sensorNode);
+            
+            container.appendChild(sensorNode);
+            container.appendChild(document.createElement("hr"));
+
+            const sensorForm = sensorNode.querySelector("form");
+            const fillData = (data) => {
+              setCheckboxValue("[name='enabled']", data.enabled, sensorForm);
+              setInputValue("[name='name']", data.name, {}, sensorForm);
+              setSelectValue("[name='purpose']", data.purpose, sensorForm);
+              setSelectValue("[name='type']", data.type, sensorForm);
+              setInputValue("[name='gpio']", data.gpio < 255 ? data.gpio : "", {}, sensorForm);
+              setInputValue("[name='address']", data.address, {}, sensorForm);
+              setInputValue("[name='offset']", data.offset, {}, sensorForm);
+              setInputValue("[name='factor']", data.factor, {}, sensorForm);
+              setCheckboxValue("[name='filtering']", data.filtering, sensorForm);
+              setInputValue("[name='filteringFactor']", data.filteringFactor, {}, sensorForm);
+
+              sensorForm.querySelector("[name='type']").dispatchEvent(new Event("change"));
+
+              setBusy(".form-busy", "form", false, sensorNode);
+            };
+
+            sensorForm.action = sensorForm.action.replace("{id}", sensorId);
+            sensorForm.querySelector("[name='type']").addEventListener("change", async (event) => {
+              const gpio = sensorForm.querySelector("[name='gpio']");
+              const address = sensorForm.querySelector("[name='address']");
+              const parentGpio = gpio.parentElement;
+              const parentAddress = address.parentElement;
+
+              switch(parseInt(event.target.value)) {
+                // heating setpoint, manual
+                case 253:
+                case 254:
+                  hide(".correction", sensorForm);
+                  hide(".filtering", sensorForm);
+                  break;
+
+                // other
+                default:
+                  show(".correction", sensorForm);
+                  show(".filtering", sensorForm);
+              }
+
+              switch(parseInt(event.target.value)) {
+                // ntc
+                case 50:
+                  parentGpio.classList.remove("hidden");
+                  parentAddress.classList.add("hidden");
+                  address.removeAttribute("pattern");
+                  break;
+
+                // dallas
+                case 51:
+                  parentGpio.classList.remove("hidden");
+                  parentAddress.classList.remove("hidden");
+                  address.setAttribute("pattern", "([A-Fa-f0-9]{2}:){7}[A-Fa-f0-9]{2}");
+                  break;
+
+                // ble
+                case 52:
+                  parentGpio.classList.add("hidden");
+                  parentAddress.classList.remove("hidden");
+                  address.setAttribute("pattern", "([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}");
+                  break;
+
+                // other
+                default:
+                  parentGpio.classList.add("hidden");
+                  parentAddress.classList.add("hidden");
+                  address.removeAttribute("pattern");
+                  break;
+              }
+            });
+
+            sensorNode.addEventListener("click", async (event) => {
+              if (parseInt(sensorNode.dataset.preloaded)) {
+                return;
+              }
+
+              try {
+                const response = await fetch(sensorForm.action, {
+                  cache: "no-cache",
+                  credentials: "include"
+                });
+                
+                if (response.status != 200) {
+                  return;
+                }
+
+                const result = await response.json();
+                fillData(result);
+                sensorNode.dataset.preloaded = 1;
+
+              } catch (error) {
+                console.log(error);
+              }
+            });
+            
+            setupForm(`.sensor[data-id='${sensorId}'] form`, fillData, ['address']);
+          }
+
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    </script>
+  </body>
+</html>

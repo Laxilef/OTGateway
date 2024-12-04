@@ -59,7 +59,7 @@ footer {
 /*nav li a:has(> div.logo) {
   margin-bottom: 0;
 }*/
-nav li :where(a,[role=link]) {
+nav li :where(a, [role=link]) {
   margin: 0;
 }
 
@@ -69,6 +69,11 @@ details>div {
 
 pre {
   padding: 0.5rem;
+}
+
+:nth-last-child(1 of table tr:not(.hidden)) th,
+:nth-last-child(1 of table tr:not(.hidden)) td {
+  border-bottom: 0 !important;
 }
 
 
@@ -200,4 +205,20 @@ tr.network:hover {
 
 [data-tooltip]:has(> [class*=" icons-"], > [class=icons], > [class^=icons-]) {
   border: 0 !important;
+}
+
+.icons-color-green {
+  color: var(--pico-form-element-valid-active-border-color);
+}
+
+.icons-color-yellow {
+  color: #c89048;
+}
+
+.icons-color-gray {
+  color: var(--pico-form-element-placeholder-color);
+}
+
+.icons-color-red {
+  color: var(--pico-form-element-invalid-active-border-color);
 }

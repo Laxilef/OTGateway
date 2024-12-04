@@ -27,12 +27,12 @@ struct Settings {
     uint8_t logLevel = DEFAULT_LOG_LEVEL;
 
     struct {
-      bool enable = DEFAULT_SERIAL_ENABLE;
+      bool enabled = DEFAULT_SERIAL_ENABLED;
       unsigned int baudrate = DEFAULT_SERIAL_BAUD;
     } serial;
 
     struct {
-      bool enable = DEFAULT_TELNET_ENABLE;
+      bool enabled = DEFAULT_TELNET_ENABLED;
       unsigned short port = DEFAULT_TELNET_PORT;
     } telnet;
 
@@ -51,12 +51,12 @@ struct Settings {
     byte inGpio = DEFAULT_OT_IN_GPIO;
     byte outGpio = DEFAULT_OT_OUT_GPIO;
     byte rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
-    unsigned int memberIdCode = 0;
+    uint8_t memberId = 0;
+    uint8_t flags = 0;
     uint8_t maxModulation = 100;
-    float pressureFactor = 1.0f;
-    float dhwFlowRateFactor = 1.0f;
     float minPower = 0.0f;
     float maxPower = 0.0f;
+
     bool dhwPresent = true;
     bool summerWinterMode = false;
     bool heatingCh2Enabled = true;
@@ -67,15 +67,10 @@ struct Settings {
     bool getMinMaxTemp = true;
     bool nativeHeatingControl = false;
     bool immergasFix = false;
-
-    struct {
-      bool enable = false;
-      float factor = 0.1f;
-    } filterNumValues;
   } opentherm;
 
   struct {
-    bool enable = false;
+    bool enabled = DEFAULT_MQTT_ENABLED;
     char server[81] = DEFAULT_MQTT_SERVER;
     unsigned short port = DEFAULT_MQTT_PORT;
     char user[33] = DEFAULT_MQTT_USER;
@@ -91,7 +86,7 @@ struct Settings {
   } emergency;
 
   struct {
-    bool enable = true;
+    bool enabled = true;
     bool turbo = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
     float hysteresis = 0.5f;
@@ -101,14 +96,14 @@ struct Settings {
   } heating;
 
   struct {
-    bool enable = true;
+    bool enabled = true;
     float target = DEFAULT_DHW_TARGET_TEMP;
     byte minTemp = DEFAULT_DHW_MIN_TEMP;
     byte maxTemp = DEFAULT_DHW_MAX_TEMP;
   } dhw;
 
   struct {
-    bool enable = false;
+    bool enabled = false;
     float p_factor = 2.0f;
     float i_factor = 0.0055f;
     float d_factor = 0.0f;
@@ -118,27 +113,11 @@ struct Settings {
   } pid;
 
   struct {
-    bool enable = false;
+    bool enabled = false;
     float n_factor = 0.7f;
     float k_factor = 3.0f;
     float t_factor = 2.0f;
   } equitherm;
-
-  struct {
-    struct {
-      SensorType type = SensorType::BOILER_OUTDOOR;
-      byte gpio = DEFAULT_SENSOR_OUTDOOR_GPIO;
-      uint8_t bleAddress[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      float offset = 0.0f;
-    } outdoor;
-
-    struct {
-      SensorType type = SensorType::MANUAL;
-      byte gpio = DEFAULT_SENSOR_INDOOR_GPIO;
-      uint8_t bleAddress[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      float offset = 0.0f;
-    } indoor;
-  } sensors;
 
   struct {
     bool use = false;
@@ -150,14 +129,14 @@ struct Settings {
 
   struct {
     struct {
-      bool enable = false;
+      bool enabled = false;
       byte gpio = GPIO_IS_NOT_CONFIGURED;
       byte invertState = false;
       unsigned short thresholdTime = 60;
     } input;
 
     struct {
-      bool enable = false;
+      bool enabled = false;
       byte gpio = GPIO_IS_NOT_CONFIGURED;
       byte invertState = false;
       unsigned short thresholdTime = 60;
@@ -170,51 +149,95 @@ struct Settings {
   char validationValue[8] = SETTINGS_VALID_VALUE;
 } settings;
 
+Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
+  {
+    false,
+    "Outdoor temp",
+    Sensors::Purpose::OUTDOOR_TEMP,
+    Sensors::Type::OT_OUTDOOR_TEMP,
+    DEFAULT_SENSOR_OUTDOOR_GPIO
+  },
+  {
+    false,
+    "Indoor temp",
+    Sensors::Purpose::INDOOR_TEMP,
+    Sensors::Type::DALLAS_TEMP,
+    DEFAULT_SENSOR_INDOOR_GPIO
+  },
+  {
+    true,
+    "Heating temp",
+    Sensors::Purpose::HEATING_TEMP,
+    Sensors::Type::OT_HEATING_TEMP,
+  },
+  {
+    true,
+    "Heating return temp",
+    Sensors::Purpose::HEATING_RETURN_TEMP,
+    Sensors::Type::OT_HEATING_RETURN_TEMP,
+  },
+  {
+    true,
+    "Heating setpoint temp",
+    Sensors::Purpose::TEMPERATURE,
+    Sensors::Type::HEATING_SETPOINT_TEMP,
+  },
+  {
+    true,
+    "DHW temp",
+    Sensors::Purpose::DHW_TEMP,
+    Sensors::Type::OT_DHW_TEMP,
+  },
+  {
+    true,
+    "DHW flow rate",
+    Sensors::Purpose::DHW_FLOW_RATE,
+    Sensors::Type::OT_DHW_FLOW_RATE,
+  },
+  {
+    true,
+    "Exhaust temp",
+    Sensors::Purpose::EXHAUST_TEMP,
+    Sensors::Type::OT_EXHAUST_TEMP,
+  },
+  {
+    true,
+    "Pressure",
+    Sensors::Purpose::PRESSURE,
+    Sensors::Type::OT_PRESSURE,
+  },
+  {
+    true,
+    "Modulation level",
+    Sensors::Purpose::MODULATION_LEVEL,
+    Sensors::Type::OT_MODULATION_LEVEL,
+  },
+  {
+    true,
+    "Power",
+    Sensors::Purpose::POWER,
+    Sensors::Type::OT_CURRENT_POWER,
+  }
+};
+
 struct Variables {
   struct {
-    bool otStatus = false;
-    bool emergency = false;
-    bool heating = false;
-    bool dhw = false;
-    bool flame = false;
-    bool fault = false;
-    bool diagnostic = false;
-    bool externalPump = false;
-    bool mqtt = false;
-  } states;
-
-  struct {
-    float modulation = 0.0f;
-    float pressure = 0.0f;
-    float dhwFlowRate = 0.0f;
-    float power = 0.0f;
-    byte faultCode = 0;
-    unsigned short diagnosticCode = 0;
+    bool connected = false;
     int8_t rssi = 0;
-
-    struct {
-      bool connected = false;
-      int8_t rssi = 0;
-      float battery = 0.0f;
-      float humidity = 0.0f;
-    } outdoor;
-
-    struct {
-      bool connected = false;
-      int8_t rssi = 0;
-      float battery = 0.0f;
-      float humidity = 0.0f;
-    } indoor;
-  } sensors;
+  } network;
 
   struct {
-    float indoor = 0.0f;
-    float outdoor = 0.0f;
-    float heating = 0.0f;
-    float heatingReturn = 0.0f;
-    float dhw = 0.0f;
-    float exhaust = 0.0f;
-  } temperatures;
+    bool connected = false;
+  } mqtt;
+
+  struct {
+    bool state = false;
+  } emergency;
+
+  struct {
+    bool state = false;
+    unsigned long lastEnabledTime = 0;
+  } externalPump;
 
   struct {
     bool input = false;
@@ -222,31 +245,130 @@ struct Variables {
   } cascadeControl;
 
   struct {
-    bool heatingEnabled = false;
-    byte heatingMinTemp = DEFAULT_HEATING_MIN_TEMP;
-    byte heatingMaxTemp = DEFAULT_HEATING_MAX_TEMP;
-    float heatingSetpoint = 0;
-    unsigned long extPumpLastEnableTime = 0;
-    byte dhwMinTemp = DEFAULT_DHW_MIN_TEMP;
-    byte dhwMaxTemp = DEFAULT_DHW_MAX_TEMP;
-    byte minModulation = 0;
-    byte maxModulation = 0;
-    uint8_t maxPower = 0;
-    uint8_t slaveMemberId = 0;
-    uint8_t slaveFlags = 0;
-    uint8_t slaveType = 0;
-    uint8_t slaveVersion = 0;
-    float slaveOtVersion = 0.0f;
-    uint8_t masterMemberId = 0;
-    uint8_t masterFlags = 0;
-    uint8_t masterType = 0;
-    uint8_t masterVersion = 0;
-    float masterOtVersion = 0;
-  } parameters;
+    uint8_t memberId = 0;
+    uint8_t flags = 0;
+    uint8_t type = 0;
+    uint8_t appVersion = 0;
+    float protocolVersion = 0.0f;
+
+    struct {
+      bool blocking = false;
+      bool enabled = false;
+      bool indoorTempControl = false;
+      float setpointTemp = 0.0f;
+      float targetTemp = 0.0f;
+      float currentTemp = 0.0f;
+      float returnTemp = 0.0f;
+      float indoorTemp = 0.0f;
+      float outdoorTemp = 0.0f;
+      float minTemp = 0.0f;
+      float maxTemp = 0.0f;
+    } heating;
+
+    struct {
+      bool enabled = false;
+      float targetTemp = 0.0f;
+      float currentTemp = 0.0f;
+      float returnTemp = 0.0f;
+    } dhw;
+
+    struct {
+      bool enabled = false;
+      float targetTemp = 0.0f;
+    } ch2;
+  } master;
+
+  struct {
+    uint8_t memberId = 0;
+    uint8_t flags = 0;
+    uint8_t type = 0;
+    uint8_t appVersion = 0;
+    float protocolVersion = 0.0f;
+
+    bool connected = false;
+    bool flame = false;
+    float pressure = 0.0f;
+    float heatExchangerTemp = 0.0f;
+
+    struct {
+      bool active = false;
+      uint8_t code = 0;
+    } fault;
+
+    struct {
+      bool active = false;
+      uint16_t code = 0;
+    } diag;
+
+    struct {
+      uint8_t current = 0;
+      uint8_t min = 0;
+      uint8_t max = 100;
+    } modulation;
+
+    struct {
+      float current = 0.0f;
+      float min = 0.0f;
+      float max = 0.0f;
+    } power;
+
+    struct {
+      float temp = 0.0f;
+      uint16_t co2 = 0;
+      uint16_t fanSpeed = 0;
+    } exhaust;
+
+    struct {
+      float storage = 0.0f;
+      float collector = 0.0f;
+    } solar;
+
+    struct {
+      uint8_t setpoint = 0;
+      uint8_t current = 0;
+      uint16_t supply = 0;
+    } fanSpeed;
+
+    struct {
+      bool active = false;
+      bool enabled = false;
+      float targetTemp = 0.0f;
+      float currentTemp = 0.0f;
+      float returnTemp = 0.0f;
+      float indoorTemp = 0.0f;
+      float outdoorTemp = 0.0f;
+      uint8_t minTemp = DEFAULT_HEATING_MIN_TEMP;
+      uint8_t maxTemp = DEFAULT_HEATING_MAX_TEMP;
+    } heating;
+
+    struct {
+      bool active = false;
+      bool enabled = false;
+      float targetTemp = 0.0f;
+      float currentTemp = 0.0f;
+      float currentTemp2 = 0.0f;
+      float returnTemp = 0.0f;
+      float flowRate = 0.0f;
+      uint8_t minTemp = DEFAULT_DHW_MIN_TEMP;
+      uint8_t maxTemp = DEFAULT_DHW_MAX_TEMP;
+    } dhw;
+
+    struct {
+      bool enabled = false;
+      float targetTemp = 0.0f;
+      float currentTemp = 0.0f;
+      float indoorTemp = 0.0f;
+    } ch2;
+  } slave;
 
   struct {
     bool restart = false;
     bool resetFault = false;
     bool resetDiagnostic = false;
   } actions;
+
+  struct {
+    bool restarting = false;
+    bool upgrading = false;
+  } states;
 } vars;

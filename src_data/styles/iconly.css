@@ -7,8 +7,8 @@
   font-family: "Icons";
   font-style: normal;
   font-weight: 400;
-  src: url("/static/fonts/iconly.eot?1718563596894");
-  src: url("/static/fonts/iconly.eot?#iefix") format("embedded-opentype"), url("/static/fonts/iconly.woff2?1718563596894") format("woff2"), url("/static/fonts/iconly.woff?1718563596894") format("woff"), url("/static/fonts/iconly.ttf?1718563596894") format("truetype"), url("/static/fonts/iconly.svg?1718563596894#Icons") format("svg");
+  src: url("/static/fonts/iconly.eot?1732913937966");
+  src: url("/static/fonts/iconly.eot?#iefix") format("embedded-opentype"), url("/static/fonts/iconly.woff2?1732913937966") format("woff2"), url("/static/fonts/iconly.woff?1732913937966") format("woff"), url("/static/fonts/iconly.ttf?1732913937966") format("truetype"), url("/static/fonts/iconly.svg?1732913937966#Icons") format("svg");
 }
 
 [class="icons"], [class^="icons-"], [class*=" icons-"] {
@@ -51,6 +51,10 @@
   content: "\e006";
 }
 
+.icons-error:before {
+  content: "\e007";
+}
+
 .icons-wifi-strength-3:before {
   content: "\e008";
 }
@@ -63,6 +67,14 @@
   content: "\e00a";
 }
 
+.icons-success:before {
+  content: "\e00b";
+}
+
 .icons-up:before {
   content: "\e00c";
+}
+
+.icons-alarm:before {
+  content: "\e00d";
 }

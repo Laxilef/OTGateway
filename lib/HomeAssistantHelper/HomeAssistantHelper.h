@@ -100,8 +100,8 @@ public:
     return result;
   }
 
-  template <class T>
-  String getTopic(T category, T name, char nameSeparator = '/') {
+  template <class CT, class NT>
+  String makeConfigTopic(CT category, NT name, char nameSeparator = '/') {
     String topic = "";
     topic.concat(this->prefix);
     topic.concat('/');
@@ -110,21 +110,45 @@ public:
     topic.concat(this->devicePrefix);
     topic.concat(nameSeparator);
     topic.concat(name);
-    topic.concat("/config");
+    topic.concat(F("/config"));
     return topic;
   }
 
   template <class T> 
-  String getDeviceTopic(T value, char separator = '/') {
+  String getDeviceTopic(T value, char dpvSeparator = '/') {
     String topic = "";
     topic.concat(this->devicePrefix);
-    topic.concat(separator);
+    topic.concat(dpvSeparator);
     topic.concat(value);
     return topic;
   }
 
+  template <class CT, class NT>
+  String getDeviceTopic(CT category, NT name, char dpcSeparator = '/', char cnSeparator = '/') {
+    String topic = "";
+    topic.concat(this->devicePrefix);
+    topic.concat(dpcSeparator);
+    topic.concat(category);
+    topic.concat(cnSeparator);
+    topic.concat(name);
+    return topic;
+  }
+
+  template <class CT, class NT, class ST>
+  String getDeviceTopic(CT category, NT name, ST suffix, char dpcSeparator = '/', char cnSeparator = '/', char nsSeparator = '/') {
+    String topic = "";
+    topic.concat(this->devicePrefix);
+    topic.concat(dpcSeparator);
+    topic.concat(category);
+    topic.concat(cnSeparator);
+    topic.concat(name);
+    topic.concat(nsSeparator);
+    topic.concat(suffix);
+    return topic;
+  }
+
   template <class T> 
-  String getObjectId(T value, char separator = '_') {
+  String getObjectIdWithPrefix(T value, char separator = '_') {
     String topic = "";
     topic.concat(this->devicePrefix);
     topic.concat(separator);
