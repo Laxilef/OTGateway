@@ -218,13 +218,13 @@ protected:
 
     // set outdoor sensor flag
     if (settings.equitherm.enabled) {
-      if (!Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
+      if (!Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::OUTDOOR_TEMP)) {
         emergencyFlags |= 0b00000001;
       }
     }
 
     // set indoor sensor flags
-    if (!Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::OUTDOOR_TEMP)) {
+    if (!Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
       if (!settings.equitherm.enabled && settings.pid.enabled) {
         emergencyFlags |= 0b00000010;
       }
