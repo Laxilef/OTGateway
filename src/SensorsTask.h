@@ -561,7 +561,7 @@ protected:
               return;
             }
 
-            float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.01f);
+            float rawTemp = (pChar->getValue<int16_t>() * 0.01f);
             Log.straceln(
               FPSTR(L_SENSORS_BLE),
               F("Sensor #%hhu '%s': received temp: %.2f"),
@@ -634,7 +634,7 @@ protected:
               return;
             }
 
-            float rawTemp = ((pData[0] | (pData[1] << 8)) * 0.1f);
+            float rawTemp = (pChar->getValue<int16_t>() * 0.1f);
             Log.straceln(
               FPSTR(L_SENSORS_BLE),
               F("Sensor #%hhu '%s': received temp: %.2f"),
@@ -719,7 +719,7 @@ protected:
                 return;
               }
 
-              float rawHumidity = ((pData[0] | (pData[1] << 8)) * 0.01f);
+              float rawHumidity = (pChar->getValue<uint16_t>() * 0.01f);
               Log.straceln(
                 FPSTR(L_SENSORS_BLE),
                 F("Sensor #%hhu '%s': received humidity: %.2f"),
@@ -818,7 +818,7 @@ protected:
                 return;
               }
 
-              uint8_t rawBattery = pData[0];
+              auto rawBattery = pChar->getValue<uint8_t>();
               Log.straceln(
                 FPSTR(L_SENSORS_BLE),
                 F("Sensor #%hhu '%s': received battery: %.2f"),
