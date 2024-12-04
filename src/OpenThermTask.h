@@ -1038,25 +1038,27 @@ protected:
     }
 
     // Set CH2 temp
-    if (vars.master.ch2.enabled && !settings.opentherm.nativeHeatingControl) {
-      // Converted target CH2 temp
-      float convertedTemp = convertTemp(
-        vars.master.ch2.targetTemp,
-        settings.system.unitSystem,
-        settings.opentherm.unitSystem
-      );
+    if (!settings.opentherm.nativeHeatingControl && vars.master.ch2.enabled) {
+      if (settings.opentherm.heatingCh1ToCh2 || settings.opentherm.dhwToCh2) {
+        // Converted target CH2 temp
+        float convertedTemp = convertTemp(
+          vars.master.ch2.targetTemp,
+          settings.system.unitSystem,
+          settings.opentherm.unitSystem
+        );
 
-      if (this->needSetCh2Temp(convertedTemp)) {
-        if (this->setCh2Temp(convertedTemp)) {
-          this->ch2SetTempTime = millis();
+        if (this->needSetCh2Temp(convertedTemp)) {
+          if (this->setCh2Temp(convertedTemp)) {
+            this->ch2SetTempTime = millis();
 
-          Log.sinfoln(
-            FPSTR(L_OT_CH2), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.ch2.targetTemp, convertedTemp, vars.slave.ch2.targetTemp
-          );
+            Log.sinfoln(
+              FPSTR(L_OT_CH2), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
+              vars.master.ch2.targetTemp, convertedTemp, vars.slave.ch2.targetTemp
+            );
 
-        } else {
-          Log.swarningln(FPSTR(L_OT_CH2), F("Failed set temp"));
+          } else {
+            Log.swarningln(FPSTR(L_OT_CH2), F("Failed set temp"));
+          }
         }
       }
     }
