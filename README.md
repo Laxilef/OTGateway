@@ -82,3 +82,6 @@ All available information and instructions can be found in the wiki:
 ## Debug
 To display DEBUG messages you must enable debug in settings (switch is disabled by default).
 You can connect via Telnet to read messages. IP: ESP8266 ip, port: 23
+
+___
+This project is tested with BrowserStack.
