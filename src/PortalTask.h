@@ -509,6 +509,7 @@ protected:
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         if (detailed) {
           auto& sSensor = Sensors::settings[sensorId];
+          doc[sensorId][FPSTR(S_ENABLED)] = sSensor.enabled;
           doc[sensorId][FPSTR(S_NAME)] = sSensor.name;
           doc[sensorId][FPSTR(S_PURPOSE)] = static_cast<uint8_t>(sSensor.purpose);
           sensorResultToJson(sensorId, doc[sensorId]);

@@ -581,12 +581,12 @@
               }
               
               const sData = result[sensorId];
-              if (sData.purpose == 255) {
-                sensorNode.classList.add("hidden");
+              if (!sData.enabled || sData.purpose == 255) {
+                sensorNode.classList.toggle("hidden", true);
                 continue;
               }
 
-              sensorNode.classList.remove("hidden");
+              sensorNode.classList.toggle("hidden", false);
 
               setStatus(
                 ".sStatus",
