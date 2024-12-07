@@ -13,7 +13,7 @@
 ![Integration with HomeAssistant](https://github.com/user-attachments/assets/505f8eee-e899-4740-888e-0366edd40a10)
 
 ## Features
-- Hot water temperature control
+- DHW temperature control
 - Heating temperature control
 - Smart heating temperature control modes:
    - PID
@@ -35,7 +35,7 @@
   - Display of return temperature of the heat carrier
   - Display of setpoint heat carrier temperature (useful when using PID or Equitherm)
   - Display of the process of DHW: working/not working
-  - Display of current hot water temperature
+  - Display of current DHW temperature
   - _And other information..._
 - [Home Assistant](https://www.home-assistant.io/) integration via MQTT. The ability to create any automation for the boiler!
 
