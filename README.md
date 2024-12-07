@@ -8,9 +8,9 @@
 </div>
 <hr />
 
-![Dashboard](https://github.com/user-attachments/assets/07909700-5abb-4058-843b-f693b62799d5)
-![Configuration](https://github.com/user-attachments/assets/c48a0790-ac6e-4264-b8f0-e7dcd776e9db)
-![Integration with HomeAssistant](https://github.com/user-attachments/assets/505f8eee-e899-4740-888e-0366edd40a10)
+![Dashboard](/assets/poster-1.png) 
+![Configuration](/assets/poster-2.png) 
+![Integration with HomeAssistant](/assets/poster-3.png)
 
 ## Features
 - DHW temperature control
