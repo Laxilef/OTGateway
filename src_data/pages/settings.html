@@ -41,19 +41,19 @@
             <div id="portal-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="portal-settings" class="hidden">
               <div class="grid">
-                <label for="portal-login">
+                <label>
                   <span data-i18n>settings.portal.login</span>
-                  <input type="text" id="portal-login" name="portal[login]" maxlength="12" required>
+                  <input type="text" name="portal[login]" maxlength="12" required>
                 </label>
 
-                <label for="portal-password">
+                <label>
                   <span data-i18n>settings.portal.password</span>
-                  <input type="password" id="portal-password" name="portal[password]" maxlength="32" required>
+                  <input type="password" name="portal[password]" maxlength="32" required>
                 </label>
               </div>
 
-              <label for="portal-auth">
-                <input type="checkbox" id="portal-auth" name="portal[auth]" value="true">
+              <label>
+                <input type="checkbox" name="portal[auth]" value="true">
                 <span data-i18n>settings.portal.auth</span>
               </label>
               <br />
@@ -74,20 +74,20 @@
                 <legend data-i18n>settings.system.unit</legend>
 
                 <label>
-                  <input type="radio" class="system-unit-system" name="system[unitSystem]" value="0" />
+                  <input type="radio" name="system[unitSystem]" value="0" />
                   <span data-i18n>settings.system.metric</span>
                 </label>
 
                 <label>
-                  <input type="radio" class="system-unit-system" name="system[unitSystem]" value="1" />
+                  <input type="radio" name="system[unitSystem]" value="1" />
                   <span data-i18n>settings.system.imperial</span>
                 </label>
               </fieldset>
 
               <fieldset>
-                <label for="system-status-led-gpio">
+                <label>
                   <span data-i18n>settings.system.statusLedGpio</span>
-                  <input type="number" inputmode="numeric" id="system-status-led-gpio" name="system[statusLedGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="system[statusLedGpio]" min="0" max="254" step="1">
                   <small data-i18n>settings.note.blankNotUse</small>
                 </label>
               </fieldset>
@@ -95,19 +95,19 @@
               <fieldset>
                 <legend data-i18n>settings.section.diag</legend>
 
-                <label for="system-serial-enable">
-                  <input type="checkbox" id="system-serial-enable" name="system[serial][enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="system[serial][enabled]" value="true">
                   <span data-i18n>settings.system.serial.enable</span>
                 </label>
 
-                <label for="system-telnet-enable">
-                  <input type="checkbox" id="system-telnet-enable" name="system[telnet][enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="system[telnet][enabled]" value="true">
                   <span data-i18n>settings.system.telnet.enable</span>
                 </label>
 
-                <label for="system-log-level">
+                <label>
                   <span data-i18n>settings.system.logLevel</span>
-                  <select id="system-log-level" name="system[logLevel]">
+                  <select name="system[logLevel]">
                     <option value="0">SILENT</option>
                     <option value="1">FATAL</option>
                     <option value="2">ERROR</option>
@@ -120,9 +120,9 @@
                 </label>
 
                 <div class="grid">
-                  <label for="system-serial-baudrate">
+                  <label>
                     <span data-i18n>settings.system.serial.baud</span>
-                    <select id="system-serial-baudrate" name="system[serial][baudrate]" required>
+                    <select name="system[serial][baudrate]" required>
                       <option value="9600">9600</option>
                       <option value="19200">19200</option>
                       <option value="38400">38400</option>
@@ -132,9 +132,9 @@
                     </select>
                   </label>
 
-                  <label for="system-telnet-port">
+                  <label>
                     <span data-i18n>settings.system.telnet.port.title</span>
-                    <input type="number" inputmode="numeric" id="system-telnet-port" name="system[telnet][port]" min="1" max="65535" step="1" required>
+                    <input type="number" inputmode="numeric" name="system[telnet][port]" min="1" max="65535" step="1" required>
                     <small data-i18n>settings.system.telnet.port.note</small>
                   </label>
                 </div>
@@ -156,26 +156,26 @@
             <div id="heating-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="heating-settings" class="hidden">
               <div class="grid">
-                <label for="heating-min-temp">
+                <label>
                   <span data-i18n>settings.temp.min</span>
-                  <input type="number" inputmode="numeric" id="heating-min-temp" name="heating[minTemp]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="heating[minTemp]" min="0" max="0" step="1" required>
                 </label>
 
-                <label for="heating-max-temp">
+                <label>
                   <span data-i18n>settings.temp.max</span>
-                  <input type="number" inputmode="numeric" id="heating-max-temp" name="heating[maxTemp]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="heating[maxTemp]" min="0" max="0" step="1" required>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="heating-hysteresis">
+                <label>
                   <span data-i18n>settings.heating.hyst</span>
-                  <input type="number" inputmode="numeric" id="heating-hysteresis" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
+                  <input type="number" inputmode="numeric" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
                 </label>
 
-                <label for="heating-turbo-factor">
+                <label>
                   <span data-i18n>settings.heating.turboFactor</span>
-                  <input type="number" inputmode="numeric" id="heating-turbo-factor" name="heating[turboFactor]" min="1.5" max="10" step="0.1" required>
+                  <input type="number" inputmode="numeric" name="heating[turboFactor]" min="1.5" max="10" step="0.1" required>
                 </label>
               </div>
 
@@ -192,14 +192,14 @@
             <div id="dhw-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="dhw-settings" class="hidden">
               <div class="grid">
-                <label for="dhw-min-temp">
+                <label>
                   <span data-i18n>settings.temp.min</span>
-                  <input type="number" inputmode="numeric" id="dhw-min-temp" name="dhw[minTemp]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="dhw[minTemp]" min="0" max="0" step="1" required>
                 </label>
 
-                <label for="dhw-max-temp">
+                <label>
                   <span data-i18n>settings.temp.max</span>
-                  <input type="number" inputmode="numeric" id="dhw-max-temp" name="dhw[maxTemp]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="dhw[maxTemp]" min="0" max="0" step="1" required>
                 </label>
               </div>
 
@@ -220,15 +220,15 @@
               </fieldset>
 
               <div class="grid">
-                <label for="emergency-target">
+                <label>
                   <span data-i18n>settings.emergency.target.title</span>
-                  <input type="number" inputmode="numeric" id="emergency-target" name="emergency[target]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="emergency[target]" min="0" max="0" step="1" required>
                   <small data-i18n>settings.emergency.target.note</small>
                 </label>
 
-                <label for="emergency-treshold-time">
+                <label>
                   <span data-i18n>settings.emergency.treshold</span>
-                  <input type="number" inputmode="numeric" id="emergency-treshold-time" name="emergency[tresholdTime]" min="60" max="1800" step="1" required>
+                  <input type="number" inputmode="numeric" name="emergency[tresholdTime]" min="60" max="1800" step="1" required>
                 </label>
               </div>
 
@@ -245,26 +245,26 @@
             <div id="equitherm-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="equitherm-settings" class="hidden">
               <fieldset>
-                <label for="equitherm-enable">
-                  <input type="checkbox" id="equitherm-enable" name="equitherm[enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="equitherm[enabled]" value="true">
                   <span data-i18n>settings.enable</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="equitherm-n-factor">
+                <label>
                   <span data-i18n>settings.equitherm.n</span>
-                  <input type="number" inputmode="numeric" id="equitherm-n-factor" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
+                  <input type="number" inputmode="numeric" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
                 </label>
 
-                <label for="equitherm-k-factor">
+                <label>
                   <span data-i18n>settings.equitherm.k</span>
-                  <input type="number" inputmode="numeric" id="equitherm-k-factor" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
+                  <input type="number" inputmode="numeric" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
                 </label>
 
-                <label for="equitherm-t-factor">
+                <label>
                   <span data-i18n>settings.equitherm.t.title</span>
-                  <input type="number" inputmode="numeric" id="equitherm-t-factor" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
+                  <input type="number" inputmode="numeric" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
                   <small data-i18n>settings.equitherm.t.note</small>
                 </label>
               </div>
@@ -282,45 +282,45 @@
             <div id="pid-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="pid-settings" class="hidden">
               <fieldset>
-                <label for="pid-enable">
-                  <input type="checkbox" id="pid-enable" name="pid[enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="pid[enabled]" value="true">
                   <span data-i18n>settings.enable</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="pid-p-factor">
+                <label>
                   <span data-i18n>settings.pid.p</span>
-                  <input type="number" inputmode="numeric" id="pid-p-factor" name="pid[p_factor]" min="0.1" max="1000" step="0.01" required>
+                  <input type="number" inputmode="numeric" name="pid[p_factor]" min="0.1" max="1000" step="0.01" required>
                 </label>
 
-                <label for="pid-i-factor">
+                <label>
                   <span data-i18n>settings.pid.i</span>
-                  <input type="number" inputmode="numeric" id="pid-i-factor" name="pid[i_factor]" min="0" max="100" step="0.0001" required>
+                  <input type="number" inputmode="numeric" name="pid[i_factor]" min="0" max="100" step="0.0001" required>
                 </label>
 
-                <label for="pid-d-factor">
+                <label>
                   <span data-i18n>settings.pid.d</span>
-                  <input type="number" inputmode="numeric" id="pid-d-factor" name="pid[d_factor]" min="0" max="100000" step="0.1" required>
+                  <input type="number" inputmode="numeric" name="pid[d_factor]" min="0" max="100000" step="0.1" required>
                 </label>
               </div>
 
-              <label for="pid-dt">
+              <label>
                 <span data-i18n>settings.pid.dt</span>
-                <input type="number" inputmode="numeric" id="pid-dt" name="pid[dt]" min="30" max="1800" step="1" required>
+                <input type="number" inputmode="numeric" name="pid[dt]" min="30" max="1800" step="1" required>
               </label>
 
               <hr />
 
               <div class="grid">
-                <label for="pid-min-temp">
+                <label>
                   <span data-i18n>settings.temp.min</span>
-                  <input type="number" inputmode="numeric" id="pid-min-temp" name="pid[minTemp]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="pid[minTemp]" min="0" max="0" step="1" required>
                 </label>
 
-                <label for="pid-max-temp">
+                <label>
                   <span data-i18n>settings.temp.max</span>
-                  <input type="number" inputmode="numeric" id="pid-max-temp" name="pid[maxTemp]" min="0" max="0" step="1" required>
+                  <input type="number" inputmode="numeric" name="pid[maxTemp]" min="0" max="0" step="1" required>
                 </label>
               </div>
 
@@ -342,61 +342,61 @@
                 <legend data-i18n>settings.system.unit</legend>
 
                 <label>
-                  <input type="radio" class="ot-unit-system" name="opentherm[unitSystem]" value="0" />
+                  <input type="radio" name="opentherm[unitSystem]" value="0" />
                   <span data-i18n>settings.system.metric</span>
                 </label>
 
                 <label>
-                  <input type="radio" class="ot-unit-system" name="opentherm[unitSystem]" value="1" />
+                  <input type="radio" name="opentherm[unitSystem]" value="1" />
                   <span data-i18n>settings.system.imperial</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="ot-in-gpio">
+                <label>
                   <span data-i18n>settings.ot.inGpio</span>
-                  <input type="number" inputmode="numeric" id="ot-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="opentherm[inGpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="ot-in-gpio">
+                <label>
                   <span data-i18n>settings.ot.outGpio</span>
-                  <input type="number" inputmode="numeric" id="ot-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="opentherm[outGpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="ot-rx-led-gpio">
+                <label>
                   <span data-i18n>settings.ot.ledGpio</span>
-                  <input type="number" inputmode="numeric" id="ot-rx-led-gpio" name="opentherm[rxLedGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="opentherm[rxLedGpio]" min="0" max="254" step="1">
                   <small data-i18n>settings.note.blankNotUse</small>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="ot-member-id-code">
+                <label>
                   <span data-i18n>settings.ot.memberId</span>
-                  <input type="number" inputmode="numeric" id="ot-member-id" name="opentherm[memberId]" min="0" max="255" step="1" required>
+                  <input type="number" inputmode="numeric" name="opentherm[memberId]" min="0" max="255" step="1" required>
                 </label>
 
-                <label for="ot-flags">
+                <label>
                   <span data-i18n>settings.ot.flags</span>
-                  <input type="number" inputmode="numeric" id="ot-flags" name="opentherm[flags]" min="0" max="255" step="1" required>
+                  <input type="number" inputmode="numeric" name="opentherm[flags]" min="0" max="255" step="1" required>
                 </label>
 
-                <label for="ot-max-modulation">
+                <label>
                   <span data-i18n>settings.ot.maxMod</span>
-                  <input type="number" inputmode="numeric" id="ot-max-modulation" name="opentherm[maxModulation]" min="1" max="100" step="1" required>
+                  <input type="number" inputmode="numeric" name="opentherm[maxModulation]" min="1" max="100" step="1" required>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="ot-min-power">
+                <label>
                   <span data-i18n>settings.ot.minPower.title</span>
-                  <input type="number" inputmode="numeric" id="ot-min-power" name="opentherm[minPower]" min="0" max="1000" step="0.1">
+                  <input type="number" inputmode="numeric" name="opentherm[minPower]" min="0" max="1000" step="0.1">
                   <small data-i18n>settings.ot.minPower.note</small>
                 </label>
 
-                <label for="ot-max-power">
+                <label>
                   <span data-i18n>settings.ot.maxPower.title</span>
-                  <input type="number" inputmode="numeric" id="ot-max-power" name="opentherm[maxPower]" min="0" max="1000" step="0.1">
+                  <input type="number" inputmode="numeric" name="opentherm[maxPower]" min="0" max="1000" step="0.1">
                   <small data-i18n>settings.ot.maxPower.note</small>
                 </label>
               </div>
@@ -404,59 +404,59 @@
               <fieldset>
                 <legend data-i18n>settings.ot.options.desc</legend>
 
-                <label for="ot-options-dhw-support">
-                  <input type="checkbox" id="ot-options-dhw-support" name="opentherm[options][dhwSupport]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][dhwSupport]" value="true">
                   <span data-i18n>settings.ot.options.dhwSupport</span>
                 </label>
 
-                <label for="ot-options-cooling-support">
-                  <input type="checkbox" id="ot-options-cooling-support" name="opentherm[options][coolingSupport]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][coolingSupport]" value="true">
                   <span data-i18n>settings.ot.options.coolingSupport</span>
                 </label>
 
-                <label for="ot-options-sw-mode">
-                  <input type="checkbox" id="ot-options-sw-mode" name="opentherm[options][summerWinterMode]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][summerWinterMode]" value="true">
                   <span data-i18n>settings.ot.options.summerWinterMode</span>
                 </label>
 
-                <label for="ot-options-heating-ch2-enabled">
-                  <input type="checkbox" id="ot-options-heating-ch2-enabled" name="opentherm[options][heatingCh2Enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][heatingCh2Enabled]" value="true">
                   <span data-i18n>settings.ot.options.heatingCh2Enabled</span>
                 </label>
 
-                <label for="ot-options-heating-to-ch2">
-                  <input type="checkbox" id="ot-options-heating-to-ch2" name="opentherm[options][heatingToCh2]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][heatingToCh2]" value="true">
                   <span data-i18n>settings.ot.options.heatingToCh2</span>
                 </label>
 
-                <label for="ot-options-dhw-to-ch2">
-                  <input type="checkbox" id="ot-options-dhw-to-ch2" name="opentherm[options][dhwToCh2]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][dhwToCh2]" value="true">
                   <span data-i18n>settings.ot.options.dhwToCh2</span>
                 </label>
 
-                <label for="ot-options-dhw-blocking">
-                  <input type="checkbox" id="ot-options-dhw-blocking" name="opentherm[options][dhwBlocking]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][dhwBlocking]" value="true">
                   <span data-i18n>settings.ot.options.dhwBlocking</span>
                 </label>
 
-                <label for="ot-options-mod-sync-with-heating">
-                  <input type="checkbox" id="ot-options-mod-sync-with-heating" name="opentherm[options][modulationSyncWithHeating]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][modulationSyncWithHeating]" value="true">
                   <span data-i18n>settings.ot.options.modulationSyncWithHeating</span>
                 </label>
 
-                <label for="ot-options-get-min-max-temp">
-                  <input type="checkbox" id="ot-options-get-min-max-temp" name="opentherm[options][getMinMaxTemp]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][getMinMaxTemp]" value="true">
                   <span data-i18n>settings.ot.options.getMinMaxTemp</span>
                 </label>
 
-                <label for="ot-options-immergas-fix">
-                  <input type="checkbox" id="ot-options-immergas-fix" name="opentherm[options][immergasFix]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][immergasFix]" value="true">
                   <span data-i18n>settings.ot.options.immergasFix</span>
                 </label>
 
                 <hr />
-                <label for="ot-options-native-heating-control">
-                  <input type="checkbox" id="ot-options-native-heating-control" name="opentherm[options][nativeHeatingControl]" value="true">
+                <label>
+                  <input type="checkbox" name="opentherm[options][nativeHeatingControl]" value="true">
                   <span data-i18n>settings.ot.nativeHeating.title</span><br />
                   <small data-i18n>settings.ot.nativeHeating.note</small>
                 </label>
@@ -475,50 +475,50 @@
             <div id="mqtt-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="mqtt-settings" class="hidden">
               <fieldset>
-                <label for="mqtt-enable">
-                  <input type="checkbox" id="mqtt-enable" name="mqtt[enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="mqtt[enabled]" value="true">
                   <span data-i18n>settings.enable</span>
                 </label>
 
-                <label for="mqtt-ha-discovery">
-                  <input type="checkbox" id="mqtt-ha-discovery" name="mqtt[homeAssistantDiscovery]" value="true">
+                <label>
+                  <input type="checkbox" name="mqtt[homeAssistantDiscovery]" value="true">
                   <span data-i18n>settings.mqtt.homeAssistantDiscovery</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="mqtt-server">
+                <label>
                   <span data-i18n>settings.mqtt.server</span>
-                  <input type="text" id="mqtt-server" name="mqtt[server]" maxlength="80" required>
+                  <input type="text" name="mqtt[server]" maxlength="80" required>
                 </label>
 
-                <label for="mqtt-port">
+                <label>
                   <span data-i18n>settings.mqtt.port</span>
-                  <input type="number" inputmode="numeric" id="mqtt-port" name="mqtt[port]" min="1" max="65535" step="1" required>
+                  <input type="number" inputmode="numeric" name="mqtt[port]" min="1" max="65535" step="1" required>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="mqtt-user">
+                <label>
                   <span data-i18n>settings.mqtt.user</span>
-                  <input type="text" id="mqtt-user" name="mqtt[user]" maxlength="32" required>
+                  <input type="text" name="mqtt[user]" maxlength="32" required>
                 </label>
 
-                <label for="mqtt-password">
+                <label>
                   <span data-i18n>settings.mqtt.password</span>
-                  <input type="password" id="mqtt-password" name="mqtt[password]" maxlength="32">
+                  <input type="password" name="mqtt[password]" maxlength="32">
                 </label>
               </div>
 
               <div class="grid">
-                <label for="mqtt-prefix">
+                <label>
                   <span data-i18n>settings.mqtt.prefix</span>
-                  <input type="text" id="mqtt-prefix" name="mqtt[prefix]" maxlength="32" required>
+                  <input type="text" name="mqtt[prefix]" maxlength="32" required>
                 </label>
 
-                <label for="mqtt-interval">
+                <label>
                   <span data-i18n>settings.mqtt.interval</span>
-                  <input type="number" inputmode="numeric" id="mqtt-interval" name="mqtt[interval]" min="3" max="60" step="1" required>
+                  <input type="number" inputmode="numeric" name="mqtt[interval]" min="3" max="60" step="1" required>
                 </label>
               </div>
 
@@ -535,33 +535,33 @@
             <div id="extpump-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="extpump-settings" class="hidden">
               <fieldset>
-                <label for="extpump-use">
-                  <input type="checkbox" id="extpump-use" name="externalPump[use]" value="true">
+                <label>
+                  <input type="checkbox" name="externalPump[use]" value="true">
                   <span data-i18n>settings.extPump.use</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="extpump-gpio">
+                <label>
                   <span data-i18n>settings.extPump.gpio</span>
-                  <input type="number" inputmode="numeric" id="extpump-gpio" name="externalPump[gpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="externalPump[gpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="extpump-pc-time">
+                <label>
                   <span data-i18n>settings.extPump.postCirculationTime</span>
-                  <input type="number" inputmode="numeric" id="extpump-pc-time" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
+                  <input type="number" inputmode="numeric" name="externalPump[postCirculationTime]" min="1" max="120" step="1" required>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="extpump-as-interval">
+                <label>
                   <span data-i18n>settings.extPump.antiStuckInterval</span>
-                  <input type="number" inputmode="numeric" id="extpump-as-interval" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
+                  <input type="number" inputmode="numeric" name="externalPump[antiStuckInterval]" min="1" max="366" step="1" required>
                 </label>
 
-                <label for="extpump-as-time">
+                <label>
                   <span data-i18n>settings.extPump.antiStuckTime</span>
-                  <input type="number" inputmode="numeric" id="extpump-as-time" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
+                  <input type="number" inputmode="numeric" name="externalPump[antiStuckTime]" min="1" max="20" step="1" required>
                 </label>
               </div>
 
@@ -578,74 +578,74 @@
             <div id="cc-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="cc-settings" class="hidden">
               <fieldset>
-                <label for="cc-input-enable">
-                  <input type="checkbox" id="cc-input-enable" name="cascadeControl[input][enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[input][enabled]" value="true">
                   <span data-i18n>settings.cascadeControl.input.enable</span>
                   <br />
                   <small data-i18n>settings.cascadeControl.input.desc</small>
                 </label>
 
-                <label for="cc-input-invert-state">
-                  <input type="checkbox" id="cc-input-invert-state" name="cascadeControl[input][invertState]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[input][invertState]" value="true">
                   <span data-i18n>settings.cascadeControl.input.invertState</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="cc-input-gpio">
+                <label>
                   <span data-i18n>settings.cascadeControl.input.gpio</span>
-                  <input type="number" inputmode="numeric" id="cc-input-gpio" name="cascadeControl[input][gpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="cascadeControl[input][gpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="cc-input-tt">
+                <label>
                   <span data-i18n>settings.cascadeControl.input.thresholdTime</span>
-                  <input type="number" inputmode="numeric" id="cc-input-tt" name="cascadeControl[input][thresholdTime]" min="5" max="600" step="1" required>
+                  <input type="number" inputmode="numeric" name="cascadeControl[input][thresholdTime]" min="5" max="600" step="1" required>
                 </label>
               </div>
 
               <hr />
 
               <fieldset>
-                <label for="cc-output-enable">
-                  <input type="checkbox" id="cc-output-enable" name="cascadeControl[output][enabled]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[output][enabled]" value="true">
                   <span data-i18n>settings.cascadeControl.output.enable</span>
                   <br />
                   <small data-i18n>settings.cascadeControl.output.desc</small>
                 </label>
 
-                <label for="cc-output-invert-state">
-                  <input type="checkbox" id="cc-output-invert-state" name="cascadeControl[output][invertState]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[output][invertState]" value="true">
                   <span data-i18n>settings.cascadeControl.output.invertState</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="cc-output-gpio">
+                <label>
                   <span data-i18n>settings.cascadeControl.output.gpio</span>
-                  <input type="number" outputmode="numeric" id="cc-output-gpio" name="cascadeControl[output][gpio]" min="0" max="254" step="1">
+                  <input type="number" outputmode="numeric" name="cascadeControl[output][gpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="cc-output-tt">
+                <label>
                   <span data-i18n>settings.cascadeControl.output.thresholdTime</span>
-                  <input type="number" outputmode="numeric" id="cc-output-tt" name="cascadeControl[output][thresholdTime]" min="5" max="600" step="1" required>
+                  <input type="number" outputmode="numeric" name="cascadeControl[output][thresholdTime]" min="5" max="600" step="1" required>
                 </label>
               </div>
 
               <fieldset>
                 <legend data-i18n>settings.cascadeControl.output.events.desc</legend>
 
-                <label for="cc-on-fault">
-                  <input type="checkbox" id="cc-on-fault" name="cascadeControl[output][onFault]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[output][onFault]" value="true">
                   <span data-i18n>settings.cascadeControl.output.events.onFault</span>
                 </label>
 
-                <label for="cc-on-loss-conn">
-                  <input type="checkbox" id="cc-on-loss-conn" name="cascadeControl[output][onLossConnection]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[output][onLossConnection]" value="true">
                   <span data-i18n>settings.cascadeControl.output.events.onLossConnection</span>
                 </label>
 
-                <label for="cc-on-enabled-heating">
-                  <input type="checkbox" id="cc-on-enabled-heating" name="cascadeControl[output][onEnabledHeating]" value="true">
+                <label>
+                  <input type="checkbox" name="cascadeControl[output][onEnabledHeating]" value="true">
                   <span data-i18n>settings.cascadeControl.output.events.onEnabledHeating</span>
                 </label>
               </fieldset>
@@ -676,112 +676,112 @@
 
         const fillData = (data) => {
           // System
-          setSelectValue('#system-log-level', data.system.logLevel);
-          setCheckboxValue('#system-serial-enable', data.system.serial.enabled);
-          setSelectValue('#system-serial-baudrate', data.system.serial.baudrate);
-          setCheckboxValue('#system-telnet-enable', data.system.telnet.enabled);
-          setInputValue('#system-telnet-port', data.system.telnet.port);
-          setRadioValue('.system-unit-system', data.system.unitSystem);
-          setInputValue('#system-status-led-gpio', data.system.statusLedGpio < 255 ? data.system.statusLedGpio : '');
+          setSelectValue("[name='system[logLevel]']", data.system.logLevel);
+          setCheckboxValue("[name='system[serial][enabled]']", data.system.serial.enabled);
+          setSelectValue("[name='system[serial][baudrate]']", data.system.serial.baudrate);
+          setCheckboxValue("[name='system[telnet][enabled]']", data.system.telnet.enabled);
+          setInputValue("[name='system[telnet][port]']", data.system.telnet.port);
+          setRadioValue("[name='system[unitSystem]']", data.system.unitSystem);
+          setInputValue("[name='system[statusLedGpio]']", data.system.statusLedGpio < 255 ? data.system.statusLedGpio : '');
           setBusy('#system-settings-busy', '#system-settings', false);
 
           // Portal
-          setCheckboxValue('#portal-auth', data.portal.auth);
-          setInputValue('#portal-login', data.portal.login);
-          setInputValue('#portal-password', data.portal.password);
+          setCheckboxValue("[name='portal[auth]']", data.portal.auth);
+          setInputValue("[name='portal[login]']", data.portal.login);
+          setInputValue("[name='portal[password]']", data.portal.password);
           setBusy('#portal-settings-busy', '#portal-settings', false);
 
           // Opentherm
-          setRadioValue('.ot-unit-system', data.opentherm.unitSystem);
-          setInputValue('#ot-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
-          setInputValue('#ot-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
-          setInputValue('#ot-rx-led-gpio', data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
-          setInputValue('#ot-member-id', data.opentherm.memberId);
-          setInputValue('#ot-flags', data.opentherm.flags);
-          setInputValue('#ot-max-modulation', data.opentherm.maxModulation);
-          setInputValue('#ot-min-power', data.opentherm.minPower);
-          setInputValue('#ot-max-power', data.opentherm.maxPower);
-          setCheckboxValue('#ot-options-dhw-support', data.opentherm.options.dhwSupport);
-          setCheckboxValue('#ot-options-cooling-support', data.opentherm.options.coolingSupport);
-          setCheckboxValue('#ot-options-sw-mode', data.opentherm.options.summerWinterMode);
-          setCheckboxValue('#ot-options-heating-ch2-enabled', data.opentherm.options.heatingCh2Enabled);
-          setCheckboxValue('#ot-options-heating-to-ch2', data.opentherm.options.heatingToCh2);
-          setCheckboxValue('#ot-options-dhw-to-ch2', data.opentherm.options.dhwToCh2);
-          setCheckboxValue('#ot-options-dhw-blocking', data.opentherm.options.dhwBlocking);
-          setCheckboxValue('#ot-options-mod-sync-with-heating', data.opentherm.options.modulationSyncWithHeating);
-          setCheckboxValue('#ot-options-get-min-max-temp', data.opentherm.options.getMinMaxTemp);
-          setCheckboxValue('#ot-options-native-heating-control', data.opentherm.options.nativeHeatingControl);
-          setCheckboxValue('#ot-options-immergas-fix', data.opentherm.options.immergasFix);
+          setRadioValue("[name='opentherm[unitSystem]']", data.opentherm.unitSystem);
+          setInputValue("[name='opentherm[inGpio]']", data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
+          setInputValue("[name='opentherm[outGpio]']", data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
+          setInputValue("[name='opentherm[rxLedGpio]']", data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
+          setInputValue("[name='opentherm[memberId]']", data.opentherm.memberId);
+          setInputValue("[name='opentherm[flags]']", data.opentherm.flags);
+          setInputValue("[name='opentherm[maxModulation]']", data.opentherm.maxModulation);
+          setInputValue("[name='opentherm[minPower]']", data.opentherm.minPower);
+          setInputValue("[name='opentherm[maxPower]']", data.opentherm.maxPower);
+          setCheckboxValue("[name='opentherm[options][dhwSupport]']", data.opentherm.options.dhwSupport);
+          setCheckboxValue("[name='opentherm[options][coolingSupport]']", data.opentherm.options.coolingSupport);
+          setCheckboxValue("[name='opentherm[options][summerWinterMode]']", data.opentherm.options.summerWinterMode);
+          setCheckboxValue("[name='opentherm[options][heatingCh2Enabled]']", data.opentherm.options.heatingCh2Enabled);
+          setCheckboxValue("[name='opentherm[options][heatingToCh2]']", data.opentherm.options.heatingToCh2);
+          setCheckboxValue("[name='opentherm[options][dhwToCh2]']", data.opentherm.options.dhwToCh2);
+          setCheckboxValue("[name='opentherm[options][dhwBlocking]']", data.opentherm.options.dhwBlocking);
+          setCheckboxValue("[name='opentherm[options][modulationSyncWithHeating]']", data.opentherm.options.modulationSyncWithHeating);
+          setCheckboxValue("[name='opentherm[options][getMinMaxTemp]']", data.opentherm.options.getMinMaxTemp);
+          setCheckboxValue("[name='opentherm[options][nativeHeatingControl]']", data.opentherm.options.nativeHeatingControl);
+          setCheckboxValue("[name='opentherm[options][immergasFix]']", data.opentherm.options.immergasFix);
           setBusy('#ot-settings-busy', '#ot-settings', false);
 
           // MQTT
-          setCheckboxValue('#mqtt-enable', data.mqtt.enabled);
-          setCheckboxValue('#mqtt-ha-discovery', data.mqtt.homeAssistantDiscovery);
-          setInputValue('#mqtt-server', data.mqtt.server);
-          setInputValue('#mqtt-port', data.mqtt.port);
-          setInputValue('#mqtt-user', data.mqtt.user);
-          setInputValue('#mqtt-password', data.mqtt.password);
-          setInputValue('#mqtt-prefix', data.mqtt.prefix);
-          setInputValue('#mqtt-interval', data.mqtt.interval);
+          setCheckboxValue("[name='mqtt[enabled]']", data.mqtt.enabled);
+          setCheckboxValue("[name='mqtt[homeAssistantDiscovery]']", data.mqtt.homeAssistantDiscovery);
+          setInputValue("[name='mqtt[server]']", data.mqtt.server);
+          setInputValue("[name='mqtt[port]']", data.mqtt.port);
+          setInputValue("[name='mqtt[user]']", data.mqtt.user);
+          setInputValue("[name='mqtt[password]']", data.mqtt.password);
+          setInputValue("[name='mqtt[prefix]']", data.mqtt.prefix);
+          setInputValue("[name='mqtt[interval]']", data.mqtt.interval);
           setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
 
           // Extpump
-          setCheckboxValue('#extpump-use', data.externalPump.use);
-          setInputValue('#extpump-gpio', data.externalPump.gpio < 255 ? data.externalPump.gpio : '');
-          setInputValue('#extpump-pc-time', data.externalPump.postCirculationTime);
-          setInputValue('#extpump-as-interval', data.externalPump.antiStuckInterval);
-          setInputValue('#extpump-as-time', data.externalPump.antiStuckTime);
+          setCheckboxValue("[name='externalPump[use]']", data.externalPump.use);
+          setInputValue("[name='externalPump[gpio]']", data.externalPump.gpio < 255 ? data.externalPump.gpio : '');
+          setInputValue("[name='externalPump[postCirculationTime]']", data.externalPump.postCirculationTime);
+          setInputValue("[name='externalPump[antiStuckInterval]']", data.externalPump.antiStuckInterval);
+          setInputValue("[name='externalPump[antiStuckTime]']", data.externalPump.antiStuckTime);
           setBusy('#extpump-settings-busy', '#extpump-settings', false);
 
           // Cascade control
-          setCheckboxValue('#cc-input-enable', data.cascadeControl.input.enabled);
-          setInputValue('#cc-input-gpio', data.cascadeControl.input.gpio < 255 ? data.cascadeControl.input.gpio : '');
-          setCheckboxValue('#cc-input-invert-state', data.cascadeControl.input.invertState);
-          setInputValue('#cc-input-tt', data.cascadeControl.input.thresholdTime);
+          setCheckboxValue("[name='cascadeControl[input][enabled]']", data.cascadeControl.input.enabled);
+          setInputValue("[name='cascadeControl[input][gpio]']", data.cascadeControl.input.gpio < 255 ? data.cascadeControl.input.gpio : '');
+          setCheckboxValue("[name='cascadeControl[input][invertState]']", data.cascadeControl.input.invertState);
+          setInputValue("[name='cascadeControl[input][thresholdTime]']", data.cascadeControl.input.thresholdTime);
 
-          setCheckboxValue('#cc-output-enable', data.cascadeControl.output.enabled);
-          setInputValue('#cc-output-gpio', data.cascadeControl.output.gpio < 255 ? data.cascadeControl.output.gpio : '');
-          setCheckboxValue('#cc-output-invert-state', data.cascadeControl.output.invertState);
-          setInputValue('#cc-output-tt', data.cascadeControl.output.thresholdTime);
-          setCheckboxValue('#cc-on-fault', data.cascadeControl.output.onFault);
-          setCheckboxValue('#cc-on-loss-conn', data.cascadeControl.output.onLossConnection);
-          setCheckboxValue('#cc-on-enabled-heating', data.cascadeControl.output.onEnabledHeating);
+          setCheckboxValue("[name='cascadeControl[output][enabled]']", data.cascadeControl.output.enabled);
+          setInputValue("[name='cascadeControl[output][gpio]']", data.cascadeControl.output.gpio < 255 ? data.cascadeControl.output.gpio : '');
+          setCheckboxValue("[name='cascadeControl[output][invertState]']", data.cascadeControl.output.invertState);
+          setInputValue("[name='cascadeControl[output][thresholdTime]']", data.cascadeControl.output.thresholdTime);
+          setCheckboxValue("[name='cascadeControl[output][onFault]']", data.cascadeControl.output.onFault);
+          setCheckboxValue("[name='cascadeControl[output][onLossConnection]']", data.cascadeControl.output.onLossConnection);
+          setCheckboxValue("[name='cascadeControl[output][onEnabledHeating]']", data.cascadeControl.output.onEnabledHeating);
           setBusy('#cc-settings-busy', '#cc-settings', false);
 
           // Heating
-          setInputValue('#heating-min-temp', data.heating.minTemp, {
+          setInputValue("[name='heating[minTemp]']", data.heating.minTemp, {
             "min": data.system.unitSystem == 0 ? 0 : 32,
             "max": data.system.unitSystem == 0 ? 99 : 211
           });
-          setInputValue('#heating-max-temp', data.heating.maxTemp, {
+          setInputValue("[name='heating[maxTemp]']", data.heating.maxTemp, {
             "min": data.system.unitSystem == 0 ? 1 : 33,
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
-          setInputValue('#heating-hysteresis', data.heating.hysteresis);
-          setInputValue('#heating-turbo-factor', data.heating.turboFactor);
+          setInputValue("[name='heating[hysteresis]']", data.heating.hysteresis);
+          setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
           // DHW
-          setInputValue('#dhw-min-temp', data.dhw.minTemp, {
+          setInputValue("[name='dhw[minTemp]']", data.dhw.minTemp, {
             "min": data.system.unitSystem == 0 ? 0 : 32,
             "max": data.system.unitSystem == 0 ? 99 : 211
           });
-          setInputValue('#dhw-max-temp', data.dhw.maxTemp, {
+          setInputValue("[name='dhw[maxTemp]']", data.dhw.maxTemp, {
             "min": data.system.unitSystem == 0 ? 1 : 33,
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
           setBusy('#dhw-settings-busy', '#dhw-settings', false);
 
           // Emergency mode
-          setInputValue('#emergency-treshold-time', data.emergency.tresholdTime);
+          setInputValue("[name='emergency[tresholdTime]']", data.emergency.tresholdTime);
           if (data.opentherm.options.nativeHeatingControl) {
-            setInputValue('#emergency-target', data.emergency.target, {
+            setInputValue("[name='emergency[target]']", data.emergency.target, {
               "min": data.system.unitSystem == 0 ? 5 : 41,
               "max": data.system.unitSystem == 0 ? 30 : 86
             });
 
           } else {
-            setInputValue('#emergency-target', data.emergency.target, {
+            setInputValue("[name='emergency[target]']", data.emergency.target, {
               "min": data.heating.minTemp,
               "max": data.heating.maxTemp,
             });
@@ -790,23 +790,23 @@
           setBusy('#emergency-settings-busy', '#emergency-settings', false);
 
           // Equitherm
-          setCheckboxValue('#equitherm-enable', data.equitherm.enabled);
-          setInputValue('#equitherm-n-factor', data.equitherm.n_factor);
-          setInputValue('#equitherm-k-factor', data.equitherm.k_factor);
-          setInputValue('#equitherm-t-factor', data.equitherm.t_factor);
+          setCheckboxValue("[name='equitherm[enabled]']", data.equitherm.enabled);
+          setInputValue("[name='equitherm[n_factor]']", data.equitherm.n_factor);
+          setInputValue("[name='equitherm[k_factor]']", data.equitherm.k_factor);
+          setInputValue("[name='equitherm[t_factor]']", data.equitherm.t_factor);
           setBusy('#equitherm-settings-busy', '#equitherm-settings', false);
 
           // PID
-          setCheckboxValue('#pid-enable', data.pid.enabled);
-          setInputValue('#pid-p-factor', data.pid.p_factor);
-          setInputValue('#pid-i-factor', data.pid.i_factor);
-          setInputValue('#pid-d-factor', data.pid.d_factor);
-          setInputValue('#pid-dt', data.pid.dt);
-          setInputValue('#pid-min-temp', data.pid.minTemp, {
+          setCheckboxValue("[name='pid[enabled]']", data.pid.enabled);
+          setInputValue("[name='pid[p_factor]']", data.pid.p_factor);
+          setInputValue("[name='pid[i_factor]']", data.pid.i_factor);
+          setInputValue("[name='pid[d_factor]']", data.pid.d_factor);
+          setInputValue("[name='pid[dt]']", data.pid.dt);
+          setInputValue("[name='pid[minTemp]']", data.pid.minTemp, {
             "min": data.equitherm.enabled ? (data.system.unitSystem == 0 ? -100 : -146) : (data.system.unitSystem == 0 ? 0 : 32),
             "max": (data.system.unitSystem == 0 ? 99 : 211)
           });
-          setInputValue('#pid-max-temp', data.pid.maxTemp, {
+          setInputValue("[name='pid[maxTemp]']", data.pid.maxTemp, {
             "min": (data.system.unitSystem == 0 ? 0 : 33),
             "max": (data.system.unitSystem == 0 ? 100 : 212)
           });

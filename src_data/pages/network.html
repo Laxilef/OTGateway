@@ -38,37 +38,37 @@
 
           <div id="network-settings-busy" aria-busy="true"></div>
           <form action="/api/network/settings" id="network-settings" class="hidden">
-            <label for="network-hostname">
+            <label>
               <span data-i18n>network.params.hostname</span>
-              <input type="text" id="network-hostname" name="hostname" maxlength="24" pattern="[A-Za-z0-9]+[A-Za-z0-9\-]+[A-Za-z0-9]+" required>
+              <input type="text" name="hostname" maxlength="24" pattern="[A-Za-z0-9]+[A-Za-z0-9\-]+[A-Za-z0-9]+" required>
             </label>
 
-            <label for="network-use-dhcp">
-              <input type="checkbox" id="network-use-dhcp" name="useDhcp" value="true">
+            <label>
+              <input type="checkbox" name="useDhcp" value="true">
               <span data-i18n>network.params.dhcp</span>
             </label>
             <br />
             <hr />
             <h4 data-i18n>network.section.static</h4>
 
-            <label for="network-static-ip">
+            <label>
               <span data-i18n>network.params.ip</span>
-              <input type="text" id="network-static-ip" name="staticConfig[ip]" value="true" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="staticConfig[ip]" value="true" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
-            <label for="network-static-gateway">
+            <label>
               <span data-i18n>network.params.gateway</span>
-              <input type="text" id="network-static-gateway" name="staticConfig[gateway]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="staticConfig[gateway]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
-            <label for="network-static-subnet">
+            <label>
               <span data-i18n>network.params.subnet</span>
-              <input type="text" id="network-static-subnet" name="staticConfig[subnet]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="staticConfig[subnet]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
-            <label for="network-static-dns">
+            <label>
               <span data-i18n>network.params.dns</span>
-              <input type="text" id="network-static-dns" name="staticConfig[dns]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="staticConfig[dns]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
             <button type="submit" data-i18n>button.save</button>
@@ -109,19 +109,19 @@
 
             <div id="sta-settings-busy" aria-busy="true"></div>
             <form action="/api/network/settings" id="sta-settings" class="hidden">
-              <label for="sta-ssid">
+              <label>
                 <span data-i18n>network.wifi.ssid</span>
-                <input type="text" id="sta-ssid" name="sta[ssid]" maxlength="32" required>
+                <input type="text" name="sta[ssid]" maxlength="32" required>
               </label>
 
-              <label for="sta-password">
+              <label>
                 <span data-i18n>network.wifi.password</span>
-                <input type="password" id="sta-password" name="sta[password]" maxlength="64" required>
+                <input type="password" name="sta[password]" maxlength="64" required>
               </label>
 
-              <label for="sta-channel">
+              <label>
                 <span data-i18n>network.wifi.channel</span>
-                <input type="number" inputmode="numeric" id="sta-channel" name="sta[channel]" min="0" max="12" step="1" required>
+                <input type="number" inputmode="numeric" name="sta[channel]" min="0" max="12" step="1" required>
                 <small data-i18n>network.sta.channel.note</small>
               </label>
 
@@ -140,19 +140,19 @@
 
           <div id="ap-settings-busy" aria-busy="true"></div>
           <form action="/api/network/settings" id="ap-settings" class="hidden">
-            <label for="ap-ssid">
+            <label>
               <span data-i18n>network.wifi.ssid</span>
-              <input type="text" id="ap-ssid" name="ap[ssid]" maxlength="32" required>
+              <input type="text" name="ap[ssid]" maxlength="32" required>
             </label>
 
-            <label for="ap-password">
+            <label>
               <span data-i18n>network.wifi.password</span>
-              <input type="text" id="ap-password" name="ap[password]" maxlength="64" required>
+              <input type="text" name="ap[password]" maxlength="64" required>
             </label>
 
-            <label for="ap-channel">
+            <label>
               <span data-i18n>network.wifi.channel</span>
-              <input type="number" inputmode="numeric" id="ap-channel" name="ap[channel]" min="1" max="12" step="1" required>
+              <input type="number" inputmode="numeric" name="ap[channel]" min="1" max="12" step="1" required>
             </label>
 
             <button type="submit" data-i18n>button.save</button>
@@ -179,22 +179,22 @@
         lang.build();
 
         const fillData = (data) => {
-          setInputValue('#network-hostname', data.hostname);
-          setCheckboxValue('#network-use-dhcp', data.useDhcp);
-          setInputValue('#network-static-ip', data.staticConfig.ip);
-          setInputValue('#network-static-gateway', data.staticConfig.gateway);
-          setInputValue('#network-static-subnet', data.staticConfig.subnet);
-          setInputValue('#network-static-dns', data.staticConfig.dns);
+          setInputValue("[name='hostname']", data.hostname);
+          setCheckboxValue("[name='useDhcp']", data.useDhcp);
+          setInputValue("[name='staticConfig[ip]']", data.staticConfig.ip);
+          setInputValue("[name='staticConfig[gateway]']", data.staticConfig.gateway);
+          setInputValue("[name='staticConfig[subnet]']", data.staticConfig.subnet);
+          setInputValue("[name='staticConfig[dns]']", data.staticConfig.dns);
           setBusy('#network-settings-busy', '#network-settings', false);
 
-          setInputValue('#sta-ssid', data.sta.ssid);
-          setInputValue('#sta-password', data.sta.password);
-          setInputValue('#sta-channel', data.sta.channel);
+          setInputValue("[name='sta[ssid]']", data.sta.ssid);
+          setInputValue("[name='sta[password]']", data.sta.password);
+          setInputValue("[name='sta[channel]']", data.sta.channel);
           setBusy('#sta-settings-busy', '#sta-settings', false);
 
-          setInputValue('#ap-ssid', data.ap.ssid);
-          setInputValue('#ap-password', data.ap.password);
-          setInputValue('#ap-channel', data.ap.channel);
+          setInputValue("[name='ap[ssid]']", data.ap.ssid);
+          setInputValue("[name='ap[password]']", data.ap.password);
+          setInputValue("[name='ap[channel]']", data.ap.channel);
           setBusy('#ap-settings-busy', '#ap-settings', false);
         };
 
