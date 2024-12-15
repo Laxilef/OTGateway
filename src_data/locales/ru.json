@@ -97,6 +97,7 @@
 
         "sConnected": "Подключение к OpenTherm",
         "sFlame": "Пламя",
+        "sCooling": "Охлаждение",
         "sFaultActive": "Ошибка",
         "sFaultCode": "Код ошибки",
         "sDiagActive": "Диагностика",
@@ -356,10 +357,11 @@
 
         "options": {
           "desc": "Опции",
-          "dhwPresent": "Контур ГВС",
+          "dhwSupport": "Поддержка ГВС",
+          "coolingSupport": "Поддержка охлаждения",
           "summerWinterMode": "Летний/зимний режим",
           "heatingCh2Enabled": "Канал 2 отопления всегда вкл.",
-          "heatingCh1ToCh2": "Дублировать параметры отопления канала 1 в канал 2",
+          "heatingToCh2": "Дублировать параметры отопления в канал 2",
           "dhwToCh2": "Дублировать параметры ГВС в канал 2",
           "dhwBlocking": "DHW blocking",
           "modulationSyncWithHeating": "Синхронизировать модуляцию с отоплением",

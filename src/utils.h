@@ -377,16 +377,19 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     opentherm[FPSTR(S_MAX_MODULATION)] = src.opentherm.maxModulation;
     opentherm[FPSTR(S_MIN_POWER)] = roundf(src.opentherm.minPower, 2);
     opentherm[FPSTR(S_MAX_POWER)] = roundf(src.opentherm.maxPower, 2);
-    opentherm[FPSTR(S_DHW_PRESENT)] = src.opentherm.dhwPresent;
-    opentherm[FPSTR(S_SUMMER_WINTER_MODE)] = src.opentherm.summerWinterMode;
-    opentherm[FPSTR(S_HEATING_CH2_ENABLED)] = src.opentherm.heatingCh2Enabled;
-    opentherm[FPSTR(S_HEATING_CH1_TO_CH2)] = src.opentherm.heatingCh1ToCh2;
-    opentherm[FPSTR(S_DHW_TO_CH2)] = src.opentherm.dhwToCh2;
-    opentherm[FPSTR(S_DHW_BLOCKING)] = src.opentherm.dhwBlocking;
-    opentherm[FPSTR(S_MODULATION_SYNC_WITH_HEATING)] = src.opentherm.modulationSyncWithHeating;
-    opentherm[FPSTR(S_GET_MIN_MAX_TEMP)] = src.opentherm.getMinMaxTemp;
-    opentherm[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.nativeHeatingControl;
-    opentherm[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.immergasFix;
+
+    auto otOptions = opentherm[FPSTR(S_OPTIONS)].to<JsonObject>();
+    otOptions[FPSTR(S_DHW_SUPPORT)] = src.opentherm.options.dhwSupport;
+    otOptions[FPSTR(S_COOLING_SUPPORT)] = src.opentherm.options.coolingSupport;
+    otOptions[FPSTR(S_SUMMER_WINTER_MODE)] = src.opentherm.options.summerWinterMode;
+    otOptions[FPSTR(S_HEATING_CH2_ENABLED)] = src.opentherm.options.heatingCh2Enabled;
+    otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
+    otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
+    otOptions[FPSTR(S_DHW_BLOCKING)] = src.opentherm.options.dhwBlocking;
+    otOptions[FPSTR(S_MODULATION_SYNC_WITH_HEATING)] = src.opentherm.options.modulationSyncWithHeating;
+    otOptions[FPSTR(S_GET_MIN_MAX_TEMP)] = src.opentherm.options.getMinMaxTemp;
+    otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
+    otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
 
     auto mqtt = dst[FPSTR(S_MQTT)].to<JsonObject>();
     mqtt[FPSTR(S_ENABLED)] = src.mqtt.enabled;
@@ -718,101 +721,110 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_PRESENT)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_PRESENT)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_SUPPORT)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_SUPPORT)].as<bool>();
 
-      if (value != dst.opentherm.dhwPresent) {
-        dst.opentherm.dhwPresent = value;
+      if (value != dst.opentherm.options.dhwSupport) {
+        dst.opentherm.options.dhwSupport = value;
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_SUMMER_WINTER_MODE)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_SUMMER_WINTER_MODE)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_COOLING_SUPPORT)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_COOLING_SUPPORT)].as<bool>();
 
-      if (value != dst.opentherm.summerWinterMode) {
-        dst.opentherm.summerWinterMode = value;
+      if (value != dst.opentherm.options.coolingSupport) {
+        dst.opentherm.options.coolingSupport = value;
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_HEATING_CH2_ENABLED)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_HEATING_CH2_ENABLED)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_SUMMER_WINTER_MODE)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_SUMMER_WINTER_MODE)].as<bool>();
 
-      if (value != dst.opentherm.heatingCh2Enabled) {
-        dst.opentherm.heatingCh2Enabled = value;
+      if (value != dst.opentherm.options.summerWinterMode) {
+        dst.opentherm.options.summerWinterMode = value;
+        changed = true;
+      }
+    }
 
-        if (dst.opentherm.heatingCh2Enabled) {
-          dst.opentherm.heatingCh1ToCh2 = false;
-          dst.opentherm.dhwToCh2 = false;
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_CH2_ENABLED)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_CH2_ENABLED)].as<bool>();
+
+      if (value != dst.opentherm.options.heatingCh2Enabled) {
+        dst.opentherm.options.heatingCh2Enabled = value;
+
+        if (dst.opentherm.options.heatingCh2Enabled) {
+          dst.opentherm.options.heatingToCh2 = false;
+          dst.opentherm.options.dhwToCh2 = false;
         }
 
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_HEATING_CH1_TO_CH2)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_HEATING_CH1_TO_CH2)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_TO_CH2)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_TO_CH2)].as<bool>();
 
-      if (value != dst.opentherm.heatingCh1ToCh2) {
-        dst.opentherm.heatingCh1ToCh2 = value;
+      if (value != dst.opentherm.options.heatingToCh2) {
+        dst.opentherm.options.heatingToCh2 = value;
 
-        if (dst.opentherm.heatingCh1ToCh2) {
-          dst.opentherm.heatingCh2Enabled = false;
-          dst.opentherm.dhwToCh2 = false;
+        if (dst.opentherm.options.heatingToCh2) {
+          dst.opentherm.options.heatingCh2Enabled = false;
+          dst.opentherm.options.dhwToCh2 = false;
         }
 
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_TO_CH2)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_TO_CH2)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_TO_CH2)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_TO_CH2)].as<bool>();
 
-      if (value != dst.opentherm.dhwToCh2) {
-        dst.opentherm.dhwToCh2 = value;
+      if (value != dst.opentherm.options.dhwToCh2) {
+        dst.opentherm.options.dhwToCh2 = value;
 
-        if (dst.opentherm.dhwToCh2) {
-          dst.opentherm.heatingCh2Enabled = false;
-          dst.opentherm.heatingCh1ToCh2 = false;
+        if (dst.opentherm.options.dhwToCh2) {
+          dst.opentherm.options.heatingCh2Enabled = false;
+          dst.opentherm.options.heatingToCh2 = false;
         }
 
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_BLOCKING)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_BLOCKING)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_BLOCKING)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_BLOCKING)].as<bool>();
 
-      if (value != dst.opentherm.dhwBlocking) {
-        dst.opentherm.dhwBlocking = value;
+      if (value != dst.opentherm.options.dhwBlocking) {
+        dst.opentherm.options.dhwBlocking = value;
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].as<bool>();
 
-      if (value != dst.opentherm.modulationSyncWithHeating) {
-        dst.opentherm.modulationSyncWithHeating = value;
+      if (value != dst.opentherm.options.modulationSyncWithHeating) {
+        dst.opentherm.options.modulationSyncWithHeating = value;
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_GET_MIN_MAX_TEMP)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_GET_MIN_MAX_TEMP)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_GET_MIN_MAX_TEMP)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_GET_MIN_MAX_TEMP)].as<bool>();
 
-      if (value != dst.opentherm.getMinMaxTemp) {
-        dst.opentherm.getMinMaxTemp = value;
+      if (value != dst.opentherm.options.getMinMaxTemp) {
+        dst.opentherm.options.getMinMaxTemp = value;
         changed = true;
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_NATIVE_HEATING_CONTROL)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_NATIVE_HEATING_CONTROL)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_HEATING_CONTROL)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_HEATING_CONTROL)].as<bool>();
 
-      if (value != dst.opentherm.nativeHeatingControl) {
-        dst.opentherm.nativeHeatingControl = value;
+      if (value != dst.opentherm.options.nativeHeatingControl) {
+        dst.opentherm.options.nativeHeatingControl = value;
 
         if (value) {
           dst.equitherm.enabled = false;
@@ -823,11 +835,11 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_IMMERGAS_FIX)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_IMMERGAS_FIX)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_IMMERGAS_FIX)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_IMMERGAS_FIX)].as<bool>();
 
-      if (value != dst.opentherm.immergasFix) {
-        dst.opentherm.immergasFix = value;
+      if (value != dst.opentherm.options.immergasFix) {
+        dst.opentherm.options.immergasFix = value;
         changed = true;
       }
     }
@@ -923,7 +935,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (src[FPSTR(S_EQUITHERM)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_EQUITHERM)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (!dst.opentherm.nativeHeatingControl) {
+    if (!dst.opentherm.options.nativeHeatingControl) {
       if (value != dst.equitherm.enabled) {
         dst.equitherm.enabled = value;
         changed = true;
@@ -967,7 +979,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (src[FPSTR(S_PID)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_PID)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (!dst.opentherm.nativeHeatingControl) {
+    if (!dst.opentherm.options.nativeHeatingControl) {
       if (value != dst.pid.enabled) {
         dst.pid.enabled = value;
         changed = true;
@@ -1326,7 +1338,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   // force check emergency target
   {
     float value = !src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].isNull() ? src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].as<float>() : dst.emergency.target;
-    bool noRegulators = !dst.opentherm.nativeHeatingControl;
+    bool noRegulators = !dst.opentherm.options.nativeHeatingControl;
     bool valid = isValidTemp(
       value,
       dst.system.unitSystem,
@@ -1351,7 +1363,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // force check heating target
   {
-    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.nativeHeatingControl;
+    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.options.nativeHeatingControl;
     float minTemp = indoorTempControl ? THERMOSTAT_INDOOR_MIN_TEMP : dst.heating.minTemp;
     float maxTemp = indoorTempControl ? THERMOSTAT_INDOOR_MAX_TEMP : dst.heating.maxTemp;
 
@@ -1720,6 +1732,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.appVersion;
   slave[FPSTR(S_CONNECTED)] = src.slave.connected;
   slave[FPSTR(S_FLAME)] = src.slave.flame;
+  slave[FPSTR(S_COOLING)] = src.slave.cooling;
 
   auto sModulation = slave[FPSTR(S_MODULATION)].to<JsonObject>();
   sModulation[FPSTR(S_MIN)] = src.slave.modulation.min;

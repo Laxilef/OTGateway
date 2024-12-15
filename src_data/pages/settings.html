@@ -336,67 +336,67 @@
         <details>
           <summary><b data-i18n>settings.section.ot</b></summary>
           <div>
-            <div id="opentherm-settings-busy" aria-busy="true"></div>
-            <form action="/api/settings" id="opentherm-settings" class="hidden">
+            <div id="ot-settings-busy" aria-busy="true"></div>
+            <form action="/api/settings" id="ot-settings" class="hidden">
               <fieldset>
                 <legend data-i18n>settings.system.unit</legend>
 
                 <label>
-                  <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="0" />
+                  <input type="radio" class="ot-unit-system" name="opentherm[unitSystem]" value="0" />
                   <span data-i18n>settings.system.metric</span>
                 </label>
 
                 <label>
-                  <input type="radio" class="opentherm-unit-system" name="opentherm[unitSystem]" value="1" />
+                  <input type="radio" class="ot-unit-system" name="opentherm[unitSystem]" value="1" />
                   <span data-i18n>settings.system.imperial</span>
                 </label>
               </fieldset>
 
               <div class="grid">
-                <label for="opentherm-in-gpio">
+                <label for="ot-in-gpio">
                   <span data-i18n>settings.ot.inGpio</span>
-                  <input type="number" inputmode="numeric" id="opentherm-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" id="ot-in-gpio" name="opentherm[inGpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="opentherm-in-gpio">
+                <label for="ot-in-gpio">
                   <span data-i18n>settings.ot.outGpio</span>
-                  <input type="number" inputmode="numeric" id="opentherm-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" id="ot-out-gpio" name="opentherm[outGpio]" min="0" max="254" step="1">
                 </label>
 
-                <label for="opentherm-rx-led-gpio">
+                <label for="ot-rx-led-gpio">
                   <span data-i18n>settings.ot.ledGpio</span>
-                  <input type="number" inputmode="numeric" id="opentherm-rx-led-gpio" name="opentherm[rxLedGpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" id="ot-rx-led-gpio" name="opentherm[rxLedGpio]" min="0" max="254" step="1">
                   <small data-i18n>settings.note.blankNotUse</small>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="opentherm-member-id-code">
+                <label for="ot-member-id-code">
                   <span data-i18n>settings.ot.memberId</span>
-                  <input type="number" inputmode="numeric" id="opentherm-member-id" name="opentherm[memberId]" min="0" max="255" step="1" required>
+                  <input type="number" inputmode="numeric" id="ot-member-id" name="opentherm[memberId]" min="0" max="255" step="1" required>
                 </label>
 
-                <label for="opentherm-flags">
+                <label for="ot-flags">
                   <span data-i18n>settings.ot.flags</span>
-                  <input type="number" inputmode="numeric" id="opentherm-flags" name="opentherm[flags]" min="0" max="255" step="1" required>
+                  <input type="number" inputmode="numeric" id="ot-flags" name="opentherm[flags]" min="0" max="255" step="1" required>
                 </label>
 
-                <label for="opentherm-max-modulation">
+                <label for="ot-max-modulation">
                   <span data-i18n>settings.ot.maxMod</span>
-                  <input type="number" inputmode="numeric" id="opentherm-max-modulation" name="opentherm[maxModulation]" min="1" max="100" step="1" required>
+                  <input type="number" inputmode="numeric" id="ot-max-modulation" name="opentherm[maxModulation]" min="1" max="100" step="1" required>
                 </label>
               </div>
 
               <div class="grid">
-                <label for="opentherm-min-power">
+                <label for="ot-min-power">
                   <span data-i18n>settings.ot.minPower.title</span>
-                  <input type="number" inputmode="numeric" id="opentherm-min-power" name="opentherm[minPower]" min="0" max="1000" step="0.1">
+                  <input type="number" inputmode="numeric" id="ot-min-power" name="opentherm[minPower]" min="0" max="1000" step="0.1">
                   <small data-i18n>settings.ot.minPower.note</small>
                 </label>
 
-                <label for="opentherm-max-power">
+                <label for="ot-max-power">
                   <span data-i18n>settings.ot.maxPower.title</span>
-                  <input type="number" inputmode="numeric" id="opentherm-max-power" name="opentherm[maxPower]" min="0" max="1000" step="0.1">
+                  <input type="number" inputmode="numeric" id="ot-max-power" name="opentherm[maxPower]" min="0" max="1000" step="0.1">
                   <small data-i18n>settings.ot.maxPower.note</small>
                 </label>
               </div>
@@ -404,54 +404,59 @@
               <fieldset>
                 <legend data-i18n>settings.ot.options.desc</legend>
 
-                <label for="opentherm-dhw-present">
-                  <input type="checkbox" id="opentherm-dhw-present" name="opentherm[dhwPresent]" value="true">
-                  <span data-i18n>settings.ot.options.dhwPresent</span>
+                <label for="ot-options-dhw-support">
+                  <input type="checkbox" id="ot-options-dhw-support" name="opentherm[options][dhwSupport]" value="true">
+                  <span data-i18n>settings.ot.options.dhwSupport</span>
                 </label>
 
-                <label for="opentherm-sw-mode">
-                  <input type="checkbox" id="opentherm-sw-mode" name="opentherm[summerWinterMode]" value="true">
+                <label for="ot-options-cooling-support">
+                  <input type="checkbox" id="ot-options-cooling-support" name="opentherm[options][coolingSupport]" value="true">
+                  <span data-i18n>settings.ot.options.coolingSupport</span>
+                </label>
+
+                <label for="ot-options-sw-mode">
+                  <input type="checkbox" id="ot-options-sw-mode" name="opentherm[options][summerWinterMode]" value="true">
                   <span data-i18n>settings.ot.options.summerWinterMode</span>
                 </label>
 
-                <label for="opentherm-heating-ch2-enabled">
-                  <input type="checkbox" id="opentherm-heating-ch2-enabled" name="opentherm[heatingCh2Enabled]" value="true">
+                <label for="ot-options-heating-ch2-enabled">
+                  <input type="checkbox" id="ot-options-heating-ch2-enabled" name="opentherm[options][heatingCh2Enabled]" value="true">
                   <span data-i18n>settings.ot.options.heatingCh2Enabled</span>
                 </label>
 
-                <label for="opentherm-heating-ch1-to-ch2">
-                  <input type="checkbox" id="opentherm-heating-ch1-to-ch2" name="opentherm[heatingCh1ToCh2]" value="true">
-                  <span data-i18n>settings.ot.options.heatingCh1ToCh2</span>
+                <label for="ot-options-heating-to-ch2">
+                  <input type="checkbox" id="ot-options-heating-to-ch2" name="opentherm[options][heatingToCh2]" value="true">
+                  <span data-i18n>settings.ot.options.heatingToCh2</span>
                 </label>
 
-                <label for="opentherm-dhw-to-ch2">
-                  <input type="checkbox" id="opentherm-dhw-to-ch2" name="opentherm[dhwToCh2]" value="true">
+                <label for="ot-options-dhw-to-ch2">
+                  <input type="checkbox" id="ot-options-dhw-to-ch2" name="opentherm[options][dhwToCh2]" value="true">
                   <span data-i18n>settings.ot.options.dhwToCh2</span>
                 </label>
 
-                <label for="opentherm-dhw-blocking">
-                  <input type="checkbox" id="opentherm-dhw-blocking" name="opentherm[dhwBlocking]" value="true">
+                <label for="ot-options-dhw-blocking">
+                  <input type="checkbox" id="ot-options-dhw-blocking" name="opentherm[options][dhwBlocking]" value="true">
                   <span data-i18n>settings.ot.options.dhwBlocking</span>
                 </label>
 
-                <label for="opentherm-sync-modulation-with-heating">
-                  <input type="checkbox" id="opentherm-sync-modulation-with-heating" name="opentherm[modulationSyncWithHeating]" value="true">
+                <label for="ot-options-mod-sync-with-heating">
+                  <input type="checkbox" id="ot-options-mod-sync-with-heating" name="opentherm[options][modulationSyncWithHeating]" value="true">
                   <span data-i18n>settings.ot.options.modulationSyncWithHeating</span>
                 </label>
 
-                <label for="opentherm-get-min-max-temp">
-                  <input type="checkbox" id="opentherm-get-min-max-temp" name="opentherm[getMinMaxTemp]" value="true">
+                <label for="ot-options-get-min-max-temp">
+                  <input type="checkbox" id="ot-options-get-min-max-temp" name="opentherm[options][getMinMaxTemp]" value="true">
                   <span data-i18n>settings.ot.options.getMinMaxTemp</span>
                 </label>
 
-                <label for="opentherm-immergas-fix">
-                  <input type="checkbox" id="opentherm-immergas-fix" name="opentherm[immergasFix]" value="true">
+                <label for="ot-options-immergas-fix">
+                  <input type="checkbox" id="ot-options-immergas-fix" name="opentherm[options][immergasFix]" value="true">
                   <span data-i18n>settings.ot.options.immergasFix</span>
                 </label>
 
                 <hr />
-                <label for="opentherm-native-heating-control">
-                  <input type="checkbox" id="opentherm-native-heating-control" name="opentherm[nativeHeatingControl]" value="true">
+                <label for="ot-options-native-heating-control">
+                  <input type="checkbox" id="ot-options-native-heating-control" name="opentherm[options][nativeHeatingControl]" value="true">
                   <span data-i18n>settings.ot.nativeHeating.title</span><br />
                   <small data-i18n>settings.ot.nativeHeating.note</small>
                 </label>
@@ -687,26 +692,27 @@
           setBusy('#portal-settings-busy', '#portal-settings', false);
 
           // Opentherm
-          setRadioValue('.opentherm-unit-system', data.opentherm.unitSystem);
-          setInputValue('#opentherm-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
-          setInputValue('#opentherm-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
-          setInputValue('#opentherm-rx-led-gpio', data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
-          setInputValue('#opentherm-member-id', data.opentherm.memberId);
-          setInputValue('#opentherm-flags', data.opentherm.flags);
-          setInputValue('#opentherm-max-modulation', data.opentherm.maxModulation);
-          setInputValue('#opentherm-min-power', data.opentherm.minPower);
-          setInputValue('#opentherm-max-power', data.opentherm.maxPower);
-          setCheckboxValue('#opentherm-dhw-present', data.opentherm.dhwPresent);
-          setCheckboxValue('#opentherm-sw-mode', data.opentherm.summerWinterMode);
-          setCheckboxValue('#opentherm-heating-ch2-enabled', data.opentherm.heatingCh2Enabled);
-          setCheckboxValue('#opentherm-heating-ch1-to-ch2', data.opentherm.heatingCh1ToCh2);
-          setCheckboxValue('#opentherm-dhw-to-ch2', data.opentherm.dhwToCh2);
-          setCheckboxValue('#opentherm-dhw-blocking', data.opentherm.dhwBlocking);
-          setCheckboxValue('#opentherm-sync-modulation-with-heating', data.opentherm.modulationSyncWithHeating);
-          setCheckboxValue('#opentherm-get-min-max-temp', data.opentherm.getMinMaxTemp);
-          setCheckboxValue('#opentherm-native-heating-control', data.opentherm.nativeHeatingControl);
-          setCheckboxValue('#opentherm-immergas-fix', data.opentherm.immergasFix);
-          setBusy('#opentherm-settings-busy', '#opentherm-settings', false);
+          setRadioValue('.ot-unit-system', data.opentherm.unitSystem);
+          setInputValue('#ot-in-gpio', data.opentherm.inGpio < 255 ? data.opentherm.inGpio : '');
+          setInputValue('#ot-out-gpio', data.opentherm.outGpio < 255 ? data.opentherm.outGpio : '');
+          setInputValue('#ot-rx-led-gpio', data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
+          setInputValue('#ot-member-id', data.opentherm.memberId);
+          setInputValue('#ot-flags', data.opentherm.flags);
+          setInputValue('#ot-max-modulation', data.opentherm.maxModulation);
+          setInputValue('#ot-min-power', data.opentherm.minPower);
+          setInputValue('#ot-max-power', data.opentherm.maxPower);
+          setCheckboxValue('#ot-options-dhw-support', data.opentherm.options.dhwSupport);
+          setCheckboxValue('#ot-options-cooling-support', data.opentherm.options.coolingSupport);
+          setCheckboxValue('#ot-options-sw-mode', data.opentherm.options.summerWinterMode);
+          setCheckboxValue('#ot-options-heating-ch2-enabled', data.opentherm.options.heatingCh2Enabled);
+          setCheckboxValue('#ot-options-heating-to-ch2', data.opentherm.options.heatingToCh2);
+          setCheckboxValue('#ot-options-dhw-to-ch2', data.opentherm.options.dhwToCh2);
+          setCheckboxValue('#ot-options-dhw-blocking', data.opentherm.options.dhwBlocking);
+          setCheckboxValue('#ot-options-mod-sync-with-heating', data.opentherm.options.modulationSyncWithHeating);
+          setCheckboxValue('#ot-options-get-min-max-temp', data.opentherm.options.getMinMaxTemp);
+          setCheckboxValue('#ot-options-native-heating-control', data.opentherm.options.nativeHeatingControl);
+          setCheckboxValue('#ot-options-immergas-fix', data.opentherm.options.immergasFix);
+          setBusy('#ot-settings-busy', '#ot-settings', false);
 
           // MQTT
           setCheckboxValue('#mqtt-enable', data.mqtt.enabled);
@@ -768,7 +774,7 @@
 
           // Emergency mode
           setInputValue('#emergency-treshold-time', data.emergency.tresholdTime);
-          if (data.opentherm.nativeHeatingControl) {
+          if (data.opentherm.options.nativeHeatingControl) {
             setInputValue('#emergency-target', data.emergency.target, {
               "min": data.system.unitSystem == 0 ? 5 : 41,
               "max": data.system.unitSystem == 0 ? 30 : 86
@@ -827,7 +833,7 @@
           setupForm('#emergency-settings', fillData);
           setupForm('#equitherm-settings', fillData);
           setupForm('#pid-settings', fillData);
-          setupForm('#opentherm-settings', fillData);
+          setupForm('#ot-settings', fillData);
           setupForm('#mqtt-settings', fillData, ['mqtt.user', 'mqtt.password', 'mqtt.prefix']);
           setupForm('#extpump-settings', fillData);
           setupForm('#cc-settings', fillData);

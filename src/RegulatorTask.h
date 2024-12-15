@@ -39,7 +39,7 @@ protected:
     this->indoorSensorsConnected = Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP);
     //this->outdoorSensorsConnected = Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::OUTDOOR_TEMP);
 
-    if (settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.nativeHeatingControl) {
+    if (settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeHeatingControl) {
       vars.master.heating.indoorTempControl = true;
       vars.master.heating.minTemp = THERMOSTAT_INDOOR_MIN_TEMP;
       vars.master.heating.maxTemp = THERMOSTAT_INDOOR_MAX_TEMP;
@@ -93,7 +93,7 @@ protected:
   void hysteresis() {
     bool useHyst = false;
     if (settings.heating.hysteresis > 0.01f && this->indoorSensorsConnected) {
-      useHyst = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.nativeHeatingControl;
+      useHyst = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeHeatingControl;
     }
 
     if (useHyst) {
@@ -110,13 +110,13 @@ protected:
   }
 
   inline float getHeatingMinSetpointTemp() {
-    return settings.opentherm.nativeHeatingControl
+    return settings.opentherm.options.nativeHeatingControl
       ? vars.master.heating.minTemp
       : settings.heating.minTemp;
   }
 
   inline float getHeatingMaxSetpointTemp() {
-    return settings.opentherm.nativeHeatingControl
+    return settings.opentherm.options.nativeHeatingControl
       ? vars.master.heating.maxTemp
       : settings.heating.maxTemp;
   }
@@ -137,7 +137,7 @@ protected:
     if (vars.emergency.state) {
       return settings.emergency.target;
 
-    } else if (settings.opentherm.nativeHeatingControl) {
+    } else if (settings.opentherm.options.nativeHeatingControl) {
       return settings.heating.target;
 
     } else if (!settings.equitherm.enabled && !settings.pid.enabled) {

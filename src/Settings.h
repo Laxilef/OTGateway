@@ -57,16 +57,19 @@ struct Settings {
     float minPower = 0.0f;
     float maxPower = 0.0f;
 
-    bool dhwPresent = true;
-    bool summerWinterMode = false;
-    bool heatingCh2Enabled = true;
-    bool heatingCh1ToCh2 = false;
-    bool dhwToCh2 = false;
-    bool dhwBlocking = false;
-    bool modulationSyncWithHeating = false;
-    bool getMinMaxTemp = true;
-    bool nativeHeatingControl = false;
-    bool immergasFix = false;
+    struct {
+      bool dhwSupport = true;
+      bool coolingSupport = false;
+      bool summerWinterMode = false;
+      bool heatingCh2Enabled = true;
+      bool heatingToCh2 = false;
+      bool dhwToCh2 = false;
+      bool dhwBlocking = false;
+      bool modulationSyncWithHeating = false;
+      bool getMinMaxTemp = true;
+      bool nativeHeatingControl = false;
+      bool immergasFix = false;
+    } options;
   } opentherm;
 
   struct {
@@ -287,6 +290,7 @@ struct Variables {
 
     bool connected = false;
     bool flame = false;
+    bool cooling = false;
     float pressure = 0.0f;
     float heatExchangerTemp = 0.0f;
 

@@ -532,13 +532,13 @@ protected:
 
   bool publishNonStaticHaEntities(bool force = false) {
     static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
-    static bool _indoorTempControl, _dhwPresent = false;
+    static bool _indoorTempControl, _dhwSupport = false;
 
     bool published = false;
-    if (force || _dhwPresent != settings.opentherm.dhwPresent) {
-      _dhwPresent = settings.opentherm.dhwPresent;
+    if (force || _dhwSupport != settings.opentherm.options.dhwSupport) {
+      _dhwSupport = settings.opentherm.options.dhwSupport;
 
-      if (_dhwPresent) {
+      if (_dhwSupport) {
         this->haHelper->publishInputDhwMinTemp(settings.system.unitSystem);
         this->haHelper->publishInputDhwMaxTemp(settings.system.unitSystem);
         this->haHelper->publishDhwState();
@@ -569,7 +569,7 @@ protected:
       published = true;
     }
 
-    if (_dhwPresent && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp)) {
+    if (_dhwSupport && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp)) {
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
 

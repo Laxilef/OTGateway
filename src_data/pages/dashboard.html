@@ -113,6 +113,10 @@
                   <th scope="row" data-i18n>dashboard.states.sFlame</th>
                   <td><i class="sFlame"></i></td>
                 </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.states.sCooling</th>
+                  <td><i class="sCooling"></i></td>
+                </tr>
 
 
                 <tr>
@@ -372,8 +376,8 @@
               (prevSettings.heating.enabled != newSettings.heating.enabled)
               || (prevSettings.heating.turbo != newSettings.heating.turbo)
               || (prevSettings.heating.target != newSettings.heating.target)
-              || (prevSettings.opentherm.dhwPresent && prevSettings.dhw.enabled != newSettings.dhw.enabled)
-              || (prevSettings.opentherm.dhwPresent && prevSettings.dhw.target != newSettings.dhw.target)
+              || (prevSettings.opentherm.options.dhwSupport && prevSettings.dhw.enabled != newSettings.dhw.enabled)
+              || (prevSettings.opentherm.options.dhwSupport && prevSettings.dhw.target != newSettings.dhw.target)
             );
 
             if (modified) {
@@ -397,7 +401,7 @@
             }
 
             const result = await response.json();
-            noRegulators = !result.opentherm.nativeHeatingControl && !result.equitherm.enabled && !result.pid.enabled;
+            noRegulators = !result.opentherm.options.nativeHeatingControl && !result.equitherm.enabled && !result.pid.enabled;
             prevSettings = result;
             unitSystem = result.system.unitSystem;
             newSettings.heating.enabled = result.heating.enabled;
@@ -406,7 +410,7 @@
             newSettings.dhw.enabled = result.dhw.enabled;
             newSettings.dhw.target = result.dhw.target;
 
-            if (result.opentherm.dhwPresent) {
+            if (result.opentherm.options.dhwSupport) {
               show('#thermostat-dhw');
             } else {
               hide('#thermostat-dhw');
@@ -462,6 +466,7 @@
               result.slave.connected ? "green" : "red"
             );
             setState('.sFlame', result.slave.flame);
+            setState('.sCooling', result.slave.cooling);
 
             setValue('.sModMin', result.slave.modulation.min);
             setValue('.sModMax', result.slave.modulation.max);

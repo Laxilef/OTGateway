@@ -153,18 +153,18 @@ protected:
       && !vars.master.heating.blocking;
 
     // DHW settings
-    vars.master.dhw.enabled = settings.opentherm.dhwPresent && settings.dhw.enabled;
+    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport && settings.dhw.enabled;
     vars.master.dhw.targetTemp = settings.dhw.target;
 
     // CH2 settings
-    vars.master.ch2.enabled = settings.opentherm.heatingCh2Enabled
-      || (settings.opentherm.heatingCh1ToCh2 && vars.master.heating.enabled)
-      || (settings.opentherm.dhwToCh2 && settings.opentherm.dhwPresent && settings.dhw.enabled);
+    vars.master.ch2.enabled = settings.opentherm.options.heatingCh2Enabled
+      || (settings.opentherm.options.heatingToCh2 && vars.master.heating.enabled)
+      || (settings.opentherm.options.dhwToCh2 && settings.opentherm.options.dhwSupport && settings.dhw.enabled);
 
-    if (settings.opentherm.heatingCh1ToCh2) {
+    if (settings.opentherm.options.heatingToCh2) {
       vars.master.ch2.targetTemp = vars.master.heating.setpointTemp;
 
-    } else if (settings.opentherm.dhwToCh2) {
+    } else if (settings.opentherm.options.dhwToCh2) {
       vars.master.ch2.targetTemp = vars.master.dhw.targetTemp;
     }
 
@@ -174,18 +174,18 @@ protected:
 
     // Immergas fix
     // https://arduino.ru/forum/programmirovanie/termostat-opentherm-na-esp8266?page=15#comment-649392
-    if (settings.opentherm.immergasFix) {
+    if (settings.opentherm.options.immergasFix) {
       statusLb = 0xCA;
     }
 
     unsigned long response = this->instance->setBoilerStatus(
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
-      false,
-      settings.opentherm.nativeHeatingControl,
+      settings.opentherm.options.coolingSupport,
+      settings.opentherm.options.nativeHeatingControl,
       vars.master.ch2.enabled,
-      settings.opentherm.summerWinterMode,
-      settings.opentherm.dhwBlocking,
+      settings.opentherm.options.summerWinterMode,
+      settings.opentherm.options.dhwBlocking,
       statusLb
     );
 
@@ -265,15 +265,16 @@ protected:
     }
 
     vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
-    vars.slave.dhw.active = settings.opentherm.dhwPresent ? CustomOpenTherm::isHotWaterActive(response) : false;
+    vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
     vars.slave.flame = CustomOpenTherm::isFlameOn(response);
+    vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
     vars.slave.fault.active = CustomOpenTherm::isFault(response);
     vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
 
     Log.snoticeln(
-      FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; fault: %hhu; diag: %hhu"),
+      FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
       vars.slave.heating.active, vars.slave.dhw.active,
-      vars.slave.flame, vars.slave.fault.active, vars.slave.diag.active
+      vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
     );
 
     // These parameters will be updated every minute
@@ -309,7 +310,7 @@ protected:
         Log.swarningln(FPSTR(L_OT), F("Failed receive min modulation and max power"));
       }
 
-      if (!vars.master.heating.enabled && settings.opentherm.modulationSyncWithHeating) {
+      if (!vars.master.heating.enabled && settings.opentherm.options.modulationSyncWithHeating) {
         if (this->setMaxModulationLevel(0)) {
           Log.snoticeln(FPSTR(L_OT), F("Set max modulation: 0% (response: %hhu%%)"), vars.slave.modulation.max);
 
@@ -334,7 +335,7 @@ protected:
 
 
       // Get DHW min/max temp (if necessary)
-      if (settings.opentherm.dhwPresent && settings.opentherm.getMinMaxTemp) {
+      if (settings.opentherm.options.dhwSupport && settings.opentherm.options.getMinMaxTemp) {
         if (this->updateMinMaxDhwTemp()) {
           uint8_t convertedMinTemp = convertTemp(
             vars.slave.dhw.minTemp,
@@ -380,7 +381,7 @@ protected:
 
 
       // Get heating min/max temp
-      if (settings.opentherm.getMinMaxTemp) {
+      if (settings.opentherm.options.getMinMaxTemp) {
         if (this->updateMinMaxHeatingTemp()) {
           uint8_t convertedMinTemp = convertTemp(
             vars.slave.heating.minTemp,
@@ -520,7 +521,7 @@ protected:
     }
 
     // Update DHW temp
-    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP, true)) {
+    if (settings.opentherm.options.dhwSupport && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP, true)) {
       bool result = this->updateDhwTemp();
 
       if (result) {
@@ -546,7 +547,7 @@ protected:
     }
 
     // Update DHW temp 2
-    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2, true)) {
+    if (settings.opentherm.options.dhwSupport && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2, true)) {
       if (this->updateDhwTemp2()) {
         float convertedDhwTemp2 = convertTemp(
           vars.slave.dhw.currentTemp2,
@@ -570,7 +571,7 @@ protected:
     }
 
     // Update DHW flow rate
-    if (settings.opentherm.dhwPresent && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE, true)) {
+    if (settings.opentherm.options.dhwSupport && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE, true)) {
       if (this->updateDhwFlowRate()) {
         float convertedDhwFlowRate = convertVolume(
           vars.slave.dhw.flowRate,
@@ -643,7 +644,7 @@ protected:
 
     // Update CH2 temp
     if (Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP, true)) {
-      if (vars.master.ch2.enabled && !settings.opentherm.nativeHeatingControl) {
+      if (vars.master.ch2.enabled && !settings.opentherm.options.nativeHeatingControl) {
         if (this->updateCh2Temp()) {
           float convertedCh2Temp = convertTemp(
             vars.slave.ch2.currentTemp,
@@ -942,7 +943,7 @@ protected:
     }
 
     // Native heating control
-    if (settings.opentherm.nativeHeatingControl) {
+    if (settings.opentherm.options.nativeHeatingControl) {
       // Converted current indoor temp
       float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
@@ -958,7 +959,7 @@ protected:
       }
 
       // Set current CH2 indoor temp
-      if (settings.opentherm.heatingCh1ToCh2) {
+      if (settings.opentherm.options.heatingToCh2) {
         if (this->setRoomTempCh2(convertedTemp)) {
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set current CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)"),
@@ -990,7 +991,7 @@ protected:
       }
 
       // Set target CH2 temp
-      if (settings.opentherm.heatingCh1ToCh2 && this->needSetCh2Temp(convertedTemp)) {
+      if (settings.opentherm.options.heatingToCh2 && this->needSetCh2Temp(convertedTemp)) {
         if (this->setRoomSetpointCh2(convertedTemp)) {
           this->ch2SetTempTime = millis();
 
@@ -1006,7 +1007,7 @@ protected:
     }
 
     // Normal heating control
-    if (!settings.opentherm.nativeHeatingControl && vars.master.heating.enabled) {
+    if (!settings.opentherm.options.nativeHeatingControl && vars.master.heating.enabled) {
       // Converted target heating temp
       float convertedTemp = convertTemp(vars.master.heating.setpointTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
@@ -1038,8 +1039,8 @@ protected:
     }
 
     // Set CH2 temp
-    if (!settings.opentherm.nativeHeatingControl && vars.master.ch2.enabled) {
-      if (settings.opentherm.heatingCh1ToCh2 || settings.opentherm.dhwToCh2) {
+    if (!settings.opentherm.options.nativeHeatingControl && vars.master.ch2.enabled) {
+      if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2) {
         // Converted target CH2 temp
         float convertedTemp = convertTemp(
           vars.master.ch2.targetTemp,

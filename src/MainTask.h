@@ -229,7 +229,7 @@ protected:
         emergencyFlags |= 0b00000010;
       }
       
-      if (settings.opentherm.nativeHeatingControl) {
+      if (settings.opentherm.options.nativeHeatingControl) {
         emergencyFlags |= 0b00000100;
       }
     }
