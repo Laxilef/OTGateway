@@ -380,7 +380,7 @@ protected:
 
   void pollingBleSensors() {
     #if USE_BLE
-    if (!NimBLEDevice::getInitialized() && millis() > 5000) {
+    if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
       BLEDevice::init("");
       NimBLEDevice::setPower(ESP_PWR_LVL_P9);
@@ -445,7 +445,7 @@ protected:
 
   bool connectToBleDevice(const uint8_t sensorId) {
     #if USE_BLE
-    if (!NimBLEDevice::getInitialized()) {
+    if (!NimBLEDevice::isInitialized()) {
       return false;
     }
 
@@ -460,7 +460,7 @@ protected:
       sSensor.address[0], sSensor.address[1], sSensor.address[2],
       sSensor.address[3], sSensor.address[4], sSensor.address[5]
     };
-    const NimBLEAddress address = NimBLEAddress(addr);
+    const auto address = NimBLEAddress(addr, 0);
     
     NimBLEClient* pClient = nullptr;
     pClient = NimBLEDevice::getClientByPeerAddress(address);
@@ -470,12 +470,13 @@ protected:
     }
 
     if (pClient == nullptr) {
-      if (NimBLEDevice::getClientListSize() >= NIMBLE_MAX_CONNECTIONS) {
+      if (NimBLEDevice::getCreatedClientCount() >= NIMBLE_MAX_CONNECTIONS) {
         return false;
       }
 
       pClient = NimBLEDevice::createClient();
-      pClient->setConnectTimeout(5);
+      pClient->setConnectTimeout(5000);
+      pClient->setSelfDelete(false, true);
     }
 
     if(pClient->isConnected()) {
@@ -492,7 +493,6 @@ protected:
         sensorId, sSensor.name, address.toString().c_str()
       );
 
-      NimBLEDevice::deleteClient(pClient);
       return false;
     }
 
@@ -536,7 +536,7 @@ protected:
               return;
             }
 
-            NimBLERemoteService* pService = pChar->getRemoteService();
+            const NimBLERemoteService* pService = pChar->getRemoteService();
             if (pService == nullptr) {
               return;
             }
@@ -609,7 +609,7 @@ protected:
               return;
             }
 
-            NimBLERemoteService* pService = pChar->getRemoteService();
+            const NimBLERemoteService* pService = pChar->getRemoteService();
             if (pService == nullptr) {
               return;
             }
@@ -694,7 +694,7 @@ protected:
                 return;
               }
 
-              NimBLERemoteService* pService = pChar->getRemoteService();
+              const NimBLERemoteService* pService = pChar->getRemoteService();
               if (pService == nullptr) {
                 return;
               }
@@ -793,7 +793,7 @@ protected:
                 return;
               }
 
-              NimBLERemoteService* pService = pChar->getRemoteService();
+              const NimBLERemoteService* pService = pChar->getRemoteService();
               if (pService == nullptr) {
                 return;
               }
