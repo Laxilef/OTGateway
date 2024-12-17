@@ -382,7 +382,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_DHW_SUPPORT)] = src.opentherm.options.dhwSupport;
     otOptions[FPSTR(S_COOLING_SUPPORT)] = src.opentherm.options.coolingSupport;
     otOptions[FPSTR(S_SUMMER_WINTER_MODE)] = src.opentherm.options.summerWinterMode;
-    otOptions[FPSTR(S_HEATING_CH2_ENABLED)] = src.opentherm.options.heatingCh2Enabled;
+    otOptions[FPSTR(S_CH2_ALWAYS_ENABLED)] = src.opentherm.options.ch2AlwaysEnabled;
     otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
     otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
     otOptions[FPSTR(S_DHW_BLOCKING)] = src.opentherm.options.dhwBlocking;
@@ -748,13 +748,13 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_CH2_ENABLED)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_CH2_ENABLED)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_CH2_ALWAYS_ENABLED)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_CH2_ALWAYS_ENABLED)].as<bool>();
 
-      if (value != dst.opentherm.options.heatingCh2Enabled) {
-        dst.opentherm.options.heatingCh2Enabled = value;
+      if (value != dst.opentherm.options.ch2AlwaysEnabled) {
+        dst.opentherm.options.ch2AlwaysEnabled = value;
 
-        if (dst.opentherm.options.heatingCh2Enabled) {
+        if (dst.opentherm.options.ch2AlwaysEnabled) {
           dst.opentherm.options.heatingToCh2 = false;
           dst.opentherm.options.dhwToCh2 = false;
         }
@@ -770,7 +770,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         dst.opentherm.options.heatingToCh2 = value;
 
         if (dst.opentherm.options.heatingToCh2) {
-          dst.opentherm.options.heatingCh2Enabled = false;
+          dst.opentherm.options.ch2AlwaysEnabled = false;
           dst.opentherm.options.dhwToCh2 = false;
         }
 
@@ -785,7 +785,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         dst.opentherm.options.dhwToCh2 = value;
 
         if (dst.opentherm.options.dhwToCh2) {
-          dst.opentherm.options.heatingCh2Enabled = false;
+          dst.opentherm.options.ch2AlwaysEnabled = false;
           dst.opentherm.options.heatingToCh2 = false;
         }
 

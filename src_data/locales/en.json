@@ -360,7 +360,7 @@
           "dhwSupport": "DHW support",
           "coolingSupport": "Cooling support",
           "summerWinterMode": "Summer/winter mode",
-          "heatingCh2Enabled": "Heating CH2 always enabled",
+          "ch2AlwaysEnabled": "CH2 always enabled",
           "heatingToCh2": "Duplicate heating to CH2",
           "dhwToCh2": "Duplicate DHW to CH2",
           "dhwBlocking": "DHW blocking",

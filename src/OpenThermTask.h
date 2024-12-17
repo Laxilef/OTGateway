@@ -157,7 +157,7 @@ protected:
     vars.master.dhw.targetTemp = settings.dhw.target;
 
     // CH2 settings
-    vars.master.ch2.enabled = settings.opentherm.options.heatingCh2Enabled
+    vars.master.ch2.enabled = settings.opentherm.options.ch2AlwaysEnabled
       || (settings.opentherm.options.heatingToCh2 && vars.master.heating.enabled)
       || (settings.opentherm.options.dhwToCh2 && settings.opentherm.options.dhwSupport && settings.dhw.enabled);
 
