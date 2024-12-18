@@ -20,8 +20,7 @@ public:
 
     this->webServer->setContentLength(measureJson(content));
     #else
-    this->webServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
-    this->webServer->sendHeader(F("Content-Length"), String(measureJson(content)));
+    this->webServer->setContentLength(measureJson(content));
     this->webServer->send(code, contentType, emptyString);
     #endif
 
