@@ -383,7 +383,7 @@ protected:
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
       BLEDevice::init("");
-      NimBLEDevice::setPower(ESP_PWR_LVL_P9);
+      NimBLEDevice::setPower(9);
     }
 
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
