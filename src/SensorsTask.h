@@ -175,16 +175,19 @@ protected:
         continue;
       }
 
-      if (millis() - this->dallasSearchTime[gpio] > this->dallasSearchInterval) {
-        this->dallasSearchTime[gpio] = millis();
-        instance.begin();
-
-        Log.straceln(
-          FPSTR(L_SENSORS_DALLAS),
-          F("GPIO %hhu, devices on bus: %hhu, DS18* devices: %hhu"),
-          gpio, instance.getDeviceCount(), instance.getDS18Count()
-        );
+      if (millis() - this->dallasSearchTime[gpio] < this->dallasSearchInterval) {
+        continue;
       }
+
+      this->dallasSearchTime[gpio] = millis();
+      this->owInstances[gpio].reset();
+      instance.begin();
+
+      Log.straceln(
+        FPSTR(L_SENSORS_DALLAS),
+        F("GPIO %hhu, devices on bus: %hhu, DS18* devices: %hhu"),
+        gpio, instance.getDeviceCount(), instance.getDS18Count()
+      );
     }
   }
 
@@ -274,23 +277,12 @@ protected:
       unsigned long ts = millis();
 
       if (this->dallasPolling[gpio]) {
-        auto minPollingTime = instance.millisToWaitForConversion(12);
+        auto minPollingTime = instance.millisToWaitForConversion(12) * 2;
         unsigned long estimatePollingTime = ts - this->dallasLastPollingTime[gpio];
 
         // check conversion time
+        // isConversionComplete does not work with chinese clones!
         if (estimatePollingTime < minPollingTime) {
-          continue;
-        }
-        
-        // check conversion
-        bool conversionComplete = instance.isConversionComplete();
-        if (!conversionComplete) {
-          if (estimatePollingTime > (minPollingTime * 2)) {
-            this->dallasPolling[gpio] = false;
-
-            Log.swarningln(FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, timeout receiving data"), gpio);
-          }
-
           continue;
         }
 
@@ -342,28 +334,6 @@ protected:
 
         // check last polling time
         if (estimateLastPollingTime < this->dallasPollingInterval) {
-          continue;
-        }
-
-        // check sensors on bus
-        if (!instance.getDeviceCount()) {
-          for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-            auto& sSensor = Sensors::settings[sensorId];
-            
-            // only target & valid sensors
-            if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
-              continue;
-
-            } else if (sSensor.gpio != gpio || isEmptyAddress(sSensor.address)) {
-              continue;
-            }
-            
-            auto& rSensor = Sensors::results[sensorId];
-            if (rSensor.signalQuality > 0) {
-              rSensor.signalQuality--;
-            }
-          }
-
           continue;
         }
 
