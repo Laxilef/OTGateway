@@ -12,15 +12,17 @@ public:
 
   template <class T>
   void send(int code, T contentType, const JsonVariantConst content, bool pretty = false) {
+    auto contentLength = pretty ? measureJsonPretty(content) : measureJson(content);
+
     #ifdef ARDUINO_ARCH_ESP8266
     if (!this->webServer->chunkedResponseModeStart(code, contentType)) {
       this->webServer->send(505, F("text/html"), F("HTTP1.1 required"));
       return;
     }
 
-    this->webServer->setContentLength(measureJson(content));
+    this->webServer->setContentLength(contentLength);
     #else
-    this->webServer->setContentLength(measureJson(content));
+    this->webServer->setContentLength(contentLength);
     this->webServer->send(code, contentType, emptyString);
     #endif
 
