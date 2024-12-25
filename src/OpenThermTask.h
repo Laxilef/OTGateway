@@ -178,13 +178,19 @@ protected:
       statusLb = 0xCA;
     }
 
+    // Summer/winter mode
+    bool summerWinterMode = settings.opentherm.options.summerWinterMode;
+    if (settings.opentherm.options.heatingStateToSummerWinterMode) {
+      summerWinterMode = vars.master.heating.enabled == summerWinterMode;
+    }
+
     unsigned long response = this->instance->setBoilerStatus(
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
       settings.opentherm.options.coolingSupport,
       settings.opentherm.options.nativeHeatingControl,
       vars.master.ch2.enabled,
-      settings.opentherm.options.summerWinterMode,
+      summerWinterMode,
       settings.opentherm.options.dhwBlocking,
       statusLb
     );

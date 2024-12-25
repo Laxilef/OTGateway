@@ -360,6 +360,7 @@
           "dhwSupport": "Поддержка ГВС",
           "coolingSupport": "Поддержка охлаждения",
           "summerWinterMode": "Летний/зимний режим",
+          "heatingStateToSummerWinterMode": "Летний/зимний режим в качестве состояния отопления",
           "ch2AlwaysEnabled": "Канал 2 всегда вкл.",
           "heatingToCh2": "Дублировать параметры отопления в канал 2",
           "dhwToCh2": "Дублировать параметры ГВС в канал 2",

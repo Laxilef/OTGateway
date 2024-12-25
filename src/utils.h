@@ -382,6 +382,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_DHW_SUPPORT)] = src.opentherm.options.dhwSupport;
     otOptions[FPSTR(S_COOLING_SUPPORT)] = src.opentherm.options.coolingSupport;
     otOptions[FPSTR(S_SUMMER_WINTER_MODE)] = src.opentherm.options.summerWinterMode;
+    otOptions[FPSTR(S_HEATING_STATE_TO_SUMMER_WINTER_MODE)] = src.opentherm.options.heatingStateToSummerWinterMode;
     otOptions[FPSTR(S_CH2_ALWAYS_ENABLED)] = src.opentherm.options.ch2AlwaysEnabled;
     otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
     otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
@@ -744,6 +745,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.summerWinterMode) {
         dst.opentherm.options.summerWinterMode = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_STATE_TO_SUMMER_WINTER_MODE)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_HEATING_STATE_TO_SUMMER_WINTER_MODE)].as<bool>();
+
+      if (value != dst.opentherm.options.heatingStateToSummerWinterMode) {
+        dst.opentherm.options.heatingStateToSummerWinterMode = value;
         changed = true;
       }
     }

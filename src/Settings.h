@@ -61,6 +61,7 @@ struct Settings {
       bool dhwSupport = true;
       bool coolingSupport = false;
       bool summerWinterMode = false;
+      bool heatingStateToSummerWinterMode = false;
       bool ch2AlwaysEnabled = true;
       bool heatingToCh2 = false;
       bool dhwToCh2 = false;
