@@ -87,6 +87,18 @@
         "turbo": "Turbo mode"
       },
 
+      "notify": {
+        "fault": {
+          "title": "Boiler Fault state is active!",
+          "note": "It is recommended to inspect the boiler and study the documentation to interpret the fault code:"
+        },
+        "diag": {
+          "title": "Boiler Diagnostic state is active!",
+          "note": "Perhaps your boiler needs inspection? It is recommended study the documentation to interpret the diag code:"
+        },
+        "reset": "Try reset"
+      },
+
       "states": {
         "mNetworkConnected": "Network connection",
         "mMqttConnected": "MQTT connection",

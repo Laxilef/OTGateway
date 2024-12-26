@@ -71,6 +71,36 @@
                 </div>
               </div>
             </div>
+            
+            <div class="notify notify-error notify-fault hidden">
+              <div class="notify-icon">
+                <i class="icons-error"></i>
+              </div>
+              <div class="notify-content">
+                <b data-i18n>dashboard.notify.fault.title</b><br />
+                <small>
+                  <span data-i18n>dashboard.notify.fault.note</span> <b class="sFaultCode"></b>
+                </small>
+              </div>
+              <div class="notify-actions">
+                <button class="reset" data-i18n>dashboard.notify.reset</button>
+              </div>
+            </div>
+
+            <div class="notify notify-alarm notify-diag hidden">
+              <div class="notify-icon">
+                <i class="icons-alarm"></i>
+              </div>
+              <div class="notify-content">
+                <b data-i18n>dashboard.notify.diag.title</b><br />
+                <small>
+                  <span data-i18n>dashboard.notify.diag.note</span> <b class="sDiagCode"></b>
+                </small>
+              </div>
+              <div class="notify-actions">
+                <button class="reset" data-i18n>dashboard.notify.reset</button>
+              </div>
+            </div>
           </details>
 
           <hr />
@@ -358,6 +388,60 @@
           newSettings.dhw.enabled = event.currentTarget.checked;
         });
 
+        document.querySelector('.notify-fault .reset').addEventListener('click', async (event) => {
+          const resetBtn = document.querySelector(".notify-fault .reset");
+          if (!resetBtn.disabled) {
+            resetBtn.disabled = true;
+          }
+
+          let response = await fetch("/api/vars", {
+            method: "POST",
+            cache: "no-cache",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "actions": {
+                "resetFault": true
+              }
+            })
+          });
+
+          setTimeout(() => {
+            if (resetBtn.disabled) {
+              resetBtn.disabled = false;
+            }
+          }, 10000);
+        });
+
+        document.querySelector('.notify-diag .reset').addEventListener('click', async (event) => {
+          const resetBtn = document.querySelector(".notify-diag .reset");
+          if (!resetBtn.disabled) {
+            resetBtn.disabled = true;
+          }
+
+          let response = await fetch("/api/vars", {
+            method: "POST",
+            cache: "no-cache",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "actions": {
+                "resetDiagnostic": true
+              }
+            })
+          });
+
+          setTimeout(() => {
+            if (resetBtn.disabled) {
+              resetBtn.disabled = false;
+            }
+          }, 10000);
+        });
+
         setTimeout(async function onLoadPage() {
           let unitSystem = null;
 
@@ -494,6 +578,13 @@
                 : "-"
             );
 
+            if (result.slave.fault.active) {
+              show(".notify-fault");
+
+            } else {
+              hide('.notify-fault');
+            }
+
             setStatus(
               '.sDiagActive',
               result.slave.diag.active ? "success" : "error",
@@ -505,6 +596,13 @@
                 ? `${result.slave.diag.code} (0x${dec2hex(result.slave.diag.code)})`
                 : "-"
             );
+
+            if (result.slave.diag.active) {
+              show(".notify-diag");
+
+            } else {
+              hide('.notify-diag');
+            }
 
 
             // MASTER

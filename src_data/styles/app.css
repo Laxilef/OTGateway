@@ -115,6 +115,7 @@ tr.network:hover {
   font-family: var(--pico-font-family-monospace);
 }
 
+
 .thermostat {
   display: grid;
   grid-template-columns: 0.5fr 2fr 0.5fr;
@@ -192,6 +193,92 @@ tr.network:hover {
 
   margin: 1.25rem 0;
 }
+
+
+@media (max-width: 575px) {
+  .notify {
+    display: grid; 
+    grid-template-columns: 1fr; 
+    grid-template-rows: 1fr 0.5fr; 
+    gap: 0.5rem 0.5rem;
+    grid-template-areas: 
+      "notify-content"
+      "notify-actions"; 
+  }
+
+  .notify-icon {
+    display: none;
+  }
+
+  .notify-content {
+    justify-self: center;
+    align-self: center;
+    grid-area: notify-content; 
+  }
+
+  .notify-actions {
+    justify-self: center; 
+    align-self: center; 
+    grid-area: notify-actions; 
+  }
+}
+
+@media (min-width: 576px) {
+  .notify {
+    display: grid;
+    grid-template-columns: 5rem 1fr 10rem;
+    grid-template-rows: 1fr;
+    gap: 0rem 0.5rem;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "notify-icon notify-content notify-actions";
+  }
+
+  .notify-icon {
+    justify-self: center;
+    align-self: center;
+    grid-area: notify-icon;
+  }
+
+  .notify-content {
+    justify-self: center;
+    align-self: center;
+    grid-area: notify-content;
+  }
+  
+  .notify-actions {
+    justify-self: center;
+    align-self: center;
+    grid-area: notify-actions;
+  }
+}
+
+.notify {
+  margin: 1rem;
+  padding: 0.5rem;
+  border: .25rem solid var(--pico-blockquote-border-color);
+}
+
+.notify-error {
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+.notify-error .notify-icon {
+  color: var(--pico-form-element-invalid-border-color);
+}
+
+.notify-alarm {
+  border-color: #c89048;
+}
+
+.notify-alarm .notify-icon {
+  color: #c89048;
+}
+
+.notify-icon i {
+  font-size: 2.5rem;
+}
+
 
 [class*=" icons-"],
 [class=icons],
