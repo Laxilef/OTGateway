@@ -170,12 +170,12 @@
               <div class="grid">
                 <label>
                   <span data-i18n>settings.heating.hyst</span>
-                  <input type="number" inputmode="numeric" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
+                  <input type="number" inputmode="decimal" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
                 </label>
 
                 <label>
                   <span data-i18n>settings.heating.turboFactor</span>
-                  <input type="number" inputmode="numeric" name="heating[turboFactor]" min="1.5" max="10" step="0.1" required>
+                  <input type="number" inputmode="decimal" name="heating[turboFactor]" min="1.5" max="10" step="0.1" required>
                 </label>
               </div>
 
@@ -254,17 +254,17 @@
               <div class="grid">
                 <label>
                   <span data-i18n>settings.equitherm.n</span>
-                  <input type="number" inputmode="numeric" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
+                  <input type="number" inputmode="decimal" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
                 </label>
 
                 <label>
                   <span data-i18n>settings.equitherm.k</span>
-                  <input type="number" inputmode="numeric" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
+                  <input type="number" inputmode="decimal" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
                 </label>
 
                 <label>
                   <span data-i18n>settings.equitherm.t.title</span>
-                  <input type="number" inputmode="numeric" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
+                  <input type="number" inputmode="decimal" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
                   <small data-i18n>settings.equitherm.t.note</small>
                 </label>
               </div>
@@ -291,17 +291,17 @@
               <div class="grid">
                 <label>
                   <span data-i18n>settings.pid.p</span>
-                  <input type="number" inputmode="numeric" name="pid[p_factor]" min="0.1" max="1000" step="0.01" required>
+                  <input type="number" inputmode="decimal" name="pid[p_factor]" min="0.1" max="1000" step="0.01" required>
                 </label>
 
                 <label>
                   <span data-i18n>settings.pid.i</span>
-                  <input type="number" inputmode="numeric" name="pid[i_factor]" min="0" max="100" step="0.0001" required>
+                  <input type="number" inputmode="decimal" name="pid[i_factor]" min="0" max="100" step="0.0001" required>
                 </label>
 
                 <label>
                   <span data-i18n>settings.pid.d</span>
-                  <input type="number" inputmode="numeric" name="pid[d_factor]" min="0" max="100000" step="0.1" required>
+                  <input type="number" inputmode="decimal" name="pid[d_factor]" min="0" max="100000" step="0.1" required>
                 </label>
               </div>
 
@@ -390,13 +390,13 @@
               <div class="grid">
                 <label>
                   <span data-i18n>settings.ot.minPower.title</span>
-                  <input type="number" inputmode="numeric" name="opentherm[minPower]" min="0" max="1000" step="0.1">
+                  <input type="number" inputmode="decimal" name="opentherm[minPower]" min="0" max="1000" step="0.01">
                   <small data-i18n>settings.ot.minPower.note</small>
                 </label>
 
                 <label>
                   <span data-i18n>settings.ot.maxPower.title</span>
-                  <input type="number" inputmode="numeric" name="opentherm[maxPower]" min="0" max="1000" step="0.1">
+                  <input type="number" inputmode="decimal" name="opentherm[maxPower]" min="0" max="1000" step="0.01">
                   <small data-i18n>settings.ot.maxPower.note</small>
                 </label>
               </div>
