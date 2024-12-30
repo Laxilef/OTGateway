@@ -181,7 +181,7 @@ public:
     if (sSensor.type == Sensors::Type::BLUETOOTH) {
       // available state topic
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
-      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_SENSOR_CONN;
+      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_SENSOR_CONN, true);
 
       String sName = sSensor.name;
       switch (vType) {
@@ -254,7 +254,7 @@ public:
     } else {
       // available state topic
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
-      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_SENSOR_CONN;
+      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_SENSOR_CONN, true);
 
       doc[FPSTR(HA_NAME)] = sSensor.name;
       doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.value|float(0)|round(2) }}");
@@ -970,7 +970,7 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_OT_CONN;
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating"));
@@ -991,7 +991,7 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_OT_CONN;
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw"));
@@ -1012,7 +1012,7 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_OT_CONN;
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("flame"));
@@ -1033,7 +1033,7 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_OT_CONN;
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("fault"));
@@ -1054,7 +1054,7 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = AVAILABILITY_OT_CONN;
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC));
