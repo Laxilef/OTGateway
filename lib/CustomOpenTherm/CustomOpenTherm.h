@@ -3,15 +3,17 @@
 
 class CustomOpenTherm : public OpenTherm {
 public:
-  typedef std::function<void()> YieldCallback;
+  typedef std::function<void(unsigned int)> DelayCallback;
   typedef std::function<void(unsigned long, byte)> BeforeSendRequestCallback;
   typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, byte)> AfterSendRequestCallback;
 
-  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
+  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {
+    this->_outPin = outPin;
+  }
   ~CustomOpenTherm() {}
 
-  CustomOpenTherm* setYieldCallback(YieldCallback callback = nullptr) {
-    this->yieldCallback = callback;
+  CustomOpenTherm* setDelayCallback(DelayCallback callback = nullptr) {
+    this->delayCallback = callback;
 
     return this;
   }
@@ -28,14 +30,28 @@ public:
     return this;
   }
 
+  void reset() {
+    if (this->status == OpenThermStatus::NOT_INITIALIZED) {
+      return;
+    }
+
+    this->end();
+    this->status = OpenThermStatus::NOT_INITIALIZED;
+
+    digitalWrite(this->_outPin, LOW);
+    if (this->delayCallback) {
+      this->delayCallback(1000);
+    }
+    
+    this->begin();
+  }
+
   unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
     _attempt++;
 
     while (!this->isReady()) {
-      if (this->yieldCallback) {
-        this->yieldCallback();
-      } else {
-        ::yield();
+      if (this->delayCallback) {
+        this->delayCallback(150);
       }
 
       this->process();
@@ -51,17 +67,13 @@ public:
       _response = 0;
 
     } else {
-      while (true) {
-        this->process();
-
-        if (this->status == OpenThermStatus::READY || this->status == OpenThermStatus::DELAY) {
-          break;
-        } else if (this->yieldCallback) {
-          this->yieldCallback();
-        } else {
-          ::yield();
+      do {
+        if (this->delayCallback) {
+          this->delayCallback(150);
         }
-      }
+
+        this->process();
+      } while (this->status != OpenThermStatus::READY && this->status != OpenThermStatus::DELAY);
 
       _response = this->getLastResponse();
       _responseStatus = this->getLastResponseStatus();
@@ -151,7 +163,8 @@ public:
   }
 
 protected:
-  YieldCallback yieldCallback;
+  DelayCallback delayCallback;
   BeforeSendRequestCallback beforeSendRequestCallback;
   AfterSendRequestCallback afterSendRequestCallback;
+  int _outPin;
 };

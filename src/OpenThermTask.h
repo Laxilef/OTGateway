@@ -98,8 +98,8 @@ protected:
       }
     });
 
-    this->instance->setYieldCallback([this]() {
-      this->delay(25);
+    this->instance->setDelayCallback([this](unsigned int time) {
+      this->delay(time);
     });
 
     this->instance->begin();
@@ -203,12 +203,12 @@ protected:
       );
     }
 
-    if (!vars.slave.connected && millis() - this->lastSuccessResponse < 1150) {
+    if (!vars.slave.connected && millis() - this->lastSuccessResponse < 1325) {
       Log.sinfoln(FPSTR(L_OT), F("Connected"));
       
       vars.slave.connected = true;
       
-    } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 1150) {
+    } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 1325) {
       Log.swarningln(FPSTR(L_OT), F("Disconnected"));
 
       // Mark sensors as disconnected
@@ -247,6 +247,8 @@ protected:
       vars.slave.fault.code = 0;
       vars.slave.diag.active = false;
       vars.slave.diag.code = 0;
+
+      this->instance->reset();
 
       return;
     }
