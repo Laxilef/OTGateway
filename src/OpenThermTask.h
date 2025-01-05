@@ -1021,14 +1021,16 @@ protected:
 
       if (this->needSetHeatingTemp(convertedTemp)) {
         // Set max heating temp
-        if (this->setMaxHeatingTemp(convertedTemp)) {
-          Log.sinfoln(
-            FPSTR(L_OT_HEATING), F("Set max heating temp: %.2f (converted: %.2f)"),
-            vars.master.heating.setpointTemp, convertedTemp
-          );
+        if (settings.opentherm.options.maxTempSyncWithTargetTemp) {
+          if (this->setMaxHeatingTemp(convertedTemp)) {
+            Log.sinfoln(
+              FPSTR(L_OT_HEATING), F("Set max heating temp: %.2f (converted: %.2f)"),
+              vars.master.heating.setpointTemp, convertedTemp
+            );
 
-        } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max heating temp"));
+          } else {
+            Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max heating temp"));
+          }
         }
 
         // Set target heating temp

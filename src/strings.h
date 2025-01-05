@@ -118,6 +118,7 @@ const char S_MAX_FREE_BLOCK[]                       PROGMEM = "maxFreeBlock";
 const char S_MAX_MODULATION[]                       PROGMEM = "maxModulation";
 const char S_MAX_POWER[]                            PROGMEM = "maxPower";
 const char S_MAX_TEMP[]                             PROGMEM = "maxTemp";
+const char S_MAX_TEMP_SYNC_WITH_TARGET_TEMP[]       PROGMEM = "maxTempSyncWithTargetTemp";
 const char S_MEMBER_ID[]                            PROGMEM = "memberId";
 const char S_MIN[]                                  PROGMEM = "min";
 const char S_MIN_FREE[]                             PROGMEM = "minFree";

@@ -378,6 +378,7 @@
           "dhwToCh2": "Duplicate DHW to CH2",
           "dhwBlocking": "DHW blocking",
           "modulationSyncWithHeating": "Sync modulation with heating",
+          "maxTempSyncWithTargetTemp": "Sync max heating temp with target temp",
           "getMinMaxTemp": "Get min/max temp from boiler",
           "immergasFix": "Fix for Immergas boilers"
         },

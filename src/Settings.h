@@ -67,6 +67,7 @@ struct Settings {
       bool dhwToCh2 = false;
       bool dhwBlocking = false;
       bool modulationSyncWithHeating = false;
+      bool maxTempSyncWithTargetTemp = true;
       bool getMinMaxTemp = true;
       bool nativeHeatingControl = false;
       bool immergasFix = false;
