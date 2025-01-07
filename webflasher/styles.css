@@ -1,0 +1,117 @@
+@media (min-width: 576px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 0.75);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 0.75);
+  }
+}
+
+@media (min-width: 768px) {
+  article {
+    --pico-block-spacing-vertical: var(--pico-spacing);
+    --pico-block-spacing-horizontal: var(--pico-spacing);
+  }
+}
+
+@media (min-width: 1024px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.25);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.25);
+  }
+}
+
+@media (min-width: 1280px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.5);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.5);
+  }
+
+  .container {
+    max-width: 1000px;
+  }
+}
+
+@media (min-width: 1536px) {
+  article {
+    --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.75);
+    --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.75);
+  }
+
+  .container {
+    max-width: 1000px;
+  }
+}
+
+header,
+main,
+footer {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+article {
+  margin-bottom: 1rem;
+}
+
+footer {
+  text-align: center;
+}
+
+/*nav li a:has(> div.logo) {
+  margin-bottom: 0;
+}*/
+nav li :where(a, [role=link]) {
+  margin: 0;
+}
+
+details>div {
+  padding: 0 var(--pico-form-element-spacing-horizontal);
+}
+
+pre {
+  padding: 0.5rem;
+}
+
+:nth-last-child(1 of table tr:not(.hidden)) th,
+:nth-last-child(1 of table tr:not(.hidden)) td {
+  border-bottom: 0 !important;
+}
+
+
+.hidden {
+  display: none !important;
+}
+
+button.success {
+  background-color: var(--pico-form-element-valid-border-color);
+  border-color: var(--pico-form-element-valid-border-color);
+}
+
+button.failed {
+  background-color: var(--pico-form-element-invalid-border-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+.primary {
+  border: 0.25rem solid var(--pico-form-element-invalid-border-color);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logo {
+  display: inline-block;
+  padding: calc(var(--pico-nav-link-spacing-vertical) - var(--pico-border-width) * 2) var(--pico-nav-link-spacing-horizontal);
+  vertical-align: baseline;
+  line-height: var(--pico-line-height);
+  background-color: var(--pico-code-kbd-background-color);
+  border-radius: var(--pico-border-radius);
+  color: var(--pico-code-kbd-color);
+  font-weight: bolder;
+  font-size: 1.3rem;
+  font-family: var(--pico-font-family-monospace);
+}
+
+.powered-by {
+  margin: 2rem 0 0 0;
+  text-align: center;
+  opacity: 0.5;
+}
