@@ -69,10 +69,10 @@ protected:
       return;
     }
 
-  #ifdef OT_BYPASS_RELAY_GPIO
+    #ifdef OT_BYPASS_RELAY_GPIO
     pinMode(OT_BYPASS_RELAY_GPIO, OUTPUT);
     digitalWrite(OT_BYPASS_RELAY_GPIO, true);
-  #endif
+    #endif
 
     // create instance
     this->instance = new CustomOpenTherm(settings.opentherm.inGpio, settings.opentherm.outGpio);
