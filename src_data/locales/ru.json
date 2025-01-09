@@ -301,7 +301,7 @@
 
       "system": {
         "unit": "Система единиц",
-        "metric": "Метрическая <small>(цильсии, литры, бары)</small>",
+        "metric": "Метрическая <small>(цельсии, литры, бары)</small>",
         "imperial": "Imperial <small>(фаренгейты, галлоны, psi)</small>",
         "statusLedGpio": "Статус LED GPIO",
         "logLevel": "Уровень логирования",
