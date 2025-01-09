@@ -1,8 +1,5 @@
 #include <FS.h>
 #include <detail/mimetable.h>
-#if defined(ARDUINO_ARCH_ESP32)
-  #include <detail/RequestHandlersImpl.h>
-#endif
 
 using namespace mime;
 
@@ -54,13 +51,6 @@ public:
       if (this->eTag.isEmpty()) {
         if (server._eTagFunction) {
           this->eTag = (server._eTagFunction)(*this->fs, this->path);
-
-        } else {
-          #if defined(ARDUINO_ARCH_ESP8266)
-          this->eTag = esp8266webserver::calcETag(*this->fs, this->path);
-          #elif defined(ARDUINO_ARCH_ESP32)
-          this->eTag = StaticRequestHandler::calcETag(*this->fs, this->path);
-          #endif
         }
       }
 
