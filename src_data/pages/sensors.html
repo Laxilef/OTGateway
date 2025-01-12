@@ -36,7 +36,7 @@
         </hgroup>
 
         <details id="template" class="sensor hidden" data-id="" data-preloaded="0">
-          <summary><b>#<span class="id"></span>: <span class="name"></span></b></summary>
+          <summary><b>#<span class="pos"></span>: <span class="name"></span></b></summary>
 
           <div>
             <div class="form-busy" aria-busy="true"></div>
@@ -210,6 +210,7 @@
             sensorNode.classList.remove("hidden");
             sensorNode.dataset.id = sensorId;
             setValue(".id", sensorId, sensorNode);
+            setValue(".pos", sensorId + 1, sensorNode);
             setValue(".name", result[sensorId], sensorNode);
             
             container.appendChild(sensorNode);
