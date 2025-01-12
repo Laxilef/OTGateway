@@ -49,6 +49,7 @@ All available information and instructions can be found in the wiki:
    * [Flashing via ESP Flash Download Tool](https://github.com/Laxilef/OTGateway/wiki#flashing-via-esp-flash-download-tool)
    * [Settings](https://github.com/Laxilef/OTGateway/wiki#settings)
       * [External temperature sensors](https://github.com/Laxilef/OTGateway/wiki#external-temperature-sensors)
+      * [Other external sensors](https://github.com/Laxilef/OTGateway/wiki#other-external-sensors)
       * [Reporting indoor/outdoor temperature from any Home Assistant sensor](https://github.com/Laxilef/OTGateway/wiki#reporting-indooroutdoor-temperature-from-any-home-assistant-sensor)
       * [Reporting outdoor temperature from Home Assistant weather integration](https://github.com/Laxilef/OTGateway/wiki#reporting-outdoor-temperature-from-home-assistant-weather-integration)
       * [DHW meter](https://github.com/Laxilef/OTGateway/wiki#dhw-meter)
