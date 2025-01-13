@@ -7,9 +7,7 @@ public:
   typedef std::function<void(unsigned long, byte)> BeforeSendRequestCallback;
   typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, byte)> AfterSendRequestCallback;
 
-  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {
-    this->_outPin = outPin;
-  }
+  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
   ~CustomOpenTherm() {}
 
   CustomOpenTherm* setDelayCallback(DelayCallback callback = nullptr) {
@@ -28,22 +26,6 @@ public:
     this->afterSendRequestCallback = callback;
 
     return this;
-  }
-
-  void reset() {
-    if (this->status == OpenThermStatus::NOT_INITIALIZED) {
-      return;
-    }
-
-    this->end();
-    this->status = OpenThermStatus::NOT_INITIALIZED;
-
-    digitalWrite(this->_outPin, LOW);
-    if (this->delayCallback) {
-      this->delayCallback(1000);
-    }
-    
-    this->begin();
   }
 
   unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
@@ -166,5 +148,4 @@ protected:
   DelayCallback delayCallback;
   BeforeSendRequestCallback beforeSendRequestCallback;
   AfterSendRequestCallback afterSendRequestCallback;
-  int _outPin;
 };

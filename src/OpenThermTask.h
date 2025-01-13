@@ -10,17 +10,21 @@ public:
   }
 
 protected:
-  const unsigned short readyTime = 60000;
-  const unsigned short heatingSetTempInterval = 60000;
-  const unsigned short dhwSetTempInterval = 60000;
-  const unsigned short ch2SetTempInterval = 60000;
-  const unsigned int initializingInterval = 3600000;
+  const unsigned short readyTime = 60000u;
+  const unsigned int resetBusInterval = 120000u;
+  const unsigned short heatingSetTempInterval = 60000u;
+  const unsigned short dhwSetTempInterval = 60000u;
+  const unsigned short ch2SetTempInterval = 60000u;
+  const unsigned int initializingInterval = 3600000u;
 
   CustomOpenTherm* instance = nullptr;
   unsigned long instanceCreatedTime = 0;
   byte instanceInGpio = 0;
   byte instanceOutGpio = 0;
   bool initialized = false;
+  unsigned long connectedTime = 0;
+  unsigned long disconnectedTime = 0;
+  unsigned long resetBusTime = 0;
   unsigned long initializedTime = 0;
   unsigned long lastSuccessResponse = 0;
   unsigned long prevUpdateNonEssentialVars = 0;
@@ -81,6 +85,7 @@ protected:
     this->instanceCreatedTime = millis();
     this->instanceInGpio = settings.opentherm.inGpio;
     this->instanceOutGpio = settings.opentherm.outGpio;
+    this->resetBusTime = millis();
     this->initialized = false;
 
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
@@ -106,8 +111,6 @@ protected:
     this->instance->setDelayCallback([this](unsigned int time) {
       this->delay(time);
     });
-
-    this->instance->begin();
   }
 
   void loop() {
@@ -133,6 +136,9 @@ protected:
     if (this->instance == nullptr) {
       this->delay(5000);
       return;
+
+    } else if (this->instance->status == OpenThermStatus::NOT_INITIALIZED) {
+      this->instance->begin();
     }
 
     // RX LED GPIO setup
@@ -209,12 +215,21 @@ protected:
     }
 
     if (!vars.slave.connected && millis() - this->lastSuccessResponse < 1325) {
-      Log.sinfoln(FPSTR(L_OT), F("Connected"));
+      Log.sinfoln(
+        FPSTR(L_OT),
+        F("Connected, downtime: %lu s."),
+        (millis() - this->disconnectedTime) / 1000
+      );
       
+      this->connectedTime = millis();
       vars.slave.connected = true;
       
     } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 1325) {
-      Log.swarningln(FPSTR(L_OT), F("Disconnected"));
+      Log.swarningln(
+        FPSTR(L_OT),
+        F("Disconnected, uptime: %lu s."),
+        (millis() - this->connectedTime) / 1000  
+      );
 
       // Mark sensors as disconnected
       Sensors::setConnectionStatusByType(Sensors::Type::OT_OUTDOOR_TEMP, false);
@@ -238,6 +253,7 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_CURRENT, false);
 
       this->initialized = false;
+      this->disconnectedTime = millis();
       vars.slave.connected = false;
     }
 
@@ -253,7 +269,19 @@ protected:
       vars.slave.diag.active = false;
       vars.slave.diag.code = 0;
 
-      this->instance->reset();
+      // reset bus
+      if (millis() - this->disconnectedTime > this->resetBusInterval) {
+        if (millis() - this->resetBusTime > this->resetBusInterval) {
+          Log.sinfoln(FPSTR(L_OT), F("Reset bus..."));
+
+          this->instance->end();
+          this->instance->status = OpenThermStatus::NOT_INITIALIZED;
+
+          digitalWrite(this->instanceOutGpio, LOW);
+          this->resetBusTime = millis();
+          this->delay(5000);
+        }
+      }
 
       return;
     }
