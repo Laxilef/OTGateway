@@ -197,14 +197,13 @@ protected:
 
       this->haHelper->setDevicePrefix(settings.mqtt.prefix);
       this->haHelper->updateCachedTopics();
+
       this->client->stop();
       this->client->setId(networkSettings.hostname);
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
-
       this->client->beginWill(this->haHelper->getDeviceTopic(F("status")).c_str(), 7, true, 1);
       this->client->print(F("offline"));
       this->client->endWill();
-
       this->client->connect(settings.mqtt.server, settings.mqtt.port);
       this->lastReconnectTime = millis();
       this->yield();
