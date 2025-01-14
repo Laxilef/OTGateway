@@ -602,6 +602,11 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
+    if (dst.portal.auth && (!strlen(dst.portal.login) || !strlen(dst.portal.password))) {
+      dst.portal.auth = false;
+      changed = true;
+    }
+
 
     // opentherm
     if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_UNIT_SYSTEM)].isNull()) {
