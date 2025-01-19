@@ -1,0 +1,455 @@
+{
+  "values": {
+    "logo": "OpenTherm Gateway",
+    "nav": {
+      "license": "Licenza",
+      "source": "Codice",
+      "help": "Aiuto",
+      "issues": "Problemi e domande",
+      "releases": "Versione"
+    },
+    "dbm": "dBm",
+    "kw": "kW",
+    "time": {
+      "days": "d.",
+      "hours": "h.",
+      "min": "min.",
+      "sec": "sec."
+    },
+
+    "button": {
+      "upgrade": "Aggiorna",
+      "restart": "Riavvia",
+      "save": "Salva",
+      "saved": "Salvato",
+      "refresh": "Ricarica",
+      "restore": "Recupera",
+      "restored": "Recuperato",
+      "backup": "Backup",
+      "wait": "Attendi...",
+      "uploading": "caricamento...",
+      "success": "Riuscito",
+      "error": "Errore"
+    },
+
+    "index": {
+      "title": "OpenTherm Gateway",
+
+      "section": {
+        "network": "Rete",
+        "system": "Sistema"
+      },
+
+      "system": {
+        "build": {
+          "title": "Build",
+          "version": "Versione",
+          "date": "Data",
+          "core": "Core",
+          "sdk": "SDK"
+        },
+        "uptime": "Tempo di attività",
+        "memory": {
+          "title": "Memoria libera",
+          "maxFreeBlock": "max free block",
+          "min": "min"
+        },
+        "board": "Scheda",
+        "chip": {
+          "model": "Chip",
+          "cores": "Cores",
+          "freq": "frequenza"
+        },
+        "flash": {
+          "size": "Dimensioni del flash",
+          "realSize": "dimensione reale"
+        },
+        "lastResetReason": "Motivo ultimo Reset"
+      }
+    },
+
+    "dashboard": {
+      "name": "Pannello",
+      "title": "Pannello - OpenTherm Gateway",
+
+      "section": {
+        "control": "Controlli",
+        "states": "Stato",
+        "sensors": "Sensori",
+        "diag": "Diagnostica OpenTherm"
+      },
+
+      "thermostat": {
+        "heating": "Riscaldamento",
+        "dhw": "ACS",
+        "temp.current": "Attuale",
+        "enable": "Attiva",
+        "turbo": "Turbo"
+      },
+
+      "notify": {
+        "fault": {
+          "title": "Rilevamento guasti caldiaia attivo!",
+          "note": "Si consiglia di ispezionare la caldaia e studiare la documentazione per interpretare il codice di errore:"
+        },
+        "diag": {
+          "title": "Stato diagnostica Caldaia attivo!",
+          "note": "Forse la tua caldaia ha bisogno di un'ispezione? Si consiglia di studiare la documentazione per interpretare il codice diagnostico:"
+        },
+        "reset": "Prova a resettare"
+      },
+
+      "states": {
+        "mNetworkConnected": "Connessione Rete",
+        "mMqttConnected": "Connessione MQTT",
+        "mEmergencyState": "Modo Emergenza",
+        "mExtPumpState": "Pompa esterna",
+        "mCascadeControlInput": "Controllo a cascata (input)",
+        "mCascadeControlOutput": "Controllo a cascata (output)",
+
+        "sConnected": "Connessione OpenTherm",
+        "sFlame": "Fiamma",
+        "sCooling": "Raffrescamento",
+        "sFaultActive": "Anomalia",
+        "sFaultCode": "Codice anomalia",
+        "sDiagActive": "Diagnostica",
+        "sDiagCode": "Codice Diagnostica",
+        
+        "mHeatEnabled": "Riscaldamento attivato",
+        "mHeatBlocking": "Riscaldamento bloccato",
+        "sHeatActive": "Riscaldamento attivo",
+        "mHeatSetpointTemp": "Temp riscaldamento impostato",
+        "mHeatTargetTemp": "Target Temp caldaia",
+        "mHeatCurrTemp": "Temp attuale riscaldamento",
+        "mHeatRetTemp": "Temp ritorno riscaldamento",
+        "mHeatIndoorTemp": "Riscaldamento, temp interna",
+        "mHeatOutdoorTemp": "Riscaldamento, temp esterna",
+
+        "mDhwEnabled": "ACS attivata",
+        "sDhwActive": "ACS attiva",
+        "mDhwTargetTemp": "ACS temp impostata",
+        "mDhwCurrTemp": "ACS temp attuale",
+        "mDhwRetTemp": "ACS temp ricircolo"
+      },
+
+      "sensors": {
+        "values": {
+          "temp": "Temperatura",
+          "humidity": "Umidità",
+          "battery": "Batteria",
+          "rssi": "RSSI"
+        }
+      }
+    },
+
+    "network": {
+      "title": "Rete - OpenTherm Gateway",
+      "name": "Impostazioni rete",
+
+      "section": {
+        "static": "Impostazioni statico",
+        "availableNetworks": "Reti disponibili",
+        "staSettings": "Impostazioni WiFi",
+        "apSettings": "Impostazioni AP"
+      },
+
+      "scan": {
+        "pos": "#",
+        "info": "Info"
+      },
+
+      "wifi": {
+        "ssid": "SSID",
+        "password": "Password",
+        "channel": "Canale",
+        "signal": "Segnale",
+        "connected": "Connesso"
+      },
+
+      "params": {
+        "hostname": "Hostname",
+        "dhcp": "Usa DHCP",
+        "mac": "MAC",
+        "ip": "IP",
+        "subnet": "Subnet",
+        "gateway": "Gateway",
+        "dns": "DNS"
+      },
+
+      "sta": {
+        "channel.note": "Metti 0 per auto selezione"
+      }
+    },
+
+    "sensors": {
+      "title": "Impostazione sensori - OpenTherm Gateway",
+      "name": "Impostazione sensori",
+
+      "enabled": "Attivato",
+      "sensorName": {
+        "title": "Nome sensore",
+        "note": "Può contenere solo: a-z, A-Z, 0-9, _ e spazi"
+      },
+      "purpose": "Funzione",
+      "purposes": {
+        "outdoorTemp": "Temperatura esterna",
+        "indoorTemp": "Temperatura interna",
+        "heatTemp": "Riscaldamento, temperatura mandata",
+        "heatRetTemp": "Riscaldamento, temperatura ritorno",
+        "dhwTemp": "ACS, temperatura",
+        "dhwRetTemp": "ACS, temperatura ritorno",
+        "dhwFlowRate": "ACS, prelievo",
+        "exhaustTemp": "Temperatura fumi",
+        "modLevel": "Livello Modulazione (%)",
+        "powerFactor": "Potenza (%)",
+        "power": "Potenza (in kW)",
+        "fanSpeed": "Velocità ventilatore",
+        "co2": "CO2",
+        "pressure": "Pressione",
+        "humidity": "Umidità",
+        "temperature": "Temperatura",
+        "notConfigured": "Non configurato"
+      },
+      "type": "Tipo/sorgente",
+      "types": {
+        "otOutdoorTemp": "OpenTherm, temp esterna",
+        "otHeatTemp": "OpenTherm, riscaldamento, temp",
+        "otHeatRetTemp": "OpenTherm, riscaldamento, temp ritorno",
+        "otDhwTemp": "OpenTherm, ACS, temperatura",
+        "otDhwTemp2": "OpenTherm, ACS, temperatura 2",
+        "otDhwFlowRate": "OpenTherm, ACS, prelievo",
+        "otCh2Temp": "OpenTherm, canale 2, temp",
+        "otExhaustTemp": "OpenTherm, temp fumi",
+        "otHeatExchangerTemp": "OpenTherm, temp scambiatore",
+        "otPressure": "OpenTherm, pressione",
+        "otModLevel": "OpenTherm, livello modulazione",
+        "otCurrentPower": "OpenTherm, potenza attuale",
+        "otExhaustCo2": "OpenTherm, CO2 fumi",
+        "otExhaustFanSpeed": "OpenTherm, velocità ventola fumi",
+        "otSupplyFanSpeed": "OpenTherm, velocità ventola supporto",
+        "otSolarStorageTemp": "OpenTherm, temp accumulo solare",
+        "otSolarCollectorTemp": "OpenTherm, temp collettore solare",
+        "otFanSpeedSetpoint": "OpenTherm, velocità ventola impostata",
+        "otFanSpeedCurrent": "OpenTherm, velocità ventola attuale",
+        
+        "ntcTemp": "Sensore NTC",
+        "dallasTemp": "Sensore DALLAS",
+        "bluetooth": "Sensore BLE",
+        "heatSetpointTemp": "Riscaldamento, temp impostata",
+        "manual": "Manuale via MQTT/API",
+        "notConfigured": "Non configurato"
+      },
+      "gpio": "GPIO",
+      "address": {
+        "title": "Indirizzo sensore",
+        "note": "Per l'autoriconoscimento del sensore DALLAS lasciare quello di default, per sensore BLE richiede indirizzo MAC"
+      },
+      "correction": {
+        "desc": "Correzione del valore",
+        "offset": "Compensazione (offset)",
+        "factor": "Moltiplicatore"
+      },
+      "filtering": {
+        "desc": "Filtraggio valore",
+        "enabled": {
+          "title": "Filtraggio attivo",
+          "note": "Può servire in caso vi siano molti sbalzi nel grafico. Il filtro usato è \"Running Average\"."
+        },
+        "factor": {
+          "title": "Fattore di filtrazione",
+          "note": "Quanto più basso è il valore, tanto più graduale e prolungata sarà la variazione dei valori numerici."
+        }
+      }
+    },
+
+    "settings": {
+      "title": "Impostazioni - OpenTherm Gateway",
+      "name": "Impostazioni",
+
+      "section": {
+        "portal": "Impostazioni Accesso",
+        "system": "Impostazioni sistema",
+        "diag": "Diagnostica",
+        "heating": "Impostazioni riscaldamento",
+        "dhw": "Impostazioni ACS",
+        "emergency": "Impostazioni modo Emergenza",
+        "equitherm": "Impostazioni Equitherm",
+        "pid": "Impostazioni PID",
+        "ot": "Impostazioni OpenTherm",
+        "mqtt": "Impostazioni MQTT",
+        "extPump": "Impostazioni pompa esterna",
+        "cascadeControl": "Impostazioni controllo a cascata"
+      },
+
+      "enable": "Attiva",
+      "note": {
+        "restart": "Dopo aver cambiato queste impostazioni, il sistema sarà riavviato perchè i cambiamenti abbiano effetto.",
+        "blankNotUse": "vuoto - non usare",
+        "bleDevice": "Dispositivi BLE possono essere usati <u>solo</u> con alcune schede ESP32 che supportano il bluetooth!"
+      },
+
+      "temp": {
+        "min": "Temperatura minima",
+        "max": "Temperatura massima"
+      },
+
+      "portal": {
+        "login": "Login",
+        "password": "Password",
+        "auth": "Richiede autenticazione"
+      },
+
+      "system": {
+        "unit": "Unità di misura",
+        "metric": "Metrico <small>(celsius, litri, bar)</small>",
+        "imperial": "Imperiale <small>(fahrenheit, galloni, psi)</small>",
+        "statusLedGpio": "LED di stato GPIO",
+        "logLevel": "Log livello",
+        "serial": {
+          "enable": "Porta seriale attivata",
+          "baud": "Porta seriale baud rate"
+        },
+        "telnet": {
+          "enable": "Telnet attivato",
+          "port": {
+            "title": "Porta Telnet",
+            "note": "Default: 23"
+          }
+        }
+      },
+
+      "heating": {
+        "hyst": "Isteresi <small>(in gradi)</small>",
+        "turboFactor": "Turbo mode coeff."
+      },
+
+      "emergency": {
+        "desc": "Il modo emergenza è attivato automaticamente quando «PID» o «Equitherm» non possono calcolare il setpoint:<br />- se «Equitherm» è attivato e il sensore della temperatura esternare è disconnesso;<br />- se «PID» o l'opzione OT <i>«Impostazioni riscaldamento native»</i> è attiva e il sensore di temperatura interno è disconnesso.<br /><b>Nota:</b> In mancanza di rete o MQTT, sensore di tipo <i>«Manuale via MQTT/API»</i> è in stato Disconnesso.",
+        
+        "target": {
+          "title": "Temperatura impostata",
+          "note": "<b>Importante:</b> <u>Temperatura interna impostata</u> se l'opzione OT <i>«Controllo riscaldamento interno»</i> è attivato.<br />In tutti gli altri casi, la <u>target heat carrier temperature</u>."
+        },
+        "treshold": "Tempo di soglia <small>(sec)</small>"
+      },
+
+      "equitherm": {
+        "n": "Fattore N",
+        "k": "Fattore K",
+        "t": {
+          "title": "Fattore T",
+          "note": "Non usato se PID è attivato"
+        }
+      },
+
+      "pid": {
+        "p": "Fattore P",
+        "i": "Fattore I",
+        "d": "Fattore D",
+        "dt": "DT <small>in secondi</small>",
+        "noteMinMaxTemp": "<b>Importante:</b> Quando usi «Equitherm» e «PID» allo stesso tempo, i limiti della temperatura min e max influenzano il risultato della temperatura «Equitherm».<br />Thus, se la temperatura minima è impostata a -15 e la massima a 15, il riscaldamento finale sarà impostato fra <code>equitherm_result - 15</code> a <code>equitherm_result + 15</code>."
+      },
+
+      "ot": {
+        "advanced": "Impostazioni avanzate",
+        "inGpio": "In GPIO",
+        "outGpio": "Out GPIO",
+        "ledGpio": "RX LED GPIO",
+        "memberId": "Master member ID",
+        "flags": "Master flags",
+        "maxMod": "Max livello modulazione",
+        "minPower": {
+          "title": "Potenza minima caldaia <small>(kW)</small>",
+          "note": "Questo valore corrisponde allo livello 0-1% di modulazione della caldaia. Di solito si trova nelle specifiche delle caldaia come \"potenza minima disponibile\"."
+        },
+        "maxPower": {
+          "title": "Potenza massima caldaia <small>(kW)</small>",
+          "note": "<b>0</b> - prova a rilevarla automaticamente. Di solito si trova nelle specifiche delle caldaia come \"potenza massima disponibile\"."
+        },
+
+        "options": {
+          "desc": "Opzioni",
+          "dhwSupport": "Supporto ACS",
+          "coolingSupport": "Supporto rafferscamento",
+          "summerWinterMode": "Modalità Estate/inverno",
+          "heatingStateToSummerWinterMode": "Stato di riscaldamento come modalità estate/inverno",
+          "ch2AlwaysEnabled": "CH2 sempre abilitato",
+          "heatingToCh2": "Riproduci riscaldamento su CH2",
+          "dhwToCh2": "Riproduci ACS su CH2",
+          "dhwBlocking": "Bloccare ACS",
+          "modulationSyncWithHeating": "Sincronizzare modulazione con caldaia",
+          "maxTempSyncWithTargetTemp": "Sincronizza la temperatura massima di riscaldamento con la temperatura target",
+          "getMinMaxTemp": "Prendi temp min/max dalla caldaia",
+          "immergasFix": "Fix per caldiaie Immergas"
+        },
+
+        "nativeHeating": {
+          "title": "Controllo del riscaldamento nativo (caldaia)",
+          "note": "Lavora <u>SOLO</u> se la caldaia richiede la temperatura ambiente desiderata e regola autonomamente la temperatura del fluido. Non compatiblile con regolazioni PID e Equitherm del sistema."
+        }
+      },
+
+      "mqtt": {
+        "homeAssistantDiscovery": "Home Assistant Discovery",
+        "server": "Server",
+        "port": "Porta",
+        "user": "Utente",
+        "password": "Password",
+        "prefix": "Prefisso",
+        "interval": "Intervallo invio <small>(sec)</small>"
+      },
+
+      "extPump": {
+        "use": "Usa pompa/circolatore esterno",
+        "gpio": "GPIO relè",
+        "postCirculationTime": "Tempo di post circolazione <small>(min)</small>",
+        "antiStuckInterval": "Intervallo antiblocco <small>(days)</small>",
+        "antiStuckTime": "Tempo antiblocco <small>(min)</small>"
+      },
+
+      "cascadeControl": {
+        "input": {
+          "desc": "Può essere attivata la caldaia se un'altra ha fallito. Il controllo dell'altra caldaia cambia lo stato dell'ingresso del GPIO in caso di errore.",
+          "enable": "Ingresso abilitato",
+          "gpio": "GPIO",
+          "invertState": "Inverti stato GPIO",
+          "thresholdTime": "Tempo soglia di modifica dello stato <small>(sec)</small>"
+        },
+        "output": {
+          "desc": "Può essere usato per passare ad un'altra caldaia tramite <u>relè</u>.",
+          "enable": "Uscita abilitata",
+          "gpio": "GPIO",
+          "invertState": "Invert GPIO state",
+          "thresholdTime": "Tempo soglia di modifica dello stato <small>(sec)</small>",
+          "events": {
+            "desc": "Eventi",
+            "onFault": "Se lo stato di errore è attivo",
+            "onLossConnection": "Se non c'è la connessione via Opentherm",
+            "onEnabledHeating": "Se il riscaldamento è attivato"
+          }
+        }
+      }
+    },
+
+    "upgrade": {
+      "title": "Aggiornamenti - OpenTherm Gateway",
+      "name": "Aggiornamenti",
+
+      "section": {
+        "backupAndRestore": "Backup & restore",
+        "backupAndRestore.desc": "In questa sezione puoi salvare e recuperare un backup di tutte le impostazioni.",
+        "upgrade": "Aggiorna",
+        "upgrade.desc": "In questa sezione puoi aggiornare il firmware il filesystem del tuo dispositivo.<br />L'ultimo aggiornamento può essere scaricato da <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> del progetto." 
+      },
+
+      "note": {
+        "disclaimer1": "Dopo un aggiornamento riuscito del filesystem, tutte le impostazioni sono impostate di default! Salva un backup prima di aggiornare.",
+        "disclaimer2": "Dopo un aggiornamento riuscito, il sistema viene automaticamente riavviato dopo 15 secondi."
+      },
+
+      "settingsFile": "Settings file",
+      "fw": "Firmware",
+      "fs": "Filesystem"
+    }
+  }
+}
