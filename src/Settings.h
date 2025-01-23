@@ -115,6 +115,15 @@ struct Settings {
     unsigned short dt = 180;
     short minTemp = 0;
     short maxTemp = DEFAULT_HEATING_MAX_TEMP;
+
+    struct {
+      bool enabled = false;
+      float p_multiplier = 1.0f;
+      float i_multiplier = 0.05f;
+      float d_multiplier = 0.0f;
+      float thresholdHigh = 0.5f;
+      float thresholdLow = 1.0f;
+    } deadband;
   } pid;
 
   struct {

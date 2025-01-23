@@ -313,19 +313,71 @@
 
               <hr />
 
-              <div class="grid">
-                <label>
-                  <span data-i18n>settings.temp.min</span>
-                  <input type="number" inputmode="decimal" name="pid[minTemp]" min="0" max="0" step="1" required>
-                </label>
+              <details>
+                <summary><b data-i18n>settings.pid.limits.title</b></summary>
 
-                <label>
-                  <span data-i18n>settings.temp.max</span>
-                  <input type="number" inputmode="numeric" name="pid[maxTemp]" min="0" max="0" step="1" required>
-                </label>
-              </div>
+                <div>
+                  <div class="grid">
+                    <label>
+                      <span data-i18n>settings.temp.min</span>
+                      <input type="number" inputmode="decimal" name="pid[minTemp]" min="0" max="0" step="1" required>
+                    </label>
+    
+                    <label>
+                      <span data-i18n>settings.temp.max</span>
+                      <input type="number" inputmode="numeric" name="pid[maxTemp]" min="0" max="0" step="1" required>
+                    </label>
+                  </div>
 
-              <small data-i18n>settings.pid.noteMinMaxTemp</small>
+                  <small data-i18n>settings.pid.limits.note</small>
+                </div>
+              </details>
+
+              <hr />
+
+              <details>
+                <summary><b data-i18n>settings.pid.deadband.title</b></summary>
+
+                <div>
+                  <fieldset>
+                    <label>
+                      <input type="checkbox" name="pid[deadband][enabled]" value="true">
+                      <span data-i18n>settings.enable</span>
+                    </label>
+                  </fieldset>
+
+                  <div class="grid">
+                    <label>
+                      <span data-i18n>settings.pid.deadband.p_multiplier</span>
+                      <input type="number" inputmode="decimal" name="pid[deadband][p_multiplier]" min="0" max="5" step="0.001" required>
+                    </label>
+    
+                    <label>
+                      <span data-i18n>settings.pid.deadband.i_multiplier</span>
+                      <input type="number" inputmode="decimal" name="pid[deadband][i_multiplier]" min="0" max="1" step="0.001" required>
+                    </label>
+    
+                    <label>
+                      <span data-i18n>settings.pid.deadband.d_multiplier</span>
+                      <input type="number" inputmode="decimal" name="pid[deadband][d_multiplier]" min="0" max="1" step="0.001" required>
+                    </label>
+                  </div>
+
+                  <div class="grid">
+                    <label>
+                      <span data-i18n>settings.pid.deadband.thresholdHigh</span>
+                      <input type="number" inputmode="decimal" name="pid[deadband][thresholdHigh]" min="0" max="5" step="0.01" required>
+                    </label>
+    
+                    <label>
+                      <span data-i18n>settings.pid.deadband.thresholdLow</span>
+                      <input type="number" inputmode="decimal" name="pid[deadband][thresholdLow]" min="0" max="5" step="0.01" required>
+                    </label>
+                  </div>
+
+                  <small data-i18n>settings.pid.deadband.note</small>
+                </div>
+              </details>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -823,6 +875,12 @@
             "min": (data.system.unitSystem == 0 ? 0 : 33),
             "max": (data.system.unitSystem == 0 ? 100 : 212)
           });
+          setCheckboxValue("[name='pid[deadband][enabled]']", data.pid.deadband.enabled);
+          setInputValue("[name='pid[deadband][p_multiplier]']", data.pid.deadband.p_multiplier);
+          setInputValue("[name='pid[deadband][i_multiplier]']", data.pid.deadband.i_multiplier);
+          setInputValue("[name='pid[deadband][d_multiplier]']", data.pid.deadband.d_multiplier);
+          setInputValue("[name='pid[deadband][thresholdHigh]']", data.pid.deadband.thresholdHigh);
+          setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
         };
 

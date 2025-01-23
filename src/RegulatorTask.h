@@ -196,6 +196,7 @@ protected:
       //if (vars.parameters.heatingEnabled) {
       if (settings.heating.enabled && this->indoorSensorsConnected) {
         pidRegulator.Kp = settings.heating.turbo ? 0.0f : settings.pid.p_factor;
+        pidRegulator.Ki = settings.pid.i_factor;
         pidRegulator.Kd = settings.pid.d_factor;
 
         pidRegulator.setLimits(settings.pid.minTemp, settings.pid.maxTemp);
@@ -203,12 +204,22 @@ protected:
         pidRegulator.input = vars.master.heating.indoorTemp;
         pidRegulator.setpoint = settings.heating.target;
 
-        if (fabsf(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
+        /*if (fabsf(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
           pidRegulator.Ki = settings.pid.i_factor;
           pidRegulator.integral = 0.0f;
           pidRegulator.getResultNow();
 
           Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+        }*/
+
+        float error = pidRegulator.setpoint - pidRegulator.input;
+        bool hasDeadband = (error > -(settings.pid.deadband.thresholdHigh))
+          && (error < settings.pid.deadband.thresholdLow);
+
+        if (hasDeadband) {
+          pidRegulator.Kp *= settings.pid.deadband.p_multiplier;
+          pidRegulator.Ki *= settings.pid.deadband.i_multiplier;
+          pidRegulator.Kd *= settings.pid.deadband.d_multiplier;
         }
 
         float pidResult = pidRegulator.getResultTimer();

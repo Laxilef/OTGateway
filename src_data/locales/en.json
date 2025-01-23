@@ -347,7 +347,19 @@
         "i": "I factor",
         "d": "D factor",
         "dt": "DT <small>in seconds</small>",
-        "noteMinMaxTemp": "<b>Important:</b> When using «Equitherm» and «PID» at the same time, the min and max temperatures limit the influence on the «Equitherm» result temperature.<br />Thus, if the min temperature is set to -15 and the max temperature is set to 15, then the final heat carrier setpoint will be from <code>equitherm_result - 15</code> to <code>equitherm_result + 15</code>."
+        "limits": {
+          "title": "Limits",
+          "note": "<b>Important:</b> When using «Equitherm» and «PID» at the same time, the min and max temperatures limit the influence on the «Equitherm» result temperature.<br />Thus, if the min temperature is set to -15 and the max temperature is set to 15, then the final heat carrier setpoint will be from <code>equitherm_result - 15</code> to <code>equitherm_result + 15</code>."
+        },
+        "deadband": {
+          "title": "Deadband",
+          "note": "Deadband is a range around the target temperature where PID regulation becomes less active. Within this range, the algorithm can reduce intensity or pause adjustments to avoid overreacting to small fluctuations.<br /><br />For instance, with a target temperature of 22°, a lower threshold of 1.0, and an upper threshold of 0.5, the deadband operates between 21° and 22.5°. If the I coefficient is 0.0005 and the I multiplier is 0.05, then within the deadband, the I coefficient becomes: <code>0.0005 * 0.05 = 0.000025</code>",
+          "p_multiplier": "Multiplier for P factor",
+          "i_multiplier": "Multiplier for I factor",
+          "d_multiplier": "Multiplier for D factor",
+          "thresholdHigh": "Threshold high",
+          "thresholdLow": "Threshold low"
+        }
       },
 
       "ot": {

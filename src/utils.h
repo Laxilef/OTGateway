@@ -438,6 +438,14 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   pid[FPSTR(S_MIN_TEMP)] = src.pid.minTemp;
   pid[FPSTR(S_MAX_TEMP)] = src.pid.maxTemp;
 
+  auto pidDeadband = pid[FPSTR(S_DEADBAND)].to<JsonObject>();
+  pidDeadband[FPSTR(S_ENABLED)] = src.pid.deadband.enabled;
+  pidDeadband[FPSTR(S_P_MULTIPLIER)] = src.pid.deadband.p_multiplier;
+  pidDeadband[FPSTR(S_I_MULTIPLIER)] = src.pid.deadband.i_multiplier;
+  pidDeadband[FPSTR(S_D_MULTIPLIER)] = src.pid.deadband.d_multiplier;
+  pidDeadband[FPSTR(S_THRESHOLD_HIGH)] = src.pid.deadband.thresholdHigh;
+  pidDeadband[FPSTR(S_THRESHOLD_LOW)] = src.pid.deadband.thresholdLow;
+
   if (!safe) {
     auto externalPump = dst[FPSTR(S_EXTERNAL_PUMP)].to<JsonObject>();
     externalPump[FPSTR(S_USE)] = src.externalPump.use;
@@ -1073,6 +1081,60 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (dst.pid.maxTemp < dst.pid.minTemp) {
     dst.pid.maxTemp = dst.pid.minTemp;
     changed = true;
+  }
+
+  if (src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_ENABLED)].as<bool>();
+
+    if (value != dst.pid.deadband.enabled) {
+      dst.pid.deadband.enabled = value;
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_P_MULTIPLIER)].isNull()) {
+    float value = src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_P_MULTIPLIER)].as<float>();
+
+    if (value >= 0 && value <= 1 && fabsf(value - dst.pid.deadband.p_multiplier) > 0.0001f) {
+      dst.pid.deadband.p_multiplier = roundf(value, 3);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_I_MULTIPLIER)].isNull()) {
+    float value = src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_I_MULTIPLIER)].as<float>();
+
+    if (value >= 0 && value <= 1 && fabsf(value - dst.pid.deadband.i_multiplier) > 0.0001f) {
+      dst.pid.deadband.i_multiplier = roundf(value, 3);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_D_MULTIPLIER)].isNull()) {
+    float value = src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_D_MULTIPLIER)].as<float>();
+
+    if (value >= 0 && value <= 1 && fabsf(value - dst.pid.deadband.d_multiplier) > 0.0001f) {
+      dst.pid.deadband.d_multiplier = roundf(value, 3);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_THRESHOLD_HIGH)].isNull()) {
+    float value = src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_THRESHOLD_HIGH)].as<float>();
+
+    if (value >= 0.0f && value <= 5.0f && fabsf(value - dst.pid.deadband.thresholdHigh) > 0.0001f) {
+      dst.pid.deadband.thresholdHigh = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_THRESHOLD_LOW)].isNull()) {
+    float value = src[FPSTR(S_PID)][FPSTR(S_DEADBAND)][FPSTR(S_THRESHOLD_LOW)].as<float>();
+
+    if (value >= 0.0f && value <= 5.0f && fabsf(value - dst.pid.deadband.thresholdLow) > 0.0001f) {
+      dst.pid.deadband.thresholdLow = roundf(value, 2);
+      changed = true;
+    }
   }
 
 

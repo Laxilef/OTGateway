@@ -347,7 +347,19 @@
         "i": "Fattore I",
         "d": "Fattore D",
         "dt": "DT <small>in secondi</small>",
-        "noteMinMaxTemp": "<b>Importante:</b> Quando usi «Equitherm» e «PID» allo stesso tempo, i limiti della temperatura min e max influenzano il risultato della temperatura «Equitherm».<br />Thus, se la temperatura minima è impostata a -15 e la massima a 15, il riscaldamento finale sarà impostato fra <code>equitherm_result - 15</code> a <code>equitherm_result + 15</code>."
+        "limits": {
+          "title": "Limiti",
+          "note": "<b>Importante:</b> Quando usi «Equitherm» e «PID» allo stesso tempo, i limiti della temperatura min e max influenzano il risultato della temperatura «Equitherm».<br />Thus, se la temperatura minima è impostata a -15 e la massima a 15, il riscaldamento finale sarà impostato fra <code>equitherm_result - 15</code> a <code>equitherm_result + 15</code>."
+        },
+        "deadband": {
+          "title": "Zona morta (Deadband)",
+          "note": "La zona morta è un intervallo intorno alla temperatura target in cui la regolazione PID diventa meno attiva. In questo intervallo, l'algoritmo può ridurre l'intensità o interrompere gli aggiustamenti per evitare di reagire eccessivamente a piccole fluttuazioni.<br /><br />Ad esempio, con una temperatura target di 22°, una soglia inferiore di 1.0 e una soglia superiore di 0.5, la zona morta opera tra 21° e 22.5°. Se il coefficiente I è 0.0005 e il moltiplicatore I è 0.05, allora nella zona morta, il coefficiente I diventa: <code>0.0005 * 0.05 = 0.000025</code>",
+          "p_multiplier": "Moltiplicatore P",
+          "i_multiplier": "Moltiplicatore I",
+          "d_multiplier": "Moltiplicatore D",
+          "thresholdHigh": "Soglia superiore",
+          "thresholdLow": "Soglia inferiore"
+        }
       },
 
       "ot": {

@@ -1062,7 +1062,10 @@ protected:
             );
 
           } else {
-            Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set max heating temp"));
+            Log.swarningln(
+              FPSTR(L_OT_HEATING), F("Failed set max heating temp: %.2f (converted: %.2f)"),
+              vars.master.heating.setpointTemp, convertedTemp
+            );
           }
         }
 
