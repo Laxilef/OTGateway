@@ -110,17 +110,17 @@ struct Settings {
   struct {
     bool enabled = false;
     float p_factor = 2.0f;
-    float i_factor = 0.0055f;
+    float i_factor = 0.002f;
     float d_factor = 0.0f;
-    unsigned short dt = 180;
+    unsigned short dt = 300;
     short minTemp = 0;
     short maxTemp = DEFAULT_HEATING_MAX_TEMP;
 
     struct {
-      bool enabled = false;
+      bool enabled = true;
       float p_multiplier = 1.0f;
       float i_multiplier = 0.05f;
-      float d_multiplier = 0.0f;
+      float d_multiplier = 1.0f;
       float thresholdHigh = 0.5f;
       float thresholdLow = 1.0f;
     } deadband;
