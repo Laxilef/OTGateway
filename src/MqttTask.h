@@ -120,7 +120,6 @@ protected:
     #endif
 
     // client settings
-    this->client->setKeepAliveInterval(15000);
     this->client->setTxPayloadSize(256);
     #ifdef ARDUINO_ARCH_ESP8266
     this->client->setConnectionTimeout(1000);
@@ -199,6 +198,7 @@ protected:
       this->haHelper->updateCachedTopics();
 
       this->client->stop();
+      this->client->setKeepAliveInterval(settings.mqtt.interval * 10000);
       this->client->setId(networkSettings.hostname);
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
       this->client->beginWill(this->haHelper->getDeviceTopic(F("status")).c_str(), 7, true, 1);
