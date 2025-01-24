@@ -379,6 +379,8 @@
                 </div>
               </details>
 
+              <br />
+
               <button type="submit" data-i18n>button.save</button>
             </form>
           </div>
@@ -685,12 +687,12 @@
               <div class="grid">
                 <label>
                   <span data-i18n>settings.cascadeControl.output.gpio</span>
-                  <input type="number" outputmode="numeric" name="cascadeControl[output][gpio]" min="0" max="254" step="1">
+                  <input type="number" inputmode="numeric" name="cascadeControl[output][gpio]" min="0" max="254" step="1">
                 </label>
 
                 <label>
                   <span data-i18n>settings.cascadeControl.output.thresholdTime</span>
-                  <input type="number" outputmode="numeric" name="cascadeControl[output][thresholdTime]" min="5" max="600" step="1" required>
+                  <input type="number" inputmode="numeric" name="cascadeControl[output][thresholdTime]" min="5" max="600" step="1" required>
                 </label>
               </div>
 
