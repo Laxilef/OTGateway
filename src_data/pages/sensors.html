@@ -211,7 +211,7 @@
             sensorNode.classList.remove("hidden");
             sensorNode.dataset.id = sensorId;
             setValue(".id", sensorId, sensorNode);
-            setValue(".pos", sensorId + 1, sensorNode);
+            setValue(".pos", parseInt(sensorId) + 1, sensorNode);
             setValue(".name", result[sensorId], sensorNode);
             
             container.appendChild(sensorNode);
