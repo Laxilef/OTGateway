@@ -36,6 +36,11 @@ struct Settings {
       unsigned short port = DEFAULT_TELNET_PORT;
     } telnet;
 
+    struct {
+      char server[49] = "pool.ntp.org";
+      char timezone[49] = "UTC0";
+    } ntp;
+
     UnitSystem unitSystem = UnitSystem::METRIC;
     byte statusLedGpio = DEFAULT_STATUS_LED_GPIO;
   } system;

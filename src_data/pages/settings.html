@@ -87,6 +87,23 @@
 
               <fieldset>
                 <label>
+                  <span data-i18n>settings.system.ntp.server</span>
+                  <input type="text" name="system[ntp][server]" maxlength="48">
+                </label>
+
+                <label>
+                  <span data-i18n>settings.system.ntp.timezone</span>
+                  <div role="group">
+                    <input type="text" name="system[ntp][timezone]" maxlength="48">
+                    <select class="presetTimezones">
+                      <option disabled selected data-i18n>settings.system.ntp.timezonePresets</option>
+                    </select>
+                  </div>
+                  </label>
+              </fieldset>
+
+              <fieldset>
+                <label>
                   <span data-i18n>settings.system.statusLedGpio</span>
                   <input type="number" inputmode="numeric" name="system[statusLedGpio]" min="0" max="254" step="1">
                   <small data-i18n>settings.note.blankNotUse</small>
@@ -746,6 +763,8 @@
           setSelectValue("[name='system[serial][baudrate]']", data.system.serial.baudrate);
           setCheckboxValue("[name='system[telnet][enabled]']", data.system.telnet.enabled);
           setInputValue("[name='system[telnet][port]']", data.system.telnet.port);
+          setInputValue("[name='system[ntp][server]']", data.system.ntp.server);
+          setInputValue("[name='system[ntp][timezone]']", data.system.ntp.timezone);
           setRadioValue("[name='system[unitSystem]']", data.system.unitSystem);
           setInputValue("[name='system[statusLedGpio]']", data.system.statusLedGpio < 255 ? data.system.statusLedGpio : '');
           setBusy('#system-settings-busy', '#system-settings', false);
@@ -885,6 +904,28 @@
           setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
         };
+
+        try {
+          const response = await fetch("/static/timezones.json");
+          if (!response.ok) {
+            throw new Error('Response not valid');
+          }
+
+          const result = await response.json();
+          const ptzSelector = document.querySelector(".presetTimezones");
+          for (const ptzName in result) {
+            ptzSelector.appendChild(
+              new Option(ptzName, result[ptzName])
+            );
+          }
+
+          ptzSelector.addEventListener("change", async (event) => {
+            document.querySelector("[name='system[ntp][timezone]']").value = event.target.value;
+          });
+
+        } catch (error) {
+          console.log(error);
+        }
 
         try {
           const response = await fetch("/api/settings", {

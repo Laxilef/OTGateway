@@ -315,6 +315,11 @@
             "title": "Telnet port",
             "note": "Default: 23"
           }
+        },
+        "ntp": {
+          "server": "NTP server",
+          "timezone": "Timezone",
+          "timezonePresets": "Select preset..."
         }
       },
 

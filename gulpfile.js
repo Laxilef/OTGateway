@@ -34,6 +34,10 @@ let paths = {
     {
       src: 'src_data/locales/*.json',
       dest: 'data/static/locales/'
+    },
+    {
+      src: 'src_data/*.json',
+      dest: 'data/static/'
     }
   ],
   static: [

@@ -38,6 +38,7 @@ protected:
   unsigned long heatingDisabledTime = 0;
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
   unsigned long externalPumpStartTime = 0;
+  bool ntpStarted = false;
   bool telnetStarted = false;
   bool emergencyDetected = false;
   unsigned long emergencyFlipTime = 0;
@@ -109,6 +110,16 @@ protected:
     }
 
     if (network->isConnected()) {
+      if (!this->ntpStarted) {
+        if (strlen(settings.system.ntp.server)) {
+          configTime(0, 0, settings.system.ntp.server);
+          setenv("TZ", settings.system.ntp.timezone, 1);
+          tzset();
+
+          this->ntpStarted = true;
+        }
+      }
+
       if (!this->telnetStarted && telnetStream != nullptr) {
         telnetStream->begin(23, false);
         this->telnetStarted = true;
@@ -124,6 +135,10 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::MANUAL, !settings.mqtt.enabled || vars.mqtt.connected, false);
 
     } else {
+      if (this->ntpStarted) {
+        this->ntpStarted = false;
+      }
+
       if (this->telnetStarted) {
         telnetStream->stop();
         this->telnetStarted = false;

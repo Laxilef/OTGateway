@@ -359,6 +359,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     telnet[FPSTR(S_ENABLED)] = src.system.telnet.enabled;
     telnet[FPSTR(S_PORT)] = src.system.telnet.port;
 
+    auto ntp = system[FPSTR(S_NTP)].to<JsonObject>();
+    ntp[FPSTR(S_SERVER)] = src.system.ntp.server;
+    ntp[FPSTR(S_TIMEZONE)] = src.system.ntp.timezone;
+
     system[FPSTR(S_UNIT_SYSTEM)] = static_cast<uint8_t>(src.system.unitSystem);
     system[FPSTR(S_STATUS_LED_GPIO)] = src.system.statusLedGpio;
 
@@ -523,6 +527,24 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value > 0 && value <= 65535 && value != dst.system.telnet.port) {
         dst.system.telnet.port = value;
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_SYSTEM)][FPSTR(S_NTP)][FPSTR(S_SERVER)].isNull()) {
+      String value = src[FPSTR(S_SYSTEM)][FPSTR(S_NTP)][FPSTR(S_SERVER)].as<String>();
+
+      if (value.length() < sizeof(dst.system.ntp.server) && !value.equals(dst.system.ntp.server)) {
+        strcpy(dst.system.ntp.server, value.c_str());
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_SYSTEM)][FPSTR(S_NTP)][FPSTR(S_TIMEZONE)].isNull()) {
+      String value = src[FPSTR(S_SYSTEM)][FPSTR(S_NTP)][FPSTR(S_TIMEZONE)].as<String>();
+
+      if (value.length() < sizeof(dst.system.ntp.timezone) && !value.equals(dst.system.ntp.timezone)) {
+        strcpy(dst.system.ntp.timezone, value.c_str());
         changed = true;
       }
     }
