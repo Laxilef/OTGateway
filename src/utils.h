@@ -1,5 +1,43 @@
 #include <Arduino.h>
 
+bool isLeapYear(short year) {
+  if (year % 4 != 0) {
+    return false;
+  }
+
+  if (year % 100 != 0) {
+    return true;
+  }
+
+  return (year % 400) == 0;
+}
+
+// convert UTC tm time to time_t epoch time
+// source: https://github.com/cyberman54/ESP32-Paxcounter/blob/master/src/timekeeper.cpp
+time_t mkgmtime(const struct tm *ptm) {
+  const int SecondsPerMinute = 60;
+  const int SecondsPerHour = 3600;
+  const int SecondsPerDay = 86400;
+  const int DaysOfMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  time_t secs = 0;
+  // tm_year is years since 1900
+  int year = ptm->tm_year + 1900;
+  for (int y = 1970; y < year; ++y) {
+    secs += (isLeapYear(y) ? 366 : 365) * SecondsPerDay;
+  }
+  // tm_mon is month from 0..11
+  for (int m = 0; m < ptm->tm_mon; ++m) {
+    secs += DaysOfMonth[m] * SecondsPerDay;
+    if (m == 1 && isLeapYear(year))
+      secs += SecondsPerDay;
+  }
+  secs += (ptm->tm_mday - 1) * SecondsPerDay;
+  secs += ptm->tm_hour * SecondsPerHour;
+  secs += ptm->tm_min * SecondsPerMinute;
+  secs += ptm->tm_sec;
+  return secs;
+}
+
 inline bool isDigit(const char* ptr) {
   char* endPtr;
   strtol(ptr, &endPtr, 10);
