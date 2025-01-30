@@ -148,10 +148,10 @@ namespace NetworkUtils {
       // set policy manual for work 13 ch
       {
         #ifdef ARDUINO_ARCH_ESP8266
-        wifi_country_t country = {"CN", 1, 13, WIFI_COUNTRY_POLICY_AUTO};
+        wifi_country_t country = {"JP", 1, 14, WIFI_COUNTRY_POLICY_MANUAL};
         wifi_set_country(&country);
         #elif defined(ARDUINO_ARCH_ESP32)
-        const wifi_country_t country = {"CN", 1, 13, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_AUTO};
+        const wifi_country_t country = {"JP", 1, 14, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_MANUAL};
         esp_wifi_set_country(&country);
         #endif
       }
@@ -384,7 +384,7 @@ namespace NetworkUtils {
   protected:
     const unsigned int reconnectInterval = 15000;
     const unsigned int failedConnectTimeout = 185000;
-    const unsigned int connectionTimeout = 5000;
+    const unsigned int connectionTimeout = 10000;
     const unsigned int resetConnectionTimeout = 90000;
 
     YieldCallback yieldCallback = []() {
