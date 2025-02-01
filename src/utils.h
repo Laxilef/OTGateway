@@ -1791,7 +1791,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
   if (!src[FPSTR(S_FACTOR)].isNull()) {
     float value = src[FPSTR(S_FACTOR)].as<float>();
 
-    if (value > 0.09f && value <= 10.0f && fabsf(value - dst.factor) > 0.0001f) {
+    if (value > 0.09f && value <= 100.0f && fabsf(value - dst.factor) > 0.0001f) {
       dst.factor = roundf(value, 3);
       changed = true;
     }
