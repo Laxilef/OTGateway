@@ -9,6 +9,30 @@ public:
     delete this->instance;
   }
 
+  struct ReadResult{
+    bool valid = false;
+    bool parityValid = false;
+    bool responseMessageIdValid = false;
+    const char* responseType = "";
+    uint16_t value = 0;
+  };
+
+  ReadResult readRequest(byte messageId) {
+    ReadResult result;
+    OpenThermMessageID eMessageId = (OpenThermMessageID)messageId;
+    auto response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      eMessageId,
+      0
+    ));
+    result.valid = CustomOpenTherm::isValidResponse(response);
+    result.parityValid = !CustomOpenTherm::parity(response);
+    result.responseMessageIdValid = CustomOpenTherm::isValidResponseId(response, eMessageId);
+    result.responseType = CustomOpenTherm::messageTypeToString(CustomOpenTherm::getMessageType(response));
+    result.value = CustomOpenTherm::getUInt(response);
+    return result;
+  }
+
 protected:
   const unsigned short readyTime = 60000u;
   const unsigned int resetBusInterval = 120000u;

@@ -19,6 +19,7 @@ using namespace NetworkUtils;
 extern NetworkMgr* network;
 extern FileData fsNetworkSettings, fsSettings, fsSensorsSettings;
 extern MqttTask* tMqtt;
+extern OpenThermTask* tOt;
 
 
 class PortalTask : public LeanTask {
@@ -176,6 +177,18 @@ protected:
         return true;
       });
     this->webServer->addHandler(upgradePage);
+
+    // Opentherm request page
+    auto openthermRequestPage = (new StaticPage("/opentherm_request.html", &LittleFS, F("/pages/opentherm_request.html"), PORTAL_CACHE))
+      ->setBeforeSendCallback([this]() {
+        if (this->isAuthRequired() && !this->isValidCredentials()) {
+          this->webServer->requestAuthentication(BASIC_AUTH);
+          return false;
+        }
+
+        return true;
+      });
+    this->webServer->addHandler(openthermRequestPage);
 
     // OTA
     auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadCallback([this](const String& uri) {
@@ -841,6 +854,41 @@ protected:
       this->bufferedWebServer->send(200, F("application/json"), doc, true);
     });
 
+    this->webServer->on(F("/api/opentherm_request/read"), HTTP_POST, [this]() {
+      if (this->isAuthRequired() && !this->isValidCredentials()) {
+        return this->webServer->send(401);
+      }
+
+      const String& plain = this->webServer->arg(0);
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/opentherm_request/read %d bytes: %s"), plain.length(), plain.c_str());
+
+      JsonDocument doc;
+      DeserializationError dErr = deserializeJson(doc, plain);
+
+      if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
+        this->webServer->send(400);
+        return;
+      }
+
+      if (doc[FPSTR(S_MESSAGE_ID)].isNull() || !doc[FPSTR(S_MESSAGE_ID)].is<int>()) {
+        this->webServer->send(400);
+        return;
+      }
+      auto messageId = doc[FPSTR(S_MESSAGE_ID)].as<int>();
+      doc.clear();
+      doc.shrinkToFit();
+
+      auto result = tOt->readRequest(messageId);
+
+      doc[FPSTR(S_VALID)] = result.valid;
+      doc[FPSTR(S_PARITY_VALID)] = result.parityValid;
+      doc[FPSTR(S_RESPONSE_MESSAGE_ID_VALID)] = result.responseMessageIdValid;
+      doc[FPSTR(S_RESPONSE_TYPE)] = result.responseType;
+      doc[FPSTR(S_VALUE)] = result.value;
+      doc.shrinkToFit();
+
+      this->bufferedWebServer->send(200, F("application/json"), doc);
+    });
 
     // not found
     this->webServer->onNotFound([this]() {

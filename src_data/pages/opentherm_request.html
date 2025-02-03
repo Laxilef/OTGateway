@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n>opentherm_request.title</title>
+    <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}">
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li>
+            <a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="it">IT</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <div>
+          <hgroup>
+            <h2 data-i18n>opentherm_request.section.read</h2>
+            <p data-i18n>opentherm_request.section.read.desc</p>
+          </hgroup>
+
+          <form action="/api/opentherm_request/read" id="read">
+            <label for="message_id">
+              <span data-i18n>opentherm_request.messageId</span>
+              <input type="number" inputmode="numeric" name="messageId" id="message-id" min="0" max="255" step="1" required>
+            </label>
+
+            <div role="group">
+              <button type="submit" data-i18n>button.send</button>
+            </div>
+          </form>
+          <div role="group" id="read-result">
+            <table>
+              <tbody>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.valid</th>
+                  <td><i class="mValid"></i></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.parityValid</th>
+                  <td><i class="mParityValid"></i></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.responseMessageIdValid</th>
+                  <td><i class="mResponseMessageIdValid"></i></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.responseType</th>
+                  <td><b class="mResponseType"></b></td>
+                </tr>
+                <tr>
+                  <th colspan="3" scope="row"><span data-i18n>opentherm_request.result.data</span>:</th>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>opentherm_request.result.flags</th>
+                  <td><b class="mDataFlagsHigh"></b></td>
+                  <td><b class="mDataFlagsLow"></b></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.hex</th>
+                  <td><b class="mDataHex"></b></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.fixedPoint</th>
+                  <td><b class="mDataFixedPoint"></b></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>opentherm_request.result.u8</th>
+                  <td><b class="mDataU8High"></b></td>
+                  <td><b class="mDataU8Low"></b></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>opentherm_request.result.s8</th>
+                  <td><b class="mDataS8High"></b></td>
+                  <td><b class="mDataS8Low"></b></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.u16</th>
+                  <td><b class="mDataU16"></b></td>
+                </tr>
+                <tr>
+                  <th colspan="2" scope="row" data-i18n>opentherm_request.result.s16</th>
+                  <td><b class="mDataS16"></b></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js?{BUILD_TIME}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const lang = new Lang(document.getElementById('lang'));
+        lang.build();
+
+        setupOTReadForm('#read');
+      });
+    </script>
+  </body>
+</html>
