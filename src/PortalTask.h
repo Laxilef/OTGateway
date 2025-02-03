@@ -870,11 +870,11 @@ protected:
         return;
       }
 
-      if (doc[FPSTR(S_MESSAGE_ID)].isNull() || !doc[FPSTR(S_MESSAGE_ID)].is<int>()) {
+      if (doc[FPSTR(S_MESSAGE_ID)].isNull() || !doc[FPSTR(S_MESSAGE_ID)].is<byte>()) {
         this->webServer->send(400);
         return;
       }
-      auto messageId = doc[FPSTR(S_MESSAGE_ID)].as<int>();
+      auto messageId = doc[FPSTR(S_MESSAGE_ID)].as<byte>();
       doc.clear();
       doc.shrinkToFit();
 
