@@ -1,5 +1,37 @@
 #include <Arduino.h>
 
+String getChipId(const char* prefix = nullptr, const char* suffix = nullptr) {
+  String chipId;
+  chipId.reserve(
+    6
+    + (prefix != nullptr ? strlen(prefix) : 0)
+    + (suffix != nullptr ? strlen(suffix) : 0)
+  );
+  
+  if (prefix != nullptr) {
+    chipId.concat(prefix);
+  }
+
+  uint32_t cid = 0;
+  #if defined(ARDUINO_ARCH_ESP8266)
+  cid = ESP.getChipId();
+  #elif defined(ARDUINO_ARCH_ESP32)
+  // https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ChipID/GetChipID/GetChipID.ino
+  for (uint8_t i = 0; i < 17; i = i + 8) {
+    cid |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+  #endif
+
+  chipId += String(cid, HEX);
+
+  if (suffix != nullptr) {
+    chipId.concat(suffix);
+  }
+
+  chipId.trim();
+  return chipId;
+}
+
 bool isLeapYear(short year) {
   if (year % 4 != 0) {
     return false;

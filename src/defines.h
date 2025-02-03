@@ -55,7 +55,7 @@
 #endif
 
 #ifndef DEFAULT_HOSTNAME
-  #define DEFAULT_HOSTNAME "opentherm"
+  #define DEFAULT_HOSTNAME ""
 #endif
 
 #ifndef DEFAULT_AP_SSID
@@ -111,7 +111,7 @@
 #endif
 
 #ifndef DEFAULT_MQTT_PREFIX
-  #define DEFAULT_MQTT_PREFIX "opentherm"
+  #define DEFAULT_MQTT_PREFIX ""
 #endif
 
 #ifndef DEFAULT_OT_IN_GPIO

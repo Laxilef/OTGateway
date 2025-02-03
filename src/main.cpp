@@ -102,6 +102,12 @@ void setup() {
       break;
   }
 
+  // generate hostname if it is empty
+  if (!strlen(networkSettings.hostname)) {
+    strcpy(networkSettings.hostname, getChipId("otgateway-").c_str());
+    fsNetworkSettings.update();
+  }
+
   network = (new NetworkMgr)
     ->setHostname(networkSettings.hostname)
     ->setStaCredentials(
@@ -146,6 +152,12 @@ void setup() {
       break;
     default:
       break;
+  }
+
+  // generate mqtt prefix if it is empty
+  if (!strlen(settings.mqtt.prefix)) {
+    strcpy(settings.mqtt.prefix, getChipId("otgateway_").c_str());
+    fsSettings.update();
   }
 
   // Logs settings
