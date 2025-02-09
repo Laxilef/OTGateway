@@ -29,7 +29,8 @@
       "wait": "Attendi...",
       "uploading": "caricamento...",
       "success": "Riuscito",
-      "error": "Errore"
+      "error": "Errore",
+      "send": "Invia"
     },
 
     "index": {
@@ -467,6 +468,30 @@
       "settingsFile": "Settings file",
       "fw": "Firmware",
       "fs": "Filesystem"
+    },
+
+    "opentherm_request": {
+      "title": "Richiesta personalizzata - OpenTherm Gateway",
+      "name": "Richiesta personalizzata",
+      "section": {
+        "read": "Lettura",
+        "read.desc": "Invia una lettura con un ID messaggio personalizzato"
+      },
+      "messageId": "ID messaggio",
+      "result": {
+        "valid": "Valido",
+        "parityValid": "Parità valida",
+        "responseMessageIdValid": "ID messaggio di risposta valido",
+        "responseType": "Tipo risposta",
+        "data": "Valore",
+        "flags": "Formato flags",
+        "hex": "Formato esadecimale",
+        "fixedPoint": "Formato f8.8",
+        "u8": "Formato due u8",
+        "s8": "Formato due s8",
+        "u16": "Formato u16",
+        "s16": "Formato s16"
+      }
     }
   }
 }
