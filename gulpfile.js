@@ -48,6 +48,10 @@ let paths = {
     {
       src: 'src_data/images/*.*',
       dest: 'data/static/images/'
+    },
+    {
+      src: 'src_data/*.txt',
+      dest: 'data/static/'
     }
   ],
   pages: {
