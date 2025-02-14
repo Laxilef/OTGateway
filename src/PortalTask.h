@@ -1,10 +1,12 @@
 //#define PORTAL_CACHE "max-age=86400"
 #define PORTAL_CACHE nullptr
 #ifdef ARDUINO_ARCH_ESP8266
+#include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h>
 #include <Updater.h>
 using WebServer = ESP8266WebServer;
 #else
+#include <ESPmDNS.h>
 #include <WebServer.h>
 #include <Update.h>
 #endif
@@ -53,7 +55,6 @@ protected:
   bool webServerEnabled = false;
   bool dnsServerEnabled = false;
   unsigned long webServerChangeState = 0;
-  unsigned long dnsServerChangeState = 0;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -872,6 +873,10 @@ protected:
       this->startWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
 
+      if (MDNS.begin(networkSettings.hostname)) {
+        MDNS.addService("http", "tcp", 80);
+      }
+
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
@@ -880,13 +885,15 @@ protected:
       this->stopWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
 
+      MDNS.end();
+
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
     }
 
     // dns server
-    if (!this->stateDnsServer() && this->stateWebServer() && network->isApEnabled() && network->hasApClients() && millis() - this->dnsServerChangeState >= this->changeStateInterval) {
+    if (!this->stateDnsServer() && !network->isConnected() && network->isApEnabled() && this->stateWebServer()) {
       this->startDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
       
@@ -894,9 +901,9 @@ protected:
       ::optimistic_yield(1000);
       #endif
 
-    } else if (this->stateDnsServer() && (!network->isApEnabled() || !this->stateWebServer())) {
+    } else if (this->stateDnsServer() && (network->isConnected() || !network->isApEnabled() || !this->stateWebServer())) {
       this->stopDnsServer();
-      Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down"));
+      Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down/STA connected"));
 
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
@@ -1006,7 +1013,6 @@ protected:
 
     this->dnsServer->start(53, "*", network->getApIp());
     this->dnsServerEnabled = true;
-    this->dnsServerChangeState = millis();
   }
 
   void stopDnsServer() {
@@ -1017,6 +1023,5 @@ protected:
     //this->dnsServer->processNextRequest();
     this->dnsServer->stop();
     this->dnsServerEnabled = false;
-    this->dnsServerChangeState = millis();
   }
 };
