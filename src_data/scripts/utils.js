@@ -522,6 +522,107 @@ const setupUpgradeForm = (formSelector) => {
   });
 }
 
+const setupOTReadForm = (formSelector) => {
+  const form = document.querySelector(formSelector);
+  if (!form) {
+    return;
+  }
+
+  const url = form.action;
+  let button = form.querySelector('button[type="submit"]');
+  let defaultText;
+
+  hide("#read-result");
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    if (button) {
+      defaultText = button.textContent;
+      button.textContent = i18n('button.wait');
+      button.setAttribute('disabled', true);
+      button.setAttribute('aria-busy', true);
+    }
+    hide("#read-result");
+
+    const onSuccess = (result) => {
+      if (button) {
+        button.textContent = i18n('button.success');
+        button.classList.add('success');
+        button.removeAttribute('aria-busy');
+
+        setTimeout(() => {
+          button.removeAttribute('disabled');
+          button.classList.remove('success', 'failed');
+          button.textContent = defaultText;
+        }, 2000);
+      }
+      setState(".mValid", result.valid);
+      setState(".mParityValid", result.parityValid);
+      setState(".m", );
+      setState(".mResponseMessageIdValid", result.responseMessageIdValid);
+      setValue(".mResponseType", result.responseType);
+
+      const u16 = result.value;
+      const [flagsHigh, flagsLow] = u16ToFlags(u16);
+      const hex = u16ToHex(u16);
+      const fixedPoint = u16ToFixedPoint(u16);
+      const [u8High, u8Low] = u16ToU8s(u16);
+      const [s8High, s8Low] = u16ToS8s(u16);
+      const s16 = u16ToS16(u16);
+
+      setValue(".mDataFlagsHigh", flagsHigh);
+      setValue(".mDataFlagsLow", flagsLow);
+      setValue(".mDataHex", hex);
+      setValue(".mDataFixedPoint", fixedPoint);
+      setValue(".mDataU8High", u8High);
+      setValue(".mDataU8Low", u8Low);
+      setValue(".mDataS8High", s8High);
+      setValue(".mDataS8Low", s8Low);
+      setValue(".mDataU16", u16);
+      setValue(".mDataS16", s16);
+
+      show("#read-result");
+    };
+
+    const onFailed = () => {
+      if (button) {
+        button.textContent = i18n('button.error');
+        button.classList.add('failed');
+        button.removeAttribute('aria-busy');
+
+        setTimeout(() => {
+          button.removeAttribute('disabled');
+          button.classList.remove('success', 'failed');
+          button.textContent = defaultText;
+        }, 5000);
+      }
+    };
+
+    const messageId = form.querySelector('#message-id').value;
+
+    try {
+      let fd = new FormData(form);
+      let response = await fetch(url, {
+        method: "POST",
+        cache: "no-cache",
+        credentials: "include",
+        body: form2json(fd)
+      });
+
+      if (!response.ok) {
+        throw new Error('Response not valid');
+      }
+
+      const result = await response.json();
+      onSuccess(result);
+
+    } catch (err) {
+      onFailed(false);
+    }
+  });
+
+}
 
 const setBusy = (busySelector, contentSelector, value, parent = undefined) => {
   if (!value) {
@@ -848,4 +949,36 @@ function dec2hex(i) {
   }
   
   return hex.toUpperCase();
+}
+
+function u16ToHex(i) {
+  return (i >>> 0).toString(16).padStart(4, "0").toUpperCase();
+}
+
+function u16ToU8s(i) {
+  let low = (i >>> 0) & 0xFF;
+  let high = ((i >>> 0) & 0xFF00) >> 8;
+  return [high, low];
+}
+
+function u16ToS8s(i) {
+  let [high, low] = u16ToU8s(i);
+  return [high << 24 >> 24, low << 24 >> 24];
+}
+
+function u16ToS16(i) {
+  return (i >>> 0) << 16 >> 16;
+}
+
+function u16ToFlags(i) {
+  let [high, low] = u16ToU8s(i);
+  return [
+    high.toString(2).padStart(8, "0"),
+    low.toString(2).padStart(8, "0")
+  ];
+}
+
+function u16ToFixedPoint(i) {
+  let [high, low] = u16ToU8s(i);
+  return (high + low / 256).toFixed(3)
 }
