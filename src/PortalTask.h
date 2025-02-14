@@ -55,6 +55,7 @@ protected:
   bool webServerEnabled = false;
   bool dnsServerEnabled = false;
   unsigned long webServerChangeState = 0;
+  bool mDnsState = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -874,8 +875,14 @@ protected:
       this->startWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
 
-      if (MDNS.begin(networkSettings.hostname)) {
-        MDNS.addService("http", "tcp", 80);
+      // Enabling mDNS
+      if (!this->mDnsState && settings.portal.mdns) {
+        if (MDNS.begin(networkSettings.hostname)) {
+          MDNS.addService("http", "tcp", 80);
+          this->mDnsState = true;
+
+          Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS enabled and service added"));
+        }
       }
 
       #ifdef ARDUINO_ARCH_ESP8266
@@ -886,11 +893,25 @@ protected:
       this->stopWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
 
-      MDNS.end();
+      // Disabling mDNS
+      if (this->mDnsState) {
+        MDNS.end();
+        this->mDnsState = false;
+
+        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
+      }
 
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
+    }
+
+    // Disabling mDNS if disabled in settings
+    if (this->mDnsState && !settings.portal.mdns) {
+      MDNS.end();
+      this->mDnsState = false;
+
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
     }
 
     // dns server

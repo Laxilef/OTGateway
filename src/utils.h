@@ -440,6 +440,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     portal[FPSTR(S_AUTH)] = src.portal.auth;
     portal[FPSTR(S_LOGIN)] = src.portal.login;
     portal[FPSTR(S_PASSWORD)] = src.portal.password;
+    portal[FPSTR(S_MDNS)] = src.portal.mdns;
 
     auto opentherm = dst[FPSTR(S_OPENTHERM)].to<JsonObject>();
     opentherm[FPSTR(S_UNIT_SYSTEM)] = static_cast<uint8_t>(src.opentherm.unitSystem);
@@ -705,6 +706,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (dst.portal.auth && (!strlen(dst.portal.login) || !strlen(dst.portal.password))) {
       dst.portal.auth = false;
       changed = true;
+    }
+
+    if (src[FPSTR(S_PORTAL)][FPSTR(S_MDNS)].is<bool>()) {
+      bool value = src[FPSTR(S_PORTAL)][FPSTR(S_MDNS)].as<bool>();
+
+      if (value != dst.portal.mdns) {
+        dst.portal.mdns = value;
+        changed = true;
+      }
     }
 
 

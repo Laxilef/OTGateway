@@ -49,6 +49,7 @@ struct Settings {
     bool auth = false;
     char login[13] = DEFAULT_PORTAL_LOGIN;
     char password[33] = DEFAULT_PORTAL_PASSWORD;
+    bool mdns = true;
   } portal;
 
   struct {

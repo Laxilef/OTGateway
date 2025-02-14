@@ -57,6 +57,11 @@
                 <input type="checkbox" name="portal[auth]" value="true">
                 <span data-i18n>settings.portal.auth</span>
               </label>
+
+              <label>
+                <input type="checkbox" name="portal[mdns]" value="true">
+                <span data-i18n>settings.portal.mdns</span>
+              </label>
               <br />
 
               <button type="submit" data-i18n>button.save</button>
@@ -773,6 +778,7 @@
           setCheckboxValue("[name='portal[auth]']", data.portal.auth);
           setInputValue("[name='portal[login]']", data.portal.login);
           setInputValue("[name='portal[password]']", data.portal.password);
+          setCheckboxValue("[name='portal[mdns]']", data.portal.mdns);
           setBusy('#portal-settings-busy', '#portal-settings', false);
 
           // Opentherm

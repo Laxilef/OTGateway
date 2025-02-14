@@ -296,7 +296,8 @@
       "portal": {
         "login": "Login",
         "password": "Password",
-        "auth": "Richiede autenticazione"
+        "auth": "Richiede autenticazione",
+        "mdns": "Usa mDNS"
       },
 
       "system": {
