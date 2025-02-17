@@ -132,10 +132,14 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
       for (let i = 0; i < result.length; i++) {
         let row = tbody.insertRow(-1);
         row.classList.add("network");
-        row.setAttribute('data-ssid', result[i].hidden ? '' : result[i].ssid);
-        row.onclick = () => {
-          const input = document.querySelector('input#sta-ssid');
-          const ssid = this.getAttribute('data-ssid');
+        row.dataset.ssid = result[i].hidden ? '' : result[i].ssid;
+        row.insertCell().textContent = `#${i + 1}`;
+
+        const nameCell = row.insertCell();
+        nameCell.innerHTML = result[i].hidden ? `<i>${result[i].bssid}</i>` : result[i].ssid;
+        nameCell.onclick = (event) => {
+          const input = document.querySelector("[name='sta[ssid]']");
+          const ssid = event.target.parentNode.dataset.ssid;
           if (!input || !ssid) {
             return;
           }
@@ -143,9 +147,6 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
           input.value = ssid;
           input.focus();
         };
-
-        row.insertCell().textContent = `#${i + 1}`;
-        row.insertCell().innerHTML = result[i].hidden ? `<i>${result[i].bssid}</i>` : result[i].ssid;
 
         // info cell
         let infoCell = row.insertCell();
@@ -165,7 +166,7 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
         }
         
         let signalQualityContainer = document.createElement("span");
-        signalQualityContainer.setAttribute('data-tooltip', `${result[i].signalQuality}%`);
+        signalQualityContainer.dataset.tooltip = `${result[i].signalQuality}%`;
         signalQualityContainer.appendChild(signalQualityIcon);
         infoCell.appendChild(signalQualityContainer);
 
@@ -192,7 +193,7 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
         }
 
         let authContainer = document.createElement("span");
-        authContainer.setAttribute('data-tooltip', (result[i].auth in authList) ? authList[result[i].auth] : "unknown");
+        authContainer.dataset.tooltip = (result[i].auth in authList) ? authList[result[i].auth] : "unknown";
         authContainer.appendChild(authIcon);
         infoCell.appendChild(authContainer);
       }
