@@ -618,7 +618,7 @@ protected:
       }
 
       if (changed) {
-        tMqtt->rebuildHaEntity(sensorId, prevSettings);
+        tMqtt->reconfigureSensor(sensorId, prevSettings);
         fsSensorsSettings.update();
       }
     });

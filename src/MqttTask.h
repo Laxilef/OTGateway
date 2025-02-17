@@ -70,8 +70,8 @@ public:
     this->prevPubVarsTime = 0;
   }
 
-  inline void rebuildHaEntity(uint8_t sensorId, Sensors::Settings& prevSettings) {
-    this->queueRebuildingHaEntities[sensorId] = prevSettings;
+  inline void reconfigureSensor(uint8_t sensorId, Sensors::Settings& prevSettings) {
+    this->queueReconfigureSensors[sensorId] = prevSettings;
   }
 
 protected:
@@ -81,7 +81,7 @@ protected:
   MqttWriter* writer = nullptr;
   UnitSystem currentUnitSystem = UnitSystem::METRIC;
   bool currentHomeAssistantDiscovery = false;
-  std::unordered_map<uint8_t, Sensors::Settings> queueRebuildingHaEntities;
+  std::unordered_map<uint8_t, Sensors::Settings> queueReconfigureSensors;
   unsigned short readyForSendTime = 30000;
   unsigned long lastReconnectTime = 0;
   unsigned long connectedTime = 0;
@@ -276,8 +276,8 @@ protected:
         this->publishNonStaticHaEntities();
       }
 
-
-      for (auto& [sensorId, prevSettings] : this->queueRebuildingHaEntities) {
+      // rebuilding ha configs
+      for (auto& [sensorId, prevSettings] : this->queueReconfigureSensors) {
         Log.sinfoln(FPSTR(L_MQTT_HA), F("Rebuilding config for sensor #%hhu '%s'"), sensorId, prevSettings.name);
 
         // delete old config
@@ -297,15 +297,6 @@ protected:
               this->haHelper->deleteSignalQualityDynamicSensor(prevSettings);
               this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::TEMPERATURE);
               break;
-            
-            case Sensors::Type::MANUAL:
-              this->client->unsubscribe(
-                this->haHelper->getDeviceTopic(
-                  F("sensors"),
-                  Sensors::makeObjectId(prevSettings.name).c_str(),
-                  F("set")
-                ).c_str()
-              );
 
             default:
               this->haHelper->deleteDynamicSensor(prevSettings, Sensors::ValueType::PRIMARY);
@@ -333,25 +324,50 @@ protected:
             this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
             this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
             break;
-
-          case Sensors::Type::MANUAL: 
-            this->client->subscribe(
-              this->haHelper->getDeviceTopic(
-                F("sensors"),
-                Sensors::makeObjectId(prevSettings.name).c_str(),
-                F("set")
-              ).c_str()
-            );
           
           default:
             this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
         }
       }
-      this->queueRebuildingHaEntities.clear();
 
     } else if (this->currentHomeAssistantDiscovery) {
       this->currentHomeAssistantDiscovery = false;
     }
+
+    // reconfigure manual sensors
+    for (auto& [sensorId, prevSettings] : this->queueReconfigureSensors) {
+      // unsubscribe from old topic
+      if (strlen(prevSettings.name) && prevSettings.enabled) {
+        if (prevSettings.type == Sensors::Type::MANUAL) {
+          this->client->unsubscribe(
+            this->haHelper->getDeviceTopic(
+              F("sensors"),
+              Sensors::makeObjectId(prevSettings.name).c_str(),
+              F("set")
+            ).c_str()
+          );
+        }
+      }
+
+      if (!Sensors::hasEnabledAndValid(sensorId)) {
+        continue;
+      }
+
+      // subscribe to new topic
+      auto& sSettings = Sensors::settings[sensorId];
+      if (sSettings.type == Sensors::Type::MANUAL) {
+        this->client->subscribe(
+          this->haHelper->getDeviceTopic(
+            F("sensors"),
+            Sensors::makeObjectId(sSettings.name).c_str(),
+            F("set")
+          ).c_str()
+        );
+      }
+    }
+
+    // clear queue
+    this->queueReconfigureSensors.clear();
 
     if (this->newConnection) {
       this->newConnection = false;
@@ -366,6 +382,26 @@ protected:
 
     this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
+
+    // subscribe to manual sensors
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      if (!Sensors::hasEnabledAndValid(sensorId)) {
+        continue;
+      }
+
+      auto& sSettings = Sensors::settings[sensorId];
+      if (sSettings.type != Sensors::Type::MANUAL) {
+        continue;
+      }
+
+      this->client->subscribe(
+        this->haHelper->getDeviceTopic(
+          F("sensors"),
+          Sensors::makeObjectId(sSettings.name).c_str(),
+          F("set")
+        ).c_str()
+      );
+    }
   }
 
   void onDisconnect() {
@@ -513,15 +549,6 @@ protected:
           this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
           this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
           break;
-
-        case Sensors::Type::MANUAL:
-          this->client->subscribe(
-            this->haHelper->getDeviceTopic(
-              F("sensors"),
-              Sensors::makeObjectId(sSettings.name).c_str(),
-              F("set")
-            ).c_str()
-          );
         
         default:
           this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
