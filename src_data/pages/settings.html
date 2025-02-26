@@ -261,9 +261,10 @@
         </details>
 
         <hr />
-
+        
         <details>
           <summary><b data-i18n>settings.section.equitherm</b></summary>
+          <canvas id="equithermChart" width="400" height="200"></canvas>
           <div>
             <div id="equitherm-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="equitherm-settings" class="hidden">
@@ -273,7 +274,7 @@
                   <span data-i18n>settings.enable</span>
                 </label>
               </fieldset>
-
+              
               <div class="grid">
                 <label>
                   <span data-i18n>settings.equitherm.n</span>
@@ -283,6 +284,11 @@
                 <label>
                   <span data-i18n>settings.equitherm.k</span>
                   <input type="number" inputmode="decimal" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
+                </label>
+
+                <label>
+                  <span data-i18n>settings.equitherm.e</span>
+                  <input type="number" inputmode="decimal" name="equitherm[e_factor]" min="1" max="2" step="0.01" required>
                 </label>
 
                 <label>
@@ -299,6 +305,8 @@
 
         <hr />
 
+
+        
         <details>
           <summary><b data-i18n>settings.section.pid</b></summary>
           <div>
@@ -756,6 +764,7 @@
     </footer>
 
     <script src="/static/app.js?{BUILD_TIME}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
@@ -885,6 +894,7 @@
           setCheckboxValue("[name='equitherm[enabled]']", data.equitherm.enabled);
           setInputValue("[name='equitherm[n_factor]']", data.equitherm.n_factor);
           setInputValue("[name='equitherm[k_factor]']", data.equitherm.k_factor);
+          setInputValue("[name='equitherm[e_factor]']", data.equitherm.e_factor);
           setInputValue("[name='equitherm[t_factor]']", data.equitherm.t_factor);
           setBusy('#equitherm-settings-busy', '#equitherm-settings', false);
 
@@ -909,6 +919,9 @@
           setInputValue("[name='pid[deadband][thresholdHigh]']", data.pid.deadband.thresholdHigh);
           setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
+
+
+
         };
 
         try {
@@ -961,6 +974,179 @@
         } catch (error) {
           console.log(error);
         }
+
+//График
+let equithermChart;
+
+async function initChart() {
+    try {
+        const response = await fetch("/api/settings", {
+            cache: "no-cache",
+            credentials: "include"
+        });
+        
+        if (!response.ok) {
+            throw new Error('Response not valid');
+        }
+
+        const result = await response.json();
+        
+        //График переменные
+        const targetTemp = result?.heating?.target_temp ?? 24;
+        const maxOut = result?.heating?.maxTemp ?? 90;
+        const Kn = result?.equitherm?.n_factor ?? 1;
+        const Ke = result?.equitherm?.e_factor ?? 1.3;
+        const Kk = result?.equitherm?.k_factor ?? 0;
+
+        function calculateTRad(targetTemp, outdoorTemp, maxOut, Kn, Ke, Kk) {
+            let tempDiff = targetTemp - outdoorTemp;
+            if (tempDiff < 0) {
+                tempDiff = 0;
+            }
+            const minOutside = targetTemp - (maxOut - targetTemp) / Kn;
+            let base = targetTemp - minOutside;
+            if (base <= 0) {
+                base = 0.0001;
+            }
+            const c1 = (maxOut - targetTemp) / Math.pow(base, 1.0 / Ke);
+            let T_rad = targetTemp + c1 * Math.pow(tempDiff, 1.0 / Ke) + Kk;
+            return Math.min(T_rad, maxOut);
+        }
+
+        function generateChartData(targetTemp, maxOut, Kn, Ke, Kk) {
+            const outdoorTemps = [];
+            const predictedTRad = [];
+            
+            for (let temp = 25; temp >= -30; temp -= 1) {
+                outdoorTemps.push(temp);
+                predictedTRad.push(calculateTRad(targetTemp, temp, maxOut, Kn, Ke, Kk).toFixed(1));
+            }
+            return { outdoorTemps, predictedTRad };
+        }
+
+        // Стартовые данные
+        const { outdoorTemps, predictedTRad } = generateChartData(targetTemp, maxOut, Kn, Ke, Kk);
+
+        // Создаем график
+        const ctx = document.getElementById('equithermChart').getContext('2d');
+        // Create gradient for the line
+        const canvasHeight = ctx.canvas.height;
+        const gradient = ctx.createLinearGradient(0, canvasHeight, 0, 0); // Adjust x1, y1, x2, y2 for direction
+        gradient.addColorStop(0, 'rgba(75, 192, 192, 1)'); 
+        gradient.addColorStop(0.5, 'rgba(255, 99, 132, 1)'); 
+
+        
+        equithermChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: outdoorTemps,
+                datasets: [{
+                    label: 'Температура Радиатора (°C)',
+                    borderColor: gradient, // Use gradient instead of solid color
+                    borderWidth: 1,
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 2, // Reduce dot size (default is 3)
+                    pointHoverRadius: 4,
+                    data: predictedTRad
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Наружная температура (°C)'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Температура Радиатора (°C)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Показ формы
+        document.getElementById('equitherm-settings-busy').classList.add('hidden');
+        document.getElementById('equitherm-settings').classList.remove('hidden');
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// Обновление графика 
+function updateChart(formData) {
+    if (!equithermChart) return;
+
+    fetch("/api/settings", {
+        cache: "no-cache",
+        credentials: "include"
+    })
+    .then(response => response.json())
+    .then(result => {
+        const targetTemp = result?.heating?.target_temp ?? 24;
+        const maxOut = result?.heating?.maxTemp ?? 90;
+        const Kn = parseFloat(formData.get('equitherm[n_factor]')) || 1;
+        const Ke = parseFloat(formData.get('equitherm[e_factor]')) || 1.3;
+        const Kk = parseFloat(formData.get('equitherm[k_factor]')) || 0;
+
+        function calculateTRad(targetTemp, outdoorTemp, maxOut, Kn, Ke, Kk) {
+            let tempDiff = targetTemp - outdoorTemp;
+            if (tempDiff < 0) {
+                tempDiff = 0;
+            }
+            const minOutside = targetTemp - (maxOut - targetTemp) / Kn;
+            let base = targetTemp - minOutside;
+            if (base <= 0) {
+                base = 0.0001;
+            }
+            const c1 = (maxOut - targetTemp) / Math.pow(base, 1.0 / Ke);
+            let T_rad = targetTemp + c1 * Math.pow(tempDiff, 1.0 / Ke) + Kk;
+            return Math.min(T_rad, maxOut);
+        }
+
+        const outdoorTemps = [];
+        const predictedTRad = [];
+        for (let temp = 25; temp >= -30; temp -= 1) {
+            outdoorTemps.push(temp);
+            predictedTRad.push(calculateTRad(targetTemp, temp, maxOut, Kn, Ke, Kk).toFixed(1));
+        }
+
+        equithermChart.data.labels = outdoorTemps;
+        equithermChart.data.datasets[0].data = predictedTRad;
+        equithermChart.update();
+      })
+        .catch(error => console.log(error));
+    }
+
+      // Слушаем отправку 
+      const form = document.getElementById('equitherm-settings');
+        form.addEventListener('submit', (e) => {
+  
+            const formData = new FormData(form);
+            updateChart(formData); 
+                                                });
+
+// Слушаем кнопку сохранить
+      const equithermSection = document.querySelector('details');
+      const saveButton = equithermSection.querySelector('button[data-i18n="button.save"]');
+        saveButton.addEventListener('click', () => {
+          const form = document.getElementById('equitherm-settings');
+          const formData = new FormData(form);
+          updateChart(formData);
+                                                    });
+
+// инициализируем
+initChart();
+
+
       });
     </script>
   </body>

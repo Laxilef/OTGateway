@@ -14,16 +14,19 @@ public:
   datatype indoorTemp = 0;
   datatype outdoorTemp = 0;
   float Kn = 0.0;
+  float Kntemp = 0.0;
   float Kk = 0.0;
   float Kt = 0.0;
+  float Ke = 1.3;
 
   Equitherm() = default;
 
-  // kn, kk, kt
-  Equitherm(float new_kn, float new_kk, float new_kt) {
+  // kn, kk, kt, Ke
+  Equitherm(float new_kn, float new_kk, float new_kt, float new_ke) {
     Kn = new_kn;
     Kk = new_kk;
     Kt = new_kt;
+    Ke = new_ke;
   }
 
   // лимит выходной величины
@@ -34,7 +37,7 @@ public:
 
   // возвращает новое значение при вызове
   datatype getResult() {
-    datatype output = getResultN() + getResultK() + getResultT();
+    datatype output = getResultN() + Kk + getResultT();
     output = constrain(output, _minOut, _maxOut);		// ограничиваем выход
     return output;
   }
@@ -43,18 +46,27 @@ private:
   unsigned short _minOut = 20, _maxOut = 90;
 
   // температура контура отопления в зависимости от наружной температуры
+  // datatype getResultN() {
+  //   Kntemp = Kn*3.3; //Подгонка под типовые кривые
+  //   float tempDiff = targetTemp - outdoorTemp;
+  //   if (tempDiff < 0) tempDiff = 0;
+  //   float T_rad = targetTemp + pow(Kntemp * tempDiff, 1.0 / Ke);
+  //   return T_rad;
+  // }
   datatype getResultN() {
-    float a = (-0.21 * Kn) - 0.06;     // a = -0,21k — 0,06
-    float b = (6.04 * Kn) + 1.98;      // b = 6,04k + 1,98
-    float c = (-5.06 * Kn) + 18.06;    // с = -5,06k + 18,06
-    float x = (-0.2 * outdoorTemp) + 5; // x = -0.2*t1 + 5
-    return (a * x * x) + (b * x) + c;       // Tn = ax2 + bx + c
-  }
+    float tempDiff = targetTemp - outdoorTemp;
+    if (tempDiff < 0) {
+        tempDiff = 0;
+    }
+    float minOutside = targetTemp - (_maxOut - targetTemp) / Kn;
+    float c1 = (_maxOut - targetTemp) / pow(targetTemp - minOutside, 1.0 / Ke);
+    float T_rad = targetTemp + c1 * pow(tempDiff, 1.0 / Ke) ;
+    if (T_rad > _maxOut) {
+        T_rad = _maxOut;
+    }
 
-  // поправка на желаемую комнатную температуру
-  datatype getResultK() {
-    return (targetTemp - 20) * Kk;
-  }
+    return T_rad;
+}
 
   // Расчет поправки (ошибки) термостата
   datatype getResultT() {

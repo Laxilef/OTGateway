@@ -172,6 +172,7 @@ protected:
       etRegulator.setLimits(minTemp, maxTemp);
       etRegulator.Kn = settings.equitherm.n_factor;
       etRegulator.Kk = settings.equitherm.k_factor;
+      etRegulator.Ke = settings.equitherm.e_factor;
       etRegulator.targetTemp = targetTemp;
       etRegulator.outdoorTemp = outdoorTemp;
       float etResult = etRegulator.getResult();

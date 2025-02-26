@@ -342,9 +342,14 @@
       "equitherm": {
         "n": "N factor",
         "k": "K factor",
+        "e": "Exponent E",
         "t": {
           "title": "T factor",
           "note": "Not used if PID is enabled"
+        },
+        "chart": {
+          "radiatorTemp": "Radiator Temperature (°C)",
+          "outdoorTemp": "Outdoor Temperature (°C)"
         }
       },
 

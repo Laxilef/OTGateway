@@ -502,6 +502,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
   equitherm[FPSTR(S_N_FACTOR)] = roundf(src.equitherm.n_factor, 3);
   equitherm[FPSTR(S_K_FACTOR)] = roundf(src.equitherm.k_factor, 3);
+  equitherm[FPSTR(S_E_FACTOR)] = roundf(src.equitherm.e_factor, 3);
   equitherm[FPSTR(S_T_FACTOR)] = roundf(src.equitherm.t_factor, 3);
 
   auto pid = dst[FPSTR(S_PID)].to<JsonObject>();
@@ -1100,6 +1101,14 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_E_FACTOR)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_E_FACTOR)].as<float>();
+
+    if (value >= 1 && value <= 2 && fabsf(value - dst.equitherm.e_factor) > 0.0001f) {
+      dst.equitherm.e_factor = roundf(value, 3);
+      changed = true;
+    }
+  }
   if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].isNull()) {
     float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].as<float>();
 
