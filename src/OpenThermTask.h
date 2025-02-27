@@ -214,7 +214,12 @@ protected:
       );
     }
 
-    if (!vars.slave.connected && millis() - this->lastSuccessResponse < 1325) {
+    // 5 request retries
+    // 1000ms maximum response waiting time
+    // 100ms delay between requests
+    // +15%
+    // 5 * (1000 + 100) * 1.15 = 6325 ms
+    if (!vars.slave.connected && millis() - this->lastSuccessResponse < 6325) {
       Log.sinfoln(
         FPSTR(L_OT),
         F("Connected, downtime: %lu s."),
@@ -224,7 +229,7 @@ protected:
       this->connectedTime = millis();
       vars.slave.connected = true;
       
-    } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 1325) {
+    } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 6325) {
       Log.swarningln(
         FPSTR(L_OT),
         F("Disconnected, uptime: %lu s."),
