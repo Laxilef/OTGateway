@@ -342,9 +342,14 @@
       "equitherm": {
         "n": "Fattore N",
         "k": "Fattore K",
+        "e": "Esponente E",
         "t": {
           "title": "Fattore T",
           "note": "Non usato se PID è attivato"
+        },
+        "chart": {
+          "radiatorTemp": "Temperatura Del Radiatore (°C)",
+          "outdoorTemp": "Outdoor Temperature (°C)"
         }
       },
 

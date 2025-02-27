@@ -137,6 +137,7 @@ struct Settings {
     float n_factor = 0.7f;
     float k_factor = 3.0f;
     float t_factor = 2.0f;
+    float e_factor = 1.3f;
   } equitherm;
 
   struct {
