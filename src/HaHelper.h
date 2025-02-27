@@ -886,7 +886,7 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_k_factor")).c_str(), doc);
   }
 
-  bool publishInputEquithermFactorK(bool enabledByDefault = true) {
+  bool publishInputEquithermFactorE(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -906,7 +906,7 @@ public:
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_k_factor")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_e_factor")).c_str(), doc);
   }
 
   bool publishInputEquithermFactorT(bool enabledByDefault = true) {
