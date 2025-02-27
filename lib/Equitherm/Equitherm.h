@@ -14,7 +14,6 @@ public:
   datatype indoorTemp = 0;
   datatype outdoorTemp = 0;
   float Kn = 0.0;
-  float Kntemp = 0.0;
   float Kk = 0.0;
   float Kt = 0.0;
   float Ke = 1.3;
