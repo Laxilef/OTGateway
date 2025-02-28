@@ -44,15 +44,16 @@ public:
 private:
   unsigned short _minOut = 20, _maxOut = 90;
 
-  datatype getResultN() {
-    float tempDiff  = targetTemp - outdoorTemp,
+  datatype getResultN()
+  {
+    float tempDelta = targetTemp - outdoorTemp,
           maxPoint = targetTemp - (_maxOut - targetTemp) / Kn,
-          sf        = (_maxOut - targetTemp) / pow(targetTemp - maxPoint, 1.0 / Ke),
-          T_rad     = targetTemp + sf * pow(tempDiff, 1.0 / Ke);
+          sf = (_maxOut - targetTemp) / pow(targetTemp - maxPoint, 1.0 / Ke),
+          T_rad = targetTemp + sf * (tempDelta >= 0 ? pow(tempDelta, 1.0 / Ke) : -pow(-tempDelta, 1.0 / Ke));
     return T_rad > _maxOut ? _maxOut : T_rad;
-}
+  }
 
-  // Расчет поправки (ошибки) термостата
+  // Реакция на разницу с целевой температурой
   datatype getResultT() {
     return constrain((targetTemp - indoorTemp), -3, 3) * Kt;
   }
