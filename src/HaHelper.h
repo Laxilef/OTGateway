@@ -886,6 +886,29 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_k_factor")).c_str(), doc);
   }
 
+  bool publishInputEquithermFactorE(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_e"));
+    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
+    doc[FPSTR(HA_NAME)] = F("Equitherm Exponent E");
+    doc[FPSTR(HA_ICON)] = F("mdi:alpha-e-circle-outline");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.e_factor|float(0)|round(2) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"e_factor\" : {{ value }}}}");
+    doc[FPSTR(HA_MIN)] = 1;
+    doc[FPSTR(HA_MAX)] = 2;
+    doc[FPSTR(HA_STEP)] = 0.01f;
+    doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_e_factor")).c_str(), doc);
+  }
+
   bool publishInputEquithermFactorT(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
