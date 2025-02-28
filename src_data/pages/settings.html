@@ -1053,6 +1053,16 @@
               },
               options: {
                 responsive: true,
+                interaction: {
+                  mode: 'nearest', // Подтягиваемся к точкам
+                  intersect: false 
+                },
+                plugins: {
+                  tooltip: {
+                    enabled: true, 
+                    position: 'nearest', 
+                  }
+                },  
                 scales: {
                   x: {
                     display: true,
