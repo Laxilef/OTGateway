@@ -1143,6 +1143,15 @@
           updateChart(formData);
         });
 
+        //Следим за изменениями в полях
+        document.querySelectorAll('#equitherm-settings input').forEach(input => {
+          input.addEventListener('change', () => {
+            const form = document.getElementById('equitherm-settings');
+            const formData = new FormData(form);
+            updateChart(formData);
+          });
+        });  
+              
         // инициализируем
         initChart();
 

@@ -44,27 +44,12 @@ public:
 private:
   unsigned short _minOut = 20, _maxOut = 90;
 
-  // температура контура отопления в зависимости от наружной температуры
-  // datatype getResultN() {
-  //   Kntemp = Kn*3.3; //Подгонка под типовые кривые
-  //   float tempDiff = targetTemp - outdoorTemp;
-  //   if (tempDiff < 0) tempDiff = 0;
-  //   float T_rad = targetTemp + pow(Kntemp * tempDiff, 1.0 / Ke);
-  //   return T_rad;
-  // }
   datatype getResultN() {
-    float tempDiff = targetTemp - outdoorTemp;
-    if (tempDiff < 0) {
-        tempDiff = 0;
-    }
-    float minOutside = targetTemp - (_maxOut - targetTemp) / Kn;
-    float c1 = (_maxOut - targetTemp) / pow(targetTemp - minOutside, 1.0 / Ke);
-    float T_rad = targetTemp + c1 * pow(tempDiff, 1.0 / Ke) ;
-    if (T_rad > _maxOut) {
-        T_rad = _maxOut;
-    }
-
-    return T_rad;
+    float tempDiff  = targetTemp - outdoorTemp,
+          maxPoint = targetTemp - (_maxOut - targetTemp) / Kn,
+          sf        = (_maxOut - targetTemp) / pow(targetTemp - maxPoint, 1.0 / Ke),
+          T_rad     = targetTemp + sf * pow(tempDiff, 1.0 / Ke);
+    return T_rad > _maxOut ? _maxOut : T_rad;
 }
 
   // Расчет поправки (ошибки) термостата
