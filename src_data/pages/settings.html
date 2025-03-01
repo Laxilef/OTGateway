@@ -1205,8 +1205,17 @@
             const K = obs1Rad - targetTemp - A * Math.pow(diff1, 1 / Ke);
 
             // Обновляем поля
-            document.querySelector("input[name='equitherm[n_factor]']").value = N.toFixed(3);
-            document.querySelector("input[name='equitherm[k_factor]']").value = K.toFixed(2);
+            const nField = document.querySelector("input[name='equitherm[n_factor]']");
+            const kField = document.querySelector("input[name='equitherm[k_factor]']");
+            const eField = document.querySelector("input[name='equitherm[e_factor]']");
+
+            nField.value = N.toFixed(3);
+            kField.value = K.toFixed(2);
+
+            // Триггерим Change
+            nField.dispatchEvent(new Event('change', { bubbles: true }));
+            kField.dispatchEvent(new Event('change', { bubbles: true }));
+            eField.dispatchEvent(new Event('change', { bubbles: true }));
 
             // Обновляем график
             updateChart(new FormData(form));
