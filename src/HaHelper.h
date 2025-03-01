@@ -876,8 +876,8 @@ public:
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.k_factor|float(0)|round(2) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"k_factor\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 10;
+    doc[FPSTR(HA_MIN)] = -15;
+    doc[FPSTR(HA_MAX)] = 15;
     doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
