@@ -347,6 +347,13 @@
           "title": "T factor",
           "note": "Not used if PID is enabled"
         },
+        "calibration": "2 points Calibration",
+        "obs1_outdoor": "Warm Point Outdoor",
+        "obs1_radiator": "Warm Point Radiator",
+        "obs2_outdoor": "Cold Point Outdoor",
+        "obs2_radiator": "Cold Point Radiator",
+        "calibrate": "Calibrate",
+
         "chart": {
           "radiatorTemp": "Radiator Temperature (°C)",
           "outdoorTemp": "Outdoor Temperature (°C)"

@@ -347,6 +347,12 @@
           "title": "Fattore T",
           "note": "Non usato se PID è attivato"
         },
+        "calibration": "Calibrazione a 2 punti",
+        "obs1_outdoor": "Punto caldo esterno",
+        "obs1_radiator": "Punto caldo (radiatore)",
+        "obs2_outdoor": "Punto freddo esterno",
+        "obs2_radiator": "Punto freddo (radiatore)",
+        "calibrate": "Calibra",
         "chart": {
           "radiatorTemp": "Temperatura Del Radiatore (°C)",
           "outdoorTemp": "Outdoor Temperature (°C)"
