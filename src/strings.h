@@ -73,6 +73,7 @@ const char S_DNS[]                                  PROGMEM = "dns";
 const char S_DT[]                                   PROGMEM = "dt";
 const char S_D_FACTOR[]                             PROGMEM = "d_factor";
 const char S_D_MULTIPLIER[]                         PROGMEM = "d_multiplier";
+const char S_E_FACTOR[]                             PROGMEM = "e_factor";
 const char S_EMERGENCY[]                            PROGMEM = "emergency";
 const char S_ENABLED[]                              PROGMEM = "enabled";
 const char S_ENV[]                                  PROGMEM = "env";
