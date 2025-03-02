@@ -1087,7 +1087,7 @@
           setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
 
-          const etMinTemp = parseInt(data.system.unitSystem == 0 ? 15 : 59);
+          const etMinTemp = parseInt(data.system.unitSystem == 0 ? 5 : 41);
           const etMaxTemp = parseInt(data.system.unitSystem == 0 ? 30 : 86);
           const etTargetTemp = constrain(parseFloat(data.heating.target), etMinTemp, etMaxTemp);
           
