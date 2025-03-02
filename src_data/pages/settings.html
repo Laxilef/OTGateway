@@ -824,11 +824,13 @@
                     tension: 0.1,
                     pointRadius: 2,
                     pointHoverRadius: 4,
+                    indexAxis: "x",
                     data: []
                   }]
                 },
                 options: {
                   responsive: true,
+                  parsing: false,
                   interaction: {
                     mode: 'nearest',
                     intersect: false
@@ -837,21 +839,37 @@
                     tooltip: {
                       enabled: true,
                       position: 'nearest',
-                      displayColors: false
+                      displayColors: false,
+                      callbacks: {
+                        title: (items) => {
+                          return `${i18n("settings.equitherm.chart.outdoorTemp")}: ${items[0].label}`;
+                        }
+                      }
                     },
                     legend: {
                       display: false
+                    },
+                    decimation: {
+                      enabled: false,
+                      algorithm: 'lttb',
+                      samples: 30,
+                      threshold: 30
                     }
                   },
                   scales: {
                     x: {
                       display: true,
+                      type: "linear",
+                      reverse: true,
                       title: {
                         display: true
                       },
                       ticks: {
-                        callback: function(value) {
-                          return `${this.getLabelForValue(value)}°`;
+                        stepSize: 1,
+                        format: {
+                          style: "unit",
+                          unit: "degree",
+                          unitDisplay: "narrow"
                         }
                       }
                     },
@@ -861,8 +879,10 @@
                         display: true
                       },
                       ticks: {
-                        callback: (value, index, ticks) => {
-                          return `${value}°`;
+                        format: {
+                          style: "unit",
+                          unit: "degree",
+                          unitDisplay: "narrow"
                         }
                       }
                     }
@@ -887,8 +907,8 @@
             const outdoorTemp = etChartConfig.unitSystem == 0 ? value : c2f(value);
 
             etChart.data.datasets[0].data.push({
-              x: outdoorTemp.toString(),
-              y: calculateEquithermTemp(outdoorTemp)
+              x: parseFloat(outdoorTemp.toFixed(1)),
+              y: parseFloat(calculateEquithermTemp(outdoorTemp).toFixed(1))
             });
           }
 
@@ -914,7 +934,7 @@
               : -(Math.pow(-(tempDelta), 1 / etChartConfig.exponent))
           );
 
-          return (Math.max(Math.min(result, etChartConfig.maxTemp), etChartConfig.minTemp)).toFixed(1);
+          return Math.max(Math.min(result, etChartConfig.maxTemp), etChartConfig.minTemp);
         }
 
         const fillData = (data) => {
@@ -1181,6 +1201,12 @@
         window.addEventListener('resize', async (event) => {
           if (etChart) {
             etChart.resize();
+            
+            const decimation = window.innerWidth <= 800;
+            if (etChart.options.plugins.decimation.enabled != decimation) {
+              etChart.options.plugins.decimation.enabled = decimation;
+              etChart.update();
+            }
           }
         });
       });
