@@ -630,6 +630,10 @@ const setCheckboxValue = (selector, value, parent = undefined) => {
   }
 
   item.checked = value;
+
+  setTimeout(() => {
+    item.dispatchEvent(new Event("change"));
+  }, 10);
 }
 
 const setRadioValue = (selector, value, parent = undefined) => {
@@ -643,7 +647,14 @@ const setRadioValue = (selector, value, parent = undefined) => {
   }
 
   for (let item of items) {
-    item.checked = item.value == value;
+    const checked = item.value == value;
+    if (item.checked != checked) {
+      item.checked = checked;
+      
+      setTimeout(() => {
+        item.dispatchEvent(new Event("change"));
+      }, 10);
+    }
   }
 }
 
@@ -658,13 +669,17 @@ const setInputValue = (selector, value, attrs = {}, parent = undefined) => {
   }
 
   for (let item of items) {
-    item.value = value;
-
     if (attrs instanceof Object) {
       for (let attrKey of Object.keys(attrs)) {
         item.setAttribute(attrKey, attrs[attrKey]);
       }
     }
+
+    item.value = value;
+
+    setTimeout(() => {
+      item.dispatchEvent(new Event("change"));
+    }, 10);
   }
 }
 
@@ -849,4 +864,16 @@ function dec2hex(i) {
   }
   
   return hex.toUpperCase();
+}
+
+function c2f(value) {
+  return (9 / 5) * value + 32;
+}
+
+function f2c(value) {
+  return (value - 32) * (5 / 9);
+}
+
+function constrain(amt, low, high) {
+  return ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)));
 }

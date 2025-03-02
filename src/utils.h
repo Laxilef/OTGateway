@@ -500,10 +500,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
-  equitherm[FPSTR(S_N_FACTOR)] = roundf(src.equitherm.n_factor, 3);
-  equitherm[FPSTR(S_K_FACTOR)] = roundf(src.equitherm.k_factor, 3);
-  equitherm[FPSTR(S_E_FACTOR)] = roundf(src.equitherm.e_factor, 3);
-  equitherm[FPSTR(S_T_FACTOR)] = roundf(src.equitherm.t_factor, 3);
+  equitherm[FPSTR(S_SLOPE)] = roundf(src.equitherm.slope, 3);
+  equitherm[FPSTR(S_EXPONENT)] = roundf(src.equitherm.exponent, 3);
+  equitherm[FPSTR(S_SHIFT)] = roundf(src.equitherm.shift, 2);
+  equitherm[FPSTR(S_TARGET_DIFF_FACTOR)] = roundf(src.equitherm.targetDiffFactor, 3);
 
   auto pid = dst[FPSTR(S_PID)].to<JsonObject>();
   pid[FPSTR(S_ENABLED)] = src.pid.enabled;
@@ -1083,37 +1083,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_N_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_N_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_SLOPE)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_SLOPE)].as<float>();
 
-    if (value > 0 && value <= 10 && fabsf(value - dst.equitherm.n_factor) > 0.0001f) {
-      dst.equitherm.n_factor = roundf(value, 3);
+    if (value > 0.0f && value <= 10.0f && fabsf(value - dst.equitherm.slope) > 0.0001f) {
+      dst.equitherm.slope = roundf(value, 3);
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_EXPONENT)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_EXPONENT)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.k_factor) > 0.0001f) {
-      dst.equitherm.k_factor = roundf(value, 3);
+    if (value > 0.0f && value <= 2.0f && fabsf(value - dst.equitherm.exponent) > 0.0001f) {
+      dst.equitherm.exponent = roundf(value, 3);
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_E_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_E_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_SHIFT)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_SHIFT)].as<float>();
 
-    if (value >= 1 && value <= 2 && fabsf(value - dst.equitherm.e_factor) > 0.0001f) {
-      dst.equitherm.e_factor = roundf(value, 3);
+    if (value >= -15.0f && value <= 15.0f && fabsf(value - dst.equitherm.shift) > 0.0001f) {
+      dst.equitherm.shift = roundf(value, 2);
       changed = true;
     }
   }
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.t_factor) > 0.0001f) {
-      dst.equitherm.t_factor = roundf(value, 3);
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_TARGET_DIFF_FACTOR)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_TARGET_DIFF_FACTOR)].as<float>();
+
+    if (value >= 0.0f && value <= 10.0f && fabsf(value - dst.equitherm.targetDiffFactor) > 0.0001f) {
+      dst.equitherm.targetDiffFactor = roundf(value, 3);
       changed = true;
     }
   }

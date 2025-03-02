@@ -230,7 +230,9 @@
               setCheckboxValue("[name='filtering']", data.filtering, sensorForm);
               setInputValue("[name='filteringFactor']", data.filteringFactor, {}, sensorForm);
 
-              sensorForm.querySelector("[name='type']").dispatchEvent(new Event("change"));
+              setTimeout(() => {
+                sensorForm.querySelector("[name='type']").dispatchEvent(new Event("change"));
+              }, 10);
 
               setBusy(".form-busy", "form", false, sensorNode);
             };

@@ -340,16 +340,26 @@
       },
 
       "equitherm": {
-        "n": "Fattore N",
-        "k": "Fattore K",
-        "e": "Esponente E",
-        "t": {
+        "slope": {
+          "title": "Pendenza",
+          "note": ""
+        },
+        "exponent": {
+          "title": "Esponente",
+          "note": ""
+        },
+        "shift": {
+          "title": "Spostare",
+          "note": ""
+        },
+        "targetDiffFactor": {
           "title": "Fattore T",
           "note": "Non usato se PID è attivato"
         },
         "chart": {
-          "radiatorTemp": "Temperatura Del Radiatore (°C)",
-          "outdoorTemp": "Outdoor Temperature (°C)"
+          "targetTemp": "Temperatura interna target",
+          "setpointTemp": "Temperatura del portatore di calore",
+          "outdoorTemp": "Temperatura esterna"
         }
       },
 

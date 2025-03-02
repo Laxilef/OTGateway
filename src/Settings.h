@@ -134,10 +134,10 @@ struct Settings {
 
   struct {
     bool enabled = false;
-    float n_factor = 0.7f;
-    float k_factor = 3.0f;
-    float t_factor = 2.0f;
-    float e_factor = 1.3f;
+    float slope = 0.7f;
+    float exponent = 1.3f;
+    float shift = 0.0f;
+    float targetDiffFactor = 2.0f;
   } equitherm;
 
   struct {

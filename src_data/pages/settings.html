@@ -264,7 +264,6 @@
         
         <details>
           <summary><b data-i18n>settings.section.equitherm</b></summary>
-          <canvas id="equithermChart" width="400" height="200"></canvas>
           <div>
             <div id="equitherm-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="equitherm-settings" class="hidden">
@@ -274,27 +273,45 @@
                   <span data-i18n>settings.enable</span>
                 </label>
               </fieldset>
+
+              <div>
+                <div>
+                  <canvas id="etChart"></canvas>
+                </div>
+
+                <label>
+                  <div>
+                    <span data-i18n>settings.equitherm.chart.targetTemp</span>: <b class="etChartTargetTempValue"></b>°
+                  </div>
+                  <input class="etChartTargetTemp" type="range" value="0" min="0" max="0" step="0.5">
+                </label>
+              </div>
               
               <div class="grid">
                 <label>
-                  <span data-i18n>settings.equitherm.n</span>
-                  <input type="number" inputmode="decimal" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
+                  <span data-i18n>settings.equitherm.slope.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[slope]" min="0.001" max="10" step="0.001" required>
+                  <small data-i18n>settings.equitherm.slope.note</small>
                 </label>
 
                 <label>
-                  <span data-i18n>settings.equitherm.k</span>
-                  <input type="number" inputmode="decimal" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
+                  <span data-i18n>settings.equitherm.exponent.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[exponent]" min="0.1" max="2" step="0.001" required>
+                  <small data-i18n>settings.equitherm.exponent.note</small>
+                </label>
+              </div>
+
+              <div class="grid">
+                <label>
+                  <span data-i18n>settings.equitherm.shift.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[shift]" min="-15" max="15" step="0.01" required>
+                  <small data-i18n>settings.equitherm.shift.note</small>
                 </label>
 
                 <label>
-                  <span data-i18n>settings.equitherm.e</span>
-                  <input type="number" inputmode="decimal" name="equitherm[e_factor]" min="1" max="2" step="0.01" required>
-                </label>
-
-                <label>
-                  <span data-i18n>settings.equitherm.t.title</span>
-                  <input type="number" inputmode="decimal" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
-                  <small data-i18n>settings.equitherm.t.note</small>
+                  <span data-i18n>settings.equitherm.targetDiffFactor.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[targetDiffFactor]" min="0" max="10" step="0.01" required>
+                  <small data-i18n>settings.equitherm.targetDiffFactor.note</small>
                 </label>
               </div>
 
@@ -304,8 +321,6 @@
         </details>
 
         <hr />
-
-
         
         <details>
           <summary><b data-i18n>settings.section.pid</b></summary>
@@ -764,11 +779,143 @@
     </footer>
 
     <script src="/static/app.js?{BUILD_TIME}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/chart.js?{BUILD_TIME}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
         lang.build();
+
+        let etChart = null;
+        let etChartConfig = {
+          slope: null,
+          exponent: null,
+          shift: null,
+          unitSystem: null,
+          targetTemp: null,
+          minTemp: null,
+          maxTemp: null
+        };
+
+        const makeEquithermChart = () => {
+          if (etChart == null) {
+            const ctx = document.getElementById('etChart').getContext('2d');
+
+            try {
+              etChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                  datasets: [{
+                    borderColor: (context) => {
+                      const chart = context.chart;
+                      const {ctx, chartArea} = chart;
+
+                      if (!chartArea) {
+                        return;
+                      }
+
+                      const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                      gradient.addColorStop(0, 'rgba(1, 114, 173, 1)');
+                      gradient.addColorStop(0.5, 'rgba(255, 99, 132, 1)');
+
+                      return gradient;
+                    },
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    data: []
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  interaction: {
+                    mode: 'nearest',
+                    intersect: false
+                  },
+                  plugins: {
+                    tooltip: {
+                      enabled: true,
+                      position: 'nearest',
+                      displayColors: false
+                    },
+                    legend: {
+                      display: false
+                    }
+                  },
+                  scales: {
+                    x: {
+                      display: true,
+                      title: {
+                        display: true
+                      },
+                      ticks: {
+                        callback: function(value) {
+                          return `${this.getLabelForValue(value)}°`;
+                        }
+                      }
+                    },
+                    y: {
+                      display: true,
+                      title: {
+                        display: true
+                      },
+                      ticks: {
+                        callback: (value, index, ticks) => {
+                          return `${value}°`;
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+
+            } catch (error) {
+              console.log(error);
+            }
+          }
+
+          if (!etChart) {
+            return;
+          }
+
+          while (etChart.data.datasets[0].data.length) {
+            etChart.data.datasets[0].data.pop();
+          }
+
+          for (let value = 30; value >= -30; value--) {
+            const outdoorTemp = etChartConfig.unitSystem == 0 ? value : c2f(value);
+
+            etChart.data.datasets[0].data.push({
+              x: outdoorTemp.toString(),
+              y: calculateEquithermTemp(outdoorTemp)
+            });
+          }
+
+          etChart.data.datasets[0].label = i18n("settings.equitherm.chart.setpointTemp");
+          etChart.options.scales.x.title.text = i18n("settings.equitherm.chart.outdoorTemp");
+          etChart.options.scales.y.title.text = i18n("settings.equitherm.chart.setpointTemp");
+          etChart.update();
+        }
+
+        const calculateEquithermTemp = (outdoorTemp) => {
+          const tempDelta = etChartConfig.targetTemp - outdoorTemp;
+          const maxPoint = etChartConfig.targetTemp - (
+            etChartConfig.maxTemp - etChartConfig.targetTemp
+          ) / etChartConfig.slope;
+
+          const sf = (etChartConfig.maxTemp - etChartConfig.targetTemp) / Math.pow(
+            etChartConfig.targetTemp - maxPoint,
+            1 / etChartConfig.exponent
+          );
+          const result = etChartConfig.targetTemp + etChartConfig.shift + sf * (
+            tempDelta >= 0 
+              ? Math.pow(tempDelta, 1 / etChartConfig.exponent) 
+              : -(Math.pow(-(tempDelta), 1 / etChartConfig.exponent))
+          );
+
+          return (Math.max(Math.min(result, etChartConfig.maxTemp), etChartConfig.minTemp)).toFixed(1);
+        }
 
         const fillData = (data) => {
           // System
@@ -892,10 +1039,10 @@
 
           // Equitherm
           setCheckboxValue("[name='equitherm[enabled]']", data.equitherm.enabled);
-          setInputValue("[name='equitherm[n_factor]']", data.equitherm.n_factor);
-          setInputValue("[name='equitherm[k_factor]']", data.equitherm.k_factor);
-          setInputValue("[name='equitherm[e_factor]']", data.equitherm.e_factor);
-          setInputValue("[name='equitherm[t_factor]']", data.equitherm.t_factor);
+          setInputValue("[name='equitherm[slope]']", data.equitherm.slope);
+          setInputValue("[name='equitherm[exponent]']", data.equitherm.exponent);
+          setInputValue("[name='equitherm[shift]']", data.equitherm.shift);
+          setInputValue("[name='equitherm[targetDiffFactor]']", data.equitherm.targetDiffFactor);
           setBusy('#equitherm-settings-busy', '#equitherm-settings', false);
 
           // PID
@@ -920,8 +1067,23 @@
           setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
 
+          const etMinTemp = parseInt(data.system.unitSystem == 0 ? 15 : 59);
+          const etMaxTemp = parseInt(data.system.unitSystem == 0 ? 30 : 86);
+          const etTargetTemp = constrain(parseFloat(data.heating.target), etMinTemp, etMaxTemp);
+          
+          setInputValue(".etChartTargetTemp", etTargetTemp.toFixed(1), {
+            "min": etMinTemp,
+            "max": etMaxTemp
+          });
 
+          etChartConfig.slope = data.equitherm.slope;
+          etChartConfig.exponent = data.equitherm.exponent;
+          etChartConfig.shift = data.equitherm.shift;
+          etChartConfig.unitSystem = data.system.unitSystem;
+          etChartConfig.minTemp = data.heating.minTemp;
+          etChartConfig.maxTemp = data.heating.maxTemp;
 
+          makeEquithermChart();
         };
 
         try {
@@ -975,189 +1137,52 @@
           console.log(error);
         }
 
-        //График
-        let equithermChart;
-
-        
-        async function fetchSettings() {
-          try {
-            const response = await fetch("/api/settings", {
-              cache: "no-cache",
-              credentials: "include"
-            });
-
-            if (!response.ok) {
-              throw new Error('Response not valid');
-            }
-
-            return await response.json();
-          } catch (error) {
-            console.log(error);
-          }
-        }
-
-        // Считаем температуру
-        function calculateTRad(targetTemp, outdoorTemp, maxOut, Kn, Ke, Kk) {
-          let tempDelta = targetTemp - outdoorTemp;
-          const maxPoint = targetTemp - (maxOut - targetTemp) / Kn;
-          let base = targetTemp - maxPoint;
-
-          if (base <= 0) {
-            base = 0.0001;
-          }
-
-          const sf = (maxOut - targetTemp) / Math.pow(base, 1.0 / Ke);
-
-          let T_rad = targetTemp + sf * (tempDelta >= 0 ? Math.pow(tempDelta, 1.0 / Ke) : -Math.pow(-tempDelta, 1.0 / Ke)) + Kk;
-          return Math.min(T_rad, maxOut);
-        }
-
-        // Генерируем данные для графика 
-        function generateChartData(targetTemp, maxOut, Kn, Ke, Kk) {
-          const outdoorTemps = [];
-          const predictedTRad = [];
-
-          for (let temp = 25; temp >= -30; temp -= 1) {
-            outdoorTemps.push(temp);
-            predictedTRad.push(calculateTRad(targetTemp, temp, maxOut, Kn, Ke, Kk).toFixed(1));
-          }
-
-          return { outdoorTemps, predictedTRad };
-        }
-
-        // Создаем график
-        function createChart(outdoorTemps, predictedTRad) {
-          const ctx = document.getElementById('equithermChart').getContext('2d');
-
-          const canvasHeight = ctx.canvas.height;
-          const gradient = ctx.createLinearGradient(0, canvasHeight, 0, 0);
-          gradient.addColorStop(0, 'rgba(75, 192, 192, 1)');
-          gradient.addColorStop(0.5, 'rgba(255, 99, 132, 1)');
-
-          equithermChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: outdoorTemps,
-              datasets: [{
-                label: 'Температура Радиатора (°C)',
-                borderColor: gradient,
-                borderWidth: 1,
-                fill: false,
-                tension: 0.1,
-                pointRadius: 2,
-                pointHoverRadius: 4,
-                data: predictedTRad
-              }]
-            },
-            options: {
-              responsive: true,
-              interaction: {
-                mode: 'nearest',
-                intersect: false
-              },
-              plugins: {
-                tooltip: {
-                  enabled: true,
-                  position: 'nearest',
-                }
-              },
-              scales: {
-                x: {
-                  display: true,
-                  title: {
-                    display: true,
-                    text: 'Наружная температура (°C)'
-                  }
-                },
-                y: {
-                  display: true,
-                  title: {
-                    display: true,
-                    text: 'Температура Радиатора (°C)'
-                  }
-                }
-              }
-            }
-          });
-        }
-
-        // Инициализируем график
-        async function initChart() {
-          try {
-            const result = await fetchSettings();
-
-            const { heating, equitherm } = result;
-            const targetTemp = heating?.target ?? 24;
-            const maxOut = heating?.maxTemp ?? 90;
-            const Kn = equitherm?.n_factor ?? 1;
-            const Ke = equitherm?.e_factor ?? 1.3;
-            const Kk = equitherm?.k_factor ?? 0;
-
-            
-            const { outdoorTemps, predictedTRad } = generateChartData(targetTemp, maxOut, Kn, Ke, Kk);
-
-            
-            createChart(outdoorTemps, predictedTRad);
-
-            
-            document.getElementById('equitherm-settings-busy').classList.add('hidden');
-            document.getElementById('equitherm-settings').classList.remove('hidden');
-          } catch (error) {
-            console.log(error);
-          }
-        }
-
-        
-        function updateChart(formData) {
-          if (!equithermChart) return;
-
-          fetchSettings()
-            .then(result => {
-              const targetTemp = result?.heating?.target ?? 24;
-              const maxOut = result?.heating?.maxTemp ?? 90;
-
-              const Kn = parseFloat(formData.get('equitherm[n_factor]')) || 1;
-              const Ke = parseFloat(formData.get('equitherm[e_factor]')) || 1.3;
-              const Kk = parseFloat(formData.get('equitherm[k_factor]')) || 0;
-
-              const { outdoorTemps, predictedTRad } = generateChartData(targetTemp, maxOut, Kn, Ke, Kk);
-
-              equithermChart.data.labels = outdoorTemps;
-              equithermChart.data.datasets[0].data = predictedTRad;
-              equithermChart.update();
-            })
-            .catch(error => console.log(error));
-        }
-
-
-        // Слушаем отправку
-        const form = document.getElementById('equitherm-settings');
-        form.addEventListener('submit', (e) => {
-
-          const formData = new FormData(form);
-          updateChart(formData);
+        document.querySelector(".etChartTargetTemp").addEventListener("input", async (event) => {
+          setValue('.etChartTargetTempValue', parseFloat(event.target.value).toFixed(1));
         });
 
-        // Слушаем кнопку сохранить
-        const equithermSection = document.querySelector('details');
-        const saveButton = equithermSection.querySelector('button[data-i18n="button.save"]');
-        saveButton.addEventListener('click', () => {
-          const form = document.getElementById('equitherm-settings');
-          const formData = new FormData(form);
-          updateChart(formData);
+        document.querySelector(".etChartTargetTemp").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.targetTemp = parseFloat(event.target.value);
+          setValue('.etChartTargetTempValue', etChartConfig.targetTemp.toFixed(1));
+          makeEquithermChart();
         });
 
-        //Следим за изменениями в полях
-        document.querySelectorAll('#equitherm-settings input').forEach(input => {
-          input.addEventListener('change', () => {
-            const form = document.getElementById('equitherm-settings');
-            const formData = new FormData(form);
-            updateChart(formData);
-          });
-        });  
+        document.querySelector("[name='equitherm[slope]']").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
 
-        // инициализируем график
-        initChart(); 
+          etChartConfig.slope = parseFloat(event.target.value);
+          makeEquithermChart();
+        });
+
+        document.querySelector("[name='equitherm[exponent]']").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.exponent = parseFloat(event.target.value);
+          makeEquithermChart();
+        });
+
+        document.querySelector("[name='equitherm[shift]']").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.shift = parseFloat(event.target.value);
+          makeEquithermChart();
+        });
+
+        window.addEventListener('resize', async (event) => {
+          if (etChart) {
+            etChart.resize();
+          }
+        });
       });
     </script>
   </body>

@@ -840,19 +840,19 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SWITCH), F("equitherm")).c_str(), doc);
   }
 
-  bool publishInputEquithermFactorN(bool enabledByDefault = true) {
+  bool publishInputEquithermSlope(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_n"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_slope"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm factor N");
-    doc[FPSTR(HA_ICON)] = F("mdi:alpha-n-circle-outline");
+    doc[FPSTR(HA_NAME)] = F("Equitherm slope");
+    doc[FPSTR(HA_ICON)] = F("mdi:slope-uphill");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.n_factor|float(0)|round(3) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.slope|float(0)|round(3) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"n_factor\" : {{ value }}}}");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"slope\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0.001f;
     doc[FPSTR(HA_MAX)] = 10;
     doc[FPSTR(HA_STEP)] = 0.001f;
@@ -860,79 +860,80 @@ public:
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_n_factor")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_slope")).c_str(), doc);
   }
 
-  bool publishInputEquithermFactorK(bool enabledByDefault = true) {
+  bool publishInputEquithermExponent(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_k"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_exponent"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm factor K");
-    doc[FPSTR(HA_ICON)] = F("mdi:alpha-k-circle-outline");
+    doc[FPSTR(HA_NAME)] = F("Equitherm exponent");
+    doc[FPSTR(HA_ICON)] = F("mdi:exponent");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.k_factor|float(0)|round(2) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.exponent|float(0)|round(3) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"k_factor\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 0;
-    doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.01f;
-    doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
-    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
-    doc.shrinkToFit();
-
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_k_factor")).c_str(), doc);
-  }
-
-  bool publishInputEquithermFactorE(bool enabledByDefault = true) {
-    JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
-    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_e"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
-    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm Exponent E");
-    doc[FPSTR(HA_ICON)] = F("mdi:alpha-e-circle-outline");
-    doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.e_factor|float(0)|round(2) }}");
-    doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"e_factor\" : {{ value }}}}");
-    doc[FPSTR(HA_MIN)] = 1;
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"exponent\" : {{ value }}}}");
+    doc[FPSTR(HA_MIN)] = 0.1;
     doc[FPSTR(HA_MAX)] = 2;
+    doc[FPSTR(HA_STEP)] = 0.001f;
+    doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_exponent")).c_str(), doc);
+  }
+
+  bool publishInputEquithermShift(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_shift"));
+    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
+    doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
+    doc[FPSTR(HA_NAME)] = F("Equitherm shift");
+    doc[FPSTR(HA_ICON)] = F("mdi:chart-areaspline");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.shift|float(0)|round(2) }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"shift\" : {{ value }}}}");
+    doc[FPSTR(HA_MIN)] = -15;
+    doc[FPSTR(HA_MAX)] = 15;
     doc[FPSTR(HA_STEP)] = 0.01f;
     doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_e_factor")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_shift")).c_str(), doc);
   }
 
-  bool publishInputEquithermFactorT(bool enabledByDefault = true) {
+  bool publishInputEquithermTargetDiffFactor(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.pid.enabled, 'offline', 'online') }}");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_t"));
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_target_diff_factor"));
     doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm factor T");
-    doc[FPSTR(HA_ICON)] = F("mdi:alpha-t-circle-outline");
+    doc[FPSTR(HA_NAME)] = F("Equitherm target diff factor");
+    doc[FPSTR(HA_ICON)] = F("mdi:chart-timeline-variant-shimmer");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.t_factor|float(0)|round(2) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.targetDiffFactor|float(0)|round(3) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"t_factor\" : {{ value }}}}");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"equitherm\": {\"targetDiffFactor\" : {{ value }}}}");
     doc[FPSTR(HA_MIN)] = 0;
     doc[FPSTR(HA_MAX)] = 10;
-    doc[FPSTR(HA_STEP)] = 0.01f;
+    doc[FPSTR(HA_STEP)] = 0.001f;
     doc[FPSTR(HA_MODE)] = FPSTR(HA_MODE_BOX);
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_t_factor")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("equitherm_target_diff_factor")).c_str(), doc);
   }
 
 

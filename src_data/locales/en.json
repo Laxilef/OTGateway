@@ -340,16 +340,26 @@
       },
 
       "equitherm": {
-        "n": "N factor",
-        "k": "K factor",
-        "e": "Exponent E",
-        "t": {
+        "slope": {
+          "title": "Slope",
+          "note": ""
+        },
+        "exponent": {
+          "title": "Exponent",
+          "note": ""
+        },
+        "shift": {
+          "title": "Shift",
+          "note": ""
+        },
+        "targetDiffFactor": {
           "title": "T factor",
           "note": "Not used if PID is enabled"
         },
         "chart": {
-          "radiatorTemp": "Radiator Temperature (°C)",
-          "outdoorTemp": "Outdoor Temperature (°C)"
+          "targetTemp": "Target indoor temperature",
+          "setpointTemp": "Heat carrier temperature",
+          "outdoorTemp": "Outdoor temperature"
         }
       },
 
