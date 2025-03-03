@@ -5,8 +5,13 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
   }
 
   form.querySelectorAll('input').forEach(item => {
-    item.addEventListener('change', (e) => {
-      e.target.setAttribute('aria-invalid', !e.target.checkValidity());
+    item.addEventListener('change', (event) => {
+      if (!event.target.checkValidity()) {
+        event.target.setAttribute('aria-invalid', true);
+
+      } else if (event.target.hasAttribute('aria-invalid')) {
+        event.target.removeAttribute('aria-invalid');
+      }
     })
   });
 
@@ -650,7 +655,7 @@ const setRadioValue = (selector, value, parent = undefined) => {
     const checked = item.value == value;
     if (item.checked != checked) {
       item.checked = checked;
-      
+
       setTimeout(() => {
         item.dispatchEvent(new Event("change"));
       }, 10);

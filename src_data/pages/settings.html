@@ -796,6 +796,10 @@
           maxTemp: null
         };
 
+        const hasNeedDecimationChart = () => {
+          return window.innerWidth <= 800;
+        }
+
         const makeEquithermChart = () => {
           if (etChart == null) {
             const ctx = document.getElementById('etChart').getContext('2d');
@@ -830,6 +834,7 @@
                 },
                 options: {
                   responsive: true,
+                  resizeDelay: 500,
                   parsing: false,
                   interaction: {
                     mode: 'nearest',
@@ -850,7 +855,7 @@
                       display: false
                     },
                     decimation: {
-                      enabled: false,
+                      enabled: hasNeedDecimationChart(),
                       algorithm: 'lttb',
                       samples: 30,
                       threshold: 30
@@ -1202,9 +1207,8 @@
           if (etChart) {
             etChart.resize();
             
-            const decimation = window.innerWidth <= 800;
-            if (etChart.options.plugins.decimation.enabled != decimation) {
-              etChart.options.plugins.decimation.enabled = decimation;
+            if (etChart.options.plugins.decimation.enabled != hasNeedDecimationChart()) {
+              etChart.options.plugins.decimation.enabled = hasNeedDecimationChart();
               etChart.update();
             }
           }
