@@ -1095,7 +1095,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].isNull()) {
     float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.k_factor) > 0.0001f) {
+    if (value >= -15 && value <= 15 && fabsf(value - dst.equitherm.k_factor) > 0.0001f) {
       dst.equitherm.k_factor = roundf(value, 3);
       changed = true;
     }
