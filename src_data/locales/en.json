@@ -29,7 +29,8 @@
       "wait": "Please wait...",
       "uploading": "Uploading...",
       "success": "Success",
-      "error": "Error"
+      "error": "Error",
+      "send": "Send"
     },
 
     "index": {
@@ -468,6 +469,31 @@
       "settingsFile": "Settings file",
       "fw": "Firmware",
       "fs": "Filesystem"
+    },
+
+    "opentherm_request": {
+      "title": "Custom requests - OpenTherm Gateway",
+      "name": "Custom requests",
+      "section": {
+        "read": "Read",
+        "read.desc": "Send a read request with a custom message ID"
+      },
+      "messageId": "Message ID",
+      "result": {
+        "valid": "Valid",
+        "parityValid": "Parity valid",
+        "responseMessageIdValid": "Response message ID valid",
+        "responseType": "Response type",
+        "data": "Data value",
+        "flags": "As flags",
+        "hex": "As hex",
+        "fixedPoint": "As f8.8",
+        "u8": "As two u8",
+        "s8": "As two s8",
+        "u16": "As u16",
+        "s16": "As s16"
+      }
+
     }
   }
 }
