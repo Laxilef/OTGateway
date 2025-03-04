@@ -1,6 +1,6 @@
 .pio
 .vscode
-build/*.bin
+build/*
 data/*
 secrets.ini
 node_modules
