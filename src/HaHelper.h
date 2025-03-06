@@ -1239,7 +1239,7 @@ public:
 
     doc[FPSTR(HA_MIN_TEMP)] = minTemp;
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
-    doc[FPSTR(HA_TEMP_STEP)] = 0.5f;
+    doc[FPSTR(HA_TEMP_STEP)] = 0.1f;
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 

@@ -496,9 +496,8 @@ protected:
         }
       }
 
-      if (!rSensor.connected) {
-        rSensor.connected = true;
-      }
+      // Mark connected
+      Sensors::setConnectionStatusById(sensorId, true, true);
 
       if (!this->bleLastSetDtTime[sensorId] || millis() - this->bleLastSetDtTime[sensorId] > this->bleSetDtInterval) {
         struct tm ti;
@@ -521,7 +520,6 @@ protected:
 
           this->bleLastSetDtTime[sensorId] = millis();
         }
-        
       }
     }
   }
@@ -981,16 +979,16 @@ protected:
       auto& rSensor = Sensors::results[sensorId];
 
       if (rSensor.connected && !sSensor.enabled) {
-        rSensor.connected = false;
+        Sensors::setConnectionStatusById(sensorId, false, false);
 
       } else if (rSensor.connected && sSensor.type == Sensors::Type::NOT_CONFIGURED) {
-        rSensor.connected = false;
+        Sensors::setConnectionStatusById(sensorId, false, false);
 
       } else if (rSensor.connected && sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
-        rSensor.connected = false;
+        Sensors::setConnectionStatusById(sensorId, false, false);
 
       } else if (sSensor.type != Sensors::Type::MANUAL && rSensor.connected && (millis() - rSensor.activityTime) > this->disconnectedTimeout) {
-        rSensor.connected = false;
+        Sensors::setConnectionStatusById(sensorId, false, false);
 
       }/* else if (!rSensor.connected) {
         rSensor.connected = true;

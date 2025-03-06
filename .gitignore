@@ -1,8 +1,13 @@
 .pio
 .vscode
-build/*.bin
+build/*
 data/*
+managed_components/*
+node_modules/*
 secrets.ini
-node_modules
 package-lock.json
+*.lock
+sdkconfig.*
+CMakeLists.txt
+!sdkconfig.defaults
 !.gitkeep
