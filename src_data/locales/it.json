@@ -342,15 +342,15 @@
       "equitherm": {
         "slope": {
           "title": "Pendenza",
-          "note": ""
+          "note": "Compensazione delle perdite di calore. Principale parametro di regolazione."
         },
         "exponent": {
           "title": "Esponente",
-          "note": ""
+          "note": "Efficienza del radiatore. Valori tipici: 1.1 - Riscaldamento a pavimento, 1.2 - Radiatori in ghisa, 1.3 - Radiatori a pannelli, 1.4 - Convetttori."
         },
         "shift": {
           "title": "Spostare",
-          "note": ""
+          "note": "Compensa le perdite di calore aggiuntive (ad esempio, nelle tubature) o fonti di calore extra."
         },
         "targetDiffFactor": {
           "title": "Fattore T",
