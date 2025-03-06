@@ -342,15 +342,15 @@
       "equitherm": {
         "slope": {
           "title": "Slope",
-          "note": ""
+          "note": "Heat loss compensation. Main tuning parameter."
         },
         "exponent": {
           "title": "Exponent",
-          "note": ""
+          "note": "Radiator efficiency.  Typical values: 1.1 - Floor heating, 1.2 - Cast iron, 1.3 - Panel radiators, 1.4 - Convectors."
         },
         "shift": {
           "title": "Shift",
-          "note": ""
+          "note": "Compensates for additional heat losses (e.g., in pipes) or extra heat sources."
         },
         "targetDiffFactor": {
           "title": "T factor",
