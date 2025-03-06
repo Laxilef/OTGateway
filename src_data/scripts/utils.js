@@ -850,3 +850,7 @@ function dec2hex(i) {
   
   return hex.toUpperCase();
 }
+
+function constrain(amt, low, high) {
+  return ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)));
+}

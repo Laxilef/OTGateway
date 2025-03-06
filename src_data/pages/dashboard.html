@@ -41,14 +41,18 @@
           <details open>
             <summary><b data-i18n>dashboard.section.control</b></summary>
             <div class="grid">
-              <div class="thermostat" id="thermostat-heating">
+              <div class="thermostat tHeat" data-purpose="heating" data-min="0" data-max="100" data-step="0.1" data-big-step="1">
                 <div class="thermostat-header" data-i18n>dashboard.thermostat.heating</div>
                 <div class="thermostat-temp">
-                  <div class="thermostat-temp-target"><span id="tHeatTargetTemp"></span> <span class="tempUnit"></span></div>
+                  <div class="thermostat-temp-target"><span class="targetTemp"></span> <span class="tempUnit"></span></div>
                   <div class="thermostat-temp-current"><span data-i18n>dashboard.thermostat.temp.current</span>: <span id="tHeatCurrentTemp"></span> <span class="tempUnit"></span></div>
                 </div>
-                <div class="thermostat-minus"><button id="tHeatActionMinus" class="outline"><i class="icons-down"></i></button></div>
-                <div class="thermostat-plus"><button id="tHeatActionPlus" class="outline"><i class="icons-up"></i></button></div>
+                <div class="thermostat-minus">
+                  <button class="tAction outline" data-action="decrement"><i class="icons-down"></i></button>
+                </div>
+                <div class="thermostat-plus">
+                  <button class="tAction outline" data-action="increment"><i class="icons-up"></i></button>
+                </div>
                 <div class="thermostat-control">
                   <input type="checkbox" role="switch" id="tHeatEnabled" value="true">
                   <label htmlFor="tHeatEnabled" data-i18n>dashboard.thermostat.enable</label>
@@ -58,21 +62,25 @@
                 </div>
               </div>
 
-              <div class="thermostat" id="thermostat-dhw">
+              <div class="thermostat tDhw" data-purpose="dhw" data-min="0" data-max="100" data-step="1" data-big-step="5">
                 <div class="thermostat-header" data-i18n>dashboard.thermostat.dhw</div>
                 <div class="thermostat-temp">
-                  <div class="thermostat-temp-target"><span id="tDhwTargetTemp"></span> <span class="tempUnit"></span></div>
+                  <div class="thermostat-temp-target"><span class="targetTemp"></span> <span class="tempUnit"></span></div>
                   <div class="thermostat-temp-current"><span data-i18n>dashboard.thermostat.temp.current</span>: <span id="tDhwCurrentTemp"></span> <span class="tempUnit"></span></div>
                 </div>
-                <div class="thermostat-minus"><button class="outline" id="tDhwActionMinus"><i class="icons-down"></i></button></div>
-                <div class="thermostat-plus"><button class="outline" id="tDhwActionPlus"><i class="icons-up"></i></button></div>
+                <div class="thermostat-minus">
+                  <button class="tAction outline" data-action="decrement"><i class="icons-down"></i></button>
+                </div>
+                <div class="thermostat-plus">
+                  <button class="tAction outline" data-action="increment"><i class="icons-up"></i></button>
+                </div>
                 <div class="thermostat-control">
                   <input type="checkbox" role="switch" id="tDhwEnabled" value="true">
                   <label htmlFor="tDhwEnabled" data-i18n>dashboard.thermostat.enable</label>
                 </div>
               </div>
             </div>
-            
+
             <div class="notify notify-error notify-fault hidden">
               <div class="notify-icon">
                 <i class="icons-error"></i>
@@ -282,7 +290,6 @@
     <script src="/static/app.js?{BUILD_TIME}"></script>
     <script>
       let modifiedTime = null;
-      let noRegulators;
       let prevSettings;
       let newSettings = {
         heating: {
@@ -300,78 +307,69 @@
         const lang = new Lang(document.getElementById('lang'));
         lang.build();
 
-        document.querySelector('#tHeatActionMinus').addEventListener('click', (event) => {
-          if (!prevSettings) {
-            return;
+        let actionTimer = null;
+        let actionLongPress = false;
+        document.querySelectorAll('.tAction').forEach((item) => {
+          const action = item.dataset.action;
+          const tContainer = item.parentNode.parentNode;
+
+          for (const eName of ['pointerup', 'pointercancel']) {
+            item.addEventListener(eName, (event) => {
+              clearInterval(actionTimer);
+
+              const purpose = tContainer.dataset.purpose;
+              const minTemp = parseFloat(tContainer.dataset.min);
+              const maxTemp = parseFloat(tContainer.dataset.max);
+              const step = parseFloat(tContainer.dataset.step);
+              const bigStep = parseFloat(tContainer.dataset.bigStep);
+
+              if (!actionLongPress && prevSettings) {
+                let value = 0;
+                if (action == 'increment') {
+                  value = step;
+
+                } else if (action == 'decrement') {
+                  value = -(step);
+                }
+
+                newSettings[purpose].target = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
+                modifiedTime = Date.now();
+                setValue('.targetTemp', newSettings[purpose].target, tContainer);
+              }
+            });
           }
 
-          newSettings.heating.target -= 0.5;
-          modifiedTime = Date.now();
+          item.addEventListener('pointerdown', (event) => {
+            if (!prevSettings) {
+              return;
+            }
 
-          let minTemp;
-          if (noRegulators) {
-            minTemp = prevSettings.heating.minTemp;
-          } else {
-            minTemp = prevSettings.system.unitSystem == 0 ? 5 : 41;
-          }
+            const purpose = tContainer.dataset.purpose;
+            const minTemp = parseFloat(tContainer.dataset.min);
+            const maxTemp = parseFloat(tContainer.dataset.max);
+            const step = parseFloat(tContainer.dataset.step);
+            const bigStep = parseFloat(tContainer.dataset.bigStep);
 
-          if (prevSettings && newSettings.heating.target < minTemp) {
-            newSettings.heating.target = minTemp;
-          }
+            actionLongPress = false;
+            actionTimer = setInterval(() => {
+              if (!actionLongPress) {
+                actionLongPress = true;
+              }
 
-          setValue('#tHeatTargetTemp', newSettings.heating.target);
-        });
+              let value = 0;
+              if (action == 'increment') {
+                value = bigStep;
 
-        document.querySelector('#tHeatActionPlus').addEventListener('click', (event) => {
-          if (!prevSettings) {
-            return;
-          }
+              } else if (action == 'decrement') {
+                value = -(bigStep);
+              }
 
-          newSettings.heating.target += 0.5;
-          modifiedTime = Date.now();
+              newSettings[purpose].target = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
+              modifiedTime = Date.now();
 
-          let maxTemp;
-          if (noRegulators) {
-            maxTemp = prevSettings.heating.maxTemp;
-          } else {
-            maxTemp = prevSettings.system.unitSystem == 0 ? 30 : 86;
-          }
-
-          if (prevSettings && newSettings.heating.target > maxTemp) {
-            newSettings.heating.target = maxTemp;
-          }
-
-          setValue('#tHeatTargetTemp', newSettings.heating.target);
-        });
-
-        document.querySelector('#tDhwActionMinus').addEventListener('click', (event) => {
-          if (!prevSettings) {
-            return;
-          }
-
-          newSettings.dhw.target -= 1.0;
-          modifiedTime = Date.now();
-
-          if (newSettings.dhw.target < prevSettings.dhw.minTemp) {
-            newSettings.dhw.target = prevSettings.dhw.minTemp;
-          }
-
-          setValue('#tDhwTargetTemp', newSettings.dhw.target);
-        });
-
-        document.querySelector('#tDhwActionPlus').addEventListener('click', (event) => {
-          if (!prevSettings) {
-            return;
-          }
-
-          newSettings.dhw.target += 1.0;
-          modifiedTime = Date.now();
-
-          if (newSettings.dhw.target > prevSettings.dhw.maxTemp) {
-            newSettings.dhw.target = prevSettings.dhw.maxTemp;
-          }
-
-          setValue('#tDhwTargetTemp', newSettings.dhw.target);
+              setValue('.targetTemp', newSettings[purpose].target, tContainer);
+            }, 500);
+          });
         });
 
         document.querySelector('#tHeatEnabled').addEventListener('change', (event) => {
@@ -486,7 +484,6 @@
             }
 
             const result = await response.json();
-            noRegulators = !result.opentherm.options.nativeHeatingControl && !result.equitherm.enabled && !result.pid.enabled;
             prevSettings = result;
             unitSystem = result.system.unitSystem;
             newSettings.heating.enabled = result.heating.enabled;
@@ -496,17 +493,17 @@
             newSettings.dhw.target = result.dhw.target;
 
             if (result.opentherm.options.dhwSupport) {
-              show('#thermostat-dhw');
+              show('.tDhw');
             } else {
-              hide('#thermostat-dhw');
+              hide('.tDhw');
             }
 
             setCheckboxValue('#tHeatEnabled', result.heating.enabled);
             setCheckboxValue('#tHeatTurbo', result.heating.turbo);
-            setValue('#tHeatTargetTemp', result.heating.target);
+            setValue('.tHeat .targetTemp', result.heating.target);
 
             setCheckboxValue('#tDhwEnabled', result.dhw.enabled);
-            setValue('#tDhwTargetTemp', result.dhw.target);
+            setValue('.tDhw .targetTemp', result.dhw.target);
 
             setValue('.tempUnit', temperatureUnit(unitSystem));
             setValue('.pressureUnit', pressureUnit(unitSystem));
@@ -523,20 +520,20 @@
               cache: "no-cache",
               credentials: "include"
             });
-            
+
             if (!response.ok) {
               throw new Error('Response not valid');
             }
 
             const result = await response.json();
-            
+
             // Graph
-            setValue('#tHeatCurrentTemp', result.master.heating.indoorTempControl 
-              ? result.master.heating.indoorTemp 
+            setValue('#tHeatCurrentTemp', result.master.heating.indoorTempControl
+              ? result.master.heating.indoorTemp
               : result.master.heating.currentTemp
             );
             setValue('#tDhwCurrentTemp', result.master.dhw.currentTemp);
-            
+
 
             // SLAVE
             setValue('.sMemberId', result.slave.memberId);
@@ -646,6 +643,14 @@
             setState('.mCascadeControlInput', result.master.cascadeControl.input);
             setState('.mCascadeControlOutput', result.master.cascadeControl.output);
 
+            const tHeat = document.querySelector('.tHeat');
+            tHeat.dataset.min = result.master.heating.minTemp;
+            tHeat.dataset.max = result.master.heating.maxTemp;
+
+            const tDhw = document.querySelector('.tDhw');
+            tDhw.dataset.min = result.master.dhw.minTemp;
+            tDhw.dataset.max = result.master.dhw.maxTemp;
+
             setBusy('#dashboard-busy', '#dashboard-container', false);
 
           } catch (error) {
@@ -658,7 +663,7 @@
               cache: "no-cache",
               credentials: "include"
             });
-            
+
             if (!response.ok) {
               throw new Error("Response not valid");
             }
@@ -684,7 +689,7 @@
               if (!sensorNode) {
                 continue;
               }
-              
+
               const sData = result[sensorId];
               if (!sData.enabled || sData.purpose == 255) {
                 sensorNode.classList.toggle("hidden", true);
