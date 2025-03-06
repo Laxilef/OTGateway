@@ -340,11 +340,26 @@
       },
 
       "equitherm": {
-        "n": "Fattore N",
-        "k": "Fattore K",
-        "t": {
+        "slope": {
+          "title": "Pendenza",
+          "note": ""
+        },
+        "exponent": {
+          "title": "Esponente",
+          "note": ""
+        },
+        "shift": {
+          "title": "Spostare",
+          "note": ""
+        },
+        "targetDiffFactor": {
           "title": "Fattore T",
           "note": "Non usato se PID è attivato"
+        },
+        "chart": {
+          "targetTemp": "Temperatura interna target",
+          "setpointTemp": "Temperatura del portatore di calore",
+          "outdoorTemp": "Temperatura esterna"
         }
       },
 
