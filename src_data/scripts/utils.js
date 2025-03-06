@@ -871,14 +871,14 @@ function dec2hex(i) {
   return hex.toUpperCase();
 }
 
+function constrain(amt, low, high) {
+  return ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)));
+}
+
 function c2f(value) {
   return (9 / 5) * value + 32;
 }
 
 function f2c(value) {
   return (value - 32) * (5 / 9);
-}
-
-function constrain(amt, low, high) {
-  return ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)));
 }
