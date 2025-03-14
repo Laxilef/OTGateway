@@ -138,7 +138,12 @@ protected:
       return;
 
     } else if (this->instance->status == OpenThermStatus::NOT_INITIALIZED) {
-      this->instance->begin();
+      if (!this->instance->begin()) {
+        Log.swarningln(FPSTR(L_OT), F("Failed begin"));
+
+        this->delay(5000);
+        return;
+      }
     }
 
     // RX LED GPIO setup
@@ -211,6 +216,20 @@ protected:
         FPSTR(L_OT),
         F("Failed receive boiler status: %s"),
         CustomOpenTherm::statusToString(this->instance->getLastResponseStatus())
+      );
+      
+    } else {
+      vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
+      vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
+      vars.slave.flame = CustomOpenTherm::isFlameOn(response);
+      vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
+      vars.slave.fault.active = CustomOpenTherm::isFault(response);
+      vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
+  
+      Log.snoticeln(
+        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
+        vars.slave.heating.active, vars.slave.dhw.active,
+        vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
       );
     }
 
@@ -309,19 +328,6 @@ protected:
       vars.slave.dhw.enabled = vars.master.dhw.enabled;
       Log.sinfoln(FPSTR(L_OT_DHW), vars.master.dhw.enabled ? F("Enabled") : F("Disabled"));
     }
-
-    vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
-    vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
-    vars.slave.flame = CustomOpenTherm::isFlameOn(response);
-    vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
-    vars.slave.fault.active = CustomOpenTherm::isFault(response);
-    vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
-
-    Log.snoticeln(
-      FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
-      vars.slave.heating.active, vars.slave.dhw.active,
-      vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
-    );
 
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
