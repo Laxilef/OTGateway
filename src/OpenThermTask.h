@@ -1356,7 +1356,7 @@ protected:
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool setMaxHeatingTemp(const uint8_t temperature) {
+  bool setMaxHeatingTemp(const float temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
