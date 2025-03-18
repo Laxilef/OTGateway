@@ -112,6 +112,27 @@ public:
     return (byte)id == responseId;
   }
 
+  static uint8_t getResponseMessageTypeId(unsigned long response) {
+    return (response << 1) >> 29;
+  }
+
+  static const char* getResponseMessageTypeString(unsigned long response) {
+    uint8_t msgType = getResponseMessageTypeId(response);
+
+    switch (msgType) {
+      case (uint8_t) OpenThermMessageType::READ_ACK:
+      case (uint8_t) OpenThermMessageType::WRITE_ACK:
+      case (uint8_t) OpenThermMessageType::DATA_INVALID:
+      case (uint8_t) OpenThermMessageType::UNKNOWN_DATA_ID:
+        return CustomOpenTherm::messageTypeToString(
+          static_cast<OpenThermMessageType>(msgType)
+        );
+
+      default:
+        return "UNKNOWN";
+    }
+  }
+
   // converters
   template <class T>
   static unsigned int toFloat(const T val) {

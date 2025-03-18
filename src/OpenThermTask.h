@@ -93,8 +93,13 @@ protected:
     this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
       Log.sverboseln(
         FPSTR(L_OT),
-        F("ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"),
-        CustomOpenTherm::getDataID(request), request, response, attempt, CustomOpenTherm::statusToString(status)
+        F("ID: %4d   Request: %8lx   Response: %8lx   Msg type: %s   Attempt: %2d   Status: %s"),
+        CustomOpenTherm::getDataID(request),
+        request,
+        response,
+        CustomOpenTherm::getResponseMessageTypeString(response),
+        attempt,
+        CustomOpenTherm::statusToString(status)
       );
 
       if (status == OpenThermResponseStatus::SUCCESS) {
