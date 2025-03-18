@@ -1190,17 +1190,17 @@ protected:
 
   bool needSetDhwTemp(const float target) {
     return millis() - this->dhwSetTempTime > this->dhwSetTempInterval
-      || fabsf(target - vars.slave.dhw.targetTemp) > 0.001f;
+      || fabsf(target - vars.slave.dhw.targetTemp) > 0.05f;
   }
 
   bool needSetHeatingTemp(const float target) {
     return millis() - this->heatingSetTempTime > this->heatingSetTempInterval
-      || fabsf(target - vars.slave.heating.targetTemp) > 0.001f;
+      || fabsf(target - vars.slave.heating.targetTemp) > 0.05f;
   }
 
   bool needSetCh2Temp(const float target) {
     return millis() - this->ch2SetTempTime > this->ch2SetTempInterval
-      || fabsf(target - vars.slave.ch2.targetTemp) > 0.001f;
+      || fabsf(target - vars.slave.ch2.targetTemp) > 0.05f;
   }
 
   bool updateSlaveConfig() {
