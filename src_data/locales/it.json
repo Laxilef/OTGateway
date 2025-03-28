@@ -340,11 +340,26 @@
       },
 
       "equitherm": {
-        "n": "Fattore N",
-        "k": "Fattore K",
-        "t": {
+        "slope": {
+          "title": "Pendenza",
+          "note": "Compensazione delle perdite di calore. Principale parametro di regolazione."
+        },
+        "exponent": {
+          "title": "Esponente",
+          "note": "Efficienza del radiatore. Valori tipici: 1.1 - Riscaldamento a pavimento, 1.2 - Radiatori in ghisa, 1.3 - Radiatori a pannelli, 1.4 - Convetttori."
+        },
+        "shift": {
+          "title": "Spostare",
+          "note": "Compensa le perdite di calore aggiuntive (ad esempio, nelle tubature) o fonti di calore extra."
+        },
+        "targetDiffFactor": {
           "title": "Fattore T",
           "note": "Non usato se PID è attivato"
+        },
+        "chart": {
+          "targetTemp": "Temperatura interna target",
+          "setpointTemp": "Temperatura del portatore di calore",
+          "outdoorTemp": "Temperatura esterna"
         }
       },
 
