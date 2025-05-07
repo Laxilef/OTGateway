@@ -196,6 +196,7 @@ protected:
     // critical heap
     if (!vars.states.restarting && (freeHeap < 2048 || maxFreeBlockHeap < 2048)) {
       this->restartSignalReceivedTime = millis();
+      this->restartSignalReceived = true;
       vars.states.restarting = true;
     }
 
