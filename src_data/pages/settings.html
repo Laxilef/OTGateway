@@ -869,7 +869,7 @@
           if (data.opentherm.options.nativeHeatingControl) {
             setInputValue("[name='emergency[target]']", data.emergency.target, {
               "min": data.system.unitSystem == 0 ? 5 : 41,
-              "max": data.system.unitSystem == 0 ? 30 : 86
+              "max": data.system.unitSystem == 0 ? 40 : 86
             });
 
           } else {
