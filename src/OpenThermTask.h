@@ -342,13 +342,23 @@ protected:
           vars.slave.modulation.min, vars.slave.power.max
         );
         
-        if (settings.opentherm.maxModulation < vars.slave.modulation.min) {
-          settings.opentherm.maxModulation = vars.slave.modulation.min;
+        if (settings.heating.maxModulation < vars.slave.modulation.min) {
+          settings.heating.maxModulation = vars.slave.modulation.min;
           fsSettings.update();
 
           Log.swarningln(
-            FPSTR(L_SETTINGS_OT), F("Updated min modulation: %hhu%%"),
-            settings.opentherm.maxModulation
+            FPSTR(L_SETTINGS_HEATING), F("Updated min modulation: %hhu%%"),
+            settings.heating.maxModulation
+          );
+        }
+
+        if (settings.dhw.maxModulation < vars.slave.modulation.min) {
+          settings.dhw.maxModulation = vars.slave.modulation.min;
+          fsSettings.update();
+
+          Log.swarningln(
+            FPSTR(L_SETTINGS_DHW), F("Updated min modulation: %hhu%%"),
+            settings.dhw.maxModulation
           );
         }
 
@@ -365,29 +375,6 @@ protected:
 
       } else {
         Log.swarningln(FPSTR(L_OT), F("Failed receive min modulation and max power"));
-      }
-
-      if (!vars.master.heating.enabled && settings.opentherm.options.modulationSyncWithHeating) {
-        if (this->setMaxModulationLevel(0)) {
-          Log.snoticeln(FPSTR(L_OT), F("Set max modulation: 0% (response: %hhu%%)"), vars.slave.modulation.max);
-
-        } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed set max modulation: 0% (response: %hhu%%)"), vars.slave.modulation.max);
-        }
-
-      } else {
-        if (this->setMaxModulationLevel(settings.opentherm.maxModulation)) {
-          Log.snoticeln(
-            FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
-            settings.opentherm.maxModulation, vars.slave.modulation.max
-          );
-
-        } else {
-          Log.swarningln(
-            FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
-            settings.opentherm.maxModulation, vars.slave.modulation.max
-          );
-        }
       }
 
 
@@ -517,6 +504,29 @@ protected:
       this->prevUpdateNonEssentialVars = millis();
     }
 
+    // Set max modulation level
+    uint8_t targetMaxModulation = vars.slave.modulation.max;
+    if (vars.slave.heating.active) {
+      targetMaxModulation = settings.heating.maxModulation;
+
+    } else if (vars.slave.dhw.active) {
+      targetMaxModulation = settings.dhw.maxModulation;
+    }
+
+    if (vars.slave.modulation.max != targetMaxModulation) {
+      if (this->setMaxModulationLevel(targetMaxModulation)) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
+          targetMaxModulation, vars.slave.modulation.max
+        );
+
+      } else {
+        Log.swarningln(
+          FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
+          targetMaxModulation, vars.slave.modulation.max
+        );
+      }
+    }
 
     // Update modulation level
     if (

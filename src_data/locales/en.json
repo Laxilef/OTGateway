@@ -292,6 +292,7 @@
         "min": "Minimum temperature",
         "max": "Maximum temperature"
       },
+      "maxModulation": "Max modulation level",
 
       "portal": {
         "login": "Login",
@@ -375,7 +376,6 @@
         "ledGpio": "RX LED GPIO",
         "memberId": "Master member ID",
         "flags": "Master flags",
-        "maxMod": "Max modulation level",
         "minPower": {
           "title": "Min boiler power <small>(kW)</small>",
           "note": "This value is at 0-1% boiler modulation level. Typically found in the boiler specification as \"minimum useful heat output\"."
@@ -395,7 +395,6 @@
           "heatingToCh2": "Duplicate heating to CH2",
           "dhwToCh2": "Duplicate DHW to CH2",
           "dhwBlocking": "DHW blocking",
-          "modulationSyncWithHeating": "Sync modulation with heating",
           "maxTempSyncWithTargetTemp": "Sync max heating temp with target temp",
           "getMinMaxTemp": "Get min/max temp from boiler",
           "immergasFix": "Fix for Immergas boilers"

@@ -131,7 +131,6 @@ const char S_MIN_POWER[]                            PROGMEM = "minPower";
 const char S_MIN_TEMP[]                             PROGMEM = "minTemp";
 const char S_MODEL[]                                PROGMEM = "model";
 const char S_MODULATION[]                           PROGMEM = "modulation";
-const char S_MODULATION_SYNC_WITH_HEATING[]         PROGMEM = "modulationSyncWithHeating";
 const char S_MQTT[]                                 PROGMEM = "mqtt";
 const char S_NAME[]                                 PROGMEM = "name";
 const char S_NATIVE_HEATING_CONTROL[]               PROGMEM = "nativeHeatingControl";

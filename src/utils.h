@@ -449,7 +449,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     opentherm[FPSTR(S_RX_LED_GPIO)] = src.opentherm.rxLedGpio;
     opentherm[FPSTR(S_MEMBER_ID)] = src.opentherm.memberId;
     opentherm[FPSTR(S_FLAGS)] = src.opentherm.flags;
-    opentherm[FPSTR(S_MAX_MODULATION)] = src.opentherm.maxModulation;
     opentherm[FPSTR(S_MIN_POWER)] = roundf(src.opentherm.minPower, 2);
     opentherm[FPSTR(S_MAX_POWER)] = roundf(src.opentherm.maxPower, 2);
 
@@ -462,7 +461,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
     otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
     otOptions[FPSTR(S_DHW_BLOCKING)] = src.opentherm.options.dhwBlocking;
-    otOptions[FPSTR(S_MODULATION_SYNC_WITH_HEATING)] = src.opentherm.options.modulationSyncWithHeating;
     otOptions[FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)] = src.opentherm.options.maxTempSyncWithTargetTemp;
     otOptions[FPSTR(S_GET_MIN_MAX_TEMP)] = src.opentherm.options.getMinMaxTemp;
     otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
@@ -491,12 +489,14 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_TURBO_FACTOR)] = roundf(src.heating.turboFactor, 3);
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
+  heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
 
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
   dhw[FPSTR(S_TARGET)] = roundf(src.dhw.target, 1);
   dhw[FPSTR(S_MIN_TEMP)] = src.dhw.minTemp;
   dhw[FPSTR(S_MAX_TEMP)] = src.dhw.maxTemp;
+  dhw[FPSTR(S_MAX_MODULATION)] = src.dhw.maxModulation;
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
@@ -811,15 +811,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_MAX_MODULATION)].isNull()) {
-      unsigned char value = src[FPSTR(S_OPENTHERM)][FPSTR(S_MAX_MODULATION)].as<unsigned char>();
-
-      if (value > 0 && value <= 100 && value != dst.opentherm.maxModulation) {
-        dst.opentherm.maxModulation = value;
-        changed = true;
-      }
-    }
-
     if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_MIN_POWER)].isNull()) {
       float value = src[FPSTR(S_OPENTHERM)][FPSTR(S_MIN_POWER)].as<float>();
 
@@ -924,15 +915,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.dhwBlocking) {
         dst.opentherm.options.dhwBlocking = value;
-        changed = true;
-      }
-    }
-
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].as<bool>();
-
-      if (value != dst.opentherm.options.modulationSyncWithHeating) {
-        dst.opentherm.options.modulationSyncWithHeating = value;
         changed = true;
       }
     }
@@ -1301,6 +1283,16 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
 
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_MAX_MODULATION)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_MAX_MODULATION)].as<unsigned char>();
+
+    if (value > 0 && value <= 100 && value != dst.heating.maxModulation) {
+      dst.heating.maxModulation = value;
+      changed = true;
+    }
+  }
+
+
   // dhw
   if (src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].as<bool>();
@@ -1332,6 +1324,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (dst.dhw.maxTemp < dst.dhw.minTemp) {
     dst.dhw.maxTemp = dst.dhw.minTemp;
     changed = true;
+  }
+
+  if (!src[FPSTR(S_DHW)][FPSTR(S_MAX_MODULATION)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_MAX_MODULATION)].as<unsigned char>();
+
+    if (value > 0 && value <= 100 && value != dst.dhw.maxModulation) {
+      dst.dhw.maxModulation = value;
+      changed = true;
+    }
   }
 
 
