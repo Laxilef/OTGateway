@@ -395,7 +395,7 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
+    //doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
     doc[FPSTR(HA_STATE_CLASS)] = FPSTR(HA_STATE_CLASS_MEASUREMENT);
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
     doc[FPSTR(HA_ICON)] = F("mdi:signal");
