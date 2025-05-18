@@ -397,6 +397,9 @@
           "dhwBlocking": "DHW blocking",
           "maxTempSyncWithTargetTemp": "Sync max heating temp with target temp",
           "getMinMaxTemp": "Get min/max temp from boiler",
+          "ignoreDiagState": "Ignore diag state",
+          "autoFaultReset": "Auto fault reset <small>(not recommended!)</small>",
+          "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
           "immergasFix": "Fix for Immergas boilers"
         },
 

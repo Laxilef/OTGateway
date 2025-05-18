@@ -397,6 +397,9 @@
           "dhwBlocking": "DHW blocking",
           "maxTempSyncWithTargetTemp": "Синхронизировать макс. темп. отопления с целевой темп.",
           "getMinMaxTemp": "Получать мин. и макс. температуру от котла",
+          "ignoreDiagState": "Игнорировать состояние диагностики",
+          "autoFaultReset": "Автоматический сброс ошибок <small>(не рекомендуется!)</small>",
+          "autoDiagReset": "Автоматический сброс диагностики <small>(не рекомендуется!)</small>",
           "immergasFix": "Фикс для котлов Immergas"
         },
 

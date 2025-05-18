@@ -229,7 +229,13 @@ protected:
       vars.slave.flame = CustomOpenTherm::isFlameOn(response);
       vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
       vars.slave.fault.active = CustomOpenTherm::isFault(response);
-      vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
+
+      if (!settings.opentherm.options.ignoreDiagState) {
+        vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
+
+      } else if (vars.slave.diag.active) {
+        vars.slave.diag.active = false;
+      }
   
       Log.snoticeln(
         FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
@@ -499,6 +505,16 @@ protected:
         
       } else if (vars.slave.diag.code != 0) {
         vars.slave.diag.code = 0;
+      }
+
+      // Auto fault reset
+      if (settings.opentherm.options.autoFaultReset && vars.slave.fault.active && !vars.actions.resetFault) {
+        vars.actions.resetFault = true;
+      }
+
+      // Auto diag reset
+      if (settings.opentherm.options.autoDiagReset && vars.slave.diag.active && !vars.actions.resetDiagnostic) {
+        vars.actions.resetDiagnostic = true;
       }
 
       this->prevUpdateNonEssentialVars = millis();

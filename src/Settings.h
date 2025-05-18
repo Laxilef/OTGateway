@@ -73,6 +73,9 @@ struct Settings {
       bool dhwBlocking = false;
       bool maxTempSyncWithTargetTemp = true;
       bool getMinMaxTemp = true;
+      bool ignoreDiagState = false;
+      bool autoFaultReset = false;
+      bool autoDiagReset = false;
       bool nativeHeatingControl = false;
       bool immergasFix = false;
     } options;

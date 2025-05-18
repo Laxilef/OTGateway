@@ -537,6 +537,21 @@
                 </label>
 
                 <label>
+                  <input type="checkbox" name="opentherm[options][ignoreDiagState]" value="true">
+                  <span data-i18n>settings.ot.options.ignoreDiagState</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="opentherm[options][autoFaultReset]" value="true">
+                  <span data-i18n>settings.ot.options.autoFaultReset</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="opentherm[options][autoDiagReset]" value="true">
+                  <span data-i18n>settings.ot.options.autoDiagReset</span>
+                </label>
+
+                <label>
                   <input type="checkbox" name="opentherm[options][immergasFix]" value="true">
                   <span data-i18n>settings.ot.options.immergasFix</span>
                 </label>
@@ -800,6 +815,9 @@
           setCheckboxValue("[name='opentherm[options][dhwBlocking]']", data.opentherm.options.dhwBlocking);
           setCheckboxValue("[name='opentherm[options][maxTempSyncWithTargetTemp]']", data.opentherm.options.maxTempSyncWithTargetTemp);
           setCheckboxValue("[name='opentherm[options][getMinMaxTemp]']", data.opentherm.options.getMinMaxTemp);
+          setCheckboxValue("[name='opentherm[options][ignoreDiagState]']", data.opentherm.options.ignoreDiagState);
+          setCheckboxValue("[name='opentherm[options][autoFaultReset]']", data.opentherm.options.autoFaultReset);
+          setCheckboxValue("[name='opentherm[options][autoDiagReset]']", data.opentherm.options.autoDiagReset);
           setCheckboxValue("[name='opentherm[options][nativeHeatingControl]']", data.opentherm.options.nativeHeatingControl);
           setCheckboxValue("[name='opentherm[options][immergasFix]']", data.opentherm.options.immergasFix);
           setBusy('#ot-settings-busy', '#ot-settings', false);

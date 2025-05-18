@@ -397,6 +397,9 @@
           "dhwBlocking": "Bloccare ACS",
           "maxTempSyncWithTargetTemp": "Sincronizza la temperatura massima di riscaldamento con la temperatura target",
           "getMinMaxTemp": "Prendi temp min/max dalla caldaia",
+          "ignoreDiagState": "Ignora lo stato diagnostico",
+          "autoFaultReset": "Ripristino automatico degli errori <small>(sconsigliato!)</small>",
+          "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
           "immergasFix": "Fix per caldiaie Immergas"
         },
 
