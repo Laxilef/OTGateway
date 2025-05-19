@@ -261,16 +261,16 @@
 
           <details>
             <summary><b data-i18n>dashboard.section.diag</b></summary>
-            <pre><b>Vendor:</b>             <span class="sVendor"></span>
-<b>Member ID:</b>          <span class="sMemberId"></span>
-<b>Flags:</b>              <span class="sFlags"></span>
-<b>Type:</b>               <span class="sType"></span>
-<b>AppVersion:</b>         <span class="sAppVersion"></span>
-<b>OT version:</b>         <span class="sProtocolVersion"></span>
-<b>Modulation limits:</b>  <span class="sModMin"></span>...<span class="sAbsModMax"></span> %, curr. max: <span class="sModMax"></span> %
-<b>Power limits:</b>       <span class="sPowerMin"></span>...<span class="sPowerMax"></span> kW
-<b>Heating limits:</b>     <span class="sHeatMinTemp"></span>...<span class="sHeatMaxTemp"></span> <span class="tempUnit"></span>
-<b>DHW limits:</b>         <span class="sDhwMinTemp"></span>...<span class="sDhwMaxTemp"></span> <span class="tempUnit"></span></pre>
+            <pre><b>Vendor:</b>         <span class="sVendor"></span>
+<b>Member ID:</b>      <span class="sMemberId"></span>
+<b>Flags:</b>          <span class="sFlags"></span>
+<b>Type:</b>           <span class="sType"></span>
+<b>AppVersion:</b>     <span class="sAppVersion"></span>
+<b>OT version:</b>     <span class="sProtocolVersion"></span>
+<b>Modulation:</b>     min: <span class="sModMin"></span> %, curr. max: <span class="sModMax"></span> %
+<b>Power limits:</b>   <span class="sPowerMin"></span>...<span class="sPowerMax"></span> kW
+<b>Heating limits:</b> <span class="sHeatMinTemp"></span>...<span class="sHeatMaxTemp"></span> <span class="tempUnit"></span>
+<b>DHW limits:</b>     <span class="sDhwMinTemp"></span>...<span class="sDhwMaxTemp"></span> <span class="tempUnit"></span></pre>
           </details>
         </div>
       </article>
@@ -508,7 +508,6 @@
             setValue('.tempUnit', temperatureUnit(unitSystem));
             setValue('.pressureUnit', pressureUnit(unitSystem));
             setValue('.volumeUnit', volumeUnit(unitSystem));
-            setValue('.sAbsModMax', result.opentherm.maxModulation);
 
           } catch (error) {
             console.log(error);

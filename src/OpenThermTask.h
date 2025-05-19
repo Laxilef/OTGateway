@@ -554,6 +554,9 @@ protected:
             Sensors::Type::OT_BURNER_STARTS, vars.slave.stats.burnerStarts,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive burner starts"));
         }
       }
 
@@ -566,6 +569,9 @@ protected:
             Sensors::Type::OT_DHW_BURNER_STARTS, vars.slave.stats.dhwBurnerStarts,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW burner starts"));
         }
       }
 
@@ -578,6 +584,9 @@ protected:
             Sensors::Type::OT_HEATING_PUMP_STARTS, vars.slave.stats.heatingPumpStarts,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive heating pump starts"));
         }
       }
 
@@ -590,6 +599,9 @@ protected:
             Sensors::Type::OT_DHW_PUMP_STARTS, vars.slave.stats.dhwPumpStarts,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW pump starts"));
         }
       }
 
@@ -602,6 +614,9 @@ protected:
             Sensors::Type::OT_BURNER_HOURS, vars.slave.stats.burnerHours,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive burner hours"));
         }
       }
 
@@ -614,6 +629,9 @@ protected:
             Sensors::Type::OT_DHW_BURNER_HOURS, vars.slave.stats.dhwBurnerHours,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW burner hours"));
         }
       }
 
@@ -626,6 +644,9 @@ protected:
             Sensors::Type::OT_HEATING_PUMP_HOURS, vars.slave.stats.heatingPumpHours,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive heating pump hours"));
         }
       }
 
@@ -638,6 +659,9 @@ protected:
             Sensors::Type::OT_DHW_PUMP_HOURS, vars.slave.stats.dhwPumpHours,
             Sensors::ValueType::PRIMARY, true, true
           );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW pump hours"));
         }
       }
 
@@ -1418,9 +1442,8 @@ protected:
   }
 
   bool setDayAndMonth(const struct tm *ptm) {
-    const unsigned int request = ((ptm->tm_mon + 1) & 0xFF << 8) 
-      | (ptm->tm_mday & 0xFF);
-    
+    const uint8_t month = (ptm->tm_mon + 1) & 0xFF;
+    const unsigned int request = (month << 8) | (ptm->tm_mday & 0xFF);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::Date,
