@@ -328,7 +328,7 @@ struct Variables {
     struct {
       uint8_t current = 0;
       uint8_t min = 0;
-      uint8_t max = 100;
+      uint8_t max = 0;
     } modulation;
 
     struct {
