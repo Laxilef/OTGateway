@@ -1418,9 +1418,8 @@ protected:
   }
 
   bool setDayAndMonth(const struct tm *ptm) {
-    const unsigned int request = ((ptm->tm_mon + 1) & 0xFF << 8) 
-      | (ptm->tm_mday & 0xFF);
-    
+    const uint8_t month = (ptm->tm_mon + 1) & 0xFF;
+    const unsigned int request = (month << 8) | (ptm->tm_mday & 0xFF);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::Date,
