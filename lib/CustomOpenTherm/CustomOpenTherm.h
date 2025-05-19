@@ -7,7 +7,7 @@ public:
   typedef std::function<void(unsigned long, byte)> BeforeSendRequestCallback;
   typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, byte)> AfterSendRequestCallback;
 
-  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false) : OpenTherm(inPin, outPin, isSlave) {}
+  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false, bool alwaysReceive = false) : OpenTherm(inPin, outPin, isSlave, alwaysReceive) {}
   ~CustomOpenTherm() {}
 
   CustomOpenTherm* setDelayCallback(DelayCallback callback = nullptr) {
@@ -28,8 +28,8 @@ public:
     return this;
   }
 
-  unsigned long sendRequest(unsigned long request, byte attempts = 5, byte _attempt = 0) {
-    _attempt++;
+  unsigned long sendRequest(unsigned long request) override {
+    this->sendRequestAttempt++;
 
     while (!this->isReady()) {
       if (this->delayCallback) {
@@ -40,15 +40,10 @@ public:
     }
 
     if (this->beforeSendRequestCallback) {
-      this->beforeSendRequestCallback(request, _attempt);
+      this->beforeSendRequestCallback(request, this->sendRequestAttempt);
     }
 
-    unsigned long _response;
-    OpenThermResponseStatus _responseStatus = OpenThermResponseStatus::NONE;
-    if (!this->sendRequestAsync(request)) {
-      _response = 0;
-
-    } else {
+    if (this->sendRequestAsync(request)) {
       do {
         if (this->delayCallback) {
           this->delayCallback(150);
@@ -56,40 +51,23 @@ public:
 
         this->process();
       } while (this->status != OpenThermStatus::READY && this->status != OpenThermStatus::DELAY);
-
-      _response = this->getLastResponse();
-      _responseStatus = this->getLastResponseStatus();
     }
 
     if (this->afterSendRequestCallback) {
-      this->afterSendRequestCallback(request, _response, _responseStatus, _attempt);
+      this->afterSendRequestCallback(request, this->response, this->responseStatus, this->sendRequestAttempt);
     }
 
-    if (_responseStatus == OpenThermResponseStatus::SUCCESS || _responseStatus == OpenThermResponseStatus::INVALID || _attempt >= attempts) {
-      return _response;
+    if (this->responseStatus == OpenThermResponseStatus::SUCCESS || this->responseStatus == OpenThermResponseStatus::INVALID) {
+      this->sendRequestAttempt = 0;
+      return this->response;
+
+    } else if (this->sendRequestAttempt >= this->sendRequestMaxAttempts) {
+      this->sendRequestAttempt = 0;
+      return this->response;
 
     } else {
-      return this->sendRequest(request, attempts, _attempt);
+      return this->sendRequest(request);
     }
-  }
-
-  unsigned long setBoilerStatus(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2, bool summerWinterMode, bool dhwBlocking, uint8_t lb = 0) {
-    unsigned int data = enableCentralHeating
-      | (enableHotWater << 1)
-      | (enableCooling << 2)
-      | (enableOutsideTemperatureCompensation << 3)
-      | (enableCentralHeating2 << 4)
-      | (summerWinterMode << 5)
-      | (dhwBlocking << 6);
-    
-    data <<= 8;
-    data |= lb;
-
-    return this->sendRequest(buildRequest(
-      OpenThermMessageType::READ_DATA,
-      OpenThermMessageID::Status,
-      data
-    ));
   }
 
   bool sendBoilerReset() {
@@ -130,8 +108,29 @@ public:
 
   static bool isValidResponseId(unsigned long response, OpenThermMessageID id) {
     byte responseId = (response >> 16) & 0xFF;
-    
+
     return (byte)id == responseId;
+  }
+
+  static uint8_t getResponseMessageTypeId(unsigned long response) {
+    return (response << 1) >> 29;
+  }
+
+  static const char* getResponseMessageTypeString(unsigned long response) {
+    uint8_t msgType = getResponseMessageTypeId(response);
+
+    switch (msgType) {
+      case (uint8_t) OpenThermMessageType::READ_ACK:
+      case (uint8_t) OpenThermMessageType::WRITE_ACK:
+      case (uint8_t) OpenThermMessageType::DATA_INVALID:
+      case (uint8_t) OpenThermMessageType::UNKNOWN_DATA_ID:
+        return CustomOpenTherm::messageTypeToString(
+          static_cast<OpenThermMessageType>(msgType)
+        );
+
+      default:
+        return "UNKNOWN";
+    }
   }
 
   // converters
@@ -145,6 +144,8 @@ public:
   }
 
 protected:
+  const uint8_t sendRequestMaxAttempts = 5;
+  uint8_t sendRequestAttempt = 0;
   DelayCallback delayCallback;
   BeforeSendRequestCallback beforeSendRequestCallback;
   AfterSendRequestCallback afterSendRequestCallback;

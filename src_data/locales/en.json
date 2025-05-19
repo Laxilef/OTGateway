@@ -201,6 +201,7 @@
         "dhwFlowRate": "DHW, flow rate",
         "exhaustTemp": "Exhaust temperature",
         "modLevel": "Modulation level (in percents)",
+        "number": "Number (raw)",
         "powerFactor": "Power (in percent)",
         "power": "Power (in kWt)",
         "fanSpeed": "Fan speed",
@@ -231,6 +232,14 @@
         "otSolarCollectorTemp": "OpenTherm, solar collector temp",
         "otFanSpeedSetpoint": "OpenTherm, setpoint fan speed",
         "otFanSpeedCurrent": "OpenTherm, current fan speed",
+        "otBurnerStarts": "OpenTherm, number of burner starts",
+        "otDhwBurnerStarts": "OpenTherm, number of burner starts (DHW)",
+        "otHeatingPumpStarts": "OpenTherm, number of pump starts (heating)",
+        "otDhwPumpStarts": "OpenTherm, number of pump starts (DHW)",
+        "otBurnerHours": "OpenTherm, number of burner operating hours",
+        "otDhwBurnerHours": "OpenTherm, number of burner operating hours (DHW)",
+        "otHeatingPumpHours": "OpenTherm, number of pump operating hours (heating)",
+        "otDhwPumpHours": "OpenTherm, number of pump operating hours (DHW)",
         
         "ntcTemp": "NTC sensor",
         "dallasTemp": "DALLAS sensor",
@@ -292,6 +301,7 @@
         "min": "Minimum temperature",
         "max": "Maximum temperature"
       },
+      "maxModulation": "Max modulation level",
 
       "portal": {
         "login": "Login",
@@ -390,7 +400,6 @@
         "ledGpio": "RX LED GPIO",
         "memberId": "Master member ID",
         "flags": "Master flags",
-        "maxMod": "Max modulation level",
         "minPower": {
           "title": "Min boiler power <small>(kW)</small>",
           "note": "This value is at 0-1% boiler modulation level. Typically found in the boiler specification as \"minimum useful heat output\"."
@@ -410,9 +419,12 @@
           "heatingToCh2": "Duplicate heating to CH2",
           "dhwToCh2": "Duplicate DHW to CH2",
           "dhwBlocking": "DHW blocking",
-          "modulationSyncWithHeating": "Sync modulation with heating",
           "maxTempSyncWithTargetTemp": "Sync max heating temp with target temp",
           "getMinMaxTemp": "Get min/max temp from boiler",
+          "ignoreDiagState": "Ignore diag state",
+          "autoFaultReset": "Auto fault reset <small>(not recommended!)</small>",
+          "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
+          "setDateAndTime": "Set date & time on boiler",
           "immergasFix": "Fix for Immergas boilers"
         },
 

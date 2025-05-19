@@ -58,11 +58,11 @@ protected:
     this->hysteresis();
 
     vars.master.heating.targetTemp = settings.heating.target;
-    vars.master.heating.setpointTemp = constrain(
+    vars.master.heating.setpointTemp = roundf(constrain(
       this->getHeatingSetpointTemp(),
       this->getHeatingMinSetpointTemp(),
       this->getHeatingMaxSetpointTemp()
-    );
+    ), 0);
 
     Sensors::setValueByType(
       Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.setpointTemp,

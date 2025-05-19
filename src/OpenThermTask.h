@@ -93,8 +93,13 @@ protected:
     this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
       Log.sverboseln(
         FPSTR(L_OT),
-        F("ID: %4d   Request: %8lx   Response: %8lx   Attempt: %2d   Status: %s"),
-        CustomOpenTherm::getDataID(request), request, response, attempt, CustomOpenTherm::statusToString(status)
+        F("ID: %4d   Request: %8lx   Response: %8lx   Msg type: %s   Attempt: %2d   Status: %s"),
+        CustomOpenTherm::getDataID(request),
+        request,
+        response,
+        CustomOpenTherm::getResponseMessageTypeString(response),
+        attempt,
+        CustomOpenTherm::statusToString(status)
       );
 
       if (status == OpenThermResponseStatus::SUCCESS) {
@@ -138,7 +143,12 @@ protected:
       return;
 
     } else if (this->instance->status == OpenThermStatus::NOT_INITIALIZED) {
-      this->instance->begin();
+      if (!this->instance->begin()) {
+        Log.swarningln(FPSTR(L_OT), F("Failed begin"));
+
+        this->delay(5000);
+        return;
+      }
     }
 
     // RX LED GPIO setup
@@ -212,6 +222,26 @@ protected:
         F("Failed receive boiler status: %s"),
         CustomOpenTherm::statusToString(this->instance->getLastResponseStatus())
       );
+      
+    } else {
+      vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
+      vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
+      vars.slave.flame = CustomOpenTherm::isFlameOn(response);
+      vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
+      vars.slave.fault.active = CustomOpenTherm::isFault(response);
+
+      if (!settings.opentherm.options.ignoreDiagState) {
+        vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
+
+      } else if (vars.slave.diag.active) {
+        vars.slave.diag.active = false;
+      }
+  
+      Log.snoticeln(
+        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
+        vars.slave.heating.active, vars.slave.dhw.active,
+        vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
+      );
     }
 
     // 5 request retries
@@ -256,6 +286,15 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_CURRENT, false);
+
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_HOURS, false);
 
       this->initialized = false;
       this->disconnectedTime = millis();
@@ -310,34 +349,60 @@ protected:
       Log.sinfoln(FPSTR(L_OT_DHW), vars.master.dhw.enabled ? F("Enabled") : F("Disabled"));
     }
 
-    vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
-    vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
-    vars.slave.flame = CustomOpenTherm::isFlameOn(response);
-    vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
-    vars.slave.fault.active = CustomOpenTherm::isFault(response);
-    vars.slave.diag.active = CustomOpenTherm::isDiagnostic(response);
-
-    Log.snoticeln(
-      FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
-      vars.slave.heating.active, vars.slave.dhw.active,
-      vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
-    );
-
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
+      // Set date & time
+      if (settings.opentherm.options.setDateAndTime) {
+        struct tm ti;
+
+        if (getLocalTime(&ti)) {
+          if (this->setYear(&ti)) {
+            Log.sinfoln(FPSTR(L_OT), F("Year of date set successfully"));
+
+          } else {
+            Log.sinfoln(FPSTR(L_OT), F("Failed set year of date"));
+          }
+
+          if (this->setDayAndMonth(&ti)) {
+            Log.sinfoln(FPSTR(L_OT), F("Day and month of date set successfully"));
+
+          } else {
+            Log.sinfoln(FPSTR(L_OT), F("Failed set day and month of date"));
+          }
+
+          if (this->setTime(&ti)) {
+            Log.sinfoln(FPSTR(L_OT), F("Time set successfully"));
+
+          } else {
+            Log.sinfoln(FPSTR(L_OT), F("Failed set time"));
+          }
+        }
+      }
+
+      // Get min modulation level & max power
       if (this->updateMinModulationLevel()) {
         Log.snoticeln(
           FPSTR(L_OT), F("Received min modulation: %hhu%%, max power: %.2f kW"),
           vars.slave.modulation.min, vars.slave.power.max
         );
         
-        if (settings.opentherm.maxModulation < vars.slave.modulation.min) {
-          settings.opentherm.maxModulation = vars.slave.modulation.min;
+        if (settings.heating.maxModulation < vars.slave.modulation.min) {
+          settings.heating.maxModulation = vars.slave.modulation.min;
           fsSettings.update();
 
           Log.swarningln(
-            FPSTR(L_SETTINGS_OT), F("Updated min modulation: %hhu%%"),
-            settings.opentherm.maxModulation
+            FPSTR(L_SETTINGS_HEATING), F("Updated min modulation: %hhu%%"),
+            settings.heating.maxModulation
+          );
+        }
+
+        if (settings.dhw.maxModulation < vars.slave.modulation.min) {
+          settings.dhw.maxModulation = vars.slave.modulation.min;
+          fsSettings.update();
+
+          Log.swarningln(
+            FPSTR(L_SETTINGS_DHW), F("Updated min modulation: %hhu%%"),
+            settings.dhw.maxModulation
           );
         }
 
@@ -354,29 +419,6 @@ protected:
 
       } else {
         Log.swarningln(FPSTR(L_OT), F("Failed receive min modulation and max power"));
-      }
-
-      if (!vars.master.heating.enabled && settings.opentherm.options.modulationSyncWithHeating) {
-        if (this->setMaxModulationLevel(0)) {
-          Log.snoticeln(FPSTR(L_OT), F("Set max modulation: 0% (response: %hhu%%)"), vars.slave.modulation.max);
-
-        } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed set max modulation: 0% (response: %hhu%%)"), vars.slave.modulation.max);
-        }
-
-      } else {
-        if (this->setMaxModulationLevel(settings.opentherm.maxModulation)) {
-          Log.snoticeln(
-            FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
-            settings.opentherm.maxModulation, vars.slave.modulation.max
-          );
-
-        } else {
-          Log.swarningln(
-            FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
-            settings.opentherm.maxModulation, vars.slave.modulation.max
-          );
-        }
       }
 
 
@@ -503,9 +545,138 @@ protected:
         vars.slave.diag.code = 0;
       }
 
+      // Update burner starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_BURNER_STARTS, true)) {
+        if (this->updateBurnerStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received burner starts: %hu"), vars.slave.stats.burnerStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_BURNER_STARTS, vars.slave.stats.burnerStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW burner starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_BURNER_STARTS, true)) {
+        if (this->updateDhwBurnerStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW burner starts: %hu"), vars.slave.stats.dhwBurnerStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_BURNER_STARTS, vars.slave.stats.dhwBurnerStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update heating pump starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_PUMP_STARTS, true)) {
+        if (this->updateHeatingPumpStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received heating pump starts: %hu"), vars.slave.stats.heatingPumpStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_HEATING_PUMP_STARTS, vars.slave.stats.heatingPumpStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW pump starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_PUMP_STARTS, true)) {
+        if (this->updateDhwPumpStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW pump starts: %hu"), vars.slave.stats.dhwPumpStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_PUMP_STARTS, vars.slave.stats.dhwPumpStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update burner hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_BURNER_HOURS, true)) {
+        if (this->updateBurnerHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received burner hours: %hu"), vars.slave.stats.burnerHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_BURNER_HOURS, vars.slave.stats.burnerHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW burner hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_BURNER_HOURS, true)) {
+        if (this->updateDhwBurnerHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW burner hours: %hu"), vars.slave.stats.dhwBurnerHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_BURNER_HOURS, vars.slave.stats.dhwBurnerHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update heating pump hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_PUMP_HOURS, true)) {
+        if (this->updateHeatingPumpHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received heating pump hours: %hu"), vars.slave.stats.heatingPumpHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_HEATING_PUMP_HOURS, vars.slave.stats.heatingPumpHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW pump hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_PUMP_HOURS, true)) {
+        if (this->updateDhwPumpHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW pump hours: %hu"), vars.slave.stats.dhwPumpHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_PUMP_HOURS, vars.slave.stats.dhwPumpHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Auto fault reset
+      if (settings.opentherm.options.autoFaultReset && vars.slave.fault.active && !vars.actions.resetFault) {
+        vars.actions.resetFault = true;
+      }
+
+      // Auto diag reset
+      if (settings.opentherm.options.autoDiagReset && vars.slave.diag.active && !vars.actions.resetDiagnostic) {
+        vars.actions.resetDiagnostic = true;
+      }
+
       this->prevUpdateNonEssentialVars = millis();
     }
 
+    // Set max modulation level
+    uint8_t targetMaxModulation = vars.slave.modulation.max;
+    if (vars.slave.heating.active) {
+      targetMaxModulation = settings.heating.maxModulation;
+
+    } else if (vars.slave.dhw.active) {
+      targetMaxModulation = settings.dhw.maxModulation;
+    }
+
+    if (vars.slave.modulation.max != targetMaxModulation) {
+      if (this->setMaxModulationLevel(targetMaxModulation)) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
+          targetMaxModulation, vars.slave.modulation.max
+        );
+
+      } else {
+        Log.swarningln(
+          FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
+          targetMaxModulation, vars.slave.modulation.max
+        );
+      }
+    }
 
     // Update modulation level
     if (
@@ -1179,17 +1350,17 @@ protected:
 
   bool needSetDhwTemp(const float target) {
     return millis() - this->dhwSetTempTime > this->dhwSetTempInterval
-      || fabsf(target - vars.slave.dhw.targetTemp) > 0.001f;
+      || fabsf(target - vars.slave.dhw.targetTemp) > 0.05f;
   }
 
   bool needSetHeatingTemp(const float target) {
     return millis() - this->heatingSetTempTime > this->heatingSetTempInterval
-      || fabsf(target - vars.slave.heating.targetTemp) > 0.001f;
+      || fabsf(target - vars.slave.heating.targetTemp) > 0.05f;
   }
 
   bool needSetCh2Temp(const float target) {
     return millis() - this->ch2SetTempTime > this->ch2SetTempInterval
-      || fabsf(target - vars.slave.ch2.targetTemp) > 0.001f;
+      || fabsf(target - vars.slave.ch2.targetTemp) > 0.05f;
   }
 
   bool updateSlaveConfig() {
@@ -1228,6 +1399,65 @@ protected:
     return true;
   }
 
+  bool setYear(const struct tm *ptm) {
+    const unsigned int request = (ptm->tm_year + 1900) & 0xFFFF;
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::Year,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Year)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+  bool setDayAndMonth(const struct tm *ptm) {
+    const unsigned int request = ((ptm->tm_mon + 1) & 0xFF << 8) 
+      | (ptm->tm_mday & 0xFF);
+    
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::Date,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Date)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+  bool setTime(const struct tm *ptm) {
+    const uint8_t dayOfWeek = ptm->tm_wday == 0 ? 6 : ptm->tm_wday - 1;
+    const unsigned int request = ((dayOfWeek & 0x07) << 13)
+      | ((ptm->tm_hour & 0x1F) << 8)
+      | (ptm->tm_min & 0x3F);
+    
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::DayTime,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DayTime)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
 
   bool setMaxModulationLevel(const uint8_t value) {
     const unsigned int request = CustomOpenTherm::toFloat(value);
@@ -1350,7 +1580,7 @@ protected:
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool setMaxHeatingTemp(const uint8_t temperature) {
+  bool setMaxHeatingTemp(const float temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
@@ -1636,6 +1866,158 @@ protected:
     }
 
     vars.slave.diag.code = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateBurnerStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::SuccessfulBurnerStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::SuccessfulBurnerStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.burnerStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwBurnerStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWBurnerStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWBurnerStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwBurnerStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateHeatingPumpStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CHPumpStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CHPumpStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.heatingPumpStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwPumpStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWPumpValveStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWPumpValveStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwPumpStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateBurnerHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::BurnerOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::BurnerOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.burnerHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwBurnerHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWBurnerOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWBurnerOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwBurnerHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateHeatingPumpHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CHPumpOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CHPumpOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.heatingPumpHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwPumpHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWPumpValveOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWPumpValveOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwPumpHours = CustomOpenTherm::getUInt(response);
 
     return true;
   }

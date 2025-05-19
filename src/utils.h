@@ -449,7 +449,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     opentherm[FPSTR(S_RX_LED_GPIO)] = src.opentherm.rxLedGpio;
     opentherm[FPSTR(S_MEMBER_ID)] = src.opentherm.memberId;
     opentherm[FPSTR(S_FLAGS)] = src.opentherm.flags;
-    opentherm[FPSTR(S_MAX_MODULATION)] = src.opentherm.maxModulation;
     opentherm[FPSTR(S_MIN_POWER)] = roundf(src.opentherm.minPower, 2);
     opentherm[FPSTR(S_MAX_POWER)] = roundf(src.opentherm.maxPower, 2);
 
@@ -462,9 +461,12 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
     otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
     otOptions[FPSTR(S_DHW_BLOCKING)] = src.opentherm.options.dhwBlocking;
-    otOptions[FPSTR(S_MODULATION_SYNC_WITH_HEATING)] = src.opentherm.options.modulationSyncWithHeating;
     otOptions[FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)] = src.opentherm.options.maxTempSyncWithTargetTemp;
     otOptions[FPSTR(S_GET_MIN_MAX_TEMP)] = src.opentherm.options.getMinMaxTemp;
+    otOptions[FPSTR(S_IGNORE_DIAG_STATE)] = src.opentherm.options.ignoreDiagState;
+    otOptions[FPSTR(S_AUTO_FAULT_RESET)] = src.opentherm.options.autoFaultReset;
+    otOptions[FPSTR(S_AUTO_DIAG_RESET)] = src.opentherm.options.autoDiagReset;
+    otOptions[FPSTR(S_SET_DATE_AND_TIME)] = src.opentherm.options.setDateAndTime;
     otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
 
@@ -491,12 +493,14 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_TURBO_FACTOR)] = roundf(src.heating.turboFactor, 3);
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
+  heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
 
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
   dhw[FPSTR(S_TARGET)] = roundf(src.dhw.target, 1);
   dhw[FPSTR(S_MIN_TEMP)] = src.dhw.minTemp;
   dhw[FPSTR(S_MAX_TEMP)] = src.dhw.maxTemp;
+  dhw[FPSTR(S_MAX_MODULATION)] = src.dhw.maxModulation;
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
@@ -812,15 +816,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_MAX_MODULATION)].isNull()) {
-      unsigned char value = src[FPSTR(S_OPENTHERM)][FPSTR(S_MAX_MODULATION)].as<unsigned char>();
-
-      if (value > 0 && value <= 100 && value != dst.opentherm.maxModulation) {
-        dst.opentherm.maxModulation = value;
-        changed = true;
-      }
-    }
-
     if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_MIN_POWER)].isNull()) {
       float value = src[FPSTR(S_OPENTHERM)][FPSTR(S_MIN_POWER)].as<float>();
 
@@ -929,15 +924,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MODULATION_SYNC_WITH_HEATING)].as<bool>();
-
-      if (value != dst.opentherm.options.modulationSyncWithHeating) {
-        dst.opentherm.options.modulationSyncWithHeating = value;
-        changed = true;
-      }
-    }
-
     if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)].is<bool>()) {
       bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)].as<bool>();
 
@@ -952,6 +938,42 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.getMinMaxTemp) {
         dst.opentherm.options.getMinMaxTemp = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_IGNORE_DIAG_STATE)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_IGNORE_DIAG_STATE)].as<bool>();
+
+      if (value != dst.opentherm.options.ignoreDiagState) {
+        dst.opentherm.options.ignoreDiagState = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_AUTO_FAULT_RESET)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_AUTO_FAULT_RESET)].as<bool>();
+
+      if (value != dst.opentherm.options.autoFaultReset) {
+        dst.opentherm.options.autoFaultReset = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_AUTO_DIAG_RESET)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_AUTO_DIAG_RESET)].as<bool>();
+
+      if (value != dst.opentherm.options.autoDiagReset) {
+        dst.opentherm.options.autoDiagReset = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_SET_DATE_AND_TIME)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_SET_DATE_AND_TIME)].as<bool>();
+
+      if (value != dst.opentherm.options.setDateAndTime) {
+        dst.opentherm.options.setDateAndTime = value;
         changed = true;
       }
     }
@@ -1311,6 +1333,16 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   }
 
 
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_MAX_MODULATION)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_MAX_MODULATION)].as<unsigned char>();
+
+    if (value > 0 && value <= 100 && value != dst.heating.maxModulation) {
+      dst.heating.maxModulation = value;
+      changed = true;
+    }
+  }
+
+
   // dhw
   if (src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].as<bool>();
@@ -1342,6 +1374,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (dst.dhw.maxTemp < dst.dhw.minTemp) {
     dst.dhw.maxTemp = dst.dhw.minTemp;
     changed = true;
+  }
+
+  if (!src[FPSTR(S_DHW)][FPSTR(S_MAX_MODULATION)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_MAX_MODULATION)].as<unsigned char>();
+
+    if (value > 0 && value <= 100 && value != dst.dhw.maxModulation) {
+      dst.dhw.maxModulation = value;
+      changed = true;
+    }
   }
 
 
@@ -1702,6 +1743,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       case static_cast<uint8_t>(Sensors::Purpose::EXHAUST_TEMP):
       case static_cast<uint8_t>(Sensors::Purpose::MODULATION_LEVEL):
 
+      case static_cast<uint8_t>(Sensors::Purpose::NUMBER):
       case static_cast<uint8_t>(Sensors::Purpose::POWER_FACTOR):
       case static_cast<uint8_t>(Sensors::Purpose::POWER):
       case static_cast<uint8_t>(Sensors::Purpose::FAN_SPEED):
@@ -1745,6 +1787,15 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       case static_cast<uint8_t>(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP):
       case static_cast<uint8_t>(Sensors::Type::OT_FAN_SPEED_SETPOINT):
       case static_cast<uint8_t>(Sensors::Type::OT_FAN_SPEED_CURRENT):
+
+      case static_cast<uint8_t>(Sensors::Type::OT_BURNER_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_BURNER_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_HEATING_PUMP_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_PUMP_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_BURNER_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_BURNER_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_HEATING_PUMP_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_PUMP_HOURS):
 
       case static_cast<uint8_t>(Sensors::Type::NTC_10K_TEMP):
       case static_cast<uint8_t>(Sensors::Type::DALLAS_TEMP):

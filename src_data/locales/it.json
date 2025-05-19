@@ -201,6 +201,7 @@
         "dhwFlowRate": "ACS, prelievo",
         "exhaustTemp": "Temperatura fumi",
         "modLevel": "Livello Modulazione (%)",
+        "number": "Numero (raw)",
         "powerFactor": "Potenza (%)",
         "power": "Potenza (in kW)",
         "fanSpeed": "Velocità ventilatore",
@@ -231,6 +232,14 @@
         "otSolarCollectorTemp": "OpenTherm, temp collettore solare",
         "otFanSpeedSetpoint": "OpenTherm, velocità ventola impostata",
         "otFanSpeedCurrent": "OpenTherm, velocità ventola attuale",
+        "otBurnerStarts": "OpenTherm, numero di avviamenti del bruciatore",
+        "otDhwBurnerStarts": "OpenTherm, numero di avviamenti del bruciatore (ACS)",
+        "otHeatingPumpStarts": "OpenTherm, numero di avviamenti della pompa (riscaldamento)",
+        "otDhwPumpStarts": "OpenTherm, numero di avviamenti della pompa (ACS)",
+        "otBurnerHours": "OpenTherm, numero di ore di funzionamento del bruciatore",
+        "otDhwBurnerHours": "OpenTherm, numero di ore di funzionamento del bruciatore (ACS)",
+        "otHeatingPumpHours": "OpenTherm, numero di ore di funzionamento della pompa (riscaldamento)",
+        "otDhwPumpHours": "OpenTherm, numero di ore di funzionamento della pompa (ACS)",
         
         "ntcTemp": "Sensore NTC",
         "dallasTemp": "Sensore DALLAS",
@@ -292,6 +301,7 @@
         "min": "Temperatura minima",
         "max": "Temperatura massima"
       },
+      "maxModulation": "Max livello modulazione",
 
       "portal": {
         "login": "Login",
@@ -390,7 +400,6 @@
         "ledGpio": "RX LED GPIO",
         "memberId": "Master member ID",
         "flags": "Master flags",
-        "maxMod": "Max livello modulazione",
         "minPower": {
           "title": "Potenza minima caldaia <small>(kW)</small>",
           "note": "Questo valore corrisponde allo livello 0-1% di modulazione della caldaia. Di solito si trova nelle specifiche delle caldaia come \"potenza minima disponibile\"."
@@ -410,9 +419,12 @@
           "heatingToCh2": "Riproduci riscaldamento su CH2",
           "dhwToCh2": "Riproduci ACS su CH2",
           "dhwBlocking": "Bloccare ACS",
-          "modulationSyncWithHeating": "Sincronizzare modulazione con caldaia",
           "maxTempSyncWithTargetTemp": "Sincronizza la temperatura massima di riscaldamento con la temperatura target",
           "getMinMaxTemp": "Prendi temp min/max dalla caldaia",
+          "ignoreDiagState": "Ignora lo stato diagnostico",
+          "autoFaultReset": "Ripristino automatico degli errori <small>(sconsigliato!)</small>",
+          "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
+          "setDateAndTime": "Imposta data e ora sulla caldaia",
           "immergasFix": "Fix per caldiaie Immergas"
         },
 

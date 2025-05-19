@@ -202,6 +202,11 @@
                 </label>
               </div>
 
+              <label>
+                <span data-i18n>settings.maxModulation</span>
+                <input type="number" inputmode="numeric" name="heating[maxModulation]" min="1" max="100" step="1" required>
+              </label>
+
               <button type="submit" data-i18n>button.save</button>
             </form>
           </div>
@@ -225,6 +230,11 @@
                   <input type="number" inputmode="numeric" name="dhw[maxTemp]" min="0" max="0" step="1" required>
                 </label>
               </div>
+
+              <label>
+                <span data-i18n>settings.maxModulation</span>
+                <input type="number" inputmode="numeric" name="dhw[maxModulation]" min="1" max="100" step="1" required>
+              </label>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -480,11 +490,6 @@
                   <span data-i18n>settings.ot.flags</span>
                   <input type="number" inputmode="numeric" name="opentherm[flags]" min="0" max="255" step="1" required>
                 </label>
-
-                <label>
-                  <span data-i18n>settings.ot.maxMod</span>
-                  <input type="number" inputmode="numeric" name="opentherm[maxModulation]" min="1" max="100" step="1" required>
-                </label>
               </div>
 
               <div class="grid">
@@ -545,11 +550,6 @@
                 </label>
 
                 <label>
-                  <input type="checkbox" name="opentherm[options][modulationSyncWithHeating]" value="true">
-                  <span data-i18n>settings.ot.options.modulationSyncWithHeating</span>
-                </label>
-
-                <label>
                   <input type="checkbox" name="opentherm[options][maxTempSyncWithTargetTemp]" value="true">
                   <span data-i18n>settings.ot.options.maxTempSyncWithTargetTemp</span>
                 </label>
@@ -557,6 +557,26 @@
                 <label>
                   <input type="checkbox" name="opentherm[options][getMinMaxTemp]" value="true">
                   <span data-i18n>settings.ot.options.getMinMaxTemp</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="opentherm[options][ignoreDiagState]" value="true">
+                  <span data-i18n>settings.ot.options.ignoreDiagState</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="opentherm[options][autoFaultReset]" value="true">
+                  <span data-i18n>settings.ot.options.autoFaultReset</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="opentherm[options][autoDiagReset]" value="true">
+                  <span data-i18n>settings.ot.options.autoDiagReset</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="opentherm[options][setDateAndTime]" value="true">
+                  <span data-i18n>settings.ot.options.setDateAndTime</span>
                 </label>
 
                 <label>
@@ -969,7 +989,6 @@
           setInputValue("[name='opentherm[rxLedGpio]']", data.opentherm.rxLedGpio < 255 ? data.opentherm.rxLedGpio : '');
           setInputValue("[name='opentherm[memberId]']", data.opentherm.memberId);
           setInputValue("[name='opentherm[flags]']", data.opentherm.flags);
-          setInputValue("[name='opentherm[maxModulation]']", data.opentherm.maxModulation);
           setInputValue("[name='opentherm[minPower]']", data.opentherm.minPower);
           setInputValue("[name='opentherm[maxPower]']", data.opentherm.maxPower);
           setCheckboxValue("[name='opentherm[options][dhwSupport]']", data.opentherm.options.dhwSupport);
@@ -980,9 +999,12 @@
           setCheckboxValue("[name='opentherm[options][heatingToCh2]']", data.opentherm.options.heatingToCh2);
           setCheckboxValue("[name='opentherm[options][dhwToCh2]']", data.opentherm.options.dhwToCh2);
           setCheckboxValue("[name='opentherm[options][dhwBlocking]']", data.opentherm.options.dhwBlocking);
-          setCheckboxValue("[name='opentherm[options][modulationSyncWithHeating]']", data.opentherm.options.modulationSyncWithHeating);
           setCheckboxValue("[name='opentherm[options][maxTempSyncWithTargetTemp]']", data.opentherm.options.maxTempSyncWithTargetTemp);
           setCheckboxValue("[name='opentherm[options][getMinMaxTemp]']", data.opentherm.options.getMinMaxTemp);
+          setCheckboxValue("[name='opentherm[options][ignoreDiagState]']", data.opentherm.options.ignoreDiagState);
+          setCheckboxValue("[name='opentherm[options][autoFaultReset]']", data.opentherm.options.autoFaultReset);
+          setCheckboxValue("[name='opentherm[options][autoDiagReset]']", data.opentherm.options.autoDiagReset);
+          setCheckboxValue("[name='opentherm[options][setDateAndTime]']", data.opentherm.options.setDateAndTime);
           setCheckboxValue("[name='opentherm[options][nativeHeatingControl]']", data.opentherm.options.nativeHeatingControl);
           setCheckboxValue("[name='opentherm[options][immergasFix]']", data.opentherm.options.immergasFix);
           setBusy('#ot-settings-busy', '#ot-settings', false);
@@ -1032,6 +1054,7 @@
           });
           setInputValue("[name='heating[hysteresis]']", data.heating.hysteresis);
           setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
+          setInputValue("[name='heating[maxModulation]']", data.heating.maxModulation);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
           // DHW
@@ -1043,6 +1066,7 @@
             "min": data.system.unitSystem == 0 ? 1 : 33,
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
+          setInputValue("[name='dhw[maxModulation]']", data.dhw.maxModulation);
           setBusy('#dhw-settings-busy', '#dhw-settings', false);
 
           // Emergency mode
@@ -1050,7 +1074,7 @@
           if (data.opentherm.options.nativeHeatingControl) {
             setInputValue("[name='emergency[target]']", data.emergency.target, {
               "min": data.system.unitSystem == 0 ? 5 : 41,
-              "max": data.system.unitSystem == 0 ? 30 : 86
+              "max": data.system.unitSystem == 0 ? 40 : 86
             });
 
           } else {

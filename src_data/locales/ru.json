@@ -201,6 +201,7 @@
         "dhwFlowRate": "ГВС, расход/скорость потока",
         "exhaustTemp": "Температура выхлопных газов",
         "modLevel": "Уровень модуляции (в процентах)",
+        "number": "Число (raw)",
         "powerFactor": "Мощность (в процентах)",
         "power": "Мощность (в кВт)",
         "fanSpeed": "Скорость вентилятора",
@@ -231,6 +232,14 @@
         "otSolarCollectorTemp": "OpenTherm, темп. солн. коллектора",
         "otFanSpeedSetpoint": "OpenTherm, установленная мощн. вентилятора",
         "otFanSpeedCurrent": "OpenTherm, текущая мощн. вентилятора",
+        "otBurnerStarts": "OpenTherm, кол-во запусков горелки",
+        "otDhwBurnerStarts": "OpenTherm, кол-во запусков горелки (ГВС)",
+        "otHeatingPumpStarts": "OpenTherm, кол-во запусков насоса (отопление)",
+        "otDhwPumpStarts": "OpenTherm, кол-во запусков насоса (ГВС)",
+        "otBurnerHours": "OpenTherm, кол-во часов работы горелки",
+        "otDhwBurnerHours": "OpenTherm, кол-во часов работы горелки (ГВС)",
+        "otHeatingPumpHours": "OpenTherm, кол-во часов работы насоса (отопление)",
+        "otDhwPumpHours": "OpenTherm, кол-во часов работы насоса (ГВС)",
         
         "ntcTemp": "NTC датчик",
         "dallasTemp": "DALLAS датчик",
@@ -292,6 +301,7 @@
         "min": "Мин. температура",
         "max": "Макс. температура"
       },
+      "maxModulation": "Макс. уровень модуляции",
 
       "portal": {
         "login": "Логин",
@@ -390,7 +400,6 @@
         "ledGpio": "RX LED GPIO",
         "memberId": "Master member ID",
         "flags": "Master flags",
-        "maxMod": "Макс. уровень модуляции",
         "minPower": {
           "title": "Мин. мощность котла <small>(кВт)</small>",
           "note": "Это значение соответствует уровню модуляции котла 0–1%. Обычно можно найти в спецификации котла как \"минимальная полезная тепловая мощность\"."
@@ -410,9 +419,12 @@
           "heatingToCh2": "Дублировать параметры отопления в канал 2",
           "dhwToCh2": "Дублировать параметры ГВС в канал 2",
           "dhwBlocking": "DHW blocking",
-          "modulationSyncWithHeating": "Синхронизировать модуляцию с отоплением",
           "maxTempSyncWithTargetTemp": "Синхронизировать макс. темп. отопления с целевой темп.",
           "getMinMaxTemp": "Получать мин. и макс. температуру от котла",
+          "ignoreDiagState": "Игнорировать состояние диагностики",
+          "autoFaultReset": "Автоматический сброс ошибок <small>(не рекомендуется!)</small>",
+          "autoDiagReset": "Автоматический сброс диагностики <small>(не рекомендуется!)</small>",
+          "setDateAndTime": "Устанавливать время и дату на котле",
           "immergasFix": "Фикс для котлов Immergas"
         },
 

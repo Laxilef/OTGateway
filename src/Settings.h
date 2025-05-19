@@ -59,7 +59,6 @@ struct Settings {
     byte rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
     uint8_t memberId = 0;
     uint8_t flags = 0;
-    uint8_t maxModulation = 100;
     float minPower = 0.0f;
     float maxPower = 0.0f;
 
@@ -72,9 +71,12 @@ struct Settings {
       bool heatingToCh2 = false;
       bool dhwToCh2 = false;
       bool dhwBlocking = false;
-      bool modulationSyncWithHeating = false;
       bool maxTempSyncWithTargetTemp = true;
       bool getMinMaxTemp = true;
+      bool ignoreDiagState = false;
+      bool autoFaultReset = false;
+      bool autoDiagReset = false;
+      bool setDateAndTime = false;
       bool nativeHeatingControl = false;
       bool immergasFix = false;
     } options;
@@ -104,6 +106,7 @@ struct Settings {
     float turboFactor = 7.5f;
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
+    uint8_t maxModulation = 100;
   } heating;
 
   struct {
@@ -111,6 +114,7 @@ struct Settings {
     float target = DEFAULT_DHW_TARGET_TEMP;
     byte minTemp = DEFAULT_DHW_MIN_TEMP;
     byte maxTemp = DEFAULT_DHW_MAX_TEMP;
+    uint8_t maxModulation = 100;
   } dhw;
 
   struct {
@@ -350,6 +354,17 @@ struct Variables {
       uint8_t current = 0;
       uint16_t supply = 0;
     } fanSpeed;
+
+    struct {
+      uint16_t burnerStarts = 0;
+      uint16_t dhwBurnerStarts = 0;
+      uint16_t heatingPumpStarts = 0;
+      uint16_t dhwPumpStarts = 0;
+      uint16_t burnerHours = 0;
+      uint16_t dhwBurnerHours = 0;
+      uint16_t heatingPumpHours = 0;
+      uint16_t dhwPumpHours = 0;
+    } stats;
 
     struct {
       bool active = false;
