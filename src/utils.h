@@ -466,6 +466,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_IGNORE_DIAG_STATE)] = src.opentherm.options.ignoreDiagState;
     otOptions[FPSTR(S_AUTO_FAULT_RESET)] = src.opentherm.options.autoFaultReset;
     otOptions[FPSTR(S_AUTO_DIAG_RESET)] = src.opentherm.options.autoDiagReset;
+    otOptions[FPSTR(S_SET_DATE_AND_TIME)] = src.opentherm.options.setDateAndTime;
     otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
 
@@ -963,6 +964,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.autoDiagReset) {
         dst.opentherm.options.autoDiagReset = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_SET_DATE_AND_TIME)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_SET_DATE_AND_TIME)].as<bool>();
+
+      if (value != dst.opentherm.options.setDateAndTime) {
+        dst.opentherm.options.setDateAndTime = value;
         changed = true;
       }
     }

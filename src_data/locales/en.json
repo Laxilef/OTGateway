@@ -409,6 +409,7 @@
           "ignoreDiagState": "Ignore diag state",
           "autoFaultReset": "Auto fault reset <small>(not recommended!)</small>",
           "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
+          "setDateAndTime": "Set date & time on boiler",
           "immergasFix": "Fix for Immergas boilers"
         },
 

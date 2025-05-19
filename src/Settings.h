@@ -76,6 +76,7 @@ struct Settings {
       bool ignoreDiagState = false;
       bool autoFaultReset = false;
       bool autoDiagReset = false;
+      bool setDateAndTime = false;
       bool nativeHeatingControl = false;
       bool immergasFix = false;
     } options;

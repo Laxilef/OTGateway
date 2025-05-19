@@ -409,6 +409,7 @@
           "ignoreDiagState": "Ignora lo stato diagnostico",
           "autoFaultReset": "Ripristino automatico degli errori <small>(sconsigliato!)</small>",
           "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
+          "setDateAndTime": "Imposta data e ora sulla caldaia",
           "immergasFix": "Fix per caldiaie Immergas"
         },
 

@@ -175,6 +175,7 @@ const char S_SENSORS[]                              PROGMEM = "sensors";
 const char S_SERIAL[]                               PROGMEM = "serial";
 const char S_SERVER[]                               PROGMEM = "server";
 const char S_SETTINGS[]                             PROGMEM = "settings";
+const char S_SET_DATE_AND_TIME[]                    PROGMEM = "setDateAndTime";
 const char S_SIGNAL_QUALITY[]                       PROGMEM = "signalQuality";
 const char S_SIZE[]                                 PROGMEM = "size";
 const char S_SLAVE[]                                PROGMEM = "slave";

@@ -351,6 +351,35 @@ protected:
 
     // These parameters will be updated every minute
     if (millis() - this->prevUpdateNonEssentialVars > 60000) {
+      // Set date & time
+      if (settings.opentherm.options.setDateAndTime) {
+        struct tm ti;
+
+        if (getLocalTime(&ti)) {
+          if (this->setYear(&ti)) {
+            Log.sinfoln(FPSTR(L_OT), F("Year of date set successfully"));
+
+          } else {
+            Log.sinfoln(FPSTR(L_OT), F("Failed set year of date"));
+          }
+
+          if (this->setDayAndMonth(&ti)) {
+            Log.sinfoln(FPSTR(L_OT), F("Day and month of date set successfully"));
+
+          } else {
+            Log.sinfoln(FPSTR(L_OT), F("Failed set day and month of date"));
+          }
+
+          if (this->setTime(&ti)) {
+            Log.sinfoln(FPSTR(L_OT), F("Time set successfully"));
+
+          } else {
+            Log.sinfoln(FPSTR(L_OT), F("Failed set time"));
+          }
+        }
+      }
+
+      // Get min modulation level & max power
       if (this->updateMinModulationLevel()) {
         Log.snoticeln(
           FPSTR(L_OT), F("Received min modulation: %hhu%%, max power: %.2f kW"),
@@ -1370,6 +1399,65 @@ protected:
     return true;
   }
 
+  bool setYear(const struct tm *ptm) {
+    const unsigned int request = (ptm->tm_year + 1900) & 0xFFFF;
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::Year,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Year)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+  bool setDayAndMonth(const struct tm *ptm) {
+    const unsigned int request = ((ptm->tm_mon + 1) & 0xFF << 8) 
+      | (ptm->tm_mday & 0xFF);
+    
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::Date,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Date)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+  bool setTime(const struct tm *ptm) {
+    const uint8_t dayOfWeek = ptm->tm_wday == 0 ? 6 : ptm->tm_wday - 1;
+    const unsigned int request = ((dayOfWeek & 0x07) << 13)
+      | ((ptm->tm_hour & 0x1F) << 8)
+      | (ptm->tm_min & 0x3F);
+    
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::DayTime,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DayTime)) {
+      return false;
+    }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
 
   bool setMaxModulationLevel(const uint8_t value) {
     const unsigned int request = CustomOpenTherm::toFloat(value);
