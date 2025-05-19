@@ -25,6 +25,15 @@ public:
     OT_SOLAR_COLLECTOR_TEMP = 16,
     OT_FAN_SPEED_SETPOINT   = 17,
     OT_FAN_SPEED_CURRENT    = 18,
+
+    OT_BURNER_STARTS        = 19,
+    OT_DHW_BURNER_STARTS    = 20,
+    OT_HEATING_PUMP_STARTS  = 21,
+    OT_DHW_PUMP_STARTS      = 22,
+    OT_BURNER_HOURS         = 23,
+    OT_DHW_BURNER_HOURS     = 24,
+    OT_HEATING_PUMP_HOURS   = 25,
+    OT_DHW_PUMP_HOURS       = 26,
     
     NTC_10K_TEMP            = 50,
     DALLAS_TEMP             = 51,
@@ -46,6 +55,7 @@ public:
     EXHAUST_TEMP          = 7,
     MODULATION_LEVEL      = 8,
 
+    NUMBER                = 247,
     POWER_FACTOR          = 248,
     POWER                 = 249,
     FAN_SPEED             = 250,

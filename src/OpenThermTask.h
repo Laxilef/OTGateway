@@ -287,6 +287,15 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_CURRENT, false);
 
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_STARTS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_HOURS, false);
+
       this->initialized = false;
       this->disconnectedTime = millis();
       vars.slave.connected = false;
@@ -505,6 +514,102 @@ protected:
         
       } else if (vars.slave.diag.code != 0) {
         vars.slave.diag.code = 0;
+      }
+
+      // Update burner starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_BURNER_STARTS, true)) {
+        if (this->updateBurnerStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received burner starts: %hu"), vars.slave.stats.burnerStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_BURNER_STARTS, vars.slave.stats.burnerStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW burner starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_BURNER_STARTS, true)) {
+        if (this->updateDhwBurnerStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW burner starts: %hu"), vars.slave.stats.dhwBurnerStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_BURNER_STARTS, vars.slave.stats.dhwBurnerStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update heating pump starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_PUMP_STARTS, true)) {
+        if (this->updateHeatingPumpStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received heating pump starts: %hu"), vars.slave.stats.heatingPumpStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_HEATING_PUMP_STARTS, vars.slave.stats.heatingPumpStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW pump starts
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_PUMP_STARTS, true)) {
+        if (this->updateDhwPumpStarts()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW pump starts: %hu"), vars.slave.stats.dhwPumpStarts);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_PUMP_STARTS, vars.slave.stats.dhwPumpStarts,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update burner hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_BURNER_HOURS, true)) {
+        if (this->updateBurnerHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received burner hours: %hu"), vars.slave.stats.burnerHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_BURNER_HOURS, vars.slave.stats.burnerHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW burner hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_BURNER_HOURS, true)) {
+        if (this->updateDhwBurnerHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW burner hours: %hu"), vars.slave.stats.dhwBurnerHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_BURNER_HOURS, vars.slave.stats.dhwBurnerHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update heating pump hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_PUMP_HOURS, true)) {
+        if (this->updateHeatingPumpHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received heating pump hours: %hu"), vars.slave.stats.heatingPumpHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_HEATING_PUMP_HOURS, vars.slave.stats.heatingPumpHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
+      }
+
+      // Update DHW pump hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_DHW_PUMP_HOURS, true)) {
+        if (this->updateDhwPumpHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received DHW pump hours: %hu"), vars.slave.stats.dhwPumpHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_DHW_PUMP_HOURS, vars.slave.stats.dhwPumpHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+        }
       }
 
       // Auto fault reset
@@ -1673,6 +1778,158 @@ protected:
     }
 
     vars.slave.diag.code = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateBurnerStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::SuccessfulBurnerStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::SuccessfulBurnerStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.burnerStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwBurnerStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWBurnerStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWBurnerStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwBurnerStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateHeatingPumpStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CHPumpStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CHPumpStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.heatingPumpStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwPumpStarts() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWPumpValveStarts,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWPumpValveStarts)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwPumpStarts = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateBurnerHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::BurnerOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::BurnerOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.burnerHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwBurnerHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWBurnerOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWBurnerOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwBurnerHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateHeatingPumpHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CHPumpOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CHPumpOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.heatingPumpHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateDhwPumpHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::DHWPumpValveOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DHWPumpValveOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.dhwPumpHours = CustomOpenTherm::getUInt(response);
 
     return true;
   }

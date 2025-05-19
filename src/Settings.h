@@ -354,6 +354,17 @@ struct Variables {
     } fanSpeed;
 
     struct {
+      uint16_t burnerStarts = 0;
+      uint16_t dhwBurnerStarts = 0;
+      uint16_t heatingPumpStarts = 0;
+      uint16_t dhwPumpStarts = 0;
+      uint16_t burnerHours = 0;
+      uint16_t dhwBurnerHours = 0;
+      uint16_t heatingPumpHours = 0;
+      uint16_t dhwPumpHours = 0;
+    } stats;
+
+    struct {
       bool active = false;
       bool enabled = false;
       float targetTemp = 0.0f;

@@ -1723,6 +1723,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       case static_cast<uint8_t>(Sensors::Purpose::EXHAUST_TEMP):
       case static_cast<uint8_t>(Sensors::Purpose::MODULATION_LEVEL):
 
+      case static_cast<uint8_t>(Sensors::Purpose::NUMBER):
       case static_cast<uint8_t>(Sensors::Purpose::POWER_FACTOR):
       case static_cast<uint8_t>(Sensors::Purpose::POWER):
       case static_cast<uint8_t>(Sensors::Purpose::FAN_SPEED):
@@ -1766,6 +1767,15 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       case static_cast<uint8_t>(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP):
       case static_cast<uint8_t>(Sensors::Type::OT_FAN_SPEED_SETPOINT):
       case static_cast<uint8_t>(Sensors::Type::OT_FAN_SPEED_CURRENT):
+
+      case static_cast<uint8_t>(Sensors::Type::OT_BURNER_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_BURNER_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_HEATING_PUMP_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_PUMP_STARTS):
+      case static_cast<uint8_t>(Sensors::Type::OT_BURNER_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_BURNER_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_HEATING_PUMP_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_DHW_PUMP_HOURS):
 
       case static_cast<uint8_t>(Sensors::Type::NTC_10K_TEMP):
       case static_cast<uint8_t>(Sensors::Type::DALLAS_TEMP):
