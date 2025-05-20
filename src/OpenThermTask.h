@@ -687,19 +687,17 @@ protected:
       targetMaxModulation = settings.dhw.maxModulation;
     }
 
-    if (vars.slave.modulation.max != targetMaxModulation) {
-      if (this->setMaxModulationLevel(targetMaxModulation)) {
-        Log.snoticeln(
-          FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
-          targetMaxModulation, vars.slave.modulation.max
-        );
+    if (this->setMaxModulationLevel(targetMaxModulation)) {
+      Log.snoticeln(
+        FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
+        targetMaxModulation, vars.slave.modulation.max
+      );
 
-      } else {
-        Log.swarningln(
-          FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
-          targetMaxModulation, vars.slave.modulation.max
-        );
-      }
+    } else {
+      Log.swarningln(
+        FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
+        targetMaxModulation, vars.slave.modulation.max
+      );
     }
 
     // Update modulation level
