@@ -404,6 +404,7 @@
           "heatingToCh2": "Дублировать параметры отопления в канал 2",
           "dhwToCh2": "Дублировать параметры ГВС в канал 2",
           "dhwBlocking": "DHW blocking",
+          "dhwStateAsDhwBlocking": "DHW blocking в качестве состояния ГВС",
           "maxTempSyncWithTargetTemp": "Синхронизировать макс. темп. отопления с целевой темп.",
           "getMinMaxTemp": "Получать мин. и макс. температуру от котла",
           "ignoreDiagState": "Игнорировать состояние диагностики",

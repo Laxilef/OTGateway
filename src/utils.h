@@ -461,6 +461,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
     otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
     otOptions[FPSTR(S_DHW_BLOCKING)] = src.opentherm.options.dhwBlocking;
+    otOptions[FPSTR(S_DHW_STATE_AS_DHW_BLOCKING)] = src.opentherm.options.dhwStateAsDhwBlocking;
     otOptions[FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)] = src.opentherm.options.maxTempSyncWithTargetTemp;
     otOptions[FPSTR(S_GET_MIN_MAX_TEMP)] = src.opentherm.options.getMinMaxTemp;
     otOptions[FPSTR(S_IGNORE_DIAG_STATE)] = src.opentherm.options.ignoreDiagState;
@@ -919,6 +920,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.dhwBlocking) {
         dst.opentherm.options.dhwBlocking = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_STATE_AS_DHW_BLOCKING)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_STATE_AS_DHW_BLOCKING)].as<bool>();
+
+      if (value != dst.opentherm.options.dhwStateAsDhwBlocking) {
+        dst.opentherm.options.dhwStateAsDhwBlocking = value;
         changed = true;
       }
     }

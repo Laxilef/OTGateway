@@ -404,6 +404,7 @@
           "heatingToCh2": "Duplicate heating to CH2",
           "dhwToCh2": "Duplicate DHW to CH2",
           "dhwBlocking": "DHW blocking",
+          "dhwStateAsDhwBlocking": "DHW state as DHW blocking",
           "maxTempSyncWithTargetTemp": "Sync max heating temp with target temp",
           "getMinMaxTemp": "Get min/max temp from boiler",
           "ignoreDiagState": "Ignore diag state",

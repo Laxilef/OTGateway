@@ -404,6 +404,7 @@
           "heatingToCh2": "Riproduci riscaldamento su CH2",
           "dhwToCh2": "Riproduci ACS su CH2",
           "dhwBlocking": "Bloccare ACS",
+          "dhwStateAsDhwBlocking": "Stato ACS come bloccare ACS",
           "maxTempSyncWithTargetTemp": "Sincronizza la temperatura massima di riscaldamento con la temperatura target",
           "getMinMaxTemp": "Prendi temp min/max dalla caldaia",
           "ignoreDiagState": "Ignora lo stato diagnostico",

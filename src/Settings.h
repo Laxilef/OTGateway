@@ -71,6 +71,7 @@ struct Settings {
       bool heatingToCh2 = false;
       bool dhwToCh2 = false;
       bool dhwBlocking = false;
+      bool dhwStateAsDhwBlocking = false;
       bool maxTempSyncWithTargetTemp = true;
       bool getMinMaxTemp = true;
       bool ignoreDiagState = false;

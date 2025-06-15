@@ -527,6 +527,11 @@
                 </label>
 
                 <label>
+                  <input type="checkbox" name="opentherm[options][dhwStateAsDhwBlocking]" value="true">
+                  <span data-i18n>settings.ot.options.dhwStateAsDhwBlocking</span>
+                </label>
+
+                <label>
                   <input type="checkbox" name="opentherm[options][maxTempSyncWithTargetTemp]" value="true">
                   <span data-i18n>settings.ot.options.maxTempSyncWithTargetTemp</span>
                 </label>
@@ -818,6 +823,7 @@
           setCheckboxValue("[name='opentherm[options][heatingToCh2]']", data.opentherm.options.heatingToCh2);
           setCheckboxValue("[name='opentherm[options][dhwToCh2]']", data.opentherm.options.dhwToCh2);
           setCheckboxValue("[name='opentherm[options][dhwBlocking]']", data.opentherm.options.dhwBlocking);
+          setCheckboxValue("[name='opentherm[options][dhwStateAsDhwBlocking]']", data.opentherm.options.dhwStateAsDhwBlocking);
           setCheckboxValue("[name='opentherm[options][maxTempSyncWithTargetTemp]']", data.opentherm.options.maxTempSyncWithTargetTemp);
           setCheckboxValue("[name='opentherm[options][getMinMaxTemp]']", data.opentherm.options.getMinMaxTemp);
           setCheckboxValue("[name='opentherm[options][ignoreDiagState]']", data.opentherm.options.ignoreDiagState);

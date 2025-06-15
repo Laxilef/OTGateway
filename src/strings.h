@@ -68,6 +68,7 @@ const char S_DATE[]                                 PROGMEM = "date";
 const char S_DEADBAND[]                             PROGMEM = "deadband";
 const char S_DHW[]                                  PROGMEM = "dhw";
 const char S_DHW_BLOCKING[]                         PROGMEM = "dhwBlocking";
+const char S_DHW_STATE_AS_DHW_BLOCKING[]            PROGMEM = "dhwStateAsDhwBlocking";
 const char S_DHW_SUPPORT[]                          PROGMEM = "dhwSupport";
 const char S_DHW_TO_CH2[]                           PROGMEM = "dhwToCh2";
 const char S_DIAG[]                                 PROGMEM = "diag";

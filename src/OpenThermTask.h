@@ -205,6 +205,12 @@ protected:
       summerWinterMode = vars.master.heating.enabled == summerWinterMode;
     }
 
+    // DHW blocking
+    bool dhwBlocking = settings.opentherm.options.dhwBlocking;
+    if (settings.opentherm.options.dhwStateAsDhwBlocking) {
+      dhwBlocking = vars.master.dhw.enabled == dhwBlocking;
+    }
+
     unsigned long response = this->instance->setBoilerStatus(
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
@@ -212,7 +218,7 @@ protected:
       settings.opentherm.options.nativeHeatingControl,
       vars.master.ch2.enabled,
       summerWinterMode,
-      settings.opentherm.options.dhwBlocking,
+      dhwBlocking,
       statusLb
     );
 
