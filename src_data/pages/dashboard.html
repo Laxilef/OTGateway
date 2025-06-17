@@ -185,6 +185,10 @@
                   <td><i class="mHeatBlocking"></i></td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.states.mHeatOverheat</th>
+                  <td><i class="mHeatOverheat"></i></td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.states.sHeatActive</th>
                   <td><i class="sHeatActive"></i></td>
                 </tr>
@@ -217,6 +221,10 @@
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mDhwEnabled</th>
                   <td><i class="mDhwEnabled"></i></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.states.mDhwOverheat</th>
+                  <td><i class="mDhwOverheat"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.sDhwActive</th>
@@ -611,6 +619,11 @@
               result.master.heating.blocking ? "red" : "green"
             );
             setState('.mHeatIndoorTempControl', result.master.heating.indoorTempControl);
+            setStatus(
+              '.mHeatOverheat',
+              result.master.heating.overheat ? "success" : "error",
+              result.master.heating.overheat ? "red" : "green"
+            );
             setValue('.mHeatSetpointTemp', result.master.heating.setpointTemp);
             setValue('.mHeatTargetTemp', result.master.heating.targetTemp);
             setValue('.mHeatCurrTemp', result.master.heating.currentTemp);
@@ -621,6 +634,11 @@
             setValue('.mHeatMaxTemp', result.master.heating.maxTemp);
 
             setState('.mDhwEnabled', result.master.dhw.enabled);
+            setStatus(
+              '.mDhwOverheat',
+              result.master.dhw.overheat ? "success" : "error",
+              result.master.dhw.overheat ? "red" : "green"
+            );
             setValue('.mDhwTargetTemp', result.master.dhw.targetTemp);
             setValue('.mDhwCurrTemp', result.master.dhw.currentTemp);
             setValue('.mDhwRetTemp', result.master.dhw.returnTemp);

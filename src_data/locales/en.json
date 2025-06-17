@@ -117,6 +117,7 @@
         
         "mHeatEnabled": "Heating enabled",
         "mHeatBlocking": "Heating blocked",
+        "mHeatOverheat": "Heating overheat",
         "sHeatActive": "Heating active",
         "mHeatSetpointTemp": "Heating setpoint temp",
         "mHeatTargetTemp": "Heating target temp",
@@ -126,6 +127,7 @@
         "mHeatOutdoorTemp": "Heating, outdoor temp",
 
         "mDhwEnabled": "DHW enabled",
+        "mDhwOverheat": "DHW overheat",
         "sDhwActive": "DHW active",
         "mDhwTargetTemp": "DHW target temp",
         "mDhwCurrTemp": "DHW current temp",
@@ -302,6 +304,18 @@
         "max": "Maximum temperature"
       },
       "maxModulation": "Max modulation level",
+      "overheat": {
+        "title": "Overheating protection",
+        "desc": "<b>Note:</b> This feature can be useful if the built-in boiler overheating protection does not work or does not work correctly and the heat carrier boils. To disable, set 0 as <b>high</b> and <b>low</b> temperature.",
+        "highTemp": {
+          "title": "High temperature threshold",
+          "note": "Threshold at which the burner will be forcibly switched off"
+        },
+        "lowTemp": {
+          "title": "Low temperature threshold",
+          "note": "Threshold at which the burner can be turned on again"
+        }
+      },
 
       "portal": {
         "login": "Login",

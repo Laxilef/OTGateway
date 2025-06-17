@@ -495,6 +495,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
   heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
+  heating[FPSTR(S_OVERHEAT_HIGH_TEMP)] = src.heating.overheatHighTemp;
+  heating[FPSTR(S_OVERHEAT_LOW_TEMP)] = src.heating.overheatLowTemp;
 
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
@@ -502,6 +504,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dhw[FPSTR(S_MIN_TEMP)] = src.dhw.minTemp;
   dhw[FPSTR(S_MAX_TEMP)] = src.dhw.maxTemp;
   dhw[FPSTR(S_MAX_MODULATION)] = src.dhw.maxModulation;
+  dhw[FPSTR(S_OVERHEAT_HIGH_TEMP)] = src.dhw.overheatHighTemp;
+  dhw[FPSTR(S_OVERHEAT_LOW_TEMP)] = src.dhw.overheatLowTemp;
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
@@ -1342,6 +1346,29 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_HIGH_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_HIGH_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.heating.overheatHighTemp) {
+      dst.heating.overheatHighTemp = value;
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_LOW_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_LOW_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.heating.overheatLowTemp) {
+      dst.heating.overheatLowTemp = value;
+      changed = true;
+    }
+  }
+
+  if (dst.heating.overheatHighTemp < dst.heating.overheatLowTemp) {
+    dst.heating.overheatHighTemp = dst.heating.overheatLowTemp;
+    changed = true;
+  }
+
 
   // dhw
   if (src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].is<bool>()) {
@@ -1383,6 +1410,29 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       dst.dhw.maxModulation = value;
       changed = true;
     }
+  }
+
+  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_HIGH_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_HIGH_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.dhw.overheatHighTemp) {
+      dst.dhw.overheatHighTemp = value;
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_LOW_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_LOW_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.dhw.overheatLowTemp) {
+      dst.dhw.overheatLowTemp = value;
+      changed = true;
+    }
+  }
+
+  if (dst.dhw.overheatHighTemp < dst.dhw.overheatLowTemp) {
+    dst.dhw.overheatHighTemp = dst.dhw.overheatLowTemp;
+    changed = true;
   }
 
 
@@ -2016,6 +2066,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   mHeating[FPSTR(S_ENABLED)] = src.master.heating.enabled;
   mHeating[FPSTR(S_BLOCKING)] = src.master.heating.blocking;
   mHeating[FPSTR(S_INDOOR_TEMP_CONTROL)] = src.master.heating.indoorTempControl;
+  mHeating[FPSTR(S_OVERHEAT)] = src.master.heating.overheat;
   mHeating[FPSTR(S_SETPOINT_TEMP)] = roundf(src.master.heating.setpointTemp, 2);
   mHeating[FPSTR(S_TARGET_TEMP)] = roundf(src.master.heating.targetTemp, 2);
   mHeating[FPSTR(S_CURRENT_TEMP)] = roundf(src.master.heating.currentTemp, 2);
@@ -2027,6 +2078,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   auto mDhw = master[FPSTR(S_DHW)].to<JsonObject>();
   mDhw[FPSTR(S_ENABLED)] = src.master.dhw.enabled;
+  mDhw[FPSTR(S_OVERHEAT)] = src.master.dhw.overheat;
   mDhw[FPSTR(S_TARGET_TEMP)] = roundf(src.master.dhw.targetTemp, 2);
   mDhw[FPSTR(S_CURRENT_TEMP)] = roundf(src.master.dhw.currentTemp, 2);
   mDhw[FPSTR(S_RETURN_TEMP)] = roundf(src.master.dhw.returnTemp, 2);

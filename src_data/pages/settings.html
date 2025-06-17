@@ -207,6 +207,28 @@
                 <input type="number" inputmode="numeric" name="heating[maxModulation]" min="1" max="100" step="1" required>
               </label>
 
+              <details>
+                <summary><b data-i18n>settings.overheat.title</b></summary>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>settings.overheat.highTemp.title</span>
+                    <input type="number" inputmode="numeric" name="heating[overheatHighTemp]" min="0" max="212" step="1" required>
+                    <small data-i18n>settings.overheat.highTemp.note</small>
+                  </label>
+
+                  <label>
+                    <span data-i18n>settings.overheat.lowTemp.title</span>
+                    <input type="number" inputmode="numeric" name="heating[overheatLowTemp]" min="0" max="211" step="1" required>
+                    <small data-i18n>settings.overheat.lowTemp.note</small>
+                  </label>
+                </div>
+
+                <small data-i18n>settings.overheat.desc</small>
+              </details>
+
+              <br>
+
               <button type="submit" data-i18n>button.save</button>
             </form>
           </div>
@@ -235,6 +257,28 @@
                 <span data-i18n>settings.maxModulation</span>
                 <input type="number" inputmode="numeric" name="dhw[maxModulation]" min="1" max="100" step="1" required>
               </label>
+
+              <details>
+                <summary><b data-i18n>settings.overheat.title</b></summary>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>settings.overheat.highTemp.title</span>
+                    <input type="number" inputmode="numeric" name="dhw[overheatHighTemp]" min="0" max="212" step="1" required>
+                    <small data-i18n>settings.overheat.highTemp.note</small>
+                  </label>
+
+                  <label>
+                    <span data-i18n>settings.overheat.lowTemp.title</span>
+                    <input type="number" inputmode="numeric" name="dhw[overheatLowTemp]" min="0" max="211" step="1" required>
+                    <small data-i18n>settings.overheat.lowTemp.note</small>
+                  </label>
+                </div>
+
+                <small data-i18n>settings.overheat.desc</small>
+              </details>
+
+              <br>
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -880,6 +924,8 @@
           setInputValue("[name='heating[hysteresis]']", data.heating.hysteresis);
           setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
           setInputValue("[name='heating[maxModulation]']", data.heating.maxModulation);
+          setInputValue("[name='heating[overheatHighTemp]']", data.heating.overheatHighTemp);
+          setInputValue("[name='heating[overheatLowTemp]']", data.heating.overheatLowTemp);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
           // DHW
@@ -892,6 +938,8 @@
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
           setInputValue("[name='dhw[maxModulation]']", data.dhw.maxModulation);
+          setInputValue("[name='dhw[overheatHighTemp]']", data.dhw.overheatHighTemp);
+          setInputValue("[name='dhw[overheatLowTemp]']", data.dhw.overheatLowTemp);
           setBusy('#dhw-settings-busy', '#dhw-settings', false);
 
           // Emergency mode

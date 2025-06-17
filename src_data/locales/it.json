@@ -117,6 +117,7 @@
         
         "mHeatEnabled": "Riscaldamento attivato",
         "mHeatBlocking": "Riscaldamento bloccato",
+        "mHeatOverheat": "Riscaldamento surriscaldamento",
         "sHeatActive": "Riscaldamento attivo",
         "mHeatSetpointTemp": "Temp riscaldamento impostato",
         "mHeatTargetTemp": "Target Temp caldaia",
@@ -126,6 +127,7 @@
         "mHeatOutdoorTemp": "Riscaldamento, temp esterna",
 
         "mDhwEnabled": "ACS attivata",
+        "mDhwOverheat": "ACS surriscaldamento",
         "sDhwActive": "ACS attiva",
         "mDhwTargetTemp": "ACS temp impostata",
         "mDhwCurrTemp": "ACS temp attuale",
@@ -302,6 +304,18 @@
         "max": "Temperatura massima"
       },
       "maxModulation": "Max livello modulazione",
+      "overheat": {
+        "title": "Protezione contro il surriscaldamento",
+        "desc": "<b>Nota:</b> questa funzione può essere utile se la protezione contro il surriscaldamento integrata nella caldaia non funziona o non funziona correttamente e il fluido termovettore bolle. Per disattivarla, impostare 0 come temperatura <b>alta</b> e <b>bassa</b>.",
+        "highTemp": {
+          "title": "Soglia di temperatura alta",
+          "note": "Soglia alla quale il bruciatore verrà spento forzatamente"
+        },
+        "lowTemp": {
+          "title": "Soglia di temperatura bassa",
+          "note": "Soglia alla quale il bruciatore può essere riacceso"
+        }
+      },
 
       "portal": {
         "login": "Login",

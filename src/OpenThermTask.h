@@ -171,10 +171,13 @@ protected:
     vars.master.heating.enabled = this->isReady()
       && (settings.heating.enabled || vars.emergency.state) 
       && vars.cascadeControl.input 
-      && !vars.master.heating.blocking;
+      && !vars.master.heating.blocking
+      && !vars.master.heating.overheat;
 
     // DHW settings
-    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport && settings.dhw.enabled;
+    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport 
+      && settings.dhw.enabled 
+      && !vars.master.dhw.overheat;
     vars.master.dhw.targetTemp = settings.dhw.target;
 
     // CH2 settings
@@ -1312,6 +1315,76 @@ protected:
           }
         }
       }
+    }
+
+
+    // Heating overheat control
+    if (settings.heating.overheatHighTemp > 0 && settings.heating.overheatLowTemp > 0) {
+      float highTemp = max({
+        vars.slave.heating.currentTemp,
+        vars.slave.heating.returnTemp,
+        vars.slave.heatExchangerTemp
+      });
+
+      if (vars.master.heating.overheat) {
+        if ((float) settings.heating.overheatLowTemp - highTemp + 0.0001f >= 0.0f) {
+          vars.master.heating.overheat = false;
+
+          Log.sinfoln(
+            FPSTR(L_OT_HEATING), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
+            highTemp, settings.heating.overheatLowTemp
+          );
+        }
+
+      } else if (vars.slave.heating.active) {
+        if (highTemp - (float) settings.heating.overheatHighTemp + 0.0001f >= 0.0f) {
+          vars.master.heating.overheat = true;
+
+          Log.swarningln(
+            FPSTR(L_OT_HEATING), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
+            highTemp, settings.heating.overheatHighTemp
+          );
+        }
+      }
+
+    } else if (vars.master.heating.overheat) {
+      vars.master.heating.overheat = false;
+    }
+
+    // DHW overheat control
+    if (settings.dhw.overheatHighTemp > 0 && settings.dhw.overheatLowTemp > 0) {
+      float highTemp = max({
+        vars.slave.heating.currentTemp,
+        vars.slave.heating.returnTemp,
+        vars.slave.heatExchangerTemp,
+        vars.slave.dhw.currentTemp,
+        vars.slave.dhw.currentTemp2,
+        vars.slave.dhw.returnTemp
+      });
+
+      if (vars.master.dhw.overheat) {
+        if ((float) settings.dhw.overheatLowTemp - highTemp + 0.0001f >= 0.0f) {
+          vars.master.dhw.overheat = false;
+
+          Log.sinfoln(
+            FPSTR(L_OT_DHW), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
+            highTemp, settings.dhw.overheatLowTemp
+          );
+        }
+
+      } else if (vars.slave.dhw.active) {
+        if (highTemp - (float) settings.dhw.overheatHighTemp + 0.0001f >= 0.0f) {
+          vars.master.dhw.overheat = true;
+
+          Log.swarningln(
+            FPSTR(L_OT_DHW), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
+            highTemp, settings.dhw.overheatHighTemp
+          );
+        }
+      }
+
+    } else if (vars.master.dhw.overheat) {
+      vars.master.dhw.overheat = false;
     }
   }
 
