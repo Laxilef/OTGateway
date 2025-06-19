@@ -1320,11 +1320,15 @@ protected:
 
     // Heating overheat control
     if (settings.heating.overheatHighTemp > 0 && settings.heating.overheatLowTemp > 0) {
-      float highTemp = max({
-        vars.slave.heating.currentTemp,
-        vars.slave.heating.returnTemp,
-        vars.slave.heatExchangerTemp
-      });
+      float highTemp = convertTemp(
+        max({
+          vars.slave.heating.currentTemp,
+          vars.slave.heating.returnTemp,
+          vars.slave.heatExchangerTemp
+        }),
+        settings.opentherm.unitSystem,
+        settings.system.unitSystem
+      );
 
       if (vars.master.heating.overheat) {
         if ((float) settings.heating.overheatLowTemp - highTemp + 0.0001f >= 0.0f) {
@@ -1353,14 +1357,18 @@ protected:
 
     // DHW overheat control
     if (settings.dhw.overheatHighTemp > 0 && settings.dhw.overheatLowTemp > 0) {
-      float highTemp = max({
-        vars.slave.heating.currentTemp,
-        vars.slave.heating.returnTemp,
-        vars.slave.heatExchangerTemp,
-        vars.slave.dhw.currentTemp,
-        vars.slave.dhw.currentTemp2,
-        vars.slave.dhw.returnTemp
-      });
+      float highTemp = convertTemp(
+        max({
+          vars.slave.heating.currentTemp,
+          vars.slave.heating.returnTemp,
+          vars.slave.heatExchangerTemp,
+          vars.slave.dhw.currentTemp,
+          vars.slave.dhw.currentTemp2,
+          vars.slave.dhw.returnTemp
+        }),
+        settings.opentherm.unitSystem,
+        settings.system.unitSystem
+      );
 
       if (vars.master.dhw.overheat) {
         if ((float) settings.dhw.overheatLowTemp - highTemp + 0.0001f >= 0.0f) {
