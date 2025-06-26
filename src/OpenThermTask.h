@@ -169,7 +169,7 @@ protected:
 
     // Heating settings
     vars.master.heating.enabled = this->isReady()
-      && (settings.heating.enabled || vars.emergency.state) 
+      && settings.heating.enabled
       && vars.cascadeControl.input 
       && !vars.master.heating.blocking
       && !vars.master.heating.overheat;

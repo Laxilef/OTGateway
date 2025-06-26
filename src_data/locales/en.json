@@ -350,7 +350,11 @@
 
       "heating": {
         "hyst": "Hysteresis <small>(in degrees)</small>",
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "antiFreezeTemp": {
+          "title": "Freeze protection temperature",
+          "note": "If the heat carrier or indoor temperature drops below this value, the heating will be forced to turn on"
+        }
       },
 
       "emergency": {

@@ -497,6 +497,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
   heating[FPSTR(S_OVERHEAT_HIGH_TEMP)] = src.heating.overheatHighTemp;
   heating[FPSTR(S_OVERHEAT_LOW_TEMP)] = src.heating.overheatLowTemp;
+  heating[FPSTR(S_ANTI_FREEZE_TEMP)] = src.heating.antiFreezeTemp;
 
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
@@ -1367,6 +1368,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (dst.heating.overheatHighTemp < dst.heating.overheatLowTemp) {
     dst.heating.overheatHighTemp = dst.heating.overheatLowTemp;
     changed = true;
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_ANTI_FREEZE_TEMP)].isNull()) {
+    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_ANTI_FREEZE_TEMP)].as<unsigned short>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 1, 30) && value != dst.heating.antiFreezeTemp) {
+      dst.heating.antiFreezeTemp = value;
+      changed = true;
+    }
   }
 
 

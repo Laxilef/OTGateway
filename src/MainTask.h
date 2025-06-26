@@ -152,6 +152,7 @@ protected:
     }
     this->yield();
 
+    this->heating();
     this->emergency();
     this->ledStatus();
     this->cascadeControl();
@@ -225,6 +226,52 @@ protected:
         freeHeap, getTotalHeap(), this->minFreeHeap, minFreeHeapDiff, maxFreeBlockHeap, this->minMaxFreeBlockHeap, minMaxFreeBlockHeapDiff, getHeapFrag()
       );
       this->lastHeapInfo = millis();
+    }
+  }
+
+  void heating() {
+    // anti freeze protection
+    if (!settings.heating.enabled) {
+      float minTemp = 255.0f;
+      uint8_t availableSensors = 0;
+
+      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY);
+        if (value < minTemp) {
+          minTemp = value;
+        }
+        
+        availableSensors++;
+      }
+
+      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::HEATING_TEMP)) {
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_TEMP, Sensors::ValueType::PRIMARY);
+        if (value < minTemp) {
+          minTemp = value;
+        }
+        
+        availableSensors++;
+      }
+
+      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::HEATING_RETURN_TEMP)) {
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_RETURN_TEMP, Sensors::ValueType::PRIMARY);
+        if (value < minTemp) {
+          minTemp = value;
+        }
+
+        availableSensors++;
+      }
+
+      if (availableSensors && minTemp <= settings.heating.antiFreezeTemp) {
+        settings.heating.enabled = true;
+        fsSettings.update();
+
+        Log.sinfoln(
+          FPSTR(L_MAIN),
+          F("Heating turned on by anti freeze protection, current min temp: %.2f, threshold: %hhu"),
+          minTemp, settings.heating.antiFreezeTemp
+        );
+      }
     }
   }
 

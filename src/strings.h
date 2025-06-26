@@ -44,6 +44,7 @@ const char S_APP_VERSION[]                          PROGMEM = "appVersion";
 const char S_AUTH[]                                 PROGMEM = "auth";
 const char S_AUTO_DIAG_RESET[]                      PROGMEM = "autoDiagReset";
 const char S_AUTO_FAULT_RESET[]                     PROGMEM = "autoFaultReset";
+const char S_ANTI_FREEZE_TEMP[]                     PROGMEM = "antiFreezeTemp";
 const char S_BACKTRACE[]                            PROGMEM = "backtrace";
 const char S_BATTERY[]                              PROGMEM = "battery";
 const char S_BAUDRATE[]                             PROGMEM = "baudrate";

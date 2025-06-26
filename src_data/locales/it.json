@@ -350,7 +350,11 @@
 
       "heating": {
         "hyst": "Isteresi <small>(in gradi)</small>",
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "antiFreezeTemp": {
+          "title": "Temperatura di protezione antigelo",
+          "note": "Se la temperatura del fluido termovettore o interna scende al di sotto di questo valore, il riscaldamento verrà forzato ad accendersi"
+        }
       },
 
       "emergency": {

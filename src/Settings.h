@@ -110,6 +110,7 @@ struct Settings {
     uint8_t maxModulation = 100;
     uint8_t overheatHighTemp = 95;
     uint8_t overheatLowTemp = 90;
+    uint8_t antiFreezeTemp = 10;
   } heating;
 
   struct {
