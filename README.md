@@ -71,5 +71,10 @@ All available information and instructions can be found in the wiki:
       * [Connection](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#connection)
       * [Leds on board](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#leds-on-board)
 
-___
-This project is tested with BrowserStack.
+## Gratitude
+* To the developers of the libraries used: [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library), [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler), [ArduinoJson](https://github.com/bblanchon/ArduinoJson), [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino), [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient), [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet), [FileData](https://github.com/GyverLibs/FileData), [GyverPID](https://github.com/GyverLibs/GyverPID), [GyverBlinker](https://github.com/GyverLibs/GyverBlinker), [FileData](https://github.com/GyverLibs/FileData), [OneWireNg](https://github.com/pstolarz/OneWireNg) & [OneWire](https://github.com/PaulStoffregen/OneWire)
+* To the [PlatformIO](https://platformio.org/) Team
+* To the team and contributors of the [pioarduino](https://github.com/pioarduino/platform-espressif32) project
+* To the [BrowserStack](https://www.browserstack.com/) team. This project is tested with BrowserStack.
+* To the [PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
+* And of course to the contributors for their contribution to the development of the project!
