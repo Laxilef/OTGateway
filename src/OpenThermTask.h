@@ -237,6 +237,7 @@ protected:
       vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
       vars.slave.flame = CustomOpenTherm::isFlameOn(response);
       vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
+      vars.slave.ch2.active = CustomOpenTherm::isCh2Active(response);
       vars.slave.fault.active = CustomOpenTherm::isFault(response);
 
       if (!settings.opentherm.options.ignoreDiagState) {
@@ -247,9 +248,9 @@ protected:
       }
   
       Log.snoticeln(
-        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
+        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; channel 2: %hhu; fault: %hhu; diag: %hhu"),
         vars.slave.heating.active, vars.slave.dhw.active,
-        vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
+        vars.slave.flame, vars.slave.cooling, vars.slave.ch2.active, vars.slave.fault.active, vars.slave.diag.active
       );
     }
 

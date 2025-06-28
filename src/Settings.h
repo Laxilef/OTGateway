@@ -398,6 +398,7 @@ struct Variables {
     } dhw;
 
     struct {
+      bool active = false;
       bool enabled = false;
       float targetTemp = 0.0f;
       float currentTemp = 0.0f;

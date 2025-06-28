@@ -106,6 +106,11 @@ public:
     return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
   }
 
+  static bool isCh2Active(unsigned long response)
+  {
+      return response & 0x20;
+  }
+
   static bool isValidResponseId(unsigned long response, OpenThermMessageID id) {
     byte responseId = (response >> 16) & 0xFF;
 
