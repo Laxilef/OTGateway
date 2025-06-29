@@ -3,12 +3,20 @@
     --pico-block-spacing-vertical: calc(var(--pico-spacing) * 0.75);
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 0.75);
   }
+
+  .logo {
+    font-size: 1.2rem;
+  }
 }
 
 @media (min-width: 768px) {
   article {
     --pico-block-spacing-vertical: var(--pico-spacing);
     --pico-block-spacing-horizontal: var(--pico-spacing);
+  }
+
+  .logo {
+    font-size: 1.25rem;
   }
 }
 
@@ -17,12 +25,20 @@
     --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.25);
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.25);
   }
+
+  .logo {
+    font-size: 1.25rem;
+  }
 }
 
 @media (min-width: 1280px) {
   article {
     --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.5);
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.5);
+  }
+
+  .logo {
+    font-size: 1.3rem;
   }
 
   .container {
@@ -34,6 +50,10 @@
   article {
     --pico-block-spacing-vertical: calc(var(--pico-spacing) * 1.75);
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.75);
+  }
+
+  .logo {
+    font-size: 1.3rem;
   }
 
   .container {
@@ -111,7 +131,7 @@ tr.network:hover {
   border-radius: var(--pico-border-radius);
   color: var(--pico-code-kbd-color);
   font-weight: bolder;
-  font-size: 1.3rem;
+  /*font-size: 1.3rem;*/
   font-family: var(--pico-font-family-monospace);
 }
 

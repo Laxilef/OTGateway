@@ -461,6 +461,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_HEATING_TO_CH2)] = src.opentherm.options.heatingToCh2;
     otOptions[FPSTR(S_DHW_TO_CH2)] = src.opentherm.options.dhwToCh2;
     otOptions[FPSTR(S_DHW_BLOCKING)] = src.opentherm.options.dhwBlocking;
+    otOptions[FPSTR(S_DHW_STATE_AS_DHW_BLOCKING)] = src.opentherm.options.dhwStateAsDhwBlocking;
     otOptions[FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)] = src.opentherm.options.maxTempSyncWithTargetTemp;
     otOptions[FPSTR(S_GET_MIN_MAX_TEMP)] = src.opentherm.options.getMinMaxTemp;
     otOptions[FPSTR(S_IGNORE_DIAG_STATE)] = src.opentherm.options.ignoreDiagState;
@@ -495,12 +496,24 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
   heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
 
+  auto heatingOverheatProtection = heating[FPSTR(S_OVERHEAT_PROTECTION)].to<JsonObject>();
+  heatingOverheatProtection[FPSTR(S_HIGH_TEMP)] = src.heating.overheatProtection.highTemp;
+  heatingOverheatProtection[FPSTR(S_LOW_TEMP)] = src.heating.overheatProtection.lowTemp;
+
+  auto freezeProtection = heating[FPSTR(S_FREEZE_PROTECTION)].to<JsonObject>();
+  freezeProtection[FPSTR(S_LOW_TEMP)] = src.heating.freezeProtection.lowTemp;
+  freezeProtection[FPSTR(S_THRESHOLD_TIME)] = src.heating.freezeProtection.thresholdTime;
+
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
   dhw[FPSTR(S_TARGET)] = roundf(src.dhw.target, 1);
   dhw[FPSTR(S_MIN_TEMP)] = src.dhw.minTemp;
   dhw[FPSTR(S_MAX_TEMP)] = src.dhw.maxTemp;
   dhw[FPSTR(S_MAX_MODULATION)] = src.dhw.maxModulation;
+
+  auto dhwOverheatProtection = dhw[FPSTR(S_OVERHEAT_PROTECTION)].to<JsonObject>();
+  dhwOverheatProtection[FPSTR(S_HIGH_TEMP)] = src.dhw.overheatProtection.highTemp;
+  dhwOverheatProtection[FPSTR(S_LOW_TEMP)] = src.dhw.overheatProtection.lowTemp;
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
@@ -924,6 +937,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_STATE_AS_DHW_BLOCKING)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_DHW_STATE_AS_DHW_BLOCKING)].as<bool>();
+
+      if (value != dst.opentherm.options.dhwStateAsDhwBlocking) {
+        dst.opentherm.options.dhwStateAsDhwBlocking = value;
+        changed = true;
+      }
+    }
+
     if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)].is<bool>()) {
       bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_MAX_TEMP_SYNC_WITH_TARGET_TEMP)].as<bool>();
 
@@ -1342,6 +1364,49 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.heating.overheatProtection.highTemp) {
+      dst.heating.overheatProtection.highTemp = value;
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.heating.overheatProtection.lowTemp) {
+      dst.heating.overheatProtection.lowTemp = value;
+      changed = true;
+    }
+  }
+
+  if (dst.heating.overheatProtection.highTemp < dst.heating.overheatProtection.lowTemp) {
+    dst.heating.overheatProtection.highTemp = dst.heating.overheatProtection.lowTemp;
+    changed = true;
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
+    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_LOW_TEMP)].as<uint8_t>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 1, 30) && value != dst.heating.freezeProtection.lowTemp) {
+      dst.heating.freezeProtection.lowTemp = value;
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_THRESHOLD_TIME)].isNull()) {
+    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_THRESHOLD_TIME)].as<unsigned short>();
+
+    if (value >= 30 && value <= 1800) {
+      if (value != dst.heating.freezeProtection.thresholdTime) {
+        dst.heating.freezeProtection.thresholdTime = value;
+        changed = true;
+      }
+    }
+  }
+
 
   // dhw
   if (src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].is<bool>()) {
@@ -1383,6 +1448,29 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       dst.dhw.maxModulation = value;
       changed = true;
     }
+  }
+
+  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.dhw.overheatProtection.highTemp) {
+      dst.dhw.overheatProtection.highTemp = value;
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].as<unsigned char>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.dhw.overheatProtection.lowTemp) {
+      dst.dhw.overheatProtection.lowTemp = value;
+      changed = true;
+    }
+  }
+
+  if (dst.dhw.overheatProtection.highTemp < dst.dhw.overheatProtection.lowTemp) {
+    dst.dhw.overheatProtection.highTemp = dst.dhw.overheatProtection.lowTemp;
+    changed = true;
   }
 
 
@@ -2016,6 +2104,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   mHeating[FPSTR(S_ENABLED)] = src.master.heating.enabled;
   mHeating[FPSTR(S_BLOCKING)] = src.master.heating.blocking;
   mHeating[FPSTR(S_INDOOR_TEMP_CONTROL)] = src.master.heating.indoorTempControl;
+  mHeating[FPSTR(S_OVERHEAT)] = src.master.heating.overheat;
   mHeating[FPSTR(S_SETPOINT_TEMP)] = roundf(src.master.heating.setpointTemp, 2);
   mHeating[FPSTR(S_TARGET_TEMP)] = roundf(src.master.heating.targetTemp, 2);
   mHeating[FPSTR(S_CURRENT_TEMP)] = roundf(src.master.heating.currentTemp, 2);
@@ -2027,6 +2116,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   auto mDhw = master[FPSTR(S_DHW)].to<JsonObject>();
   mDhw[FPSTR(S_ENABLED)] = src.master.dhw.enabled;
+  mDhw[FPSTR(S_OVERHEAT)] = src.master.dhw.overheat;
   mDhw[FPSTR(S_TARGET_TEMP)] = roundf(src.master.dhw.targetTemp, 2);
   mDhw[FPSTR(S_CURRENT_TEMP)] = roundf(src.master.dhw.currentTemp, 2);
   mDhw[FPSTR(S_RETURN_TEMP)] = roundf(src.master.dhw.returnTemp, 2);

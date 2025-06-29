@@ -207,6 +207,50 @@
                 <input type="number" inputmode="numeric" name="heating[maxModulation]" min="1" max="100" step="1" required>
               </label>
 
+              <hr />
+
+              <details>
+                <summary><b data-i18n>settings.ohProtection.title</b></summary>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>settings.ohProtection.highTemp.title</span>
+                    <input type="number" inputmode="numeric" name="heating[overheatProtection][highTemp]" min="0" max="0" step="1" required>
+                    <small data-i18n>settings.ohProtection.highTemp.note</small>
+                  </label>
+
+                  <label>
+                    <span data-i18n>settings.ohProtection.lowTemp.title</span>
+                    <input type="number" inputmode="numeric" name="heating[overheatProtection][lowTemp]" min="0" max="0" step="1" required>
+                    <small data-i18n>settings.ohProtection.lowTemp.note</small>
+                  </label>
+                </div>
+
+                <small data-i18n>settings.ohProtection.desc</small>
+              </details>
+
+              <hr />
+
+              <details>
+                <summary><b data-i18n>settings.freezeProtection.title</b></summary>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>settings.freezeProtection.lowTemp</span>
+                    <input type="number" inputmode="numeric" name="heating[freezeProtection][lowTemp]" min="0" max="0" step="1" required>
+                  </label>
+
+                  <label>
+                    <span data-i18n>settings.freezeProtection.thresholdTime</span>
+                    <input type="number" inputmode="numeric" name="heating[freezeProtection][thresholdTime]" min="30" max="1800" step="1" required>
+                  </label>
+                </div>
+
+                <small data-i18n>settings.freezeProtection.desc</small>
+              </details>
+
+              <br />
+
               <button type="submit" data-i18n>button.save</button>
             </form>
           </div>
@@ -235,6 +279,30 @@
                 <span data-i18n>settings.maxModulation</span>
                 <input type="number" inputmode="numeric" name="dhw[maxModulation]" min="1" max="100" step="1" required>
               </label>
+
+              <hr />
+
+              <details>
+                <summary><b data-i18n>settings.ohProtection.title</b></summary>
+
+                <div class="grid">
+                  <label>
+                    <span data-i18n>settings.ohProtection.highTemp.title</span>
+                    <input type="number" inputmode="numeric" name="dhw[overheatProtection][highTemp]" min="0" max="0" step="1" required>
+                    <small data-i18n>settings.ohProtection.highTemp.note</small>
+                  </label>
+
+                  <label>
+                    <span data-i18n>settings.ohProtection.lowTemp.title</span>
+                    <input type="number" inputmode="numeric" name="dhw[overheatProtection][lowTemp]" min="0" max="0" step="1" required>
+                    <small data-i18n>settings.ohProtection.lowTemp.note</small>
+                  </label>
+                </div>
+
+                <small data-i18n>settings.ohProtection.desc</small>
+              </details>
+
+              <br />
 
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -506,92 +574,107 @@
                 </label>
               </div>
 
-              <fieldset>
-                <legend data-i18n>settings.ot.options.desc</legend>
+              <details>
+                <summary><b data-i18n>settings.ot.options.title</b></summary>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][dhwSupport]" value="true">
-                  <span data-i18n>settings.ot.options.dhwSupport</span>
-                </label>
+                <div>
+                  <fieldset>
+                    <small data-i18n>settings.ot.options.desc</small>
+                  </fieldset>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][coolingSupport]" value="true">
-                  <span data-i18n>settings.ot.options.coolingSupport</span>
-                </label>
+                  <fieldset>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][dhwSupport]" value="true">
+                      <span data-i18n>settings.ot.options.dhwSupport</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][summerWinterMode]" value="true">
-                  <span data-i18n>settings.ot.options.summerWinterMode</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][coolingSupport]" value="true">
+                      <span data-i18n>settings.ot.options.coolingSupport</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][heatingStateToSummerWinterMode]" value="true">
-                  <span data-i18n>settings.ot.options.heatingStateToSummerWinterMode</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][summerWinterMode]" value="true">
+                      <span data-i18n>settings.ot.options.summerWinterMode</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][ch2AlwaysEnabled]" value="true">
-                  <span data-i18n>settings.ot.options.ch2AlwaysEnabled</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][heatingStateToSummerWinterMode]" value="true">
+                      <span data-i18n>settings.ot.options.heatingStateToSummerWinterMode</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][heatingToCh2]" value="true">
-                  <span data-i18n>settings.ot.options.heatingToCh2</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][ch2AlwaysEnabled]" value="true">
+                      <span data-i18n>settings.ot.options.ch2AlwaysEnabled</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][dhwToCh2]" value="true">
-                  <span data-i18n>settings.ot.options.dhwToCh2</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][heatingToCh2]" value="true">
+                      <span data-i18n>settings.ot.options.heatingToCh2</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][dhwBlocking]" value="true">
-                  <span data-i18n>settings.ot.options.dhwBlocking</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][dhwToCh2]" value="true">
+                      <span data-i18n>settings.ot.options.dhwToCh2</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][maxTempSyncWithTargetTemp]" value="true">
-                  <span data-i18n>settings.ot.options.maxTempSyncWithTargetTemp</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][dhwBlocking]" value="true">
+                      <span data-i18n>settings.ot.options.dhwBlocking</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][getMinMaxTemp]" value="true">
-                  <span data-i18n>settings.ot.options.getMinMaxTemp</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][dhwStateAsDhwBlocking]" value="true">
+                      <span data-i18n>settings.ot.options.dhwStateAsDhwBlocking</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][ignoreDiagState]" value="true">
-                  <span data-i18n>settings.ot.options.ignoreDiagState</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][maxTempSyncWithTargetTemp]" value="true">
+                      <span data-i18n>settings.ot.options.maxTempSyncWithTargetTemp</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][autoFaultReset]" value="true">
-                  <span data-i18n>settings.ot.options.autoFaultReset</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][getMinMaxTemp]" value="true">
+                      <span data-i18n>settings.ot.options.getMinMaxTemp</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][autoDiagReset]" value="true">
-                  <span data-i18n>settings.ot.options.autoDiagReset</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][ignoreDiagState]" value="true">
+                      <span data-i18n>settings.ot.options.ignoreDiagState</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][setDateAndTime]" value="true">
-                  <span data-i18n>settings.ot.options.setDateAndTime</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][autoFaultReset]" value="true">
+                      <span data-i18n>settings.ot.options.autoFaultReset</span>
+                    </label>
 
-                <label>
-                  <input type="checkbox" name="opentherm[options][immergasFix]" value="true">
-                  <span data-i18n>settings.ot.options.immergasFix</span>
-                </label>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][autoDiagReset]" value="true">
+                      <span data-i18n>settings.ot.options.autoDiagReset</span>
+                    </label>
 
-                <hr />
-                <label>
-                  <input type="checkbox" name="opentherm[options][nativeHeatingControl]" value="true">
-                  <span data-i18n>settings.ot.nativeHeating.title</span><br />
-                  <small data-i18n>settings.ot.nativeHeating.note</small>
-                </label>
-              </fieldset>
+                    <label>
+                      <input type="checkbox" name="opentherm[options][setDateAndTime]" value="true">
+                      <span data-i18n>settings.ot.options.setDateAndTime</span>
+                    </label>
 
+                    <label>
+                      <input type="checkbox" name="opentherm[options][immergasFix]" value="true">
+                      <span data-i18n>settings.ot.options.immergasFix</span>
+                    </label>
+
+                    <hr />
+
+                    <label>
+                      <input type="checkbox" name="opentherm[options][nativeHeatingControl]" value="true">
+                      <span data-i18n>settings.ot.nativeHeating.title</span><br />
+                      <small data-i18n>settings.ot.nativeHeating.note</small>
+                    </label>
+                  </fieldset>
+                </div>
+              </details>
+              
+              <br />
               <button type="submit" data-i18n>button.save</button>
             </form>
           </div>
@@ -999,6 +1082,7 @@
           setCheckboxValue("[name='opentherm[options][heatingToCh2]']", data.opentherm.options.heatingToCh2);
           setCheckboxValue("[name='opentherm[options][dhwToCh2]']", data.opentherm.options.dhwToCh2);
           setCheckboxValue("[name='opentherm[options][dhwBlocking]']", data.opentherm.options.dhwBlocking);
+          setCheckboxValue("[name='opentherm[options][dhwStateAsDhwBlocking]']", data.opentherm.options.dhwStateAsDhwBlocking);
           setCheckboxValue("[name='opentherm[options][maxTempSyncWithTargetTemp]']", data.opentherm.options.maxTempSyncWithTargetTemp);
           setCheckboxValue("[name='opentherm[options][getMinMaxTemp]']", data.opentherm.options.getMinMaxTemp);
           setCheckboxValue("[name='opentherm[options][ignoreDiagState]']", data.opentherm.options.ignoreDiagState);
@@ -1055,6 +1139,19 @@
           setInputValue("[name='heating[hysteresis]']", data.heating.hysteresis);
           setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
           setInputValue("[name='heating[maxModulation]']", data.heating.maxModulation);
+          setInputValue("[name='heating[overheatProtection][highTemp]']", data.heating.overheatProtection.highTemp, {
+            "min": 0,
+            "max": data.system.unitSystem == 0 ? 100 : 212
+          });
+          setInputValue("[name='heating[overheatProtection][lowTemp]']", data.heating.overheatProtection.lowTemp, {
+            "min": 0,
+            "max": data.system.unitSystem == 0 ? 99 : 211
+          });
+          setInputValue("[name='heating[freezeProtection][lowTemp]']", data.heating.freezeProtection.lowTemp, {
+            "min": data.system.unitSystem == 0 ? 1 : 34,
+            "max": data.system.unitSystem == 0 ? 30 : 86
+          });
+          setInputValue("[name='heating[freezeProtection][thresholdTime]']", data.heating.freezeProtection.thresholdTime);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
           // DHW
@@ -1067,14 +1164,21 @@
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
           setInputValue("[name='dhw[maxModulation]']", data.dhw.maxModulation);
+          setInputValue("[name='dhw[overheatProtection][highTemp]']", data.dhw.overheatProtection.highTemp, {
+            "min": 0,
+            "max": data.system.unitSystem == 0 ? 100 : 212
+          });
+          setInputValue("[name='dhw[overheatProtection][lowTemp]']", data.dhw.overheatProtection.lowTemp, {
+            "min": 0,
+            "max": data.system.unitSystem == 0 ? 99 : 211
+          });
           setBusy('#dhw-settings-busy', '#dhw-settings', false);
 
           // Emergency mode
-          setInputValue("[name='emergency[tresholdTime]']", data.emergency.tresholdTime);
           if (data.opentherm.options.nativeHeatingControl) {
             setInputValue("[name='emergency[target]']", data.emergency.target, {
               "min": data.system.unitSystem == 0 ? 5 : 41,
-              "max": data.system.unitSystem == 0 ? 40 : 86
+              "max": data.system.unitSystem == 0 ? 40 : 104
             });
 
           } else {
@@ -1083,7 +1187,7 @@
               "max": data.heating.maxTemp,
             });
           }
-
+          setInputValue("[name='emergency[tresholdTime]']", data.emergency.tresholdTime);
           setBusy('#emergency-settings-busy', '#emergency-settings', false);
 
           // Equitherm

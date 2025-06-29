@@ -169,12 +169,15 @@ protected:
 
     // Heating settings
     vars.master.heating.enabled = this->isReady()
-      && (settings.heating.enabled || vars.emergency.state) 
+      && settings.heating.enabled
       && vars.cascadeControl.input 
-      && !vars.master.heating.blocking;
+      && !vars.master.heating.blocking
+      && !vars.master.heating.overheat;
 
     // DHW settings
-    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport && settings.dhw.enabled;
+    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport 
+      && settings.dhw.enabled 
+      && !vars.master.dhw.overheat;
     vars.master.dhw.targetTemp = settings.dhw.target;
 
     // CH2 settings
@@ -205,6 +208,12 @@ protected:
       summerWinterMode = vars.master.heating.enabled == summerWinterMode;
     }
 
+    // DHW blocking
+    bool dhwBlocking = settings.opentherm.options.dhwBlocking;
+    if (settings.opentherm.options.dhwStateAsDhwBlocking) {
+      dhwBlocking = vars.master.dhw.enabled == dhwBlocking;
+    }
+
     unsigned long response = this->instance->setBoilerStatus(
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
@@ -212,7 +221,7 @@ protected:
       settings.opentherm.options.nativeHeatingControl,
       vars.master.ch2.enabled,
       summerWinterMode,
-      settings.opentherm.options.dhwBlocking,
+      dhwBlocking,
       statusLb
     );
 
@@ -228,6 +237,7 @@ protected:
       vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
       vars.slave.flame = CustomOpenTherm::isFlameOn(response);
       vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
+      vars.slave.ch2.active = CustomOpenTherm::isCh2Active(response);
       vars.slave.fault.active = CustomOpenTherm::isFault(response);
 
       if (!settings.opentherm.options.ignoreDiagState) {
@@ -238,9 +248,9 @@ protected:
       }
   
       Log.snoticeln(
-        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; fault: %hhu; diag: %hhu"),
+        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; channel 2: %hhu; fault: %hhu; diag: %hhu"),
         vars.slave.heating.active, vars.slave.dhw.active,
-        vars.slave.flame, vars.slave.cooling, vars.slave.fault.active, vars.slave.diag.active
+        vars.slave.flame, vars.slave.cooling, vars.slave.ch2.active, vars.slave.fault.active, vars.slave.diag.active
       );
     }
 
@@ -1306,6 +1316,84 @@ protected:
           }
         }
       }
+    }
+
+
+    // Heating overheat control
+    if (settings.heating.overheatProtection.highTemp > 0 && settings.heating.overheatProtection.lowTemp > 0) {
+      float highTemp = convertTemp(
+        max({
+          vars.slave.heating.currentTemp,
+          vars.slave.heating.returnTemp,
+          vars.slave.heatExchangerTemp
+        }),
+        settings.opentherm.unitSystem,
+        settings.system.unitSystem
+      );
+
+      if (vars.master.heating.overheat) {
+        if ((float) settings.heating.overheatProtection.lowTemp - highTemp + 0.0001f >= 0.0f) {
+          vars.master.heating.overheat = false;
+
+          Log.sinfoln(
+            FPSTR(L_OT_HEATING), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
+            highTemp, settings.heating.overheatProtection.lowTemp
+          );
+        }
+
+      } else if (vars.slave.heating.active) {
+        if (highTemp - (float) settings.heating.overheatProtection.highTemp + 0.0001f >= 0.0f) {
+          vars.master.heating.overheat = true;
+
+          Log.swarningln(
+            FPSTR(L_OT_HEATING), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
+            highTemp, settings.heating.overheatProtection.highTemp
+          );
+        }
+      }
+
+    } else if (vars.master.heating.overheat) {
+      vars.master.heating.overheat = false;
+    }
+
+    // DHW overheat control
+    if (settings.dhw.overheatProtection.highTemp > 0 && settings.dhw.overheatProtection.lowTemp > 0) {
+      float highTemp = convertTemp(
+        max({
+          vars.slave.heating.currentTemp,
+          vars.slave.heating.returnTemp,
+          vars.slave.heatExchangerTemp,
+          vars.slave.dhw.currentTemp,
+          vars.slave.dhw.currentTemp2,
+          vars.slave.dhw.returnTemp
+        }),
+        settings.opentherm.unitSystem,
+        settings.system.unitSystem
+      );
+
+      if (vars.master.dhw.overheat) {
+        if ((float) settings.dhw.overheatProtection.lowTemp - highTemp + 0.0001f >= 0.0f) {
+          vars.master.dhw.overheat = false;
+
+          Log.sinfoln(
+            FPSTR(L_OT_DHW), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
+            highTemp, settings.dhw.overheatProtection.lowTemp
+          );
+        }
+
+      } else if (vars.slave.dhw.active) {
+        if (highTemp - (float) settings.dhw.overheatProtection.highTemp + 0.0001f >= 0.0f) {
+          vars.master.dhw.overheat = true;
+
+          Log.swarningln(
+            FPSTR(L_OT_DHW), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
+            highTemp, settings.dhw.overheatProtection.highTemp
+          );
+        }
+      }
+
+    } else if (vars.master.dhw.overheat) {
+      vars.master.dhw.overheat = false;
     }
   }
 

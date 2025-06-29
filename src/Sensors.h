@@ -138,7 +138,7 @@ public:
     }
 
     uint8_t amount = 0;
-    for (uint8_t id = 0; id < getMaxSensorId(); id++) {
+    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
       if (settings[id].type == type && (!onlyEnabled || settings[id].enabled)) {
         amount++;
       }
@@ -152,7 +152,7 @@ public:
       return 0;
     }
 
-    for (uint8_t id = 0; id < getMaxSensorId(); id++) {
+    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
       if (strcmp(settings[id].name, name) == 0) {
         return id;
       }
@@ -167,7 +167,7 @@ public:
     }
 
     String refObjectId;
-    for (uint8_t id = 0; id < getMaxSensorId(); id++) {
+    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
       Sensors::makeObjectId(refObjectId, settings[id].name);
       if (refObjectId.equals(objectId)) {
         return id;
@@ -247,7 +247,7 @@ public:
     uint8_t updated = 0;
     
     // read sensors data for current instance
-    for (uint8_t sensorId = 0; sensorId < getMaxSensorId(); sensorId++) {
+    for (uint8_t sensorId = 0; sensorId <= getMaxSensorId(); sensorId++) {
       auto& sSensor = settings[sensorId];
       
       // only target & valid sensors
@@ -311,7 +311,7 @@ public:
     uint8_t updated = 0;
     
     // read sensors data for current instance
-    for (uint8_t sensorId = 0; sensorId < getMaxSensorId(); sensorId++) {
+    for (uint8_t sensorId = 0; sensorId <= getMaxSensorId(); sensorId++) {
       auto& sSensor = settings[sensorId];
       
       // only target & valid sensors
@@ -340,7 +340,7 @@ public:
     float value = 0.0f;
     uint8_t amount = 0;
 
-    for (uint8_t id = 0; id < getMaxSensorId(); id++) {
+    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
       auto& sSensor = settings[id];
       auto& rSensor = results[id];
 
@@ -366,7 +366,7 @@ public:
       return 0;
     }
 
-    for (uint8_t id = 0; id < getMaxSensorId(); id++) {
+    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
       if (settings[id].purpose == purpose && results[id].connected) {
         return true;
       }

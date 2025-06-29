@@ -71,6 +71,7 @@ struct Settings {
       bool heatingToCh2 = false;
       bool dhwToCh2 = false;
       bool dhwBlocking = false;
+      bool dhwStateAsDhwBlocking = false;
       bool maxTempSyncWithTargetTemp = true;
       bool getMinMaxTemp = true;
       bool ignoreDiagState = false;
@@ -107,6 +108,16 @@ struct Settings {
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
     uint8_t maxModulation = 100;
+
+    struct {
+      uint8_t highTemp = 95;
+      uint8_t lowTemp = 90;
+    } overheatProtection;
+
+    struct {
+      uint8_t lowTemp = 10;
+      unsigned short thresholdTime = 600;
+    } freezeProtection;
   } heating;
 
   struct {
@@ -115,6 +126,11 @@ struct Settings {
     byte minTemp = DEFAULT_DHW_MIN_TEMP;
     byte maxTemp = DEFAULT_DHW_MAX_TEMP;
     uint8_t maxModulation = 100;
+    
+    struct {
+      uint8_t highTemp = 95;
+      uint8_t lowTemp = 90;
+    } overheatProtection;
   } dhw;
 
   struct {
@@ -280,6 +296,7 @@ struct Variables {
       bool blocking = false;
       bool enabled = false;
       bool indoorTempControl = false;
+      bool overheat = false;
       float setpointTemp = 0.0f;
       float targetTemp = 0.0f;
       float currentTemp = 0.0f;
@@ -292,6 +309,7 @@ struct Variables {
 
     struct {
       bool enabled = false;
+      bool overheat = false;
       float targetTemp = 0.0f;
       float currentTemp = 0.0f;
       float returnTemp = 0.0f;
@@ -391,6 +409,7 @@ struct Variables {
     } dhw;
 
     struct {
+      bool active = false;
       bool enabled = false;
       float targetTemp = 0.0f;
       float currentTemp = 0.0f;

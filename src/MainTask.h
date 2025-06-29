@@ -29,6 +29,7 @@ protected:
   enum class PumpStartReason {NONE, HEATING, ANTISTUCK};
 
   Blinker* blinker = nullptr;
+  unsigned long miscRunned = 0;
   unsigned long lastHeapInfo = 0;
   unsigned int minFreeHeap = 0;
   unsigned int minMaxFreeBlockHeap = 0;
@@ -42,6 +43,8 @@ protected:
   bool telnetStarted = false;
   bool emergencyDetected = false;
   unsigned long emergencyFlipTime = 0;
+  bool freezeDetected = false;
+  unsigned long freezeDetectedTime = 0;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -150,17 +153,16 @@ protected:
 
       Sensors::setConnectionStatusByType(Sensors::Type::MANUAL, false, false);
     }
-    this->yield();
 
-    this->emergency();
+    this->yield();
+    if (this->misc()) {
+      this->yield();
+    }
     this->ledStatus();
-    this->cascadeControl();
-    this->externalPump();
-    this->yield();
-
 
     // telnet
     if (this->telnetStarted) {
+      this->yield();
       telnetStream->loop();
       this->yield();
     }
@@ -179,14 +181,27 @@ protected:
 
     // heap info
     this->heap();
+  }
 
+  bool misc() {
+    if (millis() - this->miscRunned < 1000) {
+      return false;
+    }
 
-    // restart
+    // restart if required
     if (this->restartSignalReceived && millis() - this->restartSignalReceivedTime > 15000) {
       this->restartSignalReceived = false;
 
       ESP.restart();
     }
+
+    this->heating();
+    this->emergency();
+    this->cascadeControl();
+    this->externalPump();
+    this->miscRunned = millis();
+    
+    return true;
   }
 
   void heap() {
@@ -225,6 +240,65 @@ protected:
         freeHeap, getTotalHeap(), this->minFreeHeap, minFreeHeapDiff, maxFreeBlockHeap, this->minMaxFreeBlockHeap, minMaxFreeBlockHeapDiff, getHeapFrag()
       );
       this->lastHeapInfo = millis();
+    }
+  }
+
+  void heating() {
+    // freeze protection
+    if (!settings.heating.enabled) {
+      float lowTemp = 255.0f;
+      uint8_t availableSensors = 0;
+
+      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY);
+        if (value < lowTemp) {
+          lowTemp = value;
+        }
+        
+        availableSensors++;
+      }
+
+      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::HEATING_TEMP)) {
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_TEMP, Sensors::ValueType::PRIMARY);
+        if (value < lowTemp) {
+          lowTemp = value;
+        }
+        
+        availableSensors++;
+      }
+
+      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::HEATING_RETURN_TEMP)) {
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_RETURN_TEMP, Sensors::ValueType::PRIMARY);
+        if (value < lowTemp) {
+          lowTemp = value;
+        }
+
+        availableSensors++;
+      }
+
+      if (availableSensors && lowTemp <= settings.heating.freezeProtection.lowTemp) {
+        if (!this->freezeDetected) {
+          this->freezeDetected = true;
+          this->freezeDetectedTime = millis();
+
+        } else if (millis() - this->freezeDetectedTime > (settings.heating.freezeProtection.thresholdTime * 1000)) {
+          this->freezeDetected = false;
+          settings.heating.enabled = true;
+          fsSettings.update();
+
+          Log.sinfoln(
+            FPSTR(L_MAIN),
+            F("Heating turned on by freeze protection, current low temp: %.2f, threshold: %hhu"),
+            lowTemp, settings.heating.freezeProtection.lowTemp
+          );
+        }
+
+      } else if (this->freezeDetected) {
+        this->freezeDetected = false;
+      }
+
+    } else if (this->freezeDetected) {
+      this->freezeDetected = false;
     }
   }
 
