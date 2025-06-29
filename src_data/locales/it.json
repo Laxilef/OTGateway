@@ -304,7 +304,7 @@
         "max": "Temperatura massima"
       },
       "maxModulation": "Max livello modulazione",
-      "overheat": {
+      "ohProtection": {
         "title": "Protezione contro il surriscaldamento",
         "desc": "<b>Nota:</b> questa funzione può essere utile se la protezione contro il surriscaldamento integrata nella caldaia non funziona o non funziona correttamente e il fluido termovettore bolle. Per disattivarla, impostare 0 come temperatura <b>alta</b> e <b>bassa</b>.",
         "highTemp": {
@@ -315,6 +315,12 @@
           "title": "Soglia di temperatura bassa",
           "note": "Soglia alla quale il bruciatore può essere riacceso"
         }
+      },
+      "freezeProtection": {
+        "title": "Protezione antigelo",
+        "desc": "Il riscaldamento verrà attivato forzatamente se la temperatura del vettore di calore o interna scende al di sotto della <b>temperatura minima</b> durante il <b>tempo di attesa</b>.",
+        "lowTemp": "Soglia di temperatura minima",
+        "thresholdTime": "Tempo di attesa <small>(sec)</small>"
       },
 
       "portal": {
@@ -350,11 +356,7 @@
 
       "heating": {
         "hyst": "Isteresi <small>(in gradi)</small>",
-        "turboFactor": "Turbo mode coeff.",
-        "antiFreezeTemp": {
-          "title": "Temperatura di protezione antigelo",
-          "note": "Se la temperatura del fluido termovettore o interna scende al di sotto di questo valore, il riscaldamento verrà forzato ad accendersi"
-        }
+        "turboFactor": "Turbo mode coeff."
       },
 
       "emergency": {
@@ -413,7 +415,8 @@
         },
 
         "options": {
-          "desc": "Opzioni",
+          "title": "Opzioni (impostazioni aggiuntive)",
+          "desc": "Le opzioni possono modificare la logica della caldaia. Non tutte le opzioni sono documentate nel protocollo, quindi la stessa opzione può avere effetti diversi su caldaie diverse.<br /><b>Nota:</b> Non è necessario modificare nulla se tutto funziona correttamente.",
           "dhwSupport": "Supporto ACS",
           "coolingSupport": "Supporto rafferscamento",
           "summerWinterMode": "Modalità Estate/inverno",

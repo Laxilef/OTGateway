@@ -304,7 +304,7 @@
         "max": "Maximum temperature"
       },
       "maxModulation": "Max modulation level",
-      "overheat": {
+      "ohProtection": {
         "title": "Overheating protection",
         "desc": "<b>Note:</b> This feature can be useful if the built-in boiler overheating protection does not work or does not work correctly and the heat carrier boils. To disable, set 0 as <b>high</b> and <b>low</b> temperature.",
         "highTemp": {
@@ -315,6 +315,12 @@
           "title": "Low temperature threshold",
           "note": "Threshold at which the burner can be turned on again"
         }
+      },
+      "freezeProtection": {
+        "title": "Freeze protection",
+        "desc": "Heating will be forced to turn on if the heat carrier or indoor temperature drops below <b>Low temperature</b> during <b>Waiting time</b>.",
+        "lowTemp": "Low temperature threshold",
+        "thresholdTime": "Waiting time <small>(sec)</small>"
       },
 
       "portal": {
@@ -350,11 +356,7 @@
 
       "heating": {
         "hyst": "Hysteresis <small>(in degrees)</small>",
-        "turboFactor": "Turbo mode coeff.",
-        "antiFreezeTemp": {
-          "title": "Freeze protection temperature",
-          "note": "If the heat carrier or indoor temperature drops below this value, the heating will be forced to turn on"
-        }
+        "turboFactor": "Turbo mode coeff."
       },
 
       "emergency": {
@@ -413,7 +415,8 @@
         },
 
         "options": {
-          "desc": "Options",
+          "title": "Options (additional settings)",
+          "desc": "Options can change the logic of the boiler. Not all options are documented in the protocol, so the same option can have different effects on different boilers.<br /><b>Note:</b> There is no need to change anything if everything works well.",
           "dhwSupport": "DHW support",
           "coolingSupport": "Cooling support",
           "summerWinterMode": "Summer/winter mode",

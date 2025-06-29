@@ -108,9 +108,16 @@ struct Settings {
     byte minTemp = DEFAULT_HEATING_MIN_TEMP;
     byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
     uint8_t maxModulation = 100;
-    uint8_t overheatHighTemp = 95;
-    uint8_t overheatLowTemp = 90;
-    uint8_t antiFreezeTemp = 10;
+
+    struct {
+      uint8_t highTemp = 95;
+      uint8_t lowTemp = 90;
+    } overheatProtection;
+
+    struct {
+      uint8_t lowTemp = 10;
+      unsigned short thresholdTime = 600;
+    } freezeProtection;
   } heating;
 
   struct {
@@ -119,8 +126,11 @@ struct Settings {
     byte minTemp = DEFAULT_DHW_MIN_TEMP;
     byte maxTemp = DEFAULT_DHW_MAX_TEMP;
     uint8_t maxModulation = 100;
-    uint8_t overheatHighTemp = 95;
-    uint8_t overheatLowTemp = 90;
+    
+    struct {
+      uint8_t highTemp = 95;
+      uint8_t lowTemp = 90;
+    } overheatProtection;
   } dhw;
 
   struct {

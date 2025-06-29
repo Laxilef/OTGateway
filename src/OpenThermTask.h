@@ -1320,7 +1320,7 @@ protected:
 
 
     // Heating overheat control
-    if (settings.heating.overheatHighTemp > 0 && settings.heating.overheatLowTemp > 0) {
+    if (settings.heating.overheatProtection.highTemp > 0 && settings.heating.overheatProtection.lowTemp > 0) {
       float highTemp = convertTemp(
         max({
           vars.slave.heating.currentTemp,
@@ -1332,22 +1332,22 @@ protected:
       );
 
       if (vars.master.heating.overheat) {
-        if ((float) settings.heating.overheatLowTemp - highTemp + 0.0001f >= 0.0f) {
+        if ((float) settings.heating.overheatProtection.lowTemp - highTemp + 0.0001f >= 0.0f) {
           vars.master.heating.overheat = false;
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
-            highTemp, settings.heating.overheatLowTemp
+            highTemp, settings.heating.overheatProtection.lowTemp
           );
         }
 
       } else if (vars.slave.heating.active) {
-        if (highTemp - (float) settings.heating.overheatHighTemp + 0.0001f >= 0.0f) {
+        if (highTemp - (float) settings.heating.overheatProtection.highTemp + 0.0001f >= 0.0f) {
           vars.master.heating.overheat = true;
 
           Log.swarningln(
             FPSTR(L_OT_HEATING), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
-            highTemp, settings.heating.overheatHighTemp
+            highTemp, settings.heating.overheatProtection.highTemp
           );
         }
       }
@@ -1357,7 +1357,7 @@ protected:
     }
 
     // DHW overheat control
-    if (settings.dhw.overheatHighTemp > 0 && settings.dhw.overheatLowTemp > 0) {
+    if (settings.dhw.overheatProtection.highTemp > 0 && settings.dhw.overheatProtection.lowTemp > 0) {
       float highTemp = convertTemp(
         max({
           vars.slave.heating.currentTemp,
@@ -1372,22 +1372,22 @@ protected:
       );
 
       if (vars.master.dhw.overheat) {
-        if ((float) settings.dhw.overheatLowTemp - highTemp + 0.0001f >= 0.0f) {
+        if ((float) settings.dhw.overheatProtection.lowTemp - highTemp + 0.0001f >= 0.0f) {
           vars.master.dhw.overheat = false;
 
           Log.sinfoln(
             FPSTR(L_OT_DHW), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
-            highTemp, settings.dhw.overheatLowTemp
+            highTemp, settings.dhw.overheatProtection.lowTemp
           );
         }
 
       } else if (vars.slave.dhw.active) {
-        if (highTemp - (float) settings.dhw.overheatHighTemp + 0.0001f >= 0.0f) {
+        if (highTemp - (float) settings.dhw.overheatProtection.highTemp + 0.0001f >= 0.0f) {
           vars.master.dhw.overheat = true;
 
           Log.swarningln(
             FPSTR(L_OT_DHW), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
-            highTemp, settings.dhw.overheatHighTemp
+            highTemp, settings.dhw.overheatProtection.highTemp
           );
         }
       }

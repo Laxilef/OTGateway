@@ -495,9 +495,14 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
   heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
-  heating[FPSTR(S_OVERHEAT_HIGH_TEMP)] = src.heating.overheatHighTemp;
-  heating[FPSTR(S_OVERHEAT_LOW_TEMP)] = src.heating.overheatLowTemp;
-  heating[FPSTR(S_ANTI_FREEZE_TEMP)] = src.heating.antiFreezeTemp;
+
+  auto heatingOverheatProtection = heating[FPSTR(S_OVERHEAT_PROTECTION)].to<JsonObject>();
+  heatingOverheatProtection[FPSTR(S_HIGH_TEMP)] = src.heating.overheatProtection.highTemp;
+  heatingOverheatProtection[FPSTR(S_LOW_TEMP)] = src.heating.overheatProtection.lowTemp;
+
+  auto freezeProtection = heating[FPSTR(S_FREEZE_PROTECTION)].to<JsonObject>();
+  freezeProtection[FPSTR(S_LOW_TEMP)] = src.heating.freezeProtection.lowTemp;
+  freezeProtection[FPSTR(S_THRESHOLD_TIME)] = src.heating.freezeProtection.thresholdTime;
 
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
@@ -505,8 +510,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   dhw[FPSTR(S_MIN_TEMP)] = src.dhw.minTemp;
   dhw[FPSTR(S_MAX_TEMP)] = src.dhw.maxTemp;
   dhw[FPSTR(S_MAX_MODULATION)] = src.dhw.maxModulation;
-  dhw[FPSTR(S_OVERHEAT_HIGH_TEMP)] = src.dhw.overheatHighTemp;
-  dhw[FPSTR(S_OVERHEAT_LOW_TEMP)] = src.dhw.overheatLowTemp;
+
+  auto dhwOverheatProtection = dhw[FPSTR(S_OVERHEAT_PROTECTION)].to<JsonObject>();
+  dhwOverheatProtection[FPSTR(S_HIGH_TEMP)] = src.dhw.overheatProtection.highTemp;
+  dhwOverheatProtection[FPSTR(S_LOW_TEMP)] = src.dhw.overheatProtection.lowTemp;
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
@@ -1347,35 +1354,46 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_HIGH_TEMP)].isNull()) {
-    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_HIGH_TEMP)].as<unsigned char>();
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].as<unsigned char>();
 
-    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.heating.overheatHighTemp) {
-      dst.heating.overheatHighTemp = value;
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.heating.overheatProtection.highTemp) {
+      dst.heating.overheatProtection.highTemp = value;
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_LOW_TEMP)].isNull()) {
-    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_LOW_TEMP)].as<unsigned char>();
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].as<unsigned char>();
 
-    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.heating.overheatLowTemp) {
-      dst.heating.overheatLowTemp = value;
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.heating.overheatProtection.lowTemp) {
+      dst.heating.overheatProtection.lowTemp = value;
       changed = true;
     }
   }
 
-  if (dst.heating.overheatHighTemp < dst.heating.overheatLowTemp) {
-    dst.heating.overheatHighTemp = dst.heating.overheatLowTemp;
+  if (dst.heating.overheatProtection.highTemp < dst.heating.overheatProtection.lowTemp) {
+    dst.heating.overheatProtection.highTemp = dst.heating.overheatProtection.lowTemp;
     changed = true;
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_ANTI_FREEZE_TEMP)].isNull()) {
-    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_ANTI_FREEZE_TEMP)].as<unsigned short>();
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
+    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_LOW_TEMP)].as<uint8_t>();
 
-    if (isValidTemp(value, dst.system.unitSystem, 1, 30) && value != dst.heating.antiFreezeTemp) {
-      dst.heating.antiFreezeTemp = value;
+    if (isValidTemp(value, dst.system.unitSystem, 1, 30) && value != dst.heating.freezeProtection.lowTemp) {
+      dst.heating.freezeProtection.lowTemp = value;
       changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_THRESHOLD_TIME)].isNull()) {
+    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_THRESHOLD_TIME)].as<unsigned short>();
+
+    if (value >= 30 && value <= 1800) {
+      if (value != dst.heating.freezeProtection.thresholdTime) {
+        dst.heating.freezeProtection.thresholdTime = value;
+        changed = true;
+      }
     }
   }
 
@@ -1422,26 +1440,26 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_HIGH_TEMP)].isNull()) {
-    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_HIGH_TEMP)].as<unsigned char>();
+  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_HIGH_TEMP)].as<unsigned char>();
 
-    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.dhw.overheatHighTemp) {
-      dst.dhw.overheatHighTemp = value;
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && value != dst.dhw.overheatProtection.highTemp) {
+      dst.dhw.overheatProtection.highTemp = value;
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_LOW_TEMP)].isNull()) {
-    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_LOW_TEMP)].as<unsigned char>();
+  if (!src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
+    unsigned char value = src[FPSTR(S_DHW)][FPSTR(S_OVERHEAT_PROTECTION)][FPSTR(S_LOW_TEMP)].as<unsigned char>();
 
-    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.dhw.overheatLowTemp) {
-      dst.dhw.overheatLowTemp = value;
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 99.0f) && value != dst.dhw.overheatProtection.lowTemp) {
+      dst.dhw.overheatProtection.lowTemp = value;
       changed = true;
     }
   }
 
-  if (dst.dhw.overheatHighTemp < dst.dhw.overheatLowTemp) {
-    dst.dhw.overheatHighTemp = dst.dhw.overheatLowTemp;
+  if (dst.dhw.overheatProtection.highTemp < dst.dhw.overheatProtection.lowTemp) {
+    dst.dhw.overheatProtection.highTemp = dst.dhw.overheatProtection.lowTemp;
     changed = true;
   }
 
