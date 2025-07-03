@@ -1,0 +1,507 @@
+{
+  "values": {
+    "logo": "OpenTherm Gateway",
+    "nav": {
+      "license": "授权许可",
+      "source": "源代码",
+      "help": "帮助",
+      "issues": "问题与反馈",
+      "releases": "发行版"
+    },
+    "dbm": "dBm",
+    "kw": "kW",
+    "time": {
+      "days": "天",
+      "hours": "小时",
+      "min": "分",
+      "sec": "秒"
+    },
+
+    "button": {
+      "upgrade": "固件升级",
+      "restart": "重启",
+      "save": "保存",
+      "saved": "已保存",
+      "refresh": "刷新",
+      "restore": "恢复",
+      "restored": "已恢复",
+      "backup": "备份",
+      "wait": "请等待...",
+      "uploading": "上传中...",
+      "success": "成功",
+      "error": "错误"
+    },
+
+    "index": {
+      "title": "OpenTherm Gateway",
+
+      "section": {
+        "network": "网络",
+        "system": "系统"
+      },
+
+      "system": {
+        "build": {
+          "title": "Build",
+          "version": "固件版本",
+          "date": "日期",
+          "core": "内核版本",
+          "sdk": "SDK"
+        },
+        "uptime": "运行时间",
+        "memory": {
+          "title": "可用内存",
+          "maxFreeBlock": "max free block",
+          "min": "min"
+        },
+        "board": "开发板",
+        "chip": {
+          "model": "芯片",
+          "cores": "核心数",
+          "freq": "频率"
+        },
+        "flash": {
+          "size": "闪存容量",
+          "realSize": "实际容量"
+        },
+        "lastResetReason": "上次重置原因"
+      }
+    },
+
+    "dashboard": {
+      "name": "仪表盘",
+      "title": "仪表盘 - OpenTherm Gateway",
+
+      "section": {
+        "control": "调节",
+        "states": "状态",
+        "sensors": "传感器",
+        "diag": "OpenTherm 诊断"
+      },
+
+      "thermostat": {
+        "heating": "供暖",
+        "dhw": "生活热水",
+        "temp.current": "当前温度",
+        "enable": "启用",
+        "turbo": "Turbo 模式"
+      },
+
+      "notify": {
+        "fault": {
+          "title": "锅炉报警状态已激活!",
+          "note": "建议检查锅炉并查看说明书对应的报警代码:"
+        },
+        "diag": {
+          "title": "锅炉诊断状态已激活!",
+          "note": "锅炉可能需要检查，建议查看说明书对应的诊断代码:"
+        },
+        "reset": "点击复位"
+      },
+
+      "states": {
+        "mNetworkConnected": "网络连接状态",
+        "mMqttConnected": "MQTT服务器连接状态",
+        "mEmergencyState": "应急模式",
+        "mExtPumpState": "外置循环泵",
+        "mCascadeControlInput": "Cascade 控制 (input)",
+        "mCascadeControlOutput": "Cascade 控制 (output)",
+
+        "sConnected": "OpenTherm 通讯状态",
+        "sFlame": "火焰",
+        "sCooling": "制冷",
+        "sFaultActive": "报警状态",
+        "sFaultCode": "报警代码",
+        "sDiagActive": "诊断状态",
+        "sDiagCode": "诊断代码",
+        
+        "mHeatEnabled": "供暖功能已启用",
+        "mHeatBlocking": "供暖",
+        "mHeatOverheat": "供暖超热保护",
+        "sHeatActive": "供暖激活状态",
+        "mHeatSetpointTemp": "供暖供水设定温度",
+        "mHeatTargetTemp": "供暖供水目标温度",
+        "mHeatCurrTemp": "供暖当前供水温度",
+        "mHeatRetTemp": "供暖回水温度",
+        "mHeatIndoorTemp": "供暖，室内温度",
+        "mHeatOutdoorTemp": "供暖，室外温度",
+
+        "mDhwEnabled": "生活热水功能已启用",
+        "mDhwOverheat": "生活热水超热保护",
+        "sDhwActive": "生活热水激活",
+        "mDhwTargetTemp": "生活热水目标温度",
+        "mDhwCurrTemp": "生活热水当前出水温度",
+        "mDhwRetTemp": "生活热水回水温度"
+      },
+
+      "sensors": {
+        "values": {
+          "temp": "温度",
+          "humidity": "湿度",
+          "battery": "电量",
+          "rssi": "RSSI"
+        }
+      }
+    },
+
+    "network": {
+      "title": "网络 - OpenTherm Gateway",
+      "name": "网络设置",
+
+      "section": {
+        "static": "静态设置",
+        "availableNetworks": "可用网络",
+        "staSettings": "WiFi 设置",
+        "apSettings": "AP 设置"
+      },
+
+      "scan": {
+        "pos": "#",
+        "info": "Info"
+      },
+
+      "wifi": {
+        "ssid": "SSID",
+        "password": "密码",
+        "channel": "频道",
+        "signal": "信号强度",
+        "connected": "已连接"
+      },
+
+      "params": {
+        "hostname": "Hostname",
+        "dhcp": "自动 (DHCP)",
+        "mac": "物理地址 (MAC)",
+        "ip": "IP",
+        "subnet": "子网掩码",
+        "gateway": "网关",
+        "dns": "DNS 服务器"
+      },
+
+      "sta": {
+        "channel.note": "自动选择设置为0"
+      }
+    },
+
+    "sensors": {
+      "title": "传感器设置 - OpenTherm Gateway",
+      "name": "传感器设置",
+
+      "enabled": "启用",
+      "sensorName": {
+        "title": "传感器名称",
+        "note": "只能包含：a-z、A-Z、0-9、下划线和空格"
+      },
+      "purpose": "用途",
+      "purposes": {
+        "outdoorTemp": "室外温度",
+        "indoorTemp": "室内温度",
+        "heatTemp": "供暖，温度",
+        "heatRetTemp": "供暖回水温度",
+        "dhwTemp": "生活热水温度",
+        "dhwRetTemp": "生活热水回水温度",
+        "dhwFlowRate": "生活热水水流量",
+        "exhaustTemp": "烟气温度",
+        "modLevel": "Modulation level (%)",
+        "number": "Number (raw)",
+        "powerFactor": "功率 (%)",
+        "power": "功率(kW)",
+        "fanSpeed": "风机转速",
+        "co2": "CO2",
+        "pressure": "压力",
+        "humidity": "湿度",
+        "temperature": "温度",
+        "notConfigured": "未配置"
+      },
+      "type": "类型/来源",
+      "types": {
+        "otOutdoorTemp": "OpenTherm, outdoor temp",
+        "otHeatTemp": "OpenTherm, heating, temp",
+        "otHeatRetTemp": "OpenTherm, heating, return temp",
+        "otDhwTemp": "OpenTherm, DHW, temperature",
+        "otDhwTemp2": "OpenTherm, DHW, temperature 2",
+        "otDhwFlowRate": "OpenTherm, DHW, flow rate",
+        "otCh2Temp": "OpenTherm, channel 2, temp",
+        "otExhaustTemp": "OpenTherm, exhaust temp",
+        "otHeatExchangerTemp": "OpenTherm, heat exchanger temp",
+        "otPressure": "OpenTherm, pressure",
+        "otModLevel": "OpenTherm, modulation level",
+        "otCurrentPower": "OpenTherm, current power",
+        "otExhaustCo2": "OpenTherm, exhaust CO2",
+        "otExhaustFanSpeed": "OpenTherm, exhaust fan speed",
+        "otSupplyFanSpeed": "OpenTherm, supply fan speed",
+        "otSolarStorageTemp": "OpenTherm, solar storage temp",
+        "otSolarCollectorTemp": "OpenTherm, solar collector temp",
+        "otFanSpeedSetpoint": "OpenTherm, setpoint fan speed",
+        "otFanSpeedCurrent": "OpenTherm, current fan speed",
+        "otBurnerStarts": "OpenTherm, number of burner starts",
+        "otDhwBurnerStarts": "OpenTherm, number of burner starts (DHW)",
+        "otHeatingPumpStarts": "OpenTherm, number of pump starts (heating)",
+        "otDhwPumpStarts": "OpenTherm, number of pump starts (DHW)",
+        "otBurnerHours": "OpenTherm, number of burner operating hours",
+        "otDhwBurnerHours": "OpenTherm, number of burner operating hours (DHW)",
+        "otHeatingPumpHours": "OpenTherm, number of pump operating hours (heating)",
+        "otDhwPumpHours": "OpenTherm, number of pump operating hours (DHW)",
+        
+        "ntcTemp": "NTC 传感器",
+        "dallasTemp": "DALLAS 传感器",
+        "bluetooth": "BLE 传感器",
+        "heatSetpointTemp": "Heating, setpoint temp",
+        "manual": "通过 MQTT/API 手动配置",
+        "notConfigured": "未配置"
+      },
+      "gpio": "GPIO",
+      "address": {
+        "title": "传感器地址",
+        "note": "如需自动检测DALLAS传感器，请保持默认设置；如需连接BLE设备，则需提供MAC地址"
+      },
+      "correction": {
+        "desc": "数值校正",
+        "offset": "补偿值（偏移量）",
+        "factor": "Multiplier"
+      },
+      "filtering": {
+        "desc": "数值滤波",
+        "enabled": {
+          "title": "启用滤波",
+          "note": "如果图表中有大量尖锐的噪声，此功能会很有用。使用的滤波器是 \"滑动平均滤波器\"."
+        },
+        "factor": {
+          "title": "滤波系数",
+          "note": "数值越低，数值变化越平滑且响应越滞后"
+        }
+      }
+    },
+
+    "settings": {
+      "title": "设置 - OpenTherm Gateway",
+      "name": "设置",
+
+      "section": {
+        "portal": "Portal 设置",
+        "system": "系统设置",
+        "diag": "诊断",
+        "heating": "供热设置",
+        "dhw": "生活热水设置",
+        "emergency": "应急模式设置",
+        "equitherm": "气候补偿设置",
+        "pid": "PID 参数设置",
+        "ot": "OpenTherm协议设置",
+        "mqtt": "MQTT 服务器设置",
+        "extPump": "外置循环泵设置",
+        "cascadeControl": "Cascade 级联控制设置"
+      },
+
+      "enable": "启用",
+      "note": {
+        "restart": "更改这些设置后，必须重启设备以使变更生效",
+        "blankNotUse": "空白 - 未使用",
+        "bleDevice": "BLE设备仅支持搭载BLE功能的特定ESP32开发板使用!"
+      },
+
+      "temp": {
+        "min": "最低温度",
+        "max": "最高温度"
+      },
+      "maxModulation": "最大调制范围",
+      "ohProtection": {
+        "title": "超温保护",
+        "desc": "<b>注意：</b> 当锅炉内置过热保护失效或工作异常导致系统超温时，此功能可提供额外保护。如需禁用，请将<b>最高温度</b>和<b>最低温度</b>均设为0。",
+        "highTemp": {
+          "title": "高温阈值",
+          "note": "触发燃烧器强制关闭的阈值温度"
+        },
+        "lowTemp": {
+          "title": "低温阈值",
+          "note": "燃烧器重新启动的阈值温度"
+        }
+      },
+      "freezeProtection": {
+        "title": "防冻保护",
+        "desc": "当热媒或室内温度在<b>等待时间</b> 内降至<b>低温阈值</b>以下时，系统将强制启动加热功能。",
+        "lowTemp": "低温阈值",
+        "thresholdTime": "等待时间<small>(秒)</small>"
+      },
+
+      "portal": {
+        "login": "登录",
+        "password": "密码",
+        "auth": "需身份验证",
+        "mdns": "使用 mDNS"
+      },
+
+      "system": {
+        "unit": "单位",
+        "metric": "公制 <small>(摄氏度、升、巴)</small>",
+        "imperial": "英制 <small>(华氏度、加仑、psi)</small>",
+        "statusLedGpio": "状态指示灯GPIO引脚",
+        "logLevel": "日志级别",
+        "serial": {
+          "enable": "启用串口",
+          "baud": "串口波特率"
+        },
+        "telnet": {
+          "enable": "启用 Telnet",
+          "port": {
+            "title": "Telnet 端口",
+            "note": "默认值：23"
+          }
+        },
+        "ntp": {
+          "server": "NTP服务器",
+          "timezone": "时区",
+          "timezonePresets": "选择预设配置..."
+        }
+      },
+
+      "heating": {
+        "hyst": "滞后值<small>(单位：度)</small>",
+        "turboFactor": "Turbo 模式系数"
+      },
+
+      "emergency": {
+        "desc": "紧急模式会在以下情况自动激活（当PID或气候补偿无法计算热媒设定值时）：<br />启用气候补偿但室外温度传感器断开连接；<br />启用PID或 OpenTherm 选项中启用<i>原生供暖控制</i>但室内温度传感器断开连接。<br /><b>注意：</b> 网络故障或MQTT 服务器连接故障时，类型为<i>通过MQTT/API手动控制<i>的传感器将显示为断开连接状态。",
+        
+        "target": {
+          "title": "目标温度",
+          "note": "<b>重要提示：</b> 若启用OpenTherm选项 <i>«原生供暖控制»</i>，此处设定值为<u>目标室内温度</u>；<br />其他所有情况下，此处设定值为 <u>目标热媒出水温度</u>."
+        },
+        "treshold": "阈值时间 <small>(秒)</small>"
+      },
+
+      "equitherm": {
+        "n": "N 系数",
+        "k": "K 系数",
+        "t": {
+          "title": "T 系数",
+          "note": "启用PID时此参数无效"
+        }
+      },
+
+      "pid": {
+        "p": "P 系数",
+        "i": "I 系数",
+        "d": "D 系数",
+        "dt": "DT <small>以秒为单位</small>",
+        "limits": {
+          "title": "Limits",
+          "note": "<b>重要提示：</b> When using «Equitherm» and «PID» at the same time, the min and max temperatures limit the influence on the «Equitherm» result temperature.<br />Thus, if the min temperature is set to -15 and the max temperature is set to 15, then the final heat carrier setpoint will be from <code>equitherm_result - 15</code> to <code>equitherm_result + 15</code>."
+        },
+        "deadband": {
+          "title": "Deadband",
+          "note": "Deadband is a range around the target temperature where PID regulation becomes less active. Within this range, the algorithm can reduce intensity or pause adjustments to avoid overreacting to small fluctuations.<br /><br />For instance, with a target temperature of 22°, a lower threshold of 1.0, and an upper threshold of 0.5, the deadband operates between 21° and 22.5°. If the I coefficient is 0.0005 and the I multiplier is 0.05, then within the deadband, the I coefficient becomes: <code>0.0005 * 0.05 = 0.000025</code>",
+          "p_multiplier": "Multiplier for P factor",
+          "i_multiplier": "Multiplier for I factor",
+          "d_multiplier": "Multiplier for D factor",
+          "thresholdHigh": "Threshold high",
+          "thresholdLow": "Threshold low"
+        }
+      },
+
+      "ot": {
+        "advanced": "高级设置",
+        "inGpio": "In GPIO",
+        "outGpio": "Out GPIO",
+        "ledGpio": "RX LED GPIO",
+        "memberId": "主设备成员 ID",
+        "flags": "主设备标志",
+        "minPower": {
+          "title": "最小锅炉功率 <small>(kW)</small>",
+          "note": "该值对应锅炉0-1%的调制水平，通常在锅炉参数设置中的"最小有效热输出"。"
+        },
+        "maxPower": {
+          "title": "最大锅炉功率 <small>(kW)</small>",
+          "note": "<b>0</b> - 自动检测，通常在锅炉参数设置中的"最大有效热输出"。 "
+        },
+
+        "options": {
+          "title": "选项（附加设置）",
+          "desc": "附加设置选项可调整锅炉的运行逻辑。由于协议未完整记录所有选项，同一选项在不同锅炉上可能产生不同效果。<br /><b>注意：</b>若系统运行正常，无需修改设置。",
+          "dhwSupport": "生活热水支持",
+          "coolingSupport": "制冷支持",
+          "summerWinterMode": "夏季/冬季模式",
+          "heatingStateToSummerWinterMode": "以供暖状态作为夏季/冬季模式",
+          "ch2AlwaysEnabled": "CH2 始终启用",
+          "heatingToCh2": "将供暖同步至 CH2",
+          "dhwToCh2": "将生活热水同步至 CH2",
+          "dhwBlocking": "生活热水锁定",
+          "dhwStateAsDhwBlocking": "以生活热水状态作为生活热水锁定依据",
+          "maxTempSyncWithTargetTemp": "将最高供暖温度与目标温度同步",
+          "getMinMaxTemp": "从锅炉获取最小/最大温度参数",
+          "ignoreDiagState": "忽略诊断状态",
+          "autoFaultReset": "自动报警复位 <small>(不推荐！)</small>",
+          "autoDiagReset": "自动诊断复位 <small>(不推荐！)</small>",
+          "setDateAndTime": "同步设置锅炉日期与时间",
+          "immergasFix": "针对Immergas锅炉的兼容性修复"
+        },
+
+        "nativeHeating": {
+          "title": "原生锅炉供暖控制",
+          "note": "<u>注意：</u> 仅适用于锅炉需接收目标室温并自主调节载热介质温度的场景，与固件中的PID及Equithermq气候补偿功能不兼容。"
+        }
+      },
+
+      "mqtt": {
+        "homeAssistantDiscovery": "Home Assistant 自动发现",
+        "server": "服务器地址",
+        "port": "端口",
+        "user": "用户名",
+        "password": "密码",
+        "prefix": "Prefix 前缀",
+        "interval": "发布间隔 <small>(秒)</small>"
+      },
+
+      "extPump": {
+        "use": "使用外置循环泵",
+        "gpio": "继电器 GPIO引脚",
+        "postCirculationTime": "后循环时间 <small>(分钟)</small>",
+        "antiStuckInterval": "防卡死间隔时间<small>(天)</small>",
+        "antiStuckTime": "防卡死运行时长<small>(分钟)</small>"
+      },
+
+      "cascadeControl": {
+        "input": {
+          "desc": "仅当另一台锅炉发生故障时启用本锅炉加热。另一台锅炉的控制器需在故障发生时切换GPIO输入状态以触发本功能。",
+          "enable": "启用 input",
+          "gpio": "GPIO",
+          "invertState": "切换 GPIO 状态",
+          "thresholdTime": "状态变化阈值时间<small>(秒)</small>"
+        },
+        "output": {
+          "desc": "可通过<u>继电器</u>控制另一台锅炉的启停。",
+          "enable": "启用 output",
+          "gpio": "GPIO",
+          "invertState": "切换 GPIO 状态",
+          "thresholdTime": "状态变化阈值时间 <small>(秒)</small>",
+          "events": {
+            "desc": "事件",
+            "onFault": "当故障状态激活时",
+            "onLossConnection": "当OpenTherm连接中断时",
+            "onEnabledHeating": "当供暖功能启用时"
+          }
+        }
+      }
+    },
+
+    "upgrade": {
+      "title": "固件升级 - OpenTherm Gateway",
+      "name": "固件升级",
+
+      "section": {
+        "backupAndRestore": "备份与恢复",
+        "backupAndRestore.desc": "本功能支持备份和恢复全部设置",
+        "upgrade": "升级",
+        "upgrade.desc": "本模块支持升级设备的固件与系统文件。<br />可从以下地址下载最新版本 <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> 。" 
+      },
+
+      "note": {
+        "disclaimer1": "升级系统文件成功后，所有设置将恢复为默认值！升级前请务必备份配置。",
+        "disclaimer2": "升级成功后，设备将在15秒后自动重启。"
+      },
+
+      "settingsFile": "设置文件",
+      "fw": "Firmware",
+      "fs": "Filesystem"
+    }
+  }
+}
