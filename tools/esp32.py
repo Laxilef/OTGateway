@@ -28,6 +28,17 @@ from os.path import join
 sys.path.append(join(platform.get_package_dir("tool-esptoolpy")))
 import esptool
 
+def esptool_call(cmd):
+    try:
+        esptool.main(cmd)
+    except SystemExit as e:
+        # Fetch sys.exit() without leaving the script
+        if e.code == 0:
+            return True
+        else:
+            print(f"❌ esptool failed with exit code: {e.code}")
+            return False
+
 def esp32_create_combined_bin(source, target, env):
     print("Generating combined binary for serial flashing")
 
@@ -39,26 +50,21 @@ def esp32_create_combined_bin(source, target, env):
     sections = env.subst(env.get("FLASH_EXTRA_IMAGES"))
     firmware_name = env.subst("$BUILD_DIR/${PROGNAME}.bin")
     chip = env.get("BOARD_MCU")
-    flash_size = env.BoardConfig().get("upload.flash_size")
-    flash_freq = env.BoardConfig().get("build.f_flash", '40m')
-    flash_freq = flash_freq.replace('000000L', 'm')
-    flash_mode = env.BoardConfig().get("build.flash_mode", "dio")
-    memory_type = env.BoardConfig().get("build.arduino.memory_type", "qio_qspi")
-    if flash_mode == "qio" or flash_mode == "qout":
-        flash_mode = "dio"
-    if memory_type == "opi_opi" or memory_type == "opi_qspi":
-        flash_mode = "dout"
+    flash_size = env.BoardConfig().get("upload.flash_size", "4MB")
+    flash_mode = env["__get_board_flash_mode"](env)
+    flash_freq = env["__get_board_f_flash"](env)
+
     cmd = [
         "--chip",
         chip,
-        "merge_bin",
+        "merge-bin",
         "-o",
         new_file_name,
-        "--flash_mode",
+        "--flash-mode",
         flash_mode,
-        "--flash_freq",
+        "--flash-freq",
         flash_freq,
-        "--flash_size",
+        "--flash-size",
         flash_size,
     ]
 
@@ -73,7 +79,7 @@ def esp32_create_combined_bin(source, target, env):
 
     print('Using esptool.py arguments: %s' % ' '.join(cmd))
 
-    esptool.main(cmd)
+    esptool_call(cmd)
 
 
 env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", esp32_create_combined_bin)
