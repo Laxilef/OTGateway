@@ -136,6 +136,10 @@
                   <td><i class="mExtPumpState"></i></td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.states.mExtDevState</th>
+                  <td><i class="mExtDevState"></i></td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.states.mCascadeControlInput</th>
                   <td><i class="mCascadeControlInput"></i></td>
                 </tr>
@@ -658,6 +662,7 @@
               result.master.emergency.state ? "red" : "green"
             );
             setState('.mExtPumpState', result.master.externalPump.state);
+            setState('.mExtDevState', result.master.externalDev.state);
             setState('.mCascadeControlInput', result.master.cascadeControl.input);
             setState('.mCascadeControlOutput', result.master.cascadeControl.output);
 

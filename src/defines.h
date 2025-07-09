@@ -146,6 +146,14 @@
   #define DEFAULT_EXT_PUMP_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
+#ifndef DEFAULT_EXT_DEV_GPIO
+  #define DEFAULT_EXT_DEV_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_EXT_DEV_CAPTION
+  #define DEFAULT_EXT_DEV_CAPTION "Device"
+#endif
+
 #ifndef PROGMEM
   #define PROGMEM 
 #endif
