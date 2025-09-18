@@ -897,7 +897,8 @@
           unitSystem: null,
           targetTemp: null,
           minTemp: null,
-          maxTemp: null
+          maxTemp: null,
+          decimated: false
         };
 
         const hasNeedDecimationChart = () => {
@@ -957,12 +958,6 @@
                     },
                     legend: {
                       display: false
-                    },
-                    decimation: {
-                      enabled: hasNeedDecimationChart(),
-                      algorithm: 'lttb',
-                      samples: 30,
-                      threshold: 30
                     }
                   },
                   scales: {
@@ -1008,19 +1003,18 @@
             return;
           }
 
-          while (etChart.data.datasets[0].data.length) {
-            etChart.data.datasets[0].data.pop();
-          }
-
-          for (let value = 30; value >= -30; value--) {
+          let data = [];
+          etChartConfig.decimated = hasNeedDecimationChart();
+          for (let value = 30; value >= -30; value -= etChartConfig.decimated ? 2 : 1) {
             const outdoorTemp = etChartConfig.unitSystem == 0 ? value : c2f(value);
 
-            etChart.data.datasets[0].data.push({
+            data.push({
               x: parseFloat(outdoorTemp.toFixed(1)),
               y: parseFloat(calculateEquithermTemp(outdoorTemp).toFixed(1))
             });
           }
 
+          etChart.data.datasets[0].data = data;
           etChart.data.datasets[0].label = i18n("settings.equitherm.chart.setpointTemp");
           etChart.options.scales.x.title.text = i18n("settings.equitherm.chart.outdoorTemp");
           etChart.options.scales.y.title.text = i18n("settings.equitherm.chart.setpointTemp");
@@ -1336,9 +1330,8 @@
           if (etChart) {
             etChart.resize();
             
-            if (etChart.options.plugins.decimation.enabled != hasNeedDecimationChart()) {
-              etChart.options.plugins.decimation.enabled = hasNeedDecimationChart();
-              etChart.update();
+            if (etChartConfig.decimated != hasNeedDecimationChart()) {
+              makeEquithermChart();
             }
           }
         });
