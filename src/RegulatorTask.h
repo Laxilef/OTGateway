@@ -222,7 +222,7 @@ protected:
           pidRegulator.Ki *= settings.pid.deadband.i_multiplier;
           pidRegulator.Kd *= settings.pid.deadband.d_multiplier;
         }
-				
+
         float pidResult = pidRegulator.getResultTimer();
         if (fabsf(prevPidResult - pidResult) > 0.09f) {
           prevPidResult = pidResult;
