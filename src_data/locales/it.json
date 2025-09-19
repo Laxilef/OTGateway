@@ -376,7 +376,7 @@
         },
         "exponent": {
           "title": "Esponente",
-          "note": "Efficienza del radiatore. Valori tipici: 1.1 - Riscaldamento a pavimento, 1.2 - Radiatori in ghisa, 1.3 - Radiatori a pannelli, 1.4 - Convetttori."
+          "note": "Efficienza del radiatore. Valori tipici: <code>1.1</code> - Riscaldamento a pavimento, <code>1.2</code> - Radiatori in ghisa, <code>1.3</code> - Radiatori a pannelli, <code>1.4</code> - Convetttori."
         },
         "shift": {
           "title": "Spostare",
@@ -384,7 +384,7 @@
         },
         "targetDiffFactor": {
           "title": "Fattore T",
-          "note": "Non usato se PID è attivato"
+          "note": "Non usato se PID è attivato. Aggiunge al setpoint la differenza tra la temperatura interna target e quella attuale: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
         },
         "chart": {
           "targetTemp": "Temperatura interna target",
