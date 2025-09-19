@@ -134,15 +134,9 @@ protected:
       }*/
     }
 
-    if (vars.emergency.state) {
-      return settings.emergency.target;
-
-    } else if (settings.opentherm.options.nativeHeatingControl) {
-      return settings.heating.target;
-
-    } else if (!settings.equitherm.enabled && !settings.pid.enabled) {
-      return settings.heating.target;
-    }
+    if (vars.emergency.state) return settings.emergency.target;
+    if (settings.opentherm.options.nativeHeatingControl) return settings.heating.target;
+    if (!settings.equitherm.enabled && !settings.pid.enabled) return settings.heating.target;
 
     // if use equitherm
     if (settings.equitherm.enabled) {
@@ -213,7 +207,8 @@ protected:
         }*/
 
         float error = pidRegulator.setpoint - pidRegulator.input;
-        bool hasDeadband = (error > -(settings.pid.deadband.thresholdHigh))
+        bool hasDeadband = settings.pid.deadband.enabled 
+          && (error > -(settings.pid.deadband.thresholdHigh))
           && (error < settings.pid.deadband.thresholdLow);
 
         if (hasDeadband) {
@@ -221,7 +216,7 @@ protected:
           pidRegulator.Ki *= settings.pid.deadband.i_multiplier;
           pidRegulator.Kd *= settings.pid.deadband.d_multiplier;
         }
-
+        
         float pidResult = pidRegulator.getResultTimer();
         if (fabsf(prevPidResult - pidResult) > 0.09f) {
           prevPidResult = pidResult;
