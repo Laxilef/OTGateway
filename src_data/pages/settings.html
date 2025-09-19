@@ -105,7 +105,7 @@
                       <option disabled selected data-i18n>settings.system.ntp.timezonePresets</option>
                     </select>
                   </div>
-                  </label>
+                </label>
               </fieldset>
 
               <fieldset>
@@ -340,7 +340,7 @@
         </details>
 
         <hr />
-        
+
         <details>
           <summary><b data-i18n>settings.section.equitherm</b></summary>
           <div>
@@ -365,7 +365,7 @@
                   <input class="etChartTargetTemp" type="range" value="0" min="0" max="0" step="0.5">
                 </label>
               </div>
-              
+
               <div class="grid">
                 <label>
                   <span data-i18n>settings.equitherm.slope.title</span>
@@ -400,7 +400,7 @@
         </details>
 
         <hr />
-        
+
         <details>
           <summary><b data-i18n>settings.section.pid</b></summary>
           <div>
@@ -446,7 +446,7 @@
                       <span data-i18n>settings.temp.min</span>
                       <input type="number" inputmode="decimal" name="pid[minTemp]" min="0" max="0" step="1" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.temp.max</span>
                       <input type="number" inputmode="numeric" name="pid[maxTemp]" min="0" max="0" step="1" required>
@@ -475,12 +475,12 @@
                       <span data-i18n>settings.pid.deadband.p_multiplier</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][p_multiplier]" min="0" max="5" step="0.001" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.pid.deadband.i_multiplier</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][i_multiplier]" min="0" max="1" step="0.001" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.pid.deadband.d_multiplier</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][d_multiplier]" min="0" max="1" step="0.001" required>
@@ -492,7 +492,7 @@
                       <span data-i18n>settings.pid.deadband.thresholdHigh</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][thresholdHigh]" min="0" max="5" step="0.01" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.pid.deadband.thresholdLow</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][thresholdLow]" min="0" max="5" step="0.01" required>
@@ -674,7 +674,7 @@
                   </fieldset>
                 </div>
               </details>
-              
+
               <br />
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -916,7 +916,7 @@
                   datasets: [{
                     borderColor: (context) => {
                       const chart = context.chart;
-                      const {ctx, chartArea} = chart;
+                      const { ctx, chartArea } = chart;
 
                       if (!chartArea) {
                         return;
@@ -1032,8 +1032,8 @@
             1 / etChartConfig.exponent
           );
           const result = etChartConfig.targetTemp + etChartConfig.shift + sf * (
-            tempDelta >= 0 
-              ? Math.pow(tempDelta, 1 / etChartConfig.exponent) 
+            tempDelta >= 0
+              ? Math.pow(tempDelta, 1 / etChartConfig.exponent)
               : -(Math.pow(-(tempDelta), 1 / etChartConfig.exponent))
           );
 
@@ -1218,7 +1218,7 @@
           const etMinTemp = parseInt(data.system.unitSystem == 0 ? 5 : 41);
           const etMaxTemp = parseInt(data.system.unitSystem == 0 ? 30 : 86);
           const etTargetTemp = constrain(parseFloat(data.heating.target), etMinTemp, etMaxTemp);
-          
+
           setInputValue(".etChartTargetTemp", etTargetTemp.toFixed(1), {
             "min": etMinTemp,
             "max": etMaxTemp
@@ -1261,7 +1261,7 @@
             cache: "no-cache",
             credentials: "include"
           });
-          
+
           if (!response.ok) {
             throw new Error('Response not valid');
           }
@@ -1329,7 +1329,7 @@
         window.addEventListener('resize', async (event) => {
           if (etChart) {
             etChart.resize();
-            
+
             if (etChartConfig.decimated != hasNeedDecimationChart()) {
               makeEquithermChart();
             }
