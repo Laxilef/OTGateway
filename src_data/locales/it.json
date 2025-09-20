@@ -104,6 +104,7 @@
         "mMqttConnected": "Connessione MQTT",
         "mEmergencyState": "Modo Emergenza",
         "mExtPumpState": "Pompa esterna",
+        "mExtDevState": "Dispositivo esterno",
         "mCascadeControlInput": "Controllo a cascata (input)",
         "mCascadeControlOutput": "Controllo a cascata (output)",
 
@@ -289,6 +290,7 @@
         "ot": "Impostazioni OpenTherm",
         "mqtt": "Impostazioni MQTT",
         "extPump": "Impostazioni pompa esterna",
+        "extDev": "Impostazioni dispositivo esterno",
         "cascadeControl": "Impostazioni controllo a cascata"
       },
 
@@ -457,6 +459,13 @@
         "postCirculationTime": "Tempo di post circolazione <small>(min)</small>",
         "antiStuckInterval": "Intervallo antiblocco <small>(days)</small>",
         "antiStuckTime": "Tempo antiblocco <small>(min)</small>"
+      },
+
+      "extDev": {
+        "use": "Usa dispositivo esterno",
+        "gpio": "GPIO relè",
+        "state": "Stato",
+        "caption": "Didascalia"
       },
 
       "cascadeControl": {
