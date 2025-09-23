@@ -170,15 +170,15 @@ struct Settings {
   struct {
     struct {
       bool enabled = false;
-      byte gpio = GPIO_IS_NOT_CONFIGURED;
-      byte invertState = false;
+      uint8_t gpio = GPIO_IS_NOT_CONFIGURED;
+      bool invertState = false;
       unsigned short thresholdTime = 60;
     } input;
 
     struct {
       bool enabled = false;
-      byte gpio = GPIO_IS_NOT_CONFIGURED;
-      byte invertState = false;
+      uint8_t gpio = GPIO_IS_NOT_CONFIGURED;
+      bool invertState = false;
       unsigned short thresholdTime = 60;
       bool onFault = true;
       bool onLossConnection = true;

@@ -72,7 +72,7 @@ time_t mkgmtime(const struct tm *ptm) {
 
 inline bool isDigit(const char* ptr) {
   char* endPtr;
-  strtol(ptr, &endPtr, 10);
+  auto tmp = strtol(ptr, &endPtr, 10);
   return *endPtr == 0;
 }
 
@@ -1324,7 +1324,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src[FPSTR(S_HEATING)][FPSTR(S_MIN_TEMP)].isNull()) {
     unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_MIN_TEMP)].as<unsigned char>();
 
-    if (value != dst.heating.minTemp && value >= vars.slave.heating.minTemp && value < vars.slave.heating.maxTemp && value != dst.heating.minTemp) {
+    if (value != dst.heating.minTemp && value >= vars.slave.heating.minTemp && value < vars.slave.heating.maxTemp && value != dst.heating.maxTemp) {
       dst.heating.minTemp = value;
       changed = true;
     }
@@ -1333,7 +1333,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src[FPSTR(S_HEATING)][FPSTR(S_MAX_TEMP)].isNull()) {
     unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_MAX_TEMP)].as<unsigned char>();
 
-    if (value != dst.heating.maxTemp && value > vars.slave.heating.minTemp && value <= vars.slave.heating.maxTemp && value != dst.heating.maxTemp) {
+    if (value != dst.heating.maxTemp && value > vars.slave.heating.minTemp && value <= vars.slave.heating.maxTemp && value != dst.heating.minTemp) {
       dst.heating.maxTemp = value;
       changed = true;
     }
@@ -1894,7 +1894,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
 
   // gpio
   if (!src[FPSTR(S_GPIO)].isNull()) {
-    if (dst.type != Sensors::Type::DALLAS_TEMP && dst.type == Sensors::Type::BLUETOOTH && dst.type == Sensors::Type::NTC_10K_TEMP) {
+    if (dst.type != Sensors::Type::DALLAS_TEMP && dst.type != Sensors::Type::NTC_10K_TEMP) {
       if (dst.gpio != GPIO_IS_NOT_CONFIGURED) {
         dst.gpio = GPIO_IS_NOT_CONFIGURED;
         changed = true;
