@@ -19,8 +19,8 @@ protected:
 
   CustomOpenTherm* instance = nullptr;
   unsigned long instanceCreatedTime = 0;
-  byte instanceInGpio = 0;
-  byte instanceOutGpio = 0;
+  uint8_t instanceInGpio = 0;
+  uint8_t instanceOutGpio = 0;
   bool initialized = false;
   unsigned long connectedTime = 0;
   unsigned long disconnectedTime = 0;
@@ -31,7 +31,7 @@ protected:
   unsigned long heatingSetTempTime = 0;
   unsigned long dhwSetTempTime = 0;
   unsigned long ch2SetTempTime = 0;
-  byte configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
+  uint8_t configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -90,7 +90,7 @@ protected:
 
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
 
-    this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
+    this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, uint8_t attempt) {
       Log.sverboseln(
         FPSTR(L_OT),
         F("ID: %4d   Request: %8lx   Response: %8lx   Msg type: %s   Attempt: %2d   Status: %s"),

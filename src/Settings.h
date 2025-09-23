@@ -12,13 +12,13 @@ struct NetworkSettings {
   struct {
     char ssid[33] = DEFAULT_AP_SSID;
     char password[65] = DEFAULT_AP_PASSWORD;
-    byte channel = 6;
+    uint8_t channel = 6;
   } ap;
 
   struct {
     char ssid[33] = DEFAULT_STA_SSID;
     char password[65] = DEFAULT_STA_PASSWORD;
-    byte channel = 0;
+    uint8_t channel = 0;
   } sta;
 } networkSettings;
 
@@ -42,7 +42,7 @@ struct Settings {
     } ntp;
 
     UnitSystem unitSystem = UnitSystem::METRIC;
-    byte statusLedGpio = DEFAULT_STATUS_LED_GPIO;
+    uint8_t statusLedGpio = DEFAULT_STATUS_LED_GPIO;
   } system;
 
   struct {
@@ -54,9 +54,9 @@ struct Settings {
 
   struct {
     UnitSystem unitSystem = UnitSystem::METRIC;
-    byte inGpio = DEFAULT_OT_IN_GPIO;
-    byte outGpio = DEFAULT_OT_OUT_GPIO;
-    byte rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
+    uint8_t inGpio = DEFAULT_OT_IN_GPIO;
+    uint8_t outGpio = DEFAULT_OT_OUT_GPIO;
+    uint8_t rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
     uint8_t memberId = 0;
     uint8_t flags = 0;
     float minPower = 0.0f;
@@ -105,8 +105,8 @@ struct Settings {
     float target = DEFAULT_HEATING_TARGET_TEMP;
     float hysteresis = 0.5f;
     float turboFactor = 7.5f;
-    byte minTemp = DEFAULT_HEATING_MIN_TEMP;
-    byte maxTemp = DEFAULT_HEATING_MAX_TEMP;
+    uint8_t minTemp = DEFAULT_HEATING_MIN_TEMP;
+    uint8_t maxTemp = DEFAULT_HEATING_MAX_TEMP;
     uint8_t maxModulation = 100;
 
     struct {
@@ -123,8 +123,8 @@ struct Settings {
   struct {
     bool enabled = true;
     float target = DEFAULT_DHW_TARGET_TEMP;
-    byte minTemp = DEFAULT_DHW_MIN_TEMP;
-    byte maxTemp = DEFAULT_DHW_MAX_TEMP;
+    uint8_t minTemp = DEFAULT_DHW_MIN_TEMP;
+    uint8_t maxTemp = DEFAULT_DHW_MAX_TEMP;
     uint8_t maxModulation = 100;
     
     struct {
@@ -161,7 +161,7 @@ struct Settings {
 
   struct {
     bool use = false;
-    byte gpio = DEFAULT_EXT_PUMP_GPIO;
+    uint8_t gpio = DEFAULT_EXT_PUMP_GPIO;
     unsigned short postCirculationTime = 600;
     unsigned int antiStuckInterval = 2592000;
     unsigned short antiStuckTime = 300;

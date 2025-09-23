@@ -4,8 +4,8 @@
 class CustomOpenTherm : public OpenTherm {
 public:
   typedef std::function<void(unsigned int)> DelayCallback;
-  typedef std::function<void(unsigned long, byte)> BeforeSendRequestCallback;
-  typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, byte)> AfterSendRequestCallback;
+  typedef std::function<void(unsigned long, uint8_t)> BeforeSendRequestCallback;
+  typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, uint8_t)> AfterSendRequestCallback;
 
   CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false, bool alwaysReceive = false) : OpenTherm(inPin, outPin, isSlave, alwaysReceive) {}
   ~CustomOpenTherm() {}
@@ -106,15 +106,14 @@ public:
     return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
   }
 
-  static bool isCh2Active(unsigned long response)
-  {
+  static bool isCh2Active(unsigned long response) {
       return response & 0x20;
   }
 
   static bool isValidResponseId(unsigned long response, OpenThermMessageID id) {
-    byte responseId = (response >> 16) & 0xFF;
+    uint8_t responseId = (response >> 16) & 0xFF;
 
-    return (byte)id == responseId;
+    return (uint8_t)id == responseId;
   }
 
   static uint8_t getResponseMessageTypeId(unsigned long response) {

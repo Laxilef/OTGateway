@@ -35,7 +35,7 @@ namespace NetworkUtils {
       return this;
     }
 
-    NetworkMgr* setApCredentials(const char* ssid, const char* password = nullptr, byte channel = 0) {
+    NetworkMgr* setApCredentials(const char* ssid, const char* password = nullptr, uint8_t channel = 0) {
       this->apName = ssid;
       this->apPassword = password;
       this->apChannel = channel;
@@ -43,7 +43,7 @@ namespace NetworkUtils {
       return this;
     }
 
-    NetworkMgr* setStaCredentials(const char* ssid = nullptr, const char* password = nullptr, byte channel = 0) {
+    NetworkMgr* setStaCredentials(const char* ssid = nullptr, const char* password = nullptr, uint8_t channel = 0) {
       this->staSsid = ssid;
       this->staPassword = password;
       this->staChannel = channel;
@@ -140,7 +140,7 @@ namespace NetworkUtils {
       return this->staPassword;
     }
 
-    byte getStaChannel() {
+    uint8_t getStaChannel() {
       return this->staChannel;
     }
 
@@ -377,7 +377,7 @@ namespace NetworkUtils {
       }
     }
 
-    static byte rssiToSignalQuality(short int rssi) {
+    static uint8_t rssiToSignalQuality(short int rssi) {
       return constrain(map(rssi, -100, -50, 0, 100), 0, 100);
     }
 
@@ -397,11 +397,11 @@ namespace NetworkUtils {
     const char* hostname = "esp";
     const char* apName = "ESP";
     const char* apPassword = nullptr;
-    byte apChannel = 1;
+    uint8_t apChannel = 1;
 
     const char* staSsid = nullptr;
     const char* staPassword = nullptr;
-    byte staChannel = 0;
+    uint8_t staChannel = 0;
 
     bool useDhcp = true;
     IPAddress staticIp;
