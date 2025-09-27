@@ -334,7 +334,7 @@ public:
 
     uint8_t valueId = (uint8_t) valueType;
     if (!isValidValueId(valueId)) {
-      return false;
+      return 0;
     }
     
     float value = 0.0f;

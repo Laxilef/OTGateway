@@ -385,7 +385,7 @@ protected:
         continue;
       }
 
-      const float sensorResistance = value > 0.001f
+      const float sensorResistance = value > 1
         ? DEFAULT_NTC_REF_RESISTANCE / (DEFAULT_NTC_VREF / (float) value - 1.0f)
         : 0.0f;
       const float rawTemp = 1.0f / (
@@ -577,7 +577,7 @@ protected:
 
   bool subscribeToBleDevice(const uint8_t sensorId, NimBLEClient* pClient) {
     auto& sSensor = Sensors::settings[sensorId];
-    auto pAddress = pClient->getPeerAddress().toString().c_str();
+    auto pAddress = pClient->getPeerAddress().toString();
     
     NimBLERemoteService* pService = nullptr;
     NimBLERemoteCharacteristic* pChar = nullptr;
@@ -588,13 +588,13 @@ protected:
     if (!pService) {
       Log.straceln(
         FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to find env service (%s) on device %s"),
-        sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress
+        sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
       );
 
     } else {
       Log.straceln(
         FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found env service (%s) on device %s"),
-        sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress
+        sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
       );
 
       // 0x2A6E - Notify temperature x0.01C (pvvx)
@@ -606,7 +606,7 @@ protected:
         if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
           Log.straceln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found temp char (%s) in env service on device %s"),
-            sensorId, sSensor.name, charUuid.toString().c_str(), pAddress
+            sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
           );
 
           pChar->unsubscribe();
@@ -661,14 +661,14 @@ protected:
             Log.straceln(
               FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to temp char (%s) in env service on device %s"),
               sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress
+              charUuid.toString().c_str(), pAddress.c_str()
             );
 
           } else {
             Log.swarningln(
               FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to temp char (%s) in env service on device %s"),
               sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress
+              charUuid.toString().c_str(), pAddress.c_str()
             );
           }
         }
@@ -683,7 +683,7 @@ protected:
         if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
           Log.straceln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found temp char (%s) in env service on device %s"),
-            sensorId, sSensor.name, charUuid.toString().c_str(), pAddress
+            sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
           );
 
           pChar->unsubscribe();
@@ -738,14 +738,14 @@ protected:
             Log.straceln(
               FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to temp char (%s) in env service on device %s"),
               sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress
+              charUuid.toString().c_str(), pAddress.c_str()
             );
 
           } else {
             Log.swarningln(
               FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to temp char (%s) in env service on device %s"),
               sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress
+              charUuid.toString().c_str(), pAddress.c_str()
             );
           }
         }
@@ -754,7 +754,7 @@ protected:
       if (!tempNotifyCreated) {
         Log.swarningln(
           FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported temp chars in env service on device %s"),
-          sensorId, sSensor.name, pAddress
+          sensorId, sSensor.name, pAddress.c_str()
         );
 
         pClient->disconnect();
@@ -772,7 +772,7 @@ protected:
           if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
             Log.straceln(
               FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found humidity char (%s) in env service on device %s"),
-              sensorId, sSensor.name, charUuid.toString().c_str(), pAddress
+              sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
             );
 
             pChar->unsubscribe();
@@ -827,14 +827,14 @@ protected:
               Log.straceln(
                 FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to humidity char (%s) in env service on device %s"),
                 sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress
+                charUuid.toString().c_str(), pAddress.c_str()
               );
 
             } else {
               Log.swarningln(
                 FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to humidity char (%s) in env service on device %s"),
                 sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress
+                charUuid.toString().c_str(), pAddress.c_str()
               );
             }
           }
@@ -843,7 +843,7 @@ protected:
         if (!humidityNotifyCreated) {
           Log.swarningln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported humidity chars in env service on device %s"),
-            sensorId, sSensor.name, pAddress
+            sensorId, sSensor.name, pAddress.c_str()
           );
         }
       }
@@ -857,13 +857,13 @@ protected:
       if (!pService) {
         Log.straceln(
           FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to find battery service (%s) on device %s"),
-          sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress
+          sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
         );
 
       } else {
         Log.straceln(
           FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found battery service (%s) on device %s"),
-          sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress
+          sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
         );
 
         // 0x2A19 - Notify the battery charge level 0..99% (pvvx)
@@ -875,7 +875,7 @@ protected:
           if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
             Log.straceln(
               FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found battery char (%s) in battery service on device %s"),
-              sensorId, sSensor.name, charUuid.toString().c_str(), pAddress
+              sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
             );
 
             pChar->unsubscribe();
@@ -930,14 +930,14 @@ protected:
               Log.straceln(
                 FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to battery char (%s) in battery service on device %s"),
                 sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress
+                charUuid.toString().c_str(), pAddress.c_str()
               );
 
             } else {
               Log.swarningln(
                 FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to battery char (%s) in battery service on device %s"),
                 sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress
+                charUuid.toString().c_str(), pAddress.c_str()
               );
             }
           }
@@ -946,7 +946,7 @@ protected:
         if (!batteryNotifyCreated) {
           Log.swarningln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported battery chars in battery service on device %s"),
-            sensorId, sSensor.name, pAddress
+            sensorId, sSensor.name, pAddress.c_str()
           );
         }
       }

@@ -562,7 +562,7 @@ protected:
   }
 
   bool publishNonStaticHaEntities(bool force = false) {
-    static byte _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
+    static uint8_t _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
     static bool _indoorTempControl, _dhwSupport = false;
 
     bool published = false;

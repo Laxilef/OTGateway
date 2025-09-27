@@ -3,8 +3,8 @@
 
 class HaHelper : public HomeAssistantHelper {
 public:
-  static const byte TEMP_SOURCE_HEATING = 0;
-  static const byte TEMP_SOURCE_INDOOR = 1;
+  static const uint8_t TEMP_SOURCE_HEATING = 0;
+  static const uint8_t TEMP_SOURCE_INDOOR = 1;
   static const char AVAILABILITY_OT_CONN[];
   static const char AVAILABILITY_SENSOR_CONN[];
 
@@ -1115,7 +1115,7 @@ public:
   }
 
 
-  bool publishClimateHeating(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 20, byte maxTemp = 90, bool enabledByDefault = true) {
+  bool publishClimateHeating(UnitSystem unit = UnitSystem::METRIC, uint8_t minTemp = 20, uint8_t maxTemp = 90, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1167,7 +1167,7 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_CLIMATE), F("heating"), '_').c_str(), doc);
   }
 
-  bool publishClimateDhw(UnitSystem unit = UnitSystem::METRIC, byte minTemp = 40, byte maxTemp = 60, bool enabledByDefault = true) {
+  bool publishClimateDhw(UnitSystem unit = UnitSystem::METRIC, uint8_t minTemp = 40, uint8_t maxTemp = 60, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
