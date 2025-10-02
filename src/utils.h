@@ -490,7 +490,9 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_ENABLED)] = src.heating.enabled;
   heating[FPSTR(S_TURBO)] = src.heating.turbo;
   heating[FPSTR(S_TARGET)] = roundf(src.heating.target, 2);
-  heating[FPSTR(S_HYSTERESIS)] = roundf(src.heating.hysteresis, 3);
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)] = src.heating.hysteresis.enabled;
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)] = roundf(src.heating.hysteresis.value, 3);
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)] = static_cast<uint8_t>(src.heating.hysteresis.action);
   heating[FPSTR(S_TURBO_FACTOR)] = roundf(src.heating.turboFactor, 3);
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
@@ -1303,12 +1305,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)].isNull()) {
-    float value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)].as<float>();
+  if (src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis) > 0.0001f) {
-      dst.heating.hysteresis = roundf(value, 2);
+    if (value != dst.heating.hysteresis.enabled) {
+      dst.heating.hysteresis.enabled = value;
       changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)].isNull()) {
+    float value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)].as<float>();
+
+    if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis.value) > 0.0001f) {
+      dst.heating.hysteresis.value = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].isNull()) {
+    uint8_t value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].as<uint8_t>();
+
+    switch (value) {
+      case static_cast<uint8_t>(HysteresisAction::DISABLE_HEATING):
+      case static_cast<uint8_t>(HysteresisAction::SET_ZERO_TARGET):
+        if (static_cast<uint8_t>(dst.heating.hysteresis.action) != value) {
+         dst.heating.hysteresis.action = static_cast<HysteresisAction>(value);
+          changed = true;
+        }
+        break;
+
+      default:
+        break;
     }
   }
 

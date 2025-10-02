@@ -486,6 +486,7 @@ protected:
   void publishHaEntities() {
     // heating
     this->haHelper->publishSwitchHeatingTurbo(false);
+    this->haHelper->publishSwitchHeatingHysteresis();
     this->haHelper->publishInputHeatingHysteresis(settings.system.unitSystem);
     this->haHelper->publishInputHeatingTurboFactor(false);
     this->haHelper->publishInputHeatingMinTemp(settings.system.unitSystem);

@@ -59,12 +59,23 @@ protected:
     this->turbo();
     this->hysteresis();
 
-    vars.master.heating.targetTemp = settings.heating.target;
-    vars.master.heating.setpointTemp = roundf(constrain(
-      this->getHeatingSetpointTemp(),
-      this->getHeatingMinSetpointTemp(),
-      this->getHeatingMaxSetpointTemp()
-    ), 0);
+    if (vars.master.heating.blocking && settings.heating.hysteresis.action == HysteresisAction::SET_ZERO_TARGET) {
+      vars.master.heating.targetTemp = 0.0f;
+      vars.master.heating.setpointTemp = 0.0f;
+
+      // tick if PID enabled
+      if (settings.pid.enabled) {
+        this->getHeatingSetpointTemp();
+      }
+
+    } else {
+      vars.master.heating.targetTemp = settings.heating.target;
+      vars.master.heating.setpointTemp = roundf(constrain(
+        this->getHeatingSetpointTemp(),
+        this->getHeatingMinSetpointTemp(),
+        this->getHeatingMaxSetpointTemp()
+      ), 0);
+    }
 
     Sensors::setValueByType(
       Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.setpointTemp,
@@ -92,15 +103,15 @@ protected:
 
   void hysteresis() {
     bool useHyst = false;
-    if (settings.heating.hysteresis > 0.01f && this->indoorSensorsConnected) {
+    if (settings.heating.hysteresis.enabled && this->indoorSensorsConnected) {
       useHyst = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeHeatingControl;
     }
 
     if (useHyst) {
-      if (!vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target + 0.0001f >= settings.heating.hysteresis) {
+      if (!vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target + 0.0001f >= settings.heating.hysteresis.value) {
         vars.master.heating.blocking = true;
 
-      } else if (vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis)) {
+      } else if (vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis.value)) {
         vars.master.heating.blocking = false;
       }
 
