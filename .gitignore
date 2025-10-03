@@ -12,3 +12,4 @@ sdkconfig.*
 CMakeLists.txt
 !sdkconfig.defaults
 !.gitkeep
+.DS_Store
