@@ -405,7 +405,6 @@ protected:
 
   #if USE_BLE
   void cleanBleInstances() {
-    #if USE_BLE
     if (!NimBLEDevice::isInitialized()) {
       return;
     }
@@ -442,10 +441,13 @@ protected:
         NimBLEDevice::deleteClient(client);
       }
     }
-    #endif
   }
 
   void pollingBleSensors() {
+    if (!Sensors::getAmountByType(Sensors::Type::BLUETOOTH, true)) {
+      return;
+    }
+
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
       BLEDevice::init("");
