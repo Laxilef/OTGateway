@@ -1,1 +1,464 @@
-nl
+{
+  "values": {
+    "logo": "OpenTherm Gateway",
+    "nav": {
+      "license": "Licentie",
+      "source": "Broncode",
+      "help": "Help",
+      "issues": "Problemen & vragen",
+      "releases": "Releases"
+    },
+    "dbm": "dBm",
+    "kw": "kW",
+    "time": {
+      "days": "d.",
+      "hours": "u.",
+      "min": "min.",
+      "sec": "sec."
+    },
+    "button": {
+      "upgrade": "Upgraden",
+      "restart": "Herstarten",
+      "save": "Opslaan",
+      "saved": "Opgeslagen",
+      "refresh": "Vernieuwen",
+      "restore": "Herstellen",
+      "restored": "Hersteld",
+      "backup": "Back-up",
+      "wait": "Even wachten...",
+      "uploading": "Uploaden...",
+      "success": "Succes",
+      "error": "Fout"
+    },
+    "index": {
+      "title": "OpenTherm Gateway",
+      "section": {
+        "network": "Netwerk",
+        "system": "Systeem"
+      },
+      "system": {
+        "build": {
+          "title": "Build",
+          "version": "Versie",
+          "date": "Datum",
+          "core": "Core",
+          "sdk": "SDK"
+        },
+        "uptime": "Uptime",
+        "memory": {
+          "title": "Vrij geheugen",
+          "maxFreeBlock": "max. vrij blok",
+          "min": "min"
+        },
+        "board": "Board",
+        "chip": {
+          "model": "Chip",
+          "cores": "Kernen",
+          "freq": "frequentie"
+        },
+        "flash": {
+          "size": "Flash-grootte",
+          "realSize": "werkelijke grootte"
+        },
+        "lastResetReason": "Reden laatste herstart"
+      }
+    },
+    "dashboard": {
+      "name": "Dashboard",
+      "title": "Dashboard - OpenTherm Gateway",
+      "section": {
+        "control": "Bediening",
+        "states": "Statussen",
+        "sensors": "Sensoren",
+        "diag": "OpenTherm diagnose"
+      },
+      "thermostat": {
+        "heating": "Verwarming",
+        "dhw": "Warm water",
+        "temp.current": "Huidig",
+        "enable": "Inschakelen",
+        "turbo": "Turbomodus"
+      },
+      "notify": {
+        "fault": {
+          "title": "Ketelstoring is actief!",
+          "note": "Het wordt aanbevolen de ketel te inspecteren en de documentatie te raadplegen om de storingscode te interpreteren:"
+        },
+        "diag": {
+          "title": "Keteldiagnose is actief!",
+          "note": "Heeft uw ketel misschien een inspectie nodig? Het wordt aanbevolen de documentatie te raadplegen om de diagnosecode te interpreteren:"
+        },
+        "reset": "Probeer te resetten"
+      },
+      "states": {
+        "mNetworkConnected": "Netwerkverbinding",
+        "mMqttConnected": "MQTT-verbinding",
+        "mEmergencyState": "Noodmodus",
+        "mExtPumpState": "Externe pomp",
+        "mCascadeControlInput": "Cascaderegeling (ingang)",
+        "mCascadeControlOutput": "Cascaderegeling (uitgang)",
+        "sConnected": "OpenTherm-verbinding",
+        "sFlame": "Vlam",
+        "sCooling": "Koeling",
+        "sFaultActive": "Storing",
+        "sFaultCode": "Storingscode",
+        "sDiagActive": "Diagnose",
+        "sDiagCode": "Diagnosecode",
+        "mHeatEnabled": "Verwarming ingeschakeld",
+        "mHeatBlocking": "Verwarming geblokkeerd",
+        "mHeatOverheat": "Verwarming oververhit",
+        "sHeatActive": "Verwarming actief",
+        "mHeatSetpointTemp": "Insteltemperatuur verwarming",
+        "mHeatTargetTemp": "Doeltemperatuur verwarming",
+        "mHeatCurrTemp": "Huidige temperatuur verwarming",
+        "mHeatRetTemp": "Retourtemperatuur verwarming",
+        "mHeatIndoorTemp": "Verwarming, binnentemperatuur",
+        "mHeatOutdoorTemp": "Verwarming, buitentemperatuur",
+        "mDhwEnabled": "Warm water ingeschakeld",
+        "mDhwOverheat": "Warm water oververhit",
+        "sDhwActive": "Warm water actief",
+        "mDhwTargetTemp": "Doeltemperatuur warm water",
+        "mDhwCurrTemp": "Huidige temperatuur warm water",
+        "mDhwRetTemp": "Retourtemperatuur warm water"
+      },
+      "sensors": {
+        "values": {
+          "temp": "Temperatuur",
+          "humidity": "Luchtvochtigheid",
+          "battery": "Batterij",
+          "rssi": "RSSI"
+        }
+      }
+    },
+    "network": {
+      "title": "Netwerk - OpenTherm Gateway",
+      "name": "Netwerkinstellingen",
+      "section": {
+        "static": "Statische instellingen",
+        "availableNetworks": "Beschikbare netwerken",
+        "staSettings": "WiFi-instellingen",
+        "apSettings": "AP-instellingen"
+      },
+      "scan": {
+        "pos": "#",
+        "info": "Info"
+      },
+      "wifi": {
+        "ssid": "SSID",
+        "password": "Wachtwoord",
+        "channel": "Kanaal",
+        "signal": "Signaal",
+        "connected": "Verbonden"
+      },
+      "params": {
+        "hostname": "Hostnaam",
+        "dhcp": "Gebruik DHCP",
+        "mac": "MAC",
+        "ip": "IP",
+        "subnet": "Subnet",
+        "gateway": "Gateway",
+        "dns": "DNS"
+      },
+      "sta": {
+        "channel.note": "zet op 0 voor automatische selectie"
+      }
+    },
+    "sensors": {
+      "title": "Sensorinstellingen - OpenTherm Gateway",
+      "name": "Sensorinstellingen",
+      "enabled": "Ingeschakeld",
+      "sensorName": {
+        "title": "Sensornaam",
+        "note": "Mag alleen bevatten: a-z, A-Z, 0-9, _ en spatie"
+      },
+      "purpose": "Doel",
+      "purposes": {
+        "outdoorTemp": "Buitentemperatuur",
+        "indoorTemp": "Binnentemperatuur",
+        "heatTemp": "Verwarming, temperatuur",
+        "heatRetTemp": "Verwarming, retourtemperatuur",
+        "dhwTemp": "Warm water, temperatuur",
+        "dhwRetTemp": "Warm water, retourtemperatuur",
+        "dhwFlowRate": "Warm water, doorstroomsnelheid",
+        "exhaustTemp": "Rookgastemperatuur",
+        "modLevel": "Modulatieniveau (in procenten)",
+        "number": "Getal (ruw)",
+        "powerFactor": "Vermogen (in procent)",
+        "power": "Vermogen (in kWt)",
+        "fanSpeed": "Ventilatorsnelheid",
+        "co2": "CO2",
+        "pressure": "Druk",
+        "humidity": "Luchtvochtigheid",
+        "temperature": "Temperatuur",
+        "notConfigured": "Niet geconfigureerd"
+      },
+      "type": "Type/bron",
+      "types": {
+        "otOutdoorTemp": "OpenTherm, buitentemp.",
+        "otHeatTemp": "OpenTherm, verwarming, temp.",
+        "otHeatRetTemp": "OpenTherm, verwarming, retourtemp.",
+        "otDhwTemp": "OpenTherm, warm water, temperatuur",
+        "otDhwTemp2": "OpenTherm, warm water, temperatuur 2",
+        "otDhwFlowRate": "OpenTherm, warm water, doorstroomsnelheid",
+        "otCh2Temp": "OpenTherm, kanaal 2, temp.",
+        "otExhaustTemp": "OpenTherm, rookgastemp.",
+        "otHeatExchangerTemp": "OpenTherm, warmtewisselaar temp.",
+        "otPressure": "OpenTherm, druk",
+        "otModLevel": "OpenTherm, modulatieniveau",
+        "otCurrentPower": "OpenTherm, huidig vermogen",
+        "otExhaustCo2": "OpenTherm, rookgas CO2",
+        "otExhaustFanSpeed": "OpenTherm, rookgasventilator snelheid",
+        "otSupplyFanSpeed": "OpenTherm, toevoerventilator snelheid",
+        "otSolarStorageTemp": "OpenTherm, zonneboiler opslagtemp.",
+        "otSolarCollectorTemp": "OpenTherm, zonnecollector temp.",
+        "otFanSpeedSetpoint": "OpenTherm, instelpunt ventilatorsnelheid",
+        "otFanSpeedCurrent": "OpenTherm, huidige ventilatorsnelheid",
+        "otBurnerStarts": "OpenTherm, aantal branderstarts",
+        "otDhwBurnerStarts": "OpenTherm, aantal branderstarts (warm water)",
+        "otHeatingPumpStarts": "OpenTherm, aantal pompstarts (verwarming)",
+        "otDhwPumpStarts": "OpenTherm, aantal pompstarts (warm water)",
+        "otBurnerHours": "OpenTherm, aantal branderuren",
+        "otDhwBurnerHours": "OpenTherm, aantal branderuren (warm water)",
+        "otHeatingPumpHours": "OpenTherm, aantal pompuren (verwarming)",
+        "otDhwPumpHours": "OpenTherm, aantal pompuren (warm water)",
+        "ntcTemp": "NTC-sensor",
+        "dallasTemp": "DALLAS-sensor",
+        "bluetooth": "BLE-sensor",
+        "heatSetpointTemp": "Verwarming, insteltemperatuur",
+        "manual": "Handmatig via MQTT/API",
+        "notConfigured": "Niet geconfigureerd"
+      },
+      "gpio": "GPIO",
+      "address": {
+        "title": "Sensoradres",
+        "note": "Laat leeg voor automatische detectie van DALLAS-sensoren. Voor BLE-apparaten is een MAC-adres vereist."
+      },
+      "correction": {
+        "desc": "Correctie van waarden",
+        "offset": "Compensatie (offset)",
+        "factor": "Vermenigvuldiger"
+      },
+      "filtering": {
+        "desc": "Filteren van waarden",
+        "enabled": {
+          "title": "Filteren ingeschakeld",
+          "note": "Kan handig zijn bij veel scherpe ruis in de grafieken. Het gebruikte filter is \"Voortschrijdend gemiddelde\"."
+        },
+        "factor": {
+          "title": "Filterfactor",
+          "note": "Hoe lager de waarde, hoe vloeiender en <u>langer</u> de verandering in numerieke waarden."
+        }
+      }
+    },
+    "settings": {
+      "title": "Instellingen - OpenTherm Gateway",
+      "name": "Instellingen",
+      "section": {
+        "portal": "Portaalinstellingen",
+        "system": "Systeeminstellingen",
+        "diag": "Diagnose",
+        "heating": "Verwarmingsinstellingen",
+        "dhw": "Warmwaterinstellingen",
+        "emergency": "Instellingen noodmodus",
+        "equitherm": "Equitherm-instellingen",
+        "pid": "PID-instellingen",
+        "ot": "OpenTherm-instellingen",
+        "mqtt": "MQTT-instellingen",
+        "extPump": "Instellingen externe pomp",
+        "cascadeControl": "Instellingen cascaderegeling"
+      },
+      "enable": "Inschakelen",
+      "note": {
+        "restart": "Na het wijzigen van deze instellingen moet het apparaat opnieuw worden opgestart om de wijzigingen door te voeren.",
+        "blankNotUse": "leeg - niet gebruiken",
+        "bleDevice": "BLE-apparaat kan <u>alleen</u> worden gebruikt met sommige ESP32-boards met BLE-ondersteuning!"
+      },
+      "temp": {
+        "min": "Minimumtemperatuur",
+        "max": "Maximumtemperatuur"
+      },
+      "maxModulation": "Max. modulatieniveau",
+      "ohProtection": {
+        "title": "Oververhittingsbeveiliging",
+        "desc": "<b>Let op:</b> Deze functie kan handig zijn als de ingebouwde oververhittingsbeveiliging van de ketel niet of niet correct werkt en de warmtedrager kookt. Om uit te schakelen, stel 0 in als <b>hoge</b> en <b>lage</b> temperatuur.",
+        "highTemp": {
+          "title": "Drempelwaarde hoge temperatuur",
+          "note": "Drempelwaarde waarbij de brander geforceerd wordt uitgeschakeld"
+        },
+        "lowTemp": {
+          "title": "Drempelwaarde lage temperatuur",
+          "note": "Drempelwaarde waarbij de brander weer ingeschakeld kan worden"
+        }
+      },
+      "freezeProtection": {
+        "title": "Vorstbeveiliging",
+        "desc": "De verwarming wordt geforceerd ingeschakeld als de temperatuur van de warmtedrager of de binnentemperatuur onder de <b>Lage temperatuur</b> daalt gedurende de <b>Wachttijd</b>.",
+        "lowTemp": "Drempelwaarde lage temperatuur",
+        "thresholdTime": "Wachttijd <small>(sec)</small>"
+      },
+      "portal": {
+        "login": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "auth": "Authenticatie vereisen",
+        "mdns": "Gebruik mDNS"
+      },
+      "system": {
+        "unit": "Eenheidssysteem",
+        "metric": "Metrisch <small>(celsius, liters, bar)</small>",
+        "imperial": "Imperiaal <small>(fahrenheit, gallons, psi)</small>",
+        "statusLedGpio": "Status LED GPIO",
+        "logLevel": "Logniveau",
+        "serial": {
+          "enable": "Seriële poort ingeschakeld",
+          "baud": "Baudrate seriële poort"
+        },
+        "telnet": {
+          "enable": "Telnet ingeschakeld",
+          "port": {
+            "title": "Telnet-poort",
+            "note": "Standaard: 23"
+          }
+        },
+        "ntp": {
+          "server": "NTP-server",
+          "timezone": "Tijdzone",
+          "timezonePresets": "Selecteer voorinstelling..."
+        }
+      },
+      "heating": {
+        "hyst": "Hysterese <small>(in graden)</small>",
+        "turboFactor": "Turbomodus coëff."
+      },
+      "emergency": {
+        "desc": "Noodmodus wordt automatisch geactiveerd wanneer «PID» of «Equitherm» het instelpunt van de warmtedrager niet kan berekenen:<br />- als «Equitherm» is ingeschakeld en de buitentemperatuursensor is losgekoppeld;<br />- als «PID» of OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld en de binnentemperatuursensor is losgekoppeld.<br /><b>Let op:</b> Bij een netwerk- of MQTT-storing krijgen sensoren van het type <i>«Handmatig via MQTT/API»</i> de status ONVERBONDEN.",
+        "target": {
+          "title": "Doeltemperatuur",
+          "note": "<b>Belangrijk:</b> <u>Doel binnentemperatuur</u> als OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld.<br />In alle andere gevallen, de <u>doel warmtedragertemperatuur</u>."
+        },
+        "treshold": "Drempeltijd <small>(sec)</small>"
+      },
+      "equitherm": {
+        "n": "N-factor",
+        "k": "K-factor",
+        "t": {
+          "title": "T-factor",
+          "note": "Niet gebruikt als PID is ingeschakeld"
+        }
+      },
+      "pid": {
+        "p": "P-factor",
+        "i": "I-factor",
+        "d": "D-factor",
+        "dt": "DT <small>in seconden</small>",
+        "limits": {
+          "title": "Limieten",
+          "note": "<b>Belangrijk:</b> Bij gelijktijdig gebruik van «Equitherm» en «PID» beperken de min- en maxtemperaturen de invloed op de resulterende «Equitherm»-temperatuur.<br />Dus, als de min-temperatuur is ingesteld op -15 en de max-temperatuur op 15, zal het uiteindelijke instelpunt van de warmtedrager liggen tussen <code>equitherm_resultaat - 15</code> en <code>equitherm_resultaat + 15</code>."
+        },
+        "deadband": {
+          "title": "Deadband",
+          "note": "Deadband is een bereik rond de doeltemperatuur waarbinnen de PID-regeling minder actief wordt. Binnen dit bereik kan het algoritme de intensiteit verminderen of aanpassingen pauzeren om overreactie op kleine schommelingen te voorkomen.<br /><br />Bijvoorbeeld, met een doeltemperatuur van 22°, een onderdrempel van 1.0 en een bovendrempel van 0.5, werkt de deadband tussen 21° en 22.5°. Als de I-coëfficiënt 0.0005 is en de I-vermenigvuldiger 0.05, dan wordt de I-coëfficiënt binnen de deadband: <code>0.0005 * 0.05 = 0.000025</code>",
+          "p_multiplier": "Vermenigvuldiger voor P-factor",
+          "i_multiplier": "Vermenigvuldiger voor I-factor",
+          "d_multiplier": "Vermenigvuldiger voor D-factor",
+          "thresholdHigh": "Bovendrempel",
+          "thresholdLow": "Onderdrempel"
+        }
+      },
+      "ot": {
+        "advanced": "Geavanceerde instellingen",
+        "inGpio": "In GPIO",
+        "outGpio": "Uit GPIO",
+        "ledGpio": "RX LED GPIO",
+        "memberId": "Master member ID",
+        "flags": "Master flags",
+        "minPower": {
+          "title": "Min. ketelvermogen <small>(kW)</small>",
+          "note": "Deze waarde is bij 0-1% modulatieniveau van de ketel. Typisch te vinden in de ketelspecificatie als \"minimum nuttig warmtevermogen\"."
+        },
+        "maxPower": {
+          "title": "Max. ketelvermogen <small>(kW)</small>",
+          "note": "<b>0</b> - probeer automatisch te detecteren. Typisch te vinden in de ketelspecificatie als \"maximum nuttig warmtevermogen\"."
+        },
+        "options": {
+          "title": "Opties (aanvullende instellingen)",
+          "desc": "Opties kunnen de logica van de ketel veranderen. Niet alle opties zijn gedocumenteerd in het protocol, dus dezelfde optie kan verschillende effecten hebben op verschillende ketels.<br /><b>Let op:</b> Het is niet nodig om iets te veranderen als alles goed werkt.",
+          "dhwSupport": "Warm water ondersteuning",
+          "coolingSupport": "Koeling ondersteuning",
+          "summerWinterMode": "Zomer/wintermodus",
+          "heatingStateToSummerWinterMode": "Verwarmingsstatus als zomer/wintermodus",
+          "ch2AlwaysEnabled": "CH2 altijd ingeschakeld",
+          "heatingToCh2": "Dupliceer verwarming naar CH2",
+          "dhwToCh2": "Dupliceer warm water naar CH2",
+          "dhwBlocking": "Blokkering warm water",
+          "dhwStateAsDhwBlocking": "Status warm water als blokkering warm water",
+          "maxTempSyncWithTargetTemp": "Synchroniseer max. verwarmingstemp. met doeltemp.",
+          "getMinMaxTemp": "Haal min/max temp. op van ketel",
+          "ignoreDiagState": "Negeer diagnosestatus",
+          "autoFaultReset": "Automatische storingsreset <small>(niet aanbevolen!)</small>",
+          "autoDiagReset": "Automatische diagnosereset <small>(niet aanbevolen!)</small>",
+          "setDateAndTime": "Stel datum & tijd in op ketel",
+          "immergasFix": "Fix voor Immergas-ketels"
+        },
+        "nativeHeating": {
+          "title": "Natuurlijke verwarmingsregeling (ketel)",
+          "note": "Werkt <u>ALLEEN</u> als de ketel de gewenste kamertemperatuur vereist en zelf de temperatuur van de warmtedrager regelt. Niet compatibel met PID- en Equitherm-regelaars in de firmware."
+        }
+      },
+      "mqtt": {
+        "homeAssistantDiscovery": "Home Assistant Discovery",
+        "server": "Server",
+        "port": "Poort",
+        "user": "Gebruiker",
+        "password": "Wachtwoord",
+        "prefix": "Prefix",
+        "interval": "Publicatie-interval <small>(sec)</small>"
+      },
+      "extPump": {
+        "use": "Gebruik externe pomp",
+        "gpio": "Relais GPIO",
+        "postCirculationTime": "Nacirculatietijd <small>(min)</small>",
+        "antiStuckInterval": "Anti-vastloopinterval <small>(dagen)</small>",
+        "antiStuckTime": "Anti-vastlooptijd <small>(min)</small>"
+      },
+      "cascadeControl": {
+        "input": {
+          "desc": "Kan worden gebruikt om de verwarming alleen in te schakelen als een andere ketel defect is. De besturing van de andere ketel moet de status van de GPIO-ingang wijzigen in geval van een storing.",
+          "enable": "Ingang ingeschakeld",
+          "gpio": "GPIO",
+          "invertState": "Inverteer GPIO-status",
+          "thresholdTime": "Drempeltijd statuswijziging <small>(sec)</small>"
+        },
+        "output": {
+          "desc": "Kan worden gebruikt om een andere ketel in te schakelen <u>via een relais</u>.",
+          "enable": "Uitgang ingeschakeld",
+          "gpio": "GPIO",
+          "invertState": "Inverteer GPIO-status",
+          "thresholdTime": "Drempeltijd statuswijziging <small>(sec)</small>",
+          "events": {
+            "desc": "Gebeurtenissen",
+            "onFault": "Als de storingsstatus actief is",
+            "onLossConnection": "Als de verbinding via Opentherm is verbroken",
+            "onEnabledHeating": "Als de verwarming is ingeschakeld"
+          }
+        }
+      }
+    },
+    "upgrade": {
+      "title": "Upgrade - OpenTherm Gateway",
+      "name": "Upgrade",
+      "section": {
+        "backupAndRestore": "Back-up & herstel",
+        "backupAndRestore.desc": "In deze sectie kunt u een back-up van ALLE instellingen opslaan en herstellen.",
+        "upgrade": "Upgrade",
+        "upgrade.desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
+      },
+      "note": {
+        "disclaimer1": "Na een succesvolle upgrade van het bestandssysteem worden ALLE instellingen teruggezet naar de standaardwaarden! Sla een back-up op voordat u gaat upgraden.",
+        "disclaimer2": "Na een succesvolle upgrade zal het apparaat automatisch herstarten na 15 seconden."
+      },
+      "settingsFile": "Instellingenbestand",
+      "fw": "Firmware",
+      "fs": "Bestandssysteem"
+    }
+  }
+}
