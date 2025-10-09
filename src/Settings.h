@@ -329,9 +329,13 @@ struct Variables {
 
     bool connected = false;
     bool flame = false;
-    bool cooling = false;
     float pressure = 0.0f;
     float heatExchangerTemp = 0.0f;
+
+    struct {
+      bool active = false;
+      uint8_t setpoint = 0;
+    } cooling;
 
     struct {
       bool active = false;

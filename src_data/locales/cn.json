@@ -109,7 +109,8 @@
 
         "sConnected": "OpenTherm 通讯状态",
         "sFlame": "火焰",
-        "sCooling": "制冷",
+        "sCoolingActive": "制冷",
+        "sCoolingSetpoint": "冷却设定点",
         "sFaultActive": "报警状态",
         "sFaultCode": "报警代码",
         "sDiagActive": "诊断状态",

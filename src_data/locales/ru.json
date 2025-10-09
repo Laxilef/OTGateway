@@ -109,7 +109,8 @@
 
         "sConnected": "Подключение к OpenTherm",
         "sFlame": "Пламя",
-        "sCooling": "Охлаждение",
+        "sCoolingActive": "Охлаждение",
+        "sCoolingSetpoint": "Охлаждение, уставка",
         "sFaultActive": "Ошибка",
         "sFaultCode": "Код ошибки",
         "sDiagActive": "Диагностика",

@@ -2060,7 +2060,10 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.appVersion;
   slave[FPSTR(S_CONNECTED)] = src.slave.connected;
   slave[FPSTR(S_FLAME)] = src.slave.flame;
-  slave[FPSTR(S_COOLING)] = src.slave.cooling;
+
+  auto sCooling = slave[FPSTR(S_COOLING)].to<JsonObject>();
+  sCooling[FPSTR(S_ACTIVE)] = src.slave.cooling.active;
+  sCooling[FPSTR(S_SETPOINT)] = src.slave.cooling.setpoint;
 
   auto sModulation = slave[FPSTR(S_MODULATION)].to<JsonObject>();
   sModulation[FPSTR(S_MIN)] = src.slave.modulation.min;

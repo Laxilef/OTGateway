@@ -190,6 +190,7 @@ const char S_STA[]                                  PROGMEM = "sta";
 const char S_STATE[]                                PROGMEM = "state";
 const char S_STATIC_CONFIG[]                        PROGMEM = "staticConfig";
 const char S_STATUS_LED_GPIO[]                      PROGMEM = "statusLedGpio";
+const char S_SETPOINT[]                             PROGMEM = "setpoint";
 const char S_SETPOINT_TEMP[]                        PROGMEM = "setpointTemp";
 const char S_SUBNET[]                               PROGMEM = "subnet";
 const char S_SUMMER_WINTER_MODE[]                   PROGMEM = "summerWinterMode";
