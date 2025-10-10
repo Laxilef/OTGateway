@@ -450,13 +450,17 @@ protected:
     }
 
     for (auto& [sensorId, pClient]: this->bleClients) {
-      auto& sSensor = Sensors::settings[sensorId];
+      if (pClient == nullptr) {
+        continue;
+      }
 
-      if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+      auto& sSensor = Sensors::settings[sensorId];
+      const auto sAddress = NimBLEAddress(sSensor.address, 0);
+
+      if (sAddress.isNull() || !sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
         Log.sinfoln(
-          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s', deleted unused client, address: %s"),
-          sensorId, sSensor.name,
-          pClient->getPeerAddress().toString().c_str()
+          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s', deleted unused client"),
+          sensorId, sSensor.name
         );
 
         NimBLEDevice::deleteClient(pClient);
@@ -484,16 +488,36 @@ protected:
         continue;
       }
 
+      const auto address = NimBLEAddress(sSensor.address, 0);
+      if (address.isNull()) {
+        continue;
+      }
+
       auto pClient = this->getBleClient(sensorId);
       if (pClient == nullptr) {
         continue;
+      }
+
+      if (pClient->getPeerAddress() != address) {
+        if (pClient->isConnected()) {
+          if (!pClient->disconnect()) {
+            continue;
+          }
+        }
+
+        pClient->setPeerAddress(address);
       }
 
       if (!pClient->isConnected()) {
         this->bleSubscribed[sensorId] = false;
         this->bleLastSetDtTime[sensorId] = 0;
 
-        pClient->connect(true, true, true);
+        if (pClient->connect(false, true, true)) {
+          Log.sinfoln(
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': trying connecting to %s..."),
+            sensorId, sSensor.name, pClient->getPeerAddress().toString().c_str()
+          );
+        }
 
         continue;
       }
@@ -548,29 +572,18 @@ protected:
     if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
       return nullptr;
     }
-    
-    const auto address = NimBLEAddress(sSensor.address, 0);
-    if (address.isNull()) {
-      return nullptr;
-    }
 
     if (this->bleClients[sensorId] && this->bleClients[sensorId] != nullptr) {
       return this->bleClients[sensorId];
     }
 
-    auto pClient = NimBLEDevice::createClient(address);
+    auto pClient = NimBLEDevice::createClient();
     if (pClient == nullptr) {
       return nullptr;
     }
 
-    /**
-     *  Set initial connection parameters:
-     *  These settings are safe for 3 clients to connect reliably, can go faster if you have less
-     *  connections. Timeout should be a multiple of the interval, minimum is 100ms.
-     *  Min interval: 12 * 1.25ms = 15, Max interval: 12 * 1.25ms = 15, 0 latency, 1000 * 10ms = 10000ms timeout
-     */
-    pClient->setConnectionParams(12, 12, 0, 1000);
-    pClient->setConnectTimeout(10000);
+    //pClient->setConnectionParams(BLE_GAP_CONN_ITVL_MS(10), BLE_GAP_CONN_ITVL_MS(100), 10, 150);
+    pClient->setConnectTimeout(30000);
     pClient->setSelfDelete(false, false);
     pClient->setClientCallbacks(new BluetoothClientCallbacks(sensorId), true);
 
