@@ -32,6 +32,7 @@ const char L_REGULATOR_EQUITHERM[]                  PROGMEM = "REGULATOR.EQUITHE
 const char L_CASCADE_INPUT[]                        PROGMEM = "CASCADE.INPUT";
 const char L_CASCADE_OUTPUT[]                       PROGMEM = "CASCADE.OUTPUT";
 const char L_EXTPUMP[]                              PROGMEM = "EXTPUMP";
+const char L_EXTDEV[]                               PROGMEM = "EXTDEV";
 
 
 const char S_ACTIONS[]                              PROGMEM = "actions";
@@ -82,6 +83,8 @@ const char S_ENV[]                                  PROGMEM = "env";
 const char S_EPC[]                                  PROGMEM = "epc";
 const char S_EQUITHERM[]                            PROGMEM = "equitherm";
 const char S_EXTERNAL_PUMP[]                        PROGMEM = "externalPump";
+const char S_EXTERNAL_DEV[]                         PROGMEM = "externalDev";
+const char S_EXTERNAL_DEV_CAPTION[]                 PROGMEM = "caption";
 const char S_FACTOR[]                               PROGMEM = "factor";
 const char S_FAULT[]                                PROGMEM = "fault";
 const char S_FREEZE_PROTECTION[]                    PROGMEM = "freezeProtection";
