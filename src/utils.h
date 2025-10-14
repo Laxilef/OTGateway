@@ -1930,12 +1930,20 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       );
 
       if (parsed == 8) {
-        for (uint8_t i = 0; i < 8; i++) {
+        for (uint8_t i = 0; i < parsed; i++) {
           if (dst.address[i] != tmp[i]) {
             dst.address[i] = tmp[i];
             changed = true;
           }
         }
+
+      } else {
+        // reset
+        for (uint8_t i = 0; i < sizeof(dst.address); i++) {
+          dst.address[i] = 0x00;
+        }
+
+        changed = true;
       }
 
     } else if (dst.type == Sensors::Type::BLUETOOTH) {
@@ -1948,12 +1956,20 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       );
 
       if (parsed == 6) {
-        for (uint8_t i = 0; i < 6; i++) {
+        for (uint8_t i = 0; i < parsed; i++) {
           if (dst.address[i] != tmp[i]) {
             dst.address[i] = tmp[i];
             changed = true;
           }
         }
+
+      } else {
+        // reset
+        for (uint8_t i = 0; i < sizeof(dst.address); i++) {
+          dst.address[i] = 0x00;
+        }
+        
+        changed = true;
       }
     }
   }
