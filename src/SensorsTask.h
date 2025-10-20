@@ -169,10 +169,10 @@ public:
   }
 
 protected:
-  const unsigned int disconnectedTimeout = 120000;
-  const unsigned short dallasSearchInterval = 60000;
-  const unsigned short dallasPollingInterval = 10000;
-  const unsigned short globalPollingInterval = 15000;
+  const unsigned int disconnectedTimeout = 180000u;
+  const unsigned short dallasSearchInterval = 60000u;
+  const unsigned short dallasPollingInterval = 10000u;
+  const unsigned short globalPollingInterval = 15000u;
 
   std::unordered_map<uint8_t, OneWire> owInstances;
   std::unordered_map<uint8_t, DallasTemperature> dallasInstances;
