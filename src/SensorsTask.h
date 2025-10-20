@@ -9,41 +9,136 @@
 extern FileData fsSensorsSettings;
 
 #if USE_BLE
-class BluetoothClientCallbacks : public NimBLEClientCallbacks {
+class BluetoothScanCallbacks : public NimBLEScanCallbacks {
 public:
-  BluetoothClientCallbacks(uint8_t sensorId) : sensorId(sensorId) {}
+  void onDiscovered(const NimBLEAdvertisedDevice* device) override {
+    auto& deviceAddress = device->getAddress();
 
-  void onConnect(NimBLEClient* pClient) {
-    auto& sSensor = Sensors::settings[this->sensorId];
+    bool found = false;
+    uint8_t sensorId;
+    for (sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      auto& sSensor = Sensors::settings[sensorId];
+      if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        continue;
+      }
 
-    Log.sinfoln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': connected to %s"),
-      sensorId, sSensor.name, pClient->getPeerAddress().toString().c_str()
+      const auto sensorAddress = NimBLEAddress(sSensor.address, deviceAddress.getType());
+      if (sensorAddress.isNull() || sensorAddress != deviceAddress) {
+        continue;
+      }
+
+      found = true;
+      break;
+    }
+
+    if (!found) {
+      return;
+    }
+
+    auto& sSensor = Sensors::settings[sensorId];
+    auto& rSensor = Sensors::results[sensorId];
+    auto deviceName = device->getName();
+    auto deviceRssi = device->getRSSI();
+
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': discovered device %s, name: %s, RSSI: %hhd"),
+      sensorId, sSensor.name,
+      deviceAddress.toString().c_str(), deviceName.c_str(), deviceRssi
     );
-  }
 
-  void onDisconnect(NimBLEClient* pClient, int reason) {
-    auto& sSensor = Sensors::settings[this->sensorId];
+    if (!device->haveServiceData()) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found service data"),
+        sensorId, sSensor.name
+      );
+      return;
+    }
 
-    Log.sinfoln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': disconnected, reason %i"),
-      sensorId, sSensor.name, reason
-    );
-  }
-
-  void onConnectFail(NimBLEClient* pClient, int reason) {
-    auto& sSensor = Sensors::settings[this->sensorId];
-
-    Log.sinfoln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to connect, reason %i"),
-      sensorId, sSensor.name, reason
+    auto serviceDataCount = device->getServiceDataCount();
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found %hhu service data"),
+      sensorId, sSensor.name, serviceDataCount
     );
 
-    pClient->cancelConnect();
-  }
+    NimBLEUUID serviceUuid((uint16_t) 0x181A);
+    auto serviceData = device->getServiceData(serviceUuid);
+    if (!serviceData.size()) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': NOT found %s env service data"),
+        sensorId, sSensor.name, serviceUuid.toString().c_str()
+      );
+      return;
+    }
+  
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found %s env service data"),
+      sensorId, sSensor.name, serviceUuid.toString().c_str()
+    );
 
-protected:
-  uint8_t sensorId;
+    float temperature, humidity;
+    uint16_t batteryMv;
+    uint8_t batteryLevel;
+
+    if (serviceData.size() == 13) {
+      // atc1441 format
+
+      // Temperature (2 bytes, big-endian)
+      temperature = (
+        (static_cast<uint8_t>(serviceData[6]) << 8) | static_cast<uint8_t>(serviceData[7])
+      ) * 0.1f;
+
+      // Humidity (1 byte)
+      humidity = static_cast<uint8_t>(serviceData[8]);
+
+      // Battery mV (2 bytes, big-endian)
+      batteryMv = (static_cast<uint8_t>(serviceData[10]) << 8) | static_cast<uint8_t>(serviceData[11]);
+
+      // Battery level (1 byte)
+      batteryLevel = static_cast<uint8_t>(serviceData[9]);
+
+    } else if (serviceData.size() == 15) {
+      // custom pvvx format
+
+      // Temperature (2 bytes, little-endian)
+      temperature = (
+        (static_cast<uint8_t>(serviceData[7]) << 8) | static_cast<uint8_t>(serviceData[6])
+      ) * 0.01f;
+
+      // Humidity (2 bytes, little-endian)
+      humidity = (
+        (static_cast<uint8_t>(serviceData[9]) << 8) | static_cast<uint8_t>(serviceData[8])
+      ) * 0.01f;
+
+      // Battery mV (2 bytes, little-endian)
+      batteryMv = (static_cast<uint8_t>(serviceData[11]) << 8) | static_cast<uint8_t>(serviceData[10]);
+
+      // Battery level (1 byte)
+      batteryLevel = static_cast<uint8_t>(serviceData[12]);
+
+    } else {
+      // unknown format
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': unknown data format (size: %i)"),
+        sensorId, sSensor.name, serviceData.size()
+      );
+      return;
+    }
+
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE),
+      F("Sensor #%hhu '%s', received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
+      sensorId, sSensor.name,
+      temperature, humidity, batteryMv, batteryLevel
+    );
+
+    // update data
+    Sensors::setValueById(sensorId, temperature, Sensors::ValueType::TEMPERATURE, true, true);
+    Sensors::setValueById(sensorId, humidity, Sensors::ValueType::HUMIDITY, true, true);
+    Sensors::setValueById(sensorId, batteryLevel, Sensors::ValueType::BATTERY, true, true);
+
+    // update rssi
+    Sensors::setValueById(sensorId, deviceRssi, Sensors::ValueType::RSSI, false, false);
+  }
 };
 #endif
 
@@ -55,6 +150,10 @@ public:
     this->dallasSearchTime.reserve(2);
     this->dallasPolling.reserve(2);
     this->dallasLastPollingTime.reserve(2);
+
+    #if USE_BLE
+    this->bluetoothScanCallbacks = new BluetoothScanCallbacks();
+    #endif
   }
 
   ~SensorsTask() {
@@ -63,6 +162,10 @@ public:
     this->dallasSearchTime.clear();
     this->dallasPolling.clear();
     this->dallasLastPollingTime.clear();
+
+    #if USE_BLE
+    delete this->bluetoothScanCallbacks;
+    #endif
   }
 
 protected:
@@ -70,9 +173,6 @@ protected:
   const unsigned short dallasSearchInterval = 60000;
   const unsigned short dallasPollingInterval = 10000;
   const unsigned short globalPollingInterval = 15000;
-  #if USE_BLE
-  const unsigned int bleSetDtInterval = 7200000;
-  #endif
 
   std::unordered_map<uint8_t, OneWire> owInstances;
   std::unordered_map<uint8_t, DallasTemperature> dallasInstances;
@@ -80,9 +180,8 @@ protected:
   std::unordered_map<uint8_t, bool> dallasPolling;
   std::unordered_map<uint8_t, unsigned long> dallasLastPollingTime;
   #if USE_BLE
-  std::unordered_map<uint8_t, NimBLEClient*> bleClients;
-  std::unordered_map<uint8_t, bool> bleSubscribed;
-  std::unordered_map<uint8_t, unsigned long> bleLastSetDtTime;
+  NimBLEScan* pBLEScan = nullptr;
+  BluetoothScanCallbacks* bluetoothScanCallbacks = nullptr;
   #endif
   unsigned long globalLastPollingTime = 0;
 
@@ -131,8 +230,7 @@ protected:
       this->yield();
 
       #if USE_BLE
-      cleanBleInstances();
-      pollingBleSensors();
+      scanBleSensors();
       this->yield();
       #endif
 
@@ -444,33 +542,28 @@ protected:
   }
 
   #if USE_BLE
-  void cleanBleInstances() {
-    if (!NimBLEDevice::isInitialized()) {
-      return;
-    }
-
-    for (auto& [sensorId, pClient]: this->bleClients) {
-      if (pClient == nullptr) {
-        continue;
-      }
-
-      auto& sSensor = Sensors::settings[sensorId];
-      const auto sAddress = NimBLEAddress(sSensor.address, 0);
-
-      if (sAddress.isNull() || !sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
-        Log.sinfoln(
-          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s', deleted unused client"),
-          sensorId, sSensor.name
-        );
-
-        NimBLEDevice::deleteClient(pClient);
-        pClient = nullptr;
-      }
-    }
-  }
-
-  void pollingBleSensors() {
+  void scanBleSensors() {
     if (!Sensors::getAmountByType(Sensors::Type::BLUETOOTH, true)) {
+      if (NimBLEDevice::isInitialized()) {
+        if (this->pBLEScan != nullptr) {
+          if (this->pBLEScan->isScanning()) {
+            this->pBLEScan->stop();
+
+          } else {
+            this->pBLEScan = nullptr;
+          }
+        }
+
+        if (this->pBLEScan == nullptr) {
+          if (NimBLEDevice::deinit(true)) {
+            Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Deinitialized"));
+
+          } else {
+            Log.swarningln(FPSTR(L_SENSORS_BLE), F("Unable to deinitialize!"));
+          }
+        }
+      }
+
       return;
     }
 
@@ -480,513 +573,26 @@ protected:
       NimBLEDevice::setPower(9);
     }
 
-    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-      auto& sSensor = Sensors::settings[sensorId];
-      auto& rSensor = Sensors::results[sensorId];
-      
-      if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
-        continue;
-      }
+    if (this->pBLEScan == nullptr) {
+      this->pBLEScan = NimBLEDevice::getScan();
+      this->pBLEScan->setScanCallbacks(this->bluetoothScanCallbacks);
+      this->pBLEScan->setActiveScan(false);
+      this->pBLEScan->setDuplicateFilter(false);
+      this->pBLEScan->setMaxResults(0);
+      this->pBLEScan->setInterval(100);
+      this->pBLEScan->setWindow(100);
 
-      const auto address = NimBLEAddress(sSensor.address, 0);
-      if (address.isNull()) {
-        continue;
-      }
-
-      auto pClient = this->getBleClient(sensorId);
-      if (pClient == nullptr) {
-        continue;
-      }
-
-      if (pClient->getPeerAddress() != address) {
-        if (pClient->isConnected()) {
-          if (!pClient->disconnect()) {
-            continue;
-          }
-        }
-
-        pClient->setPeerAddress(address);
-      }
-
-      if (!pClient->isConnected()) {
-        this->bleSubscribed[sensorId] = false;
-        this->bleLastSetDtTime[sensorId] = 0;
-
-        if (pClient->connect(false, true, true)) {
-          Log.sinfoln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': trying connecting to %s..."),
-            sensorId, sSensor.name, pClient->getPeerAddress().toString().c_str()
-          );
-        }
-
-        continue;
-      }
-      
-      if (!this->bleSubscribed[sensorId]) {
-        if (this->subscribeToBleDevice(sensorId, pClient)) {
-          this->bleSubscribed[sensorId] = true;
-
-        } else {
-          this->bleSubscribed[sensorId] = false;
-          pClient->disconnect();
-          continue;
-        }
-      }
-
-      // Mark connected
-      Sensors::setConnectionStatusById(sensorId, true, true);
-
-      if (!this->bleLastSetDtTime[sensorId] || millis() - this->bleLastSetDtTime[sensorId] > this->bleSetDtInterval) {
-        struct tm ti;
-        
-        if (getLocalTime(&ti)) {
-          if (this->setDateOnBleSensor(pClient, &ti)) {
-            Log.sinfoln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s', successfully set date: %02d.%02d.%04d %02d:%02d:%02d"),
-              sensorId, sSensor.name,
-              ti.tm_mday, ti.tm_mon + 1, ti.tm_year + 1900, ti.tm_hour, ti.tm_min, ti.tm_sec
-            );
-
-          } else {
-            Log.swarningln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s', failed set date: %02d.%02d.%04d %02d:%02d:%02d"),
-              sensorId, sSensor.name,
-              ti.tm_mday, ti.tm_mon + 1, ti.tm_year + 1900, ti.tm_hour, ti.tm_min, ti.tm_sec
-            );
-          }
-
-          this->bleLastSetDtTime[sensorId] = millis();
-        }
-      }
-    }
-  }
-
-  NimBLEClient* getBleClient(const uint8_t sensorId) {
-    if (!NimBLEDevice::isInitialized()) {
-      return nullptr;
+      Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Scanning initialized"));
     }
 
-    auto& sSensor = Sensors::settings[sensorId];
-    auto& rSensor = Sensors::results[sensorId];
-
-    if (!sSensor.enabled || sSensor.type != Sensors::Type::BLUETOOTH || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
-      return nullptr;
-    }
-
-    if (this->bleClients[sensorId] && this->bleClients[sensorId] != nullptr) {
-      return this->bleClients[sensorId];
-    }
-
-    auto pClient = NimBLEDevice::createClient();
-    if (pClient == nullptr) {
-      return nullptr;
-    }
-
-    //pClient->setConnectionParams(BLE_GAP_CONN_ITVL_MS(10), BLE_GAP_CONN_ITVL_MS(100), 10, 150);
-    pClient->setConnectTimeout(30000);
-    pClient->setSelfDelete(false, false);
-    pClient->setClientCallbacks(new BluetoothClientCallbacks(sensorId), true);
-
-    this->bleClients[sensorId] = pClient;
-
-    return pClient;
-  }
-
-  bool subscribeToBleDevice(const uint8_t sensorId, NimBLEClient* pClient) {
-    auto& sSensor = Sensors::settings[sensorId];
-    auto pAddress = pClient->getPeerAddress().toString();
-    
-    NimBLERemoteService* pService = nullptr;
-    NimBLERemoteCharacteristic* pChar = nullptr;
-
-    // ENV Service (0x181A)
-    NimBLEUUID serviceUuid((uint16_t) 0x181AU);
-    pService = pClient->getService(serviceUuid);
-    if (!pService) {
-      Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to find env service (%s) on device %s"),
-        sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
-      );
-
-    } else {
-      Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found env service (%s) on device %s"),
-        sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
-      );
-
-      // 0x2A6E - Notify temperature x0.01C (pvvx)
-      bool tempNotifyCreated = false;
-      if (!tempNotifyCreated) {
-        NimBLEUUID charUuid((uint16_t) 0x2A6E);
-        pChar = pService->getCharacteristic(charUuid);
-
-        if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
-          Log.straceln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found temp char (%s) in env service on device %s"),
-            sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
-          );
-
-          pChar->unsubscribe();
-          tempNotifyCreated = pChar->subscribe(
-            pChar->canNotify(),
-            [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-              if (pChar == nullptr) {
-                return;
-              }
-
-              const NimBLERemoteService* pService = pChar->getRemoteService();
-              if (pService == nullptr) {
-                return;
-              }
-
-              NimBLEClient* pClient = pService->getClient();
-              if (pClient == nullptr) {
-                return;
-              }
-
-              auto& sSensor = Sensors::settings[sensorId];
-
-              if (length != 2) {
-                Log.swarningln(
-                  FPSTR(L_SENSORS_BLE),
-                  F("Sensor #%hhu '%s': invalid notification data at temp char (%s) on device %s"),
-                  sensorId,
-                  sSensor.name,
-                  pChar->getUUID().toString().c_str(),
-                  pClient->getPeerAddress().toString().c_str()
-                );
-
-                return;
-              }
-
-              float rawTemp = (pChar->getValue<int16_t>() * 0.01f);
-              Log.straceln(
-                FPSTR(L_SENSORS_BLE),
-                F("Sensor #%hhu '%s': received temp: %.2f"),
-                sensorId, sSensor.name, rawTemp
-              );
-
-              // set temp
-              Sensors::setValueById(sensorId, rawTemp, Sensors::ValueType::TEMPERATURE, true, true);
-
-              // update rssi
-              Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
-            }
-          );
-
-          if (tempNotifyCreated) {
-            Log.straceln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to temp char (%s) in env service on device %s"),
-              sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress.c_str()
-            );
-
-          } else {
-            Log.swarningln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to temp char (%s) in env service on device %s"),
-              sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress.c_str()
-            );
-          }
-        }
-      }
-
-
-      // 0x2A1F - Notify temperature x0.1C (atc1441/pvvx)
-      if (!tempNotifyCreated) {
-        NimBLEUUID charUuid((uint16_t) 0x2A1F);
-        pChar = pService->getCharacteristic(charUuid);
-
-        if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
-          Log.straceln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found temp char (%s) in env service on device %s"),
-            sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
-          );
-
-          pChar->unsubscribe();
-          tempNotifyCreated = pChar->subscribe(
-            pChar->canNotify(),
-            [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-              if (pChar == nullptr) {
-                return;
-              }
-
-              const NimBLERemoteService* pService = pChar->getRemoteService();
-              if (pService == nullptr) {
-                return;
-              }
-
-              NimBLEClient* pClient = pService->getClient();
-              if (pClient == nullptr) {
-                return;
-              }
-
-              auto& sSensor = Sensors::settings[sensorId];
-
-              if (length != 2) {
-                Log.swarningln(
-                  FPSTR(L_SENSORS_BLE),
-                  F("Sensor #%hhu '%s': invalid notification data at temp char (%s) on device %s"),
-                  sensorId,
-                  sSensor.name,
-                  pChar->getUUID().toString().c_str(),
-                  pClient->getPeerAddress().toString().c_str()
-                );
-
-                return;
-              }
-
-              float rawTemp = (pChar->getValue<int16_t>() * 0.1f);
-              Log.straceln(
-                FPSTR(L_SENSORS_BLE),
-                F("Sensor #%hhu '%s': received temp: %.2f"),
-                sensorId, sSensor.name, rawTemp
-              );
-
-              // set temp
-              Sensors::setValueById(sensorId, rawTemp, Sensors::ValueType::TEMPERATURE, true, true);
-
-              // update rssi
-              Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
-            }
-          );
-
-          if (tempNotifyCreated) {
-            Log.straceln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to temp char (%s) in env service on device %s"),
-              sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress.c_str()
-            );
-
-          } else {
-            Log.swarningln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to temp char (%s) in env service on device %s"),
-              sensorId, sSensor.name,
-              charUuid.toString().c_str(), pAddress.c_str()
-            );
-          }
-        }
-      }
-
-      if (!tempNotifyCreated) {
-        Log.swarningln(
-          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported temp chars in env service on device %s"),
-          sensorId, sSensor.name, pAddress.c_str()
-        );
-
-        pClient->disconnect();
-        return false;
-      }
-
-
-      // 0x2A6F - Notify about humidity x0.01% (pvvx)
-      {
-        bool humidityNotifyCreated = false;
-        if (!humidityNotifyCreated) {
-          NimBLEUUID charUuid((uint16_t) 0x2A6F);
-          pChar = pService->getCharacteristic(charUuid);
-
-          if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
-            Log.straceln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found humidity char (%s) in env service on device %s"),
-              sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
-            );
-
-            pChar->unsubscribe();
-            humidityNotifyCreated = pChar->subscribe(
-              pChar->canNotify(),
-              [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-                if (pChar == nullptr) {
-                  return;
-                }
-
-                const NimBLERemoteService* pService = pChar->getRemoteService();
-                if (pService == nullptr) {
-                  return;
-                }
-
-                NimBLEClient* pClient = pService->getClient();
-                if (pClient == nullptr) {
-                  return;
-                }
-
-                auto& sSensor = Sensors::settings[sensorId];
-
-                if (length != 2) {
-                  Log.swarningln(
-                    FPSTR(L_SENSORS_BLE),
-                    F("Sensor #%hhu '%s': invalid notification data at humidity char (%s) on device %s"),
-                    sensorId,
-                    sSensor.name,
-                    pChar->getUUID().toString().c_str(),
-                    pClient->getPeerAddress().toString().c_str()
-                  );
-
-                  return;
-                }
-
-                float rawHumidity = (pChar->getValue<uint16_t>() * 0.01f);
-                Log.straceln(
-                  FPSTR(L_SENSORS_BLE),
-                  F("Sensor #%hhu '%s': received humidity: %.2f"),
-                  sensorId, sSensor.name, rawHumidity
-                );
-
-                // set humidity
-                Sensors::setValueById(sensorId, rawHumidity, Sensors::ValueType::HUMIDITY, true, true);
-
-                // update rssi
-                Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
-              }
-            );
-
-            if (humidityNotifyCreated) {
-              Log.straceln(
-                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to humidity char (%s) in env service on device %s"),
-                sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress.c_str()
-              );
-
-            } else {
-              Log.swarningln(
-                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to humidity char (%s) in env service on device %s"),
-                sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress.c_str()
-              );
-            }
-          }
-        }
-
-        if (!humidityNotifyCreated) {
-          Log.swarningln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported humidity chars in env service on device %s"),
-            sensorId, sSensor.name, pAddress.c_str()
-          );
-        }
-      }
-    }
-
-
-    // Battery Service (0x180F)
-    {
-      NimBLEUUID serviceUuid((uint16_t) 0x180F);
-      pService = pClient->getService(serviceUuid);
-      if (!pService) {
-        Log.straceln(
-          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to find battery service (%s) on device %s"),
-          sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
-        );
+    if (!this->pBLEScan->isScanning()) {
+      if (this->pBLEScan->start(0, false, true)) {
+        Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Scanning started"));
 
       } else {
-        Log.straceln(
-          FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found battery service (%s) on device %s"),
-          sensorId, sSensor.name, serviceUuid.toString().c_str(), pAddress.c_str()
-        );
-
-        // 0x2A19 - Notify the battery charge level 0..99% (pvvx)
-        bool batteryNotifyCreated = false;
-        if (!batteryNotifyCreated) {
-          NimBLEUUID charUuid((uint16_t) 0x2A19);
-          pChar = pService->getCharacteristic(charUuid);
-
-          if (pChar && (pChar->canNotify() || pChar->canIndicate())) {
-            Log.straceln(
-              FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found battery char (%s) in battery service on device %s"),
-              sensorId, sSensor.name, charUuid.toString().c_str(), pAddress.c_str()
-            );
-
-            pChar->unsubscribe();
-            batteryNotifyCreated = pChar->subscribe(
-              pChar->canNotify(),
-              [sensorId](NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length, bool isNotify) {
-                if (pChar == nullptr) {
-                  return;
-                }
-
-                const NimBLERemoteService* pService = pChar->getRemoteService();
-                if (pService == nullptr) {
-                  return;
-                }
-
-                NimBLEClient* pClient = pService->getClient();
-                if (pClient == nullptr) {
-                  return;
-                }
-
-                auto& sSensor = Sensors::settings[sensorId];
-
-                if (length != 1) {
-                  Log.swarningln(
-                    FPSTR(L_SENSORS_BLE),
-                    F("Sensor #%hhu '%s': invalid notification data at battery char (%s) on device %s"),
-                    sensorId,
-                    sSensor.name,
-                    pChar->getUUID().toString().c_str(),
-                    pClient->getPeerAddress().toString().c_str()
-                  );
-
-                  return;
-                }
-
-                auto rawBattery = pChar->getValue<uint8_t>();
-                Log.straceln(
-                  FPSTR(L_SENSORS_BLE),
-                  F("Sensor #%hhu '%s': received battery: %hhu"),
-                  sensorId, sSensor.name, rawBattery
-                );
-
-                // set battery
-                Sensors::setValueById(sensorId, rawBattery, Sensors::ValueType::BATTERY, true, true);
-                
-                // update rssi
-                Sensors::setValueById(sensorId, pClient->getRssi(), Sensors::ValueType::RSSI, false, false);
-              }
-            );
-
-            if (batteryNotifyCreated) {
-              Log.straceln(
-                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': subscribed to battery char (%s) in battery service on device %s"),
-                sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress.c_str()
-              );
-
-            } else {
-              Log.swarningln(
-                FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': failed to subscribe to battery char (%s) in battery service on device %s"),
-                sensorId, sSensor.name,
-                charUuid.toString().c_str(), pAddress.c_str()
-              );
-            }
-          }
-        }
-
-        if (!batteryNotifyCreated) {
-          Log.swarningln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found supported battery chars in battery service on device %s"),
-            sensorId, sSensor.name, pAddress.c_str()
-          );
-        }
+        Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Unable to start scanning"));
       }
     }
-
-    return true;
-  }
-
-  bool setDateOnBleSensor(NimBLEClient* pClient, const struct tm *ptm) {
-    auto ts = mkgmtime(ptm);
-
-    uint8_t data[5] = {};
-    data[0] = 0x23;
-    data[1] = ts & 0xff;
-    data[2] = (ts >> 8) & 0xff;
-    data[3] = (ts >> 16) & 0xff;
-    data[4] = (ts >> 24) & 0xff;
-
-    return pClient->setValue(
-      NimBLEUUID((uint16_t) 0x1f10),
-      NimBLEUUID((uint16_t) 0x1f1f),
-      NimBLEAttValue(data, sizeof(data))
-    );
   }
   #endif
 

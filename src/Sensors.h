@@ -149,7 +149,7 @@ public:
 
   static int16_t getIdByName(const char* name) {
     if (settings == nullptr) {
-      return 0;
+      return -1;
     }
 
     for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
@@ -163,7 +163,7 @@ public:
 
   static int16_t getIdByObjectId(const char* objectId) {
     if (settings == nullptr) {
-      return 0;
+      return -1;
     }
 
     String refObjectId;
