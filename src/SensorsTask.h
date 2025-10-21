@@ -570,7 +570,12 @@ protected:
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
       BLEDevice::init("");
-      NimBLEDevice::setPower(9);
+      
+      #if defined(ESP_PWR_LVL_P20)
+      NimBLEDevice::setPower(ESP_PWR_LVL_P20);
+      #elif defined(ESP_PWR_LVL_P9)
+      NimBLEDevice::setPower(ESP_PWR_LVL_P9);
+      #endif
     }
 
     if (this->pBLEScan == nullptr) {
