@@ -152,7 +152,7 @@ public:
     this->dallasLastPollingTime.reserve(2);
 
     #if USE_BLE
-    this->bluetoothScanCallbacks = new BluetoothScanCallbacks();
+    this->pBLEScanCallbacks = new BluetoothScanCallbacks();
     #endif
   }
 
@@ -164,7 +164,7 @@ public:
     this->dallasLastPollingTime.clear();
 
     #if USE_BLE
-    delete this->bluetoothScanCallbacks;
+    delete this->pBLEScanCallbacks;
     #endif
   }
 
@@ -181,7 +181,8 @@ protected:
   std::unordered_map<uint8_t, unsigned long> dallasLastPollingTime;
   #if USE_BLE
   NimBLEScan* pBLEScan = nullptr;
-  BluetoothScanCallbacks* bluetoothScanCallbacks = nullptr;
+  BluetoothScanCallbacks* pBLEScanCallbacks = nullptr;
+  bool activeScanBle = false;
   #endif
   unsigned long globalLastPollingTime = 0;
 
@@ -569,7 +570,7 @@ protected:
 
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
-      BLEDevice::init("");
+      NimBLEDevice::init("");
       
       #if defined(ESP_PWR_LVL_P20)
       NimBLEDevice::setPower(ESP_PWR_LVL_P20);
@@ -580,19 +581,28 @@ protected:
 
     if (this->pBLEScan == nullptr) {
       this->pBLEScan = NimBLEDevice::getScan();
-      this->pBLEScan->setScanCallbacks(this->bluetoothScanCallbacks);
-      this->pBLEScan->setActiveScan(false);
+      this->pBLEScan->setScanCallbacks(this->pBLEScanCallbacks);
+      #if MYNEWT_VAL(BLE_EXT_ADV)
+      this->pBLEScan->setPhy(NimBLEScan::Phy::SCAN_ALL);
+      #endif
       this->pBLEScan->setDuplicateFilter(false);
       this->pBLEScan->setMaxResults(0);
-      this->pBLEScan->setInterval(10);
-      this->pBLEScan->setWindow(10);
+      this->pBLEScan->setInterval(10000);
+      this->pBLEScan->setWindow(10000);
 
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Scanning initialized"));
     }
 
     if (!this->pBLEScan->isScanning()) {
-      if (this->pBLEScan->start(0, false, true)) {
-        Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Scanning started"));
+      this->activeScanBle = !this->activeScanBle;
+      this->pBLEScan->setActiveScan(this->activeScanBle);
+
+      if (this->pBLEScan->start(30000, false, false)) {
+        Log.sinfoln(
+          FPSTR(L_SENSORS_BLE),
+          F("%s scanning started"),
+          this->activeScanBle ? "Active" : "Passive"
+        );
 
       } else {
         Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Unable to start scanning"));
