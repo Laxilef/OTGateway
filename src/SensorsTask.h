@@ -584,8 +584,8 @@ protected:
       this->pBLEScan->setActiveScan(false);
       this->pBLEScan->setDuplicateFilter(false);
       this->pBLEScan->setMaxResults(0);
-      this->pBLEScan->setInterval(100);
-      this->pBLEScan->setWindow(100);
+      this->pBLEScan->setInterval(10);
+      this->pBLEScan->setWindow(10);
 
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Scanning initialized"));
     }
