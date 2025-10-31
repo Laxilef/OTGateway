@@ -731,6 +731,11 @@
                   <input type="checkbox" name="externalPump[use]" value="true">
                   <span data-i18n>settings.extPump.use</span>
                 </label>
+
+                <label>
+                  <input type="checkbox" name="externalPump[invertState]" value="true">
+                  <span data-i18n>settings.externalPump.invertState</span>
+                </label>
               </fieldset>
 
               <div class="grid">
@@ -928,6 +933,7 @@
           // Extpump
           setCheckboxValue("[name='externalPump[use]']", data.externalPump.use);
           setInputValue("[name='externalPump[gpio]']", data.externalPump.gpio < 255 ? data.externalPump.gpio : '');
+          setCheckboxValue("[name='externalPump[invertState]']", data.externalPump.invertState);
           setInputValue("[name='externalPump[postCirculationTime]']", data.externalPump.postCirculationTime);
           setInputValue("[name='externalPump[antiStuckInterval]']", data.externalPump.antiStuckInterval);
           setInputValue("[name='externalPump[antiStuckTime]']", data.externalPump.antiStuckTime);

@@ -455,6 +455,7 @@
       "extPump": {
         "use": "Use external pump",
         "gpio": "Relay GPIO",
+        "invertState": "Invert GPIO state",
         "postCirculationTime": "Post circulation time <small>(min)</small>",
         "antiStuckInterval": "Anti stuck interval <small>(days)</small>",
         "antiStuckTime": "Anti stuck time <small>(min)</small>"

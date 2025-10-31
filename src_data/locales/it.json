@@ -455,6 +455,7 @@
       "extPump": {
         "use": "Usa pompa/circolatore esterno",
         "gpio": "GPIO relè",
+        "invertState": "Inverti stato GPIO",
         "postCirculationTime": "Tempo di post circolazione <small>(min)</small>",
         "antiStuckInterval": "Intervallo antiblocco <small>(days)</small>",
         "antiStuckTime": "Tempo antiblocco <small>(min)</small>"
