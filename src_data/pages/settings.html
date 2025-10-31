@@ -769,6 +769,42 @@
 
         <hr />
 
+        <details> 
+          <summary><b data-i18n>settings.section.extDev</b></summary>
+          <div>
+            <div id="extdev-settings-busy" aria-busy="true"></div>
+            <form action="/api/settings" id="extdev-settings" class="hidden">
+              <fieldset>
+                <label for="extdev-use">
+                  <input type="checkbox" id="extdev-use" name="externalDev[use]" value="false">
+                  <span data-i18n>settings.extDev.use</span>
+                </label>
+
+                <label for="extdev-state">
+                  <input type="checkbox" id="extdev-state" name="externalDev[state]" value="false">
+                  <span data-i18n>settings.extDev.state</span>
+                </label>
+              </fieldset>
+              
+              <div class="grid">
+                <label for="extdev-gpio">
+                  <span data-i18n>settings.extDev.gpio</span>
+                  <input type="number" inputmode="numeric" id="extdev-gpio" name="externalDev[gpio]" min="0" max="254" step="1">
+                </label>
+                
+                <label for="extdev-caption">
+                  <span data-i18n>settings.extDev.caption</span>
+                  <input type="text" id="extdev-caption" name="externalDev[caption]" maxlength="40" required>
+                </label>
+              </div>
+              
+              <button type="submit" data-i18n>button.save</button>
+            </form>
+          </div>
+        </details>
+
+        <hr />
+
         <details>
           <summary><b data-i18n>settings.section.cascadeControl</b></summary>
           <div>
@@ -939,6 +975,13 @@
           setInputValue("[name='externalPump[antiStuckTime]']", data.externalPump.antiStuckTime);
           setBusy('#extpump-settings-busy', '#extpump-settings', false);
 
+          // Extdev
+          setCheckboxValue('#extdev-use', data.externalDev.use);
+          setInputValue('#extdev-gpio', data.externalDev.gpio < 255 ? data.externalDev.gpio : '');
+          setInputValue('#extdev-caption', data.externalDev.caption);
+          setCheckboxValue('#extdev-state', data.externalDev.state);
+          setBusy('#extdev-settings-busy', '#extdev-settings', false);
+
           // Cascade control
           setCheckboxValue("[name='cascadeControl[input][enabled]']", data.cascadeControl.input.enabled);
           setInputValue("[name='cascadeControl[input][gpio]']", data.cascadeControl.input.gpio < 255 ? data.cascadeControl.input.gpio : '');
@@ -1092,6 +1135,7 @@
           setupForm('#ot-settings', fillData);
           setupForm('#mqtt-settings', fillData, ['mqtt.user', 'mqtt.password', 'mqtt.prefix']);
           setupForm('#extpump-settings', fillData);
+          setupForm('#extdev-settings', fillData);
           setupForm('#cc-settings', fillData);
 
         } catch (error) {

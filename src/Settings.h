@@ -169,6 +169,13 @@ struct Settings {
   } externalPump;
 
   struct {
+    bool use = false;
+    byte gpio = DEFAULT_EXT_DEV_GPIO;
+    char caption[41] = DEFAULT_EXT_DEV_CAPTION;
+    bool state = false;
+  } externalDev;
+
+  struct {
     struct {
       bool enabled = false;
       uint8_t gpio = GPIO_IS_NOT_CONFIGURED;
@@ -279,6 +286,10 @@ struct Variables {
     bool state = false;
     unsigned long lastEnabledTime = 0;
   } externalPump;
+
+  struct {
+    bool state = false;
+  } externalDev;
 
   struct {
     bool input = false;

@@ -104,6 +104,7 @@
         "mMqttConnected": "MQTT connection",
         "mEmergencyState": "Emergency mode",
         "mExtPumpState": "External pump",
+        "mExtDevState": "External device",
         "mCascadeControlInput": "Cascade control (input)",
         "mCascadeControlOutput": "Cascade control (output)",
 
@@ -290,6 +291,7 @@
         "ot": "OpenTherm settings",
         "mqtt": "MQTT settings",
         "extPump": "External pump settings",
+        "extDev": "External device settings",
         "cascadeControl": "Cascade control settings"
       },
 
@@ -459,6 +461,13 @@
         "postCirculationTime": "Post circulation time <small>(min)</small>",
         "antiStuckInterval": "Anti stuck interval <small>(days)</small>",
         "antiStuckTime": "Anti stuck time <small>(min)</small>"
+      },
+      
+      "extDev": {
+        "use": "Use external device",
+        "gpio": "Relay GPIO",
+        "state": "State",
+        "caption": "Caption"
       },
 
       "cascadeControl": {

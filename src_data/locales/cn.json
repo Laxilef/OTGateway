@@ -104,6 +104,7 @@
         "mMqttConnected": "MQTT服务器连接状态",
         "mEmergencyState": "应急模式",
         "mExtPumpState": "外置循环泵",
+        "mExtDevState": "外置设备",
         "mCascadeControlInput": "Cascade 控制 (input)",
         "mCascadeControlOutput": "Cascade 控制 (output)",
 
@@ -290,6 +291,7 @@
         "ot": "OpenTherm协议设置",
         "mqtt": "MQTT 服务器设置",
         "extPump": "外置循环泵设置",
+        "extDev": "外置设备设置",
         "cascadeControl": "Cascade 级联控制设置"
       },
 
@@ -459,6 +461,13 @@
         "postCirculationTime": "后循环时间 <small>(分钟)</small>",
         "antiStuckInterval": "防卡死间隔时间<small>(天)</small>",
         "antiStuckTime": "防卡死运行时长<small>(分钟)</small>"
+      },
+
+      "extDev": {
+        "use": "使用外置设备",
+        "gpio": "GPIO 继电器",
+        "state": "状态",
+        "caption": "说明"
       },
 
       "cascadeControl": {

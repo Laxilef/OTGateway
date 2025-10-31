@@ -104,6 +104,7 @@
         "mMqttConnected": "Подключение к MQTT",
         "mEmergencyState": "Аварийный режим",
         "mExtPumpState": "Внешний насос",
+        "mExtDevState": "Внешнее устройство",
         "mCascadeControlInput": "Каскадное управление (вход)",
         "mCascadeControlOutput": "Каскадное управление (выход)",
 
@@ -290,6 +291,7 @@
         "ot": "Настройки OpenTherm",
         "mqtt": "Настройки MQTT",
         "extPump": "Настройки дополнительного насоса",
+        "extDev": "Настройки внешнего устройства",
         "cascadeControl": "Настройки каскадного управления"
       },
 
@@ -459,6 +461,13 @@
         "postCirculationTime": "Время постциркуляции <small>(в минутах)</small>",
         "antiStuckInterval": "Интервал защиты от блокировки <small>(в днях)</small>",
         "antiStuckTime": "Время работы насоса <small>(в минутах)</small>"
+      },
+
+      "extDev": {
+        "use": "Использовать внешнее устройство",
+        "gpio": "GPIO реле",
+        "state": "Состояние",
+        "caption": "Назначение"
       },
 
       "cascadeControl": {

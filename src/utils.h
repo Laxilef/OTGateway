@@ -562,6 +562,15 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     cascadeControlOutput[FPSTR(S_ON_LOSS_CONNECTION)] = src.cascadeControl.output.onLossConnection;
     cascadeControlOutput[FPSTR(S_ON_ENABLED_HEATING)] = src.cascadeControl.output.onEnabledHeating;
   }
+
+  if(!safe ) {
+    dst[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_USE)] = src.externalDev.use;
+    dst[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_GPIO)] = src.externalDev.gpio;
+    dst[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_EXTERNAL_DEV_CAPTION)] = src.externalDev.caption;
+  }
+  
+  if(src.externalDev.use)
+    dst[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_STATE)] = src.externalDev.state;
 }
 
 inline void safeSettingsToJson(const Settings& src, JsonVariant dst) {
@@ -1541,6 +1550,42 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
+    // external device
+    if (src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_USE)].is<bool>()) {
+      bool value = src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_USE)].as<bool>();
+
+      if (value != dst.externalDev.use) {
+        dst.externalDev.use = value;
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_GPIO)].isNull()) {
+      if (src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_GPIO)].is<JsonString>() && 
+          src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_GPIO)].as<JsonString>().size() == 0) {
+        if (dst.externalDev.gpio != GPIO_IS_NOT_CONFIGURED) {
+          dst.externalDev.gpio = GPIO_IS_NOT_CONFIGURED;
+          changed = true;
+        }
+        
+      } else {
+        unsigned char value = src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_GPIO)].as<unsigned char>();
+
+        if (GPIO_IS_VALID(value) && value != dst.externalDev.gpio) {
+          dst.externalDev.gpio = value;
+          changed = true;
+        }
+      }
+    }
+
+    if (!src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_EXTERNAL_DEV_CAPTION)].isNull()) {
+      String value = src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_EXTERNAL_DEV_CAPTION)].as<String>();
+
+      if (value.length() < sizeof(dst.externalDev.caption) && !String(dst.externalDev.caption).equals(value)) {
+        strcpy(dst.externalDev.caption, value.c_str());
+        changed = true;
+      }
+    }
 
     // cascade control
     if (src[FPSTR(S_CASCADE_CONTROL)][FPSTR(S_INPUT)][FPSTR(S_ENABLED)].is<bool>()) {
@@ -1660,6 +1705,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         dst.cascadeControl.output.onEnabledHeating = value;
         changed = true;
       }
+    }
+  }
+
+  if (dst.externalDev.use && src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_STATE)].is<bool>()) {
+    bool value = src[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_STATE)].as<bool>();
+
+    if (value != dst.externalDev.state) {
+      dst.externalDev.state = value;
+      changed = true;
     }
   }
 
@@ -2147,6 +2201,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;
+  master[FPSTR(S_EXTERNAL_DEV)][FPSTR(S_STATE)] = src.externalDev.state;
 
   auto mCascadeControl = master[FPSTR(S_CASCADE_CONTROL)].to<JsonObject>();
   mCascadeControl[FPSTR(S_INPUT)] = src.cascadeControl.input;
