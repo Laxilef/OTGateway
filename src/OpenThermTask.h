@@ -37,6 +37,10 @@ protected:
   const char* getTaskName() override {
     return "OpenTherm";
   }
+
+  uint32_t getTaskStackSize() override {
+    return 7500;
+  }
   
   BaseType_t getTaskCore() override {
     return 1;

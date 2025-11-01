@@ -21,6 +21,10 @@ protected:
   const char* getTaskName() override {
     return "Regulator";
   }
+
+  uint32_t getTaskStackSize() override {
+    return 5000;
+  }
   
   /*BaseType_t getTaskCore() override {
     return 1;

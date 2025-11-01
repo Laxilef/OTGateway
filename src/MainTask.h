@@ -51,6 +51,10 @@ protected:
     return "Main";
   }
 
+  uint32_t getTaskStackSize() override {
+    return 6000;
+  }
+
   /*BaseType_t getTaskCore() override {
     return 1;
   }*/

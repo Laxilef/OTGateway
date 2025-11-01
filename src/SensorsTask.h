@@ -191,6 +191,10 @@ protected:
     return "Sensors";
   }
 
+  uint32_t getTaskStackSize() override {
+    return 7500;
+  }
+
   BaseType_t getTaskCore() override {
     // https://github.com/h2zero/NimBLE-Arduino/issues/676
     #if USE_BLE && defined(CONFIG_BT_NIMBLE_PINNED_TO_CORE)
