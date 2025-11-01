@@ -27,6 +27,9 @@ let paths = {
         'src_data/scripts/i18n.min.js',
         'src_data/scripts/lang.js',
         'src_data/scripts/utils.js'
+      ],
+      'chart.js': [
+        'src_data/scripts/chart.js'
       ]
     }
   },
