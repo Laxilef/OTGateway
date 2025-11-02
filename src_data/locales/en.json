@@ -109,7 +109,8 @@
 
         "sConnected": "OpenTherm connection",
         "sFlame": "Flame",
-        "sCooling": "Cooling",
+        "sCoolingActive": "Cooling",
+        "sCoolingSetpoint": "Cooling setpoint",
         "sFaultActive": "Fault",
         "sFaultCode": "Fault code",
         "sDiagActive": "Diagnostic",
@@ -469,6 +470,7 @@
       "extPump": {
         "use": "Use external pump",
         "gpio": "Relay GPIO",
+        "invertState": "Invert GPIO state",
         "postCirculationTime": "Post circulation time <small>(min)</small>",
         "antiStuckInterval": "Anti stuck interval <small>(days)</small>",
         "antiStuckTime": "Anti stuck time <small>(min)</small>"

@@ -204,7 +204,8 @@ protected:
         }*/
 
         float error = pidRegulator.setpoint - pidRegulator.input;
-        bool hasDeadband = (error > -(settings.pid.deadband.thresholdHigh))
+        bool hasDeadband = settings.pid.deadband.enabled 
+          && (error > -(settings.pid.deadband.thresholdHigh))
           && (error < settings.pid.deadband.thresholdLow);
 
         if (hasDeadband) {

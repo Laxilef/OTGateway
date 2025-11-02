@@ -19,8 +19,8 @@ protected:
 
   CustomOpenTherm* instance = nullptr;
   unsigned long instanceCreatedTime = 0;
-  byte instanceInGpio = 0;
-  byte instanceOutGpio = 0;
+  uint8_t instanceInGpio = 0;
+  uint8_t instanceOutGpio = 0;
   bool initialized = false;
   unsigned long connectedTime = 0;
   unsigned long disconnectedTime = 0;
@@ -31,7 +31,7 @@ protected:
   unsigned long heatingSetTempTime = 0;
   unsigned long dhwSetTempTime = 0;
   unsigned long ch2SetTempTime = 0;
-  byte configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
+  uint8_t configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -90,7 +90,7 @@ protected:
 
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
 
-    this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, byte attempt) {
+    this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, uint8_t attempt) {
       Log.sverboseln(
         FPSTR(L_OT),
         F("ID: %4d   Request: %8lx   Response: %8lx   Msg type: %s   Attempt: %2d   Status: %s"),
@@ -236,7 +236,7 @@ protected:
       vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
       vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
       vars.slave.flame = CustomOpenTherm::isFlameOn(response);
-      vars.slave.cooling = CustomOpenTherm::isCoolingActive(response);
+      vars.slave.cooling.active = CustomOpenTherm::isCoolingActive(response);
       vars.slave.ch2.active = CustomOpenTherm::isCh2Active(response);
       vars.slave.fault.active = CustomOpenTherm::isFault(response);
 
@@ -250,7 +250,7 @@ protected:
       Log.snoticeln(
         FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; channel 2: %hhu; fault: %hhu; diag: %hhu"),
         vars.slave.heating.active, vars.slave.dhw.active,
-        vars.slave.flame, vars.slave.cooling, vars.slave.ch2.active, vars.slave.fault.active, vars.slave.diag.active
+        vars.slave.flame, vars.slave.cooling.active, vars.slave.ch2.active, vars.slave.fault.active, vars.slave.diag.active
       );
     }
 
@@ -318,6 +318,8 @@ protected:
       vars.slave.dhw.enabled = false;
       vars.slave.dhw.active = false;
       vars.slave.flame = false;
+      vars.slave.cooling.active = false;
+      vars.slave.cooling.setpoint = 0;
       vars.slave.fault.active = false;
       vars.slave.fault.code = 0;
       vars.slave.diag.active = false;
@@ -686,6 +688,22 @@ protected:
       }
 
       this->prevUpdateNonEssentialVars = millis();
+    }
+
+    // Set cooling setpoint = heating max modulation
+    if (settings.opentherm.options.coolingSupport) {
+      if (this->setCoolingSetpoint(settings.heating.maxModulation)) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Set cooling setpoint: %hhu%% (response: %hhu%%)"),
+          settings.heating.maxModulation, vars.slave.cooling.setpoint
+        );
+
+      } else {
+        Log.swarningln(
+          FPSTR(L_OT), F("Failed set cooling setpoint: %hhu%% (response: %hhu%%)"),
+          settings.heating.maxModulation, vars.slave.cooling.setpoint
+        );
+      }
     }
 
     // Set max modulation level
@@ -1564,6 +1582,26 @@ protected:
     } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::DayTime)) {
       return false;
     }
+
+    return CustomOpenTherm::getUInt(response) == request;
+  }
+
+  bool setCoolingSetpoint(const uint8_t value) {
+    const unsigned int request = CustomOpenTherm::toFloat(value);
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::WRITE_DATA,
+      OpenThermMessageID::CoolingControl,
+      request
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CoolingControl)) {
+      return false;
+    }
+
+    vars.slave.cooling.setpoint = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }

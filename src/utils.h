@@ -72,7 +72,7 @@ time_t mkgmtime(const struct tm *ptm) {
 
 inline bool isDigit(const char* ptr) {
   char* endPtr;
-  strtol(ptr, &endPtr, 10);
+  auto tmp = strtol(ptr, &endPtr, 10);
   return *endPtr == 0;
 }
 
@@ -543,6 +543,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     auto externalPump = dst[FPSTR(S_EXTERNAL_PUMP)].to<JsonObject>();
     externalPump[FPSTR(S_USE)] = src.externalPump.use;
     externalPump[FPSTR(S_GPIO)] = src.externalPump.gpio;
+    externalPump[FPSTR(S_INVERT_STATE)] = src.externalPump.invertState;
     externalPump[FPSTR(S_POST_CIRCULATION_TIME)] = roundf(src.externalPump.postCirculationTime / 60, 0);
     externalPump[FPSTR(S_ANTI_STUCK_INTERVAL)] = roundf(src.externalPump.antiStuckInterval / 86400, 0);
     externalPump[FPSTR(S_ANTI_STUCK_TIME)] = roundf(src.externalPump.antiStuckTime / 60, 0);
@@ -1334,7 +1335,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src[FPSTR(S_HEATING)][FPSTR(S_MIN_TEMP)].isNull()) {
     unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_MIN_TEMP)].as<unsigned char>();
 
-    if (value != dst.heating.minTemp && value >= vars.slave.heating.minTemp && value < vars.slave.heating.maxTemp && value != dst.heating.minTemp) {
+    if (value != dst.heating.minTemp && value >= vars.slave.heating.minTemp && value < vars.slave.heating.maxTemp && value != dst.heating.maxTemp) {
       dst.heating.minTemp = value;
       changed = true;
     }
@@ -1343,7 +1344,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (!src[FPSTR(S_HEATING)][FPSTR(S_MAX_TEMP)].isNull()) {
     unsigned char value = src[FPSTR(S_HEATING)][FPSTR(S_MAX_TEMP)].as<unsigned char>();
 
-    if (value != dst.heating.maxTemp && value > vars.slave.heating.minTemp && value <= vars.slave.heating.maxTemp && value != dst.heating.maxTemp) {
+    if (value != dst.heating.maxTemp && value > vars.slave.heating.minTemp && value <= vars.slave.heating.maxTemp && value != dst.heating.minTemp) {
       dst.heating.maxTemp = value;
       changed = true;
     }
@@ -1499,6 +1500,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
           dst.externalPump.gpio = value;
           changed = true;
         }
+      }
+    }
+
+    if (src[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_INVERT_STATE)].is<bool>()) {
+      bool value = src[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_INVERT_STATE)].as<bool>();
+
+      if (value != dst.externalPump.invertState) {
+        dst.externalPump.invertState = value;
+        changed = true;
       }
     }
 
@@ -1904,7 +1914,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
 
   // gpio
   if (!src[FPSTR(S_GPIO)].isNull()) {
-    if (dst.type != Sensors::Type::DALLAS_TEMP && dst.type == Sensors::Type::BLUETOOTH && dst.type == Sensors::Type::NTC_10K_TEMP) {
+    if (dst.type != Sensors::Type::DALLAS_TEMP && dst.type != Sensors::Type::NTC_10K_TEMP) {
       if (dst.gpio != GPIO_IS_NOT_CONFIGURED) {
         dst.gpio = GPIO_IS_NOT_CONFIGURED;
         changed = true;
@@ -1940,12 +1950,20 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       );
 
       if (parsed == 8) {
-        for (uint8_t i = 0; i < 8; i++) {
+        for (uint8_t i = 0; i < parsed; i++) {
           if (dst.address[i] != tmp[i]) {
             dst.address[i] = tmp[i];
             changed = true;
           }
         }
+
+      } else {
+        // reset
+        for (uint8_t i = 0; i < sizeof(dst.address); i++) {
+          dst.address[i] = 0x00;
+        }
+
+        changed = true;
       }
 
     } else if (dst.type == Sensors::Type::BLUETOOTH) {
@@ -1958,12 +1976,20 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       );
 
       if (parsed == 6) {
-        for (uint8_t i = 0; i < 6; i++) {
+        for (uint8_t i = 0; i < parsed; i++) {
           if (dst.address[i] != tmp[i]) {
             dst.address[i] = tmp[i];
             changed = true;
           }
         }
+
+      } else {
+        // reset
+        for (uint8_t i = 0; i < sizeof(dst.address); i++) {
+          dst.address[i] = 0x00;
+        }
+        
+        changed = true;
       }
     }
   }
@@ -2070,7 +2096,10 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.appVersion;
   slave[FPSTR(S_CONNECTED)] = src.slave.connected;
   slave[FPSTR(S_FLAME)] = src.slave.flame;
-  slave[FPSTR(S_COOLING)] = src.slave.cooling;
+
+  auto sCooling = slave[FPSTR(S_COOLING)].to<JsonObject>();
+  sCooling[FPSTR(S_ACTIVE)] = src.slave.cooling.active;
+  sCooling[FPSTR(S_SETPOINT)] = src.slave.cooling.setpoint;
 
   auto sModulation = slave[FPSTR(S_MODULATION)].to<JsonObject>();
   sModulation[FPSTR(S_MIN)] = src.slave.modulation.min;
