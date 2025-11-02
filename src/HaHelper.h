@@ -891,7 +891,7 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_shift"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
     doc[FPSTR(HA_NAME)] = F("Equitherm shift");
