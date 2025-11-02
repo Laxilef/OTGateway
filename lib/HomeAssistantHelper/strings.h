@@ -12,6 +12,7 @@ const char HA_ENTITY_SELECT[]                   PROGMEM = "select";
 const char HA_ENTITY_SENSOR[]                   PROGMEM = "sensor";
 const char HA_ENTITY_SWITCH[]                   PROGMEM = "switch";
 
+const char HA_DEFAULT_ENTITY_ID[]               PROGMEM = "def_ent_id";
 const char HA_DEVICE[]                          PROGMEM = "device";
 const char HA_IDENTIFIERS[]                     PROGMEM = "identifiers";
 const char HA_SW_VERSION[]                      PROGMEM = "sw_version";
@@ -23,7 +24,6 @@ const char HA_COMMAND_TOPIC[]                   PROGMEM = "command_topic";
 const char HA_COMMAND_TEMPLATE[]                PROGMEM = "command_template";
 const char HA_ENABLED_BY_DEFAULT[]              PROGMEM = "enabled_by_default";
 const char HA_UNIQUE_ID[]                       PROGMEM = "unique_id";
-const char HA_OBJECT_ID[]                       PROGMEM = "object_id";
 const char HA_ENTITY_CATEGORY[]                 PROGMEM = "entity_category";
 const char HA_ENTITY_CATEGORY_DIAGNOSTIC[]      PROGMEM = "diagnostic";
 const char HA_ENTITY_CATEGORY_CONFIG[]          PROGMEM = "config";
