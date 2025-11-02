@@ -575,10 +575,10 @@ protected:
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
       NimBLEDevice::init("");
-      
-      #if defined(ESP_PWR_LVL_P20)
+
+      #ifdef ESP_PWR_LVL_P20
       NimBLEDevice::setPower(ESP_PWR_LVL_P20);
-      #elif defined(ESP_PWR_LVL_P9)
+      #elifdef ESP_PWR_LVL_P9
       NimBLEDevice::setPower(ESP_PWR_LVL_P9);
       #endif
     }
