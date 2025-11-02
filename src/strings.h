@@ -164,6 +164,7 @@ const char S_POWER[]                                PROGMEM = "power";
 const char S_PREFIX[]                               PROGMEM = "prefix";
 const char S_PROTOCOL_VERSION[]                     PROGMEM = "protocolVersion";
 const char S_PURPOSE[]                              PROGMEM = "purpose";
+const char S_PSRAM[]                                PROGMEM = "psram";
 const char S_P_FACTOR[]                             PROGMEM = "p_factor";
 const char S_P_MULTIPLIER[]                         PROGMEM = "p_multiplier";
 const char S_REAL_SIZE[]                            PROGMEM = "realSize";

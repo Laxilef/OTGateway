@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-class UpgradeHandler : public RequestHandler {
+class UpgradeHandler : public AsyncWebHandler {
 public:
   enum class UpgradeType {
     FIRMWARE = 0,
@@ -12,7 +12,7 @@ public:
     NO_FILE,
     SUCCESS,
     PROHIBITED,
-    ABORTED,
+    SIZE_MISMATCH,
     ERROR_ON_START,
     ERROR_ON_WRITE,
     ERROR_ON_FINISH
@@ -22,27 +22,20 @@ public:
     UpgradeType type;
     UpgradeStatus status;
     String error;
+    unsigned int written = 0;
   } UpgradeResult;
 
-  typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
-  typedef std::function<bool(const String&)> CanUploadCallback;
-  typedef std::function<bool(UpgradeType)> BeforeUpgradeCallback;
-  typedef std::function<void(const UpgradeResult&, const UpgradeResult&)> AfterUpgradeCallback;
+  typedef std::function<bool(AsyncWebServerRequest *request, UpgradeType)> BeforeUpgradeCallback;
+  typedef std::function<void(AsyncWebServerRequest *request, const UpgradeResult&, const UpgradeResult&)> AfterUpgradeCallback;
   
-  UpgradeHandler(const char* uri) {
-    this->uri = uri;
-  }
+  UpgradeHandler(AsyncURIMatcher uri) : uri(uri) {}
 
-  UpgradeHandler* setCanHandleCallback(CanHandleCallback callback = nullptr) {
-    this->canHandleCallback = callback;
-
-    return this;
-  }
-
-  UpgradeHandler* setCanUploadCallback(CanUploadCallback callback = nullptr) {
-    this->canUploadCallback = callback;
-
-    return this;
+  bool canHandle(AsyncWebServerRequest *request) const override final {
+    if (!request->isHTTP()) {
+      return false;
+    }
+    
+    return this->uri.matches(request);
   }
 
   UpgradeHandler* setBeforeUpgradeCallback(BeforeUpgradeCallback callback = nullptr) {
@@ -57,67 +50,55 @@ public:
     return this;
   }
 
-  #if defined(ARDUINO_ARCH_ESP32)
-  bool canHandle(WebServer &server, HTTPMethod method, const String &uri) override {
-    return this->canHandle(method, uri);
-  }
-  #endif
-
-  bool canHandle(HTTPMethod method, const String& uri) override {
-    return method == HTTP_POST && uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
-  }
-
-  #if defined(ARDUINO_ARCH_ESP32)
-  bool canUpload(WebServer &server, const String &uri) override {
-    return this->canUpload(uri);
-  }
-  #endif
-
-  bool canUpload(const String& uri) override {
-    return uri.equals(this->uri) && (!this->canUploadCallback || this->canUploadCallback(uri));
-  }
-
-  bool handle(WebServer& server, HTTPMethod method, const String& uri) override {
+  void handleRequest(AsyncWebServerRequest *request) override final {
     if (this->afterUpgradeCallback) {
-      this->afterUpgradeCallback(this->firmwareResult, this->filesystemResult);
+      this->afterUpgradeCallback(request, this->firmwareResult, this->filesystemResult);
     }
 
     this->firmwareResult.status = UpgradeStatus::NONE;
     this->firmwareResult.error.clear();
+    this->firmwareResult.written = 0;
 
     this->filesystemResult.status = UpgradeStatus::NONE;
     this->filesystemResult.error.clear();
-
-    return true;
+    this->filesystemResult.written = 0;
   }
 
-  void upload(WebServer& server, const String& uri, HTTPUpload& upload) override {
-    UpgradeResult* result;
-    if (upload.name.equals(F("firmware"))) {
+  void handleUpload(AsyncWebServerRequest *request, const String &fileName, size_t index, uint8_t *data, size_t dataLength, bool isFinal) override final {
+    UpgradeResult* result = nullptr;
+    unsigned int fileSize = 0;
+
+    const auto& fwName = request->hasParam("fw[name]", true) ? request->getParam("fw[name]", true)->value() : String();
+    const auto& fsName = request->hasParam("fs[name]", true) ? request->getParam("fs[name]", true)->value() : String();
+
+    if (fileName.equals(fwName)) {
       result = &this->firmwareResult;
+      if (request->hasParam("fw[size]", true)) {
+        fileSize = request->getParam("fw[size]", true)->value().toInt();
+      }
 
-    } else if (upload.name.equals(F("filesystem"))) {
+    } else if (fileName.equals(fsName)) {
       result = &this->filesystemResult;
-      
-    } else {
+      if (request->hasParam("fs[size]", true)) {
+        fileSize = request->getParam("fs[size]", true)->value().toInt();
+      } 
+    }
+
+    if (result == nullptr || result->status != UpgradeStatus::NONE) {
       return;
     }
 
-    if (result->status != UpgradeStatus::NONE) {
-      return;
-    }
-
-    if (this->beforeUpgradeCallback && !this->beforeUpgradeCallback(result->type)) {
+    if (this->beforeUpgradeCallback && !this->beforeUpgradeCallback(request, result->type)) {
       result->status = UpgradeStatus::PROHIBITED;
       return;
     }
 
-    if (!upload.filename.length()) {
+    if (!fileName.length() || !fileSize) {
       result->status = UpgradeStatus::NO_FILE;
       return;
     }
 
-    if (upload.status == UPLOAD_FILE_START) {
+    if (index == 0) {
       // reset
       if (Update.isRunning()) {
         Update.end(false);
@@ -125,91 +106,89 @@ public:
       }
 
       bool begin = false;
-      #ifdef ARDUINO_ARCH_ESP8266
-      Update.runAsync(true);
-      
-      if (result->type == UpgradeType::FIRMWARE) {
-        begin = Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000, U_FLASH);
-        
-      } else if (result->type == UpgradeType::FILESYSTEM) {
-        close_all_fs();
-        begin = Update.begin((size_t)FS_end - (size_t)FS_start, U_FS);
-      }
-      #elif defined(ARDUINO_ARCH_ESP32)
       if (result->type == UpgradeType::FIRMWARE) {
         begin = Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH);
         
       } else if (result->type == UpgradeType::FILESYSTEM) {
         begin = Update.begin(UPDATE_SIZE_UNKNOWN, U_SPIFFS);
       }
-      #endif
 
       if (!begin || Update.hasError()) {
         result->status = UpgradeStatus::ERROR_ON_START;
-        #ifdef ARDUINO_ARCH_ESP8266
-        result->error = Update.getErrorString();
-        #else
         result->error = Update.errorString();
-        #endif
 
-        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on start: %s"), upload.filename.c_str(), result->error.c_str());
+        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on start: %s"), fileName.c_str(), result->error.c_str());
         return;
       }
       
-      Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s', started"), upload.filename.c_str());
+      Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s', started"), fileName.c_str());
+    }
+    
+    if (dataLength) {
+      result->written += dataLength;
 
-    } else if (upload.status == UPLOAD_FILE_WRITE) {
-      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+      if (Update.write(data, dataLength) != dataLength) {
         Update.end(false);
-
         result->status = UpgradeStatus::ERROR_ON_WRITE;
-        #ifdef ARDUINO_ARCH_ESP8266
-        result->error = Update.getErrorString();
-        #else
         result->error = Update.errorString();
-        #endif
 
         Log.serrorln(
           FPSTR(L_PORTAL_OTA),
-          F("File '%s', on writing %d bytes: %s"),
-          upload.filename.c_str(), upload.totalSize, result->error.c_str()
+          F("File '%s', on write %d bytes, %d of %d bytes"),
+          fileName.c_str(),
+          dataLength,
+          result->written,
+          fileSize
         );
-
-      } else {
-        Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s', writed %d bytes"), upload.filename.c_str(), upload.totalSize);
+        return;
       }
 
-    } else if (upload.status == UPLOAD_FILE_END) {
-      if (Update.end(true)) {
-        result->status = UpgradeStatus::SUCCESS;
+      Log.sinfoln(
+        FPSTR(L_PORTAL_OTA),
+        F("File '%s', write %d bytes, %d of %d bytes"),
+        fileName.c_str(),
+        dataLength,
+        result->written,
+        fileSize
+      );
+    }
 
-        Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s': finish"), upload.filename.c_str());
-
-      } else {
-        result->status = UpgradeStatus::ERROR_ON_FINISH;
-        #ifdef ARDUINO_ARCH_ESP8266
-        result->error = Update.getErrorString();
-        #else
-        result->error = Update.errorString();
-        #endif
-
-        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on finish: %s"), upload.filename.c_str(), result->error);
-      }
-
-    } else if (upload.status == UPLOAD_FILE_ABORTED) {
+    if (result->written > fileSize || (isFinal && result->written < fileSize)) {
       Update.end(false);
-      result->status = UpgradeStatus::ABORTED;
+      result->status = UpgradeStatus::SIZE_MISMATCH;
 
-      Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s': aborted"), upload.filename.c_str());
+      Log.serrorln(
+        FPSTR(L_PORTAL_OTA),
+        F("File '%s', size mismatch: %d of %d bytes"),
+        fileName.c_str(),
+        result->written,
+        fileSize
+      );
+      return;
+    }
+    
+    if (isFinal) {
+      if (!Update.end(true)) {
+        result->status = UpgradeStatus::ERROR_ON_FINISH;
+        result->error = Update.errorString();
+
+        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on finish: %s"), fileName.c_str(), result->error);
+        return;
+      }
+
+      result->status = UpgradeStatus::SUCCESS;
+      Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s': finish"), fileName.c_str());
     }
   }
 
+  bool isRequestHandlerTrivial() const override final {
+    return false;
+  }
+
 protected:
-  CanHandleCallback canHandleCallback;
-  CanUploadCallback canUploadCallback;
   BeforeUpgradeCallback beforeUpgradeCallback;
   AfterUpgradeCallback afterUpgradeCallback;
-  const char* uri = nullptr;
+  AsyncURIMatcher uri;
 
   UpgradeResult firmwareResult{UpgradeType::FIRMWARE, UpgradeStatus::NONE};
   UpgradeResult filesystemResult{UpgradeType::FILESYSTEM, UpgradeStatus::NONE};
