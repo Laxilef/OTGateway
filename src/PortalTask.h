@@ -1,18 +1,10 @@
 //#define PORTAL_CACHE "max-age=86400"
 #define PORTAL_CACHE nullptr
-#ifdef ARDUINO_ARCH_ESP8266
-#include <ESP8266mDNS.h>
-#include <ESP8266WebServer.h>
-#include <Updater.h>
-using WebServer = ESP8266WebServer;
-#else
 #include <ESPmDNS.h>
-#include <WebServer.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ArduinoJson.h>
 #include <Update.h>
-#endif
-#include <BufferedWebServer.h>
-#include <StaticPage.h>
-#include <DynamicPage.h>
 #include <UpgradeHandler.h>
 #include <DNSServer.h>
 
@@ -26,14 +18,11 @@ extern MqttTask* tMqtt;
 class PortalTask : public LeanTask {
 public:
   PortalTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
-    this->webServer = new WebServer(80);
-    this->bufferedWebServer = new BufferedWebServer(this->webServer, 32u);
+    this->webServer = new AsyncWebServer(80);
     this->dnsServer = new DNSServer();
   }
 
   ~PortalTask() {
-    delete this->bufferedWebServer;
-
     if (this->webServer != nullptr) {
       this->stopWebServer();
       delete this->webServer;
@@ -48,8 +37,7 @@ public:
 protected:
   const unsigned int changeStateInterval = 5000;
 
-  WebServer* webServer = nullptr;
-  BufferedWebServer* bufferedWebServer = nullptr;
+  AsyncWebServer* webServer = nullptr;
   DNSServer* dnsServer = nullptr;
 
   bool webServerEnabled = false;
@@ -74,208 +62,131 @@ protected:
   void setup() {
     this->dnsServer->setTTL(0);
     this->dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
-    this->webServer->enableETag(true, [](FS &fs, const String &fName) -> const String {
-      char buf[32];
-      {
-        MD5Builder md5;
-        md5.begin();
-        md5.add(fName);
-        md5.add(" " BUILD_ENV " " BUILD_VERSION " " __DATE__ " " __TIME__);
-        md5.calculate();
-        md5.getChars(buf);
+
+    // auth middleware
+    static AsyncMiddlewareFunction authMiddleware([](AsyncWebServerRequest *request, ArMiddlewareNext next) {
+      if (network->isApEnabled() || !settings.portal.auth || !strlen(settings.portal.password)) {
+        return next();
       }
 
-      String etag;
-      etag.reserve(34);
-      etag += '\"';
-      etag.concat(buf, 32);
-      etag += '\"';
-      return etag;
+      if (request->authenticate(settings.portal.login, settings.portal.password, PROJECT_NAME)) {
+        return next();
+      }
+      
+      return request->requestAuthentication(AsyncAuthType::AUTH_BASIC, PROJECT_NAME, "Authentication failed");
     });
 
     // index page
-    /*auto indexPage = (new DynamicPage("/", &LittleFS, "/pages/index.html"))
-      ->setTemplateCallback([](const char* var) -> String {
-        String result;
-
-        if (strcmp(var, "ver") == 0) {
-          result = BUILD_VERSION;
-        }
-
-        return result;
-      });
-    this->webServer->addHandler(indexPage);*/
-    this->webServer->addHandler(new StaticPage("/", &LittleFS, F("/pages/index.html"), PORTAL_CACHE));
+    this->webServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->redirect("/index.html");
+    });
+    this->webServer->serveStatic("/index.html", LittleFS, "/pages/index.html", PORTAL_CACHE);
 
     // dashboard page
-    auto dashboardPage = (new StaticPage("/dashboard.html", &LittleFS, F("/pages/dashboard.html"), PORTAL_CACHE))
-      ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->isValidCredentials()) {
-          this->webServer->requestAuthentication(BASIC_AUTH);
-          return false;
-        }
-
-        return true;
-      });
-    this->webServer->addHandler(dashboardPage);
+    this->webServer->serveStatic("/dashboard.html", LittleFS, "/pages/dashboard.html", PORTAL_CACHE)
+      .addMiddleware(&authMiddleware);
 
     // restart
-    this->webServer->on(F("/restart.html"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        this->webServer->requestAuthentication(BASIC_AUTH);
-        return;
-      }
-
+    this->webServer->on("/restart.html", HTTP_GET, [](AsyncWebServerRequest *request) {
       vars.actions.restart = true;
-      this->webServer->sendHeader(F("Location"), "/");
-      this->webServer->send(302);
-    });
+      request->redirect("/");
+    }).addMiddleware(&authMiddleware);
 
     // network settings page
-    auto networkPage = (new StaticPage("/network.html", &LittleFS, F("/pages/network.html"), PORTAL_CACHE))
-      ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->isValidCredentials()) {
-          this->webServer->requestAuthentication(BASIC_AUTH);
-          return false;
-        }
-
-        return true;
-      });
-    this->webServer->addHandler(networkPage);
+    this->webServer->serveStatic("/network.html", LittleFS, "/pages/network.html", PORTAL_CACHE)
+      .addMiddleware(&authMiddleware);
 
     // settings page
-    auto settingsPage = (new StaticPage("/settings.html", &LittleFS, F("/pages/settings.html"), PORTAL_CACHE))
-      ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->isValidCredentials()) {
-          this->webServer->requestAuthentication(BASIC_AUTH);
-          return false;
-        }
-
-        return true;
-      });
-    this->webServer->addHandler(settingsPage);
+    this->webServer->serveStatic("/settings.html", LittleFS, "/pages/settings.html", PORTAL_CACHE)
+      .addMiddleware(&authMiddleware);
 
     // sensors page
-    auto sensorsPage = (new StaticPage("/sensors.html", &LittleFS, F("/pages/sensors.html"), PORTAL_CACHE))
-      ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->isValidCredentials()) {
-          this->webServer->requestAuthentication(BASIC_AUTH);
-          return false;
-        }
-
-        return true;
-      });
-    this->webServer->addHandler(sensorsPage);
+    this->webServer->serveStatic("/sensors.html", LittleFS, "/pages/sensors.html", PORTAL_CACHE)
+      .addMiddleware(&authMiddleware);
 
     // upgrade page
-    auto upgradePage = (new StaticPage("/upgrade.html", &LittleFS, F("/pages/upgrade.html"), PORTAL_CACHE))
-      ->setBeforeSendCallback([this]() {
-        if (this->isAuthRequired() && !this->isValidCredentials()) {
-          this->webServer->requestAuthentication(BASIC_AUTH);
-          return false;
-        }
-
-        return true;
-      });
-    this->webServer->addHandler(upgradePage);
+    this->webServer->serveStatic("/upgrade.html", LittleFS, "/pages/upgrade.html", PORTAL_CACHE)
+      .addMiddleware(&authMiddleware);
 
     // OTA
-    auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))->setCanUploadCallback([this](const String& uri) {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        this->webServer->sendHeader(F("Connection"), F("close"));
-        this->webServer->send(401);
-        return false;
-      }
-
-      return true;
-    })->setBeforeUpgradeCallback([](UpgradeHandler::UpgradeType type) -> bool {
+    auto upgradeHandler = (new UpgradeHandler("/api/upgrade"))
+      ->setBeforeUpgradeCallback([](AsyncWebServerRequest *request, UpgradeHandler::UpgradeType type) -> bool {
       if (vars.states.restarting) {
         return false;
       }
 
       vars.states.upgrading = true;
       return true;
-    })->setAfterUpgradeCallback([this](const UpgradeHandler::UpgradeResult& fwResult, const UpgradeHandler::UpgradeResult& fsResult) {
-      unsigned short status = 200;
+
+    })->setAfterUpgradeCallback([](AsyncWebServerRequest *request, const UpgradeHandler::UpgradeResult& fwResult, const UpgradeHandler::UpgradeResult& fsResult) {
+      unsigned short status = 406;
       if (fwResult.status == UpgradeHandler::UpgradeStatus::SUCCESS || fsResult.status == UpgradeHandler::UpgradeStatus::SUCCESS) {
+        status = 202;
         vars.actions.restart = true;
-
-      } else {
-        status = 400;
       }
-
-      String response = F("{\"firmware\": {\"status\": ");
-      response.concat((short int) fwResult.status);
-      response.concat(F(", \"error\": \""));
-      response.concat(fwResult.error);
-      response.concat(F("\"}, \"filesystem\": {\"status\": "));
-      response.concat((short int) fsResult.status);
-      response.concat(F(", \"error\": \""));
-      response.concat(fsResult.error);
-      response.concat(F("\"}}"));
-      this->webServer->send(status, F("application/json"), response);
-
       vars.states.upgrading = false;
+
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
+
+      auto fwDoc = doc["firmware"].to<JsonObject>();
+      fwDoc["status"] = static_cast<uint8_t>(fwResult.status);
+      fwDoc["error"] = fwResult.error;
+
+      auto fsDoc = doc["filesystem"].to<JsonObject>();
+      fsDoc["status"] = static_cast<uint8_t>(fsResult.status);
+      fsDoc["error"] = fsResult.error;
+
+      // send response
+      response->setLength();
+      response->setCode(status);
+      request->send(response);
     });
     this->webServer->addHandler(upgradeHandler);
 
 
     // backup
-    this->webServer->on(F("/api/backup/save"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
+    this->webServer->on("/api/backup/save", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
 
-      JsonDocument doc;
-
+      // add network settings
       auto networkDoc = doc[FPSTR(S_NETWORK)].to<JsonObject>();
       networkSettingsToJson(networkSettings, networkDoc);
 
+      // add main settings
       auto settingsDoc = doc[FPSTR(S_SETTINGS)].to<JsonObject>();
       settingsToJson(settings, settingsDoc);
 
+      // add sensors settings
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         auto sensorsettingsDoc = doc[FPSTR(S_SENSORS)][sensorId].to<JsonObject>();
         sensorSettingsToJson(sensorId, Sensors::settings[sensorId], sensorsettingsDoc);
       }
 
-      doc.shrinkToFit();
+      // send response
+      response->addHeader("Content-Disposition", "attachment; filename=\"backup.json\"");
+      response->setLength();
+      request->send(response);
+    }).addMiddleware(&authMiddleware);
 
-      this->webServer->sendHeader(F("Content-Disposition"), F("attachment; filename=\"backup.json\""));
-      this->bufferedWebServer->send(200, F("application/json"), doc);
-    });
-
-    this->webServer->on(F("/api/backup/restore"), HTTP_POST, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-
+    // backup restore
+    auto& brHandler = this->webServer->on("/api/backup/restore", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &requestDoc) {
       if (vars.states.restarting) {
-        return this->webServer->send(503);
+        return request->send(503);
       }
 
-      const String& plain = this->webServer->arg(0);
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/backup/restore %d bytes: %s"), plain.length(), plain.c_str());
-
-      if (plain.length() < 5) {
-        this->webServer->send(406);
-        return;
-
-      } else if (plain.length() > 2536) {
-        this->webServer->send(413);
-        return;
+      if (requestDoc.isNull() || !requestDoc.size()) {
+        return request->send(400);
       }
 
-      JsonDocument doc;
-      DeserializationError dErr = deserializeJson(doc, plain);
-
-      if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
-        this->webServer->send(400);
-        return;
-      }
-
+      // prepare request
       bool changed = false;
-      if (!doc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(doc[FPSTR(S_NETWORK)], networkSettings)) {
+
+      // restore network settings
+      if (!requestDoc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(requestDoc[FPSTR(S_NETWORK)], networkSettings)) {
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
@@ -290,13 +201,15 @@ protected:
         changed = true;
       }
 
-      if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
+      // restore main settings
+      if (!requestDoc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(requestDoc[FPSTR(S_SETTINGS)], settings)) {
         fsSettings.update();
         changed = true;
       }
 
-      if (!doc[FPSTR(S_SENSORS)].isNull()) {
-        for (auto sensor : doc[FPSTR(S_SENSORS)].as<JsonObject>()) {
+      // restore sensors settings
+      if (!requestDoc[FPSTR(S_SENSORS)].isNull()) {
+        for (auto sensor : requestDoc[FPSTR(S_SENSORS)].as<JsonObject>()) {
           if (!isDigit(sensor.key().c_str())) {
             continue;
           }
@@ -312,72 +225,54 @@ protected:
           }
         }
       }
-      
-      doc.clear();
-      doc.shrinkToFit();
+      requestDoc.clear();
+
+      // send response
+      request->send(changed ? 201 : 200);
 
       if (changed) {
         vars.actions.restart = true;
       }
-
-      this->webServer->send(changed ? 201 : 200);
     });
+    brHandler.setMaxContentLength(3072);
+    brHandler.addMiddleware(&authMiddleware);
 
     // network
-    this->webServer->on(F("/api/network/settings"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-
-      JsonDocument doc;
+    this->webServer->on("/api/network/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
       networkSettingsToJson(networkSettings, doc);
-      doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, F("application/json"), doc);
-    });
+      // send response
+      response->setLength();
+      request->send(response);
+    }).addMiddleware(&authMiddleware);
 
-    this->webServer->on(F("/api/network/settings"), HTTP_POST, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-      
+    auto& nsHandler = this->webServer->on("/api/network/settings", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &requestDoc) {
       if (vars.states.restarting) {
-        return this->webServer->send(503);
+        return request->send(503);
       }
 
-      const String& plain = this->webServer->arg(0);
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/network/settings %d bytes: %s"), plain.length(), plain.c_str());
-
-      if (plain.length() < 5) {
-        this->webServer->send(406);
-        return;
-
-      } else if (plain.length() > 512) {
-        this->webServer->send(413);
-        return;
+      if (requestDoc.isNull() || !requestDoc.size()) {
+        return request->send(400);
       }
 
-      JsonDocument doc;
-      DeserializationError dErr = deserializeJson(doc, plain);
+      // prepare request
+      bool changed = jsonToNetworkSettings(requestDoc, networkSettings);
+      requestDoc.clear();
 
-      if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
-        this->webServer->send(400);
-        return;
-      }
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& responseDoc = response->getRoot();
+      networkSettingsToJson(networkSettings, responseDoc);
 
-      bool changed = jsonToNetworkSettings(doc, networkSettings);
-      doc.clear();
-      doc.shrinkToFit();
-
-      networkSettingsToJson(networkSettings, doc);
-      doc.shrinkToFit();
-      
-      this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
+      // send response
+      response->setLength();
+      response->setCode(changed ? 201 : 200);
+      request->send(response);
 
       if (changed) {
-        doc.clear();
-        doc.shrinkToFit();
-
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
@@ -392,298 +287,240 @@ protected:
           ->reconnect();
       }
     });
+    nsHandler.setMaxContentLength(512);
+    nsHandler.addMiddleware(&authMiddleware);
 
-    this->webServer->on(F("/api/network/scan"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-
+    this->webServer->on("/api/network/scan", HTTP_GET, [](AsyncWebServerRequest *request) {
       auto apCount = WiFi.scanComplete();
-      if (apCount <= 0) {
-        if (apCount != WIFI_SCAN_RUNNING) {
-          #ifdef ARDUINO_ARCH_ESP8266
-          WiFi.scanNetworks(true, true);
-          #else
-          WiFi.scanNetworks(true, true, true);
-          #endif
-        }
-        
-        this->webServer->send(404);
-        return;
-      }
-      
-      JsonDocument doc;
-      for (short int i = 0; i < apCount; i++) {
-        const String& ssid = WiFi.SSID(i);
-        doc[i][FPSTR(S_SSID)] = ssid;
-        doc[i][FPSTR(S_BSSID)] = WiFi.BSSIDstr(i);
-        doc[i][FPSTR(S_SIGNAL_QUALITY)] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
-        doc[i][FPSTR(S_CHANNEL)] = WiFi.channel(i);
-        doc[i][FPSTR(S_HIDDEN)] = !ssid.length();
-        #ifdef ARDUINO_ARCH_ESP8266
-        const bss_info* info = WiFi.getScanInfoByIndex(i);
-        doc[i][FPSTR(S_AUTH)] = info->authmode;
-        #else
-        doc[i][FPSTR(S_AUTH)] = WiFi.encryptionType(i);
-        #endif
-      }
-      doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, F("application/json"), doc);
+      switch (apCount) {
+        case WIFI_SCAN_FAILED:
+          WiFi.scanNetworks(true, true, false);
+          request->send(404);
+          break;
 
-      WiFi.scanDelete();
-    });
+        case WIFI_SCAN_RUNNING:
+          request->send(202);
+          break;
+
+        default:
+          // make respponse
+          auto *response = new AsyncJsonResponse(true);
+          auto& doc = response->getRoot();
+          for (short int i = 0; i < apCount; i++) {
+            doc[i][FPSTR(S_SSID)] = WiFi.SSID(i);
+            doc[i][FPSTR(S_BSSID)] = WiFi.BSSIDstr(i);
+            doc[i][FPSTR(S_SIGNAL_QUALITY)] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
+            doc[i][FPSTR(S_CHANNEL)] = WiFi.channel(i);
+            doc[i][FPSTR(S_HIDDEN)] = !WiFi.SSID(i).length();
+            doc[i][FPSTR(S_AUTH)] = WiFi.encryptionType(i);
+          }
+
+          // send response
+          response->setLength();
+          request->send(response);
+
+          // clear
+          WiFi.scanDelete();
+      }
+    }).addMiddleware(&authMiddleware);
 
 
     // settings
-    this->webServer->on(F("/api/settings"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-
-      JsonDocument doc;
+    this->webServer->on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
       settingsToJson(settings, doc);
-      doc.shrinkToFit();
-      
-      this->bufferedWebServer->send(200, F("application/json"), doc);
-    });
 
-    this->webServer->on(F("/api/settings"), HTTP_POST, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-      
+      // send response
+      response->setLength();
+      request->send(response);
+    }).addMiddleware(&authMiddleware);
+
+    auto& sHandler = this->webServer->on("/api/settings", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &requestDoc) {
       if (vars.states.restarting) {
-        return this->webServer->send(503);
+        return request->send(503);
       }
 
-      const String& plain = this->webServer->arg(0);
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/settings %d bytes: %s"), plain.length(), plain.c_str());
-
-      if (plain.length() < 5) {
-        this->webServer->send(406);
-        return;
-
-      } else if (plain.length() > 2536) {
-        this->webServer->send(413);
-        return;
+      if (requestDoc.isNull() || !requestDoc.size()) {
+        return request->send(400);
       }
 
-      JsonDocument doc;
-      DeserializationError dErr = deserializeJson(doc, plain);
+      // prepare request
+      bool changed = jsonToSettings(requestDoc, settings);
+      requestDoc.clear();
 
-      if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
-        this->webServer->send(400);
-        return;
-      }
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& responseDoc = response->getRoot();
+      settingsToJson(settings, responseDoc);
 
-      bool changed = jsonToSettings(doc, settings);
-      doc.clear();
-      doc.shrinkToFit();
-
-      settingsToJson(settings, doc);
-      doc.shrinkToFit();
-
-      this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
+      // send response
+      response->setLength();
+      response->setCode(changed ? 201 : 200);
+      request->send(response);
 
       if (changed) {
-        doc.clear();
-        doc.shrinkToFit();
-
         fsSettings.update();
         tMqtt->resetPublishedSettingsTime();
       }
     });
+    sHandler.setMaxContentLength(3072);
+    sHandler.addMiddleware(&authMiddleware);
 
 
     // sensors list
-    this->webServer->on(F("/api/sensors"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
+    this->webServer->on("/api/sensors", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      bool detailed = request->hasParam("detailed");
+      auto *response = new AsyncJsonResponse(true);
+      auto& responseDoc = response->getRoot();
 
-      bool detailed = false;
-      if (this->webServer->hasArg(F("detailed"))) {
-        detailed = this->webServer->arg(F("detailed")).toInt() > 0;
-      }
-      
-      JsonDocument doc;
+      // add sensors
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         if (detailed) {
           auto& sSensor = Sensors::settings[sensorId];
-          doc[sensorId][FPSTR(S_ENABLED)] = sSensor.enabled;
-          doc[sensorId][FPSTR(S_NAME)] = sSensor.name;
-          doc[sensorId][FPSTR(S_PURPOSE)] = static_cast<uint8_t>(sSensor.purpose);
-          sensorResultToJson(sensorId, doc[sensorId]);
+          responseDoc[sensorId][FPSTR(S_ENABLED)] = sSensor.enabled;
+          responseDoc[sensorId][FPSTR(S_NAME)] = sSensor.name;
+          responseDoc[sensorId][FPSTR(S_PURPOSE)] = static_cast<uint8_t>(sSensor.purpose);
+          sensorResultToJson(sensorId, responseDoc[sensorId]);
 
         } else {
-          doc[sensorId] = Sensors::settings[sensorId].name;
+          responseDoc[sensorId] = Sensors::settings[sensorId].name;
         }
       }
       
-      doc.shrinkToFit();
-      this->bufferedWebServer->send(200, F("application/json"), doc);
-    });
+      // send response
+      response->setLength();
+      request->send(response);
+    }).addMiddleware(&authMiddleware);
 
     // sensor settings
-    this->webServer->on(F("/api/sensor"), HTTP_GET, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-      
-      if (!this->webServer->hasArg(F("id"))) {
-        return this->webServer->send(400);
+    this->webServer->on("/api/sensor", HTTP_GET, [](AsyncWebServerRequest *request) {
+      if (!request->hasParam("id")) {
+        return request->send(400);
       }
 
-      auto id = this->webServer->arg(F("id"));
+      const auto& id = request->getParam("id")->value();
       if (!isDigit(id.c_str())) {
-        return this->webServer->send(400);
+        return request->send(400);
       }
 
       uint8_t sensorId = id.toInt();
-      id.clear();
       if (!Sensors::isValidSensorId(sensorId)) {
-        return this->webServer->send(404);
+        return request->send(404);
       }
 
-      JsonDocument doc;
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
       sensorSettingsToJson(sensorId, Sensors::settings[sensorId], doc);
-      doc.shrinkToFit();
-      this->bufferedWebServer->send(200, F("application/json"), doc);
-    });
+
+      response->setLength();
+      request->send(response);
+    }).addMiddleware(&authMiddleware);
     
-    this->webServer->on(F("/api/sensor"), HTTP_POST, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
-      }
-      
+    auto& ssHandler = this->webServer->on("/api/sensor", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &requestDoc) {
       if (vars.states.restarting) {
-        return this->webServer->send(503);
+        return request->send(503);
       }
 
-      #ifdef ARDUINO_ARCH_ESP8266
-      if (!this->webServer->hasArg(F("id")) || this->webServer->args() != 1) {
-        return this->webServer->send(400);
+      if (requestDoc.isNull() || !requestDoc.size()) {
+        return request->send(400);
       }
-      #else
-      if (!this->webServer->hasArg(F("id")) || this->webServer->args() != 2) {
-        return this->webServer->send(400);
-      }
-      #endif
 
-      auto id = this->webServer->arg(F("id"));
+      if (!request->hasParam("id")) {
+        return request->send(400);
+      }
+
+      auto& id = request->getParam("id")->value();
       if (!isDigit(id.c_str())) {
-        return this->webServer->send(400);
+        return request->send(400);
       }
 
       uint8_t sensorId = id.toInt();
-      id.clear();
       if (!Sensors::isValidSensorId(sensorId)) {
-        return this->webServer->send(404);
+        return request->send(404);
       }
-
-      auto plain = this->webServer->arg(1);
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/sensor/?id=%hhu %d bytes: %s"), sensorId, plain.length(), plain.c_str());
-
-      if (plain.length() < 5) {
-        return this->webServer->send(406);
-
-      } else if (plain.length() > 1024) {
-        return this->webServer->send(413);
-      }
-
-      bool changed = false;
+      
+      // prepare request
       auto prevSettings = Sensors::settings[sensorId];
-      {
-        JsonDocument doc;
-        DeserializationError dErr = deserializeJson(doc, plain);
-        plain.clear();
+      bool changed = jsonToSensorSettings(sensorId, requestDoc, Sensors::settings[sensorId]);
+      requestDoc.clear();
 
-        if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
-          return this->webServer->send(400);
-        }
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& responseDoc = response->getRoot();
 
-        if (jsonToSensorSettings(sensorId, doc, Sensors::settings[sensorId])) {
-          changed = true;
-        }
-      }
-
-      {
-        JsonDocument doc;
-        auto& sSettings = Sensors::settings[sensorId];
-        sensorSettingsToJson(sensorId, sSettings, doc);
-        doc.shrinkToFit();
-        
-        this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
-      }
+      auto& sSettings = Sensors::settings[sensorId];
+      sensorSettingsToJson(sensorId, sSettings, responseDoc);
+      
+      // send response
+      response->setLength();
+      response->setCode(changed ? 201 : 200);
+      request->send(response);
 
       if (changed) {
         tMqtt->reconfigureSensor(sensorId, prevSettings);
         fsSensorsSettings.update();
       }
     });
+    ssHandler.setMaxContentLength(1024);
+    ssHandler.addMiddleware(&authMiddleware);
 
 
     // vars
-    this->webServer->on(F("/api/vars"), HTTP_GET, [this]() {
-      JsonDocument doc;
+    this->webServer->on("/api/vars", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
       varsToJson(vars, doc);
-      doc.shrinkToFit();
 
-      this->bufferedWebServer->send(200, F("application/json"), doc);
+      // send response
+      response->setLength();
+      request->send(response);
     });
 
-    this->webServer->on(F("/api/vars"), HTTP_POST, [this]() {
-      if (this->isAuthRequired() && !this->isValidCredentials()) {
-        return this->webServer->send(401);
+    auto& vHandler = this->webServer->on("/api/vars", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &requestDoc) {
+      if (vars.states.restarting) {
+        return request->send(503);
       }
 
-      const String& plain = this->webServer->arg(0);
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Request /api/vars %d bytes: %s"), plain.length(), plain.c_str());
-
-      if (plain.length() < 5) {
-        this->webServer->send(406);
-        return;
-
-      } else if (plain.length() > 1536) {
-        this->webServer->send(413);
-        return;
+      if (requestDoc.isNull() || !requestDoc.size()) {
+        return request->send(400);
       }
 
-      JsonDocument doc;
-      DeserializationError dErr = deserializeJson(doc, plain);
+      // prepare request
+      bool changed = jsonToVars(requestDoc, vars);
+      requestDoc.clear();
 
-      if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size()) {
-        this->webServer->send(400);
-        return;
-      }
-
-      bool changed = jsonToVars(doc, vars);
-      doc.clear();
-      doc.shrinkToFit();
-
-      varsToJson(vars, doc);
-      doc.shrinkToFit();
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& responseDoc = response->getRoot();
+      varsToJson(vars, responseDoc);
       
-      this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
+      // send response
+      response->setLength();
+      response->setCode(changed ? 201 : 200);
+      request->send(response);
 
       if (changed) {
-        doc.clear();
-        doc.shrinkToFit();
-        
         tMqtt->resetPublishedVarsTime();
       }
     });
+    vHandler.setMaxContentLength(1536);
+    vHandler.addMiddleware(&authMiddleware);
 
-    this->webServer->on(F("/api/info"), HTTP_GET, [this]() {
-      bool isConnected = network->isConnected();
-
-      JsonDocument doc;
+    this->webServer->on("/api/info", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
 
       auto docSystem = doc[FPSTR(S_SYSTEM)].to<JsonObject>();
       docSystem[FPSTR(S_RESET_REASON)] = getResetReason();
       docSystem[FPSTR(S_UPTIME)] = millis() / 1000;
 
+      bool isConnected = network->isConnected();
       auto docNetwork = doc[FPSTR(S_NETWORK)].to<JsonObject>();
       docNetwork[FPSTR(S_HOSTNAME)] = networkSettings.hostname;
       docNetwork[FPSTR(S_MAC)] = network->getStaMac();
@@ -700,16 +537,8 @@ protected:
       docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
       docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
       docBuild[FPSTR(S_ENV)] = BUILD_ENV;
-      #ifdef ARDUINO_ARCH_ESP8266
       docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
       docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
-      #elif ARDUINO_ARCH_ESP32
-      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
-      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
-      #else
-      docBuild[FPSTR(S_CORE)] = 0;
-      docBuild[FPSTR(S_SDK)] = 0;
-      #endif
 
       auto docHeap = doc[FPSTR(S_HEAP)].to<JsonObject>();
       docHeap[FPSTR(S_TOTAL)] = getTotalHeap();
@@ -717,59 +546,39 @@ protected:
       docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
       docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
+
+      auto docPsram = doc[FPSTR(S_PSRAM)].to<JsonObject>();
+      docPsram[FPSTR(S_TOTAL)] = ESP.getPsramSize();
+      docPsram[FPSTR(S_FREE)] = ESP.getFreePsram();
+      docPsram[FPSTR(S_MIN_FREE)] = ESP.getMinFreePsram();
+      docPsram[FPSTR(S_MAX_FREE_BLOCK)] = ESP.getMaxAllocPsram();
       
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
-      #ifdef ARDUINO_ARCH_ESP8266
-      docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
-      docChip[FPSTR(S_REV)] = 0;
-      docChip[FPSTR(S_CORES)] = 1;
-      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
-      #elif ARDUINO_ARCH_ESP32
       docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
       docChip[FPSTR(S_REV)] = ESP.getChipRevision();
       docChip[FPSTR(S_CORES)] = ESP.getChipCores();
       docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
-      #else
-      docChip[FPSTR(S_MODEL)] = 0;
-      docChip[FPSTR(S_REV)] = 0;
-      docChip[FPSTR(S_CORES)] = 0;
-      docChip[FPSTR(S_FREQ)] = 0;
-      #endif
 
       auto docFlash = doc[FPSTR(S_FLASH)].to<JsonObject>();
-      #ifdef ARDUINO_ARCH_ESP8266
-      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
-      docFlash[FPSTR(S_REAL_SIZE)] = ESP.getFlashChipRealSize();
-      #elif ARDUINO_ARCH_ESP32
       docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
       docFlash[FPSTR(S_REAL_SIZE)] = docFlash[FPSTR(S_SIZE)];
-      #else
-      docFlash[FPSTR(S_SIZE)] = 0;
-      docFlash[FPSTR(S_REAL_SIZE)] = 0;
-      #endif
 
-      doc.shrinkToFit();
-
-      this->bufferedWebServer->send(200, F("application/json"), doc);
+      // send response
+      response->setLength();
+      request->send(response);
     });
 
-    this->webServer->on(F("/api/debug"), HTTP_GET, [this]() {
-      JsonDocument doc;
+    this->webServer->on("/api/debug", HTTP_GET, [](AsyncWebServerRequest *request) {
+      // make response
+      auto *response = new AsyncJsonResponse();
+      auto& doc = response->getRoot();
 
       auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
       docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
       docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
       docBuild[FPSTR(S_ENV)] = BUILD_ENV;
-      #ifdef ARDUINO_ARCH_ESP8266
       docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
       docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
-      #elif ARDUINO_ARCH_ESP32
-      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
-      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
-      #else
-      docBuild[FPSTR(S_CORE)] = 0;
-      docBuild[FPSTR(S_SDK)] = 0;
-      #endif
 
       auto docHeap = doc[FPSTR(S_HEAP)].to<JsonObject>();
       docHeap[FPSTR(S_TOTAL)] = getTotalHeap();
@@ -779,44 +588,17 @@ protected:
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
       
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
-      #ifdef ARDUINO_ARCH_ESP8266
-      docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
-      docChip[FPSTR(S_REV)] = 0;
-      docChip[FPSTR(S_CORES)] = 1;
-      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
-      #elif ARDUINO_ARCH_ESP32
       docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
       docChip[FPSTR(S_REV)] = ESP.getChipRevision();
       docChip[FPSTR(S_CORES)] = ESP.getChipCores();
       docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
-      #else
-      docChip[FPSTR(S_MODEL)] = 0;
-      docChip[FPSTR(S_REV)] = 0;
-      docChip[FPSTR(S_CORES)] = 0;
-      docChip[FPSTR(S_FREQ)] = 0;
-      #endif
 
       auto docFlash = doc[FPSTR(S_FLASH)].to<JsonObject>();
-      #ifdef ARDUINO_ARCH_ESP8266
-      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
-      docFlash[FPSTR(S_REAL_SIZE)] = ESP.getFlashChipRealSize();
-      #elif ARDUINO_ARCH_ESP32
       docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
       docFlash[FPSTR(S_REAL_SIZE)] = docFlash[FPSTR(S_SIZE)];
-      #else
-      docFlash[FPSTR(S_SIZE)] = 0;
-      docFlash[FPSTR(S_REAL_SIZE)] = 0;
-      #endif
 
-      #if defined(ARDUINO_ARCH_ESP32)
       auto reason = esp_reset_reason();
       if (reason != ESP_RST_UNKNOWN && reason != ESP_RST_POWERON && reason != ESP_RST_SW) {
-      #elif defined(ARDUINO_ARCH_ESP8266)
-      auto reason = ESP.getResetInfoPtr()->reason;
-      if (reason != REASON_DEFAULT_RST && reason != REASON_SOFT_RESTART && reason != REASON_EXT_SYS_RST) {
-      #else
-      if (false) {
-      #endif
         auto docCrash = doc[FPSTR(S_CRASH)].to<JsonObject>();
         docCrash[FPSTR(S_REASON)] = getResetReason();
         docCrash[FPSTR(S_CORE)] = CrashRecorder::ext.core;
@@ -836,27 +618,26 @@ protected:
           docCrash[FPSTR(S_EPC)] = epcStr;
         }
       }
-      
-      doc.shrinkToFit();
-
-      this->webServer->sendHeader(F("Content-Disposition"), F("attachment; filename=\"debug.json\""));
-      this->bufferedWebServer->send(200, F("application/json"), doc, true);
-    });
+      // send response
+      response->addHeader("Content-Disposition", "attachment; filename=\"debug.json\"");
+      response->setLength();
+      request->send(response);
+    }).addMiddleware(&authMiddleware);
 
 
     // not found
-    this->webServer->onNotFound([this]() {
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Page not found, uri: %s"), this->webServer->uri().c_str());
+    this->webServer->onNotFound([this](AsyncWebServerRequest *request) {
+      const auto& url = request->url();
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Page not found, uri: %s"), url.c_str());
 
-      const String& uri = this->webServer->uri();
-      if (uri.equals(F("/"))) {
-        this->webServer->send(200, F("text/plain"), F("The file system is not flashed!"));
+      if (url.equals("/")) {
+        request->send(200, "text/plain", "The file system is not flashed!");
 
       } else if (network->isApEnabled()) {
-        this->onCaptivePortal();
+        this->onCaptivePortal(request);
 
       } else {
-        this->webServer->send(404, F("text/plain"), F("Page not found"));
+        request->send(404, "text/plain", "Page not found");
       }
     });
 
@@ -868,10 +649,6 @@ protected:
   void loop() {
     // web server
     if (!this->stateWebServer() && (network->isApEnabled() || network->isConnected()) && millis() - this->webServerChangeState >= this->changeStateInterval) {
-      #ifdef ARDUINO_ARCH_ESP32
-      this->delay(250);
-      #endif
-      
       this->startWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
 
@@ -885,10 +662,6 @@ protected:
         }
       }
 
-      #ifdef ARDUINO_ARCH_ESP8266
-      ::optimistic_yield(1000);
-      #endif
-
     } else if (this->stateWebServer() && !network->isApEnabled() && !network->isStaEnabled()) {
       this->stopWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
@@ -900,10 +673,6 @@ protected:
 
         Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
       }
-
-      #ifdef ARDUINO_ARCH_ESP8266
-      ::optimistic_yield(1000);
-      #endif
     }
 
     // Disabling mDNS if disabled in settings
@@ -918,79 +687,45 @@ protected:
     if (!this->stateDnsServer() && !network->isConnected() && network->isApEnabled() && this->stateWebServer()) {
       this->startDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
-      
-      #ifdef ARDUINO_ARCH_ESP8266
-      ::optimistic_yield(1000);
-      #endif
 
     } else if (this->stateDnsServer() && (network->isConnected() || !network->isApEnabled() || !this->stateWebServer())) {
       this->stopDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down/STA connected"));
-
-      #ifdef ARDUINO_ARCH_ESP8266
-      ::optimistic_yield(1000);
-      #endif
     }
 
     if (this->stateDnsServer()) {
       this->dnsServer->processNextRequest();
-
-      #ifdef ARDUINO_ARCH_ESP8266
-      ::optimistic_yield(1000);
-      #endif
     }
 
-    if (this->stateWebServer()) {
-      #ifdef ARDUINO_ARCH_ESP32
-      // Fix ERR_CONNECTION_RESET for Chrome based browsers
-      auto& client = this->webServer->client();
-      if (!client.getNoDelay()) {
-        client.setNoDelay(true);
-      }
-      #endif
-
-      this->webServer->handleClient();
-    }
-
-    if (!this->stateDnsServer() && !this->stateWebServer()) {
+    if (!this->stateDnsServer()) {
       this->delay(250);
     }
   }
 
-  bool isAuthRequired() {
-    return !network->isApEnabled() && settings.portal.auth && strlen(settings.portal.password);
-  }
+  void onCaptivePortal(AsyncWebServerRequest *request) {
+    const auto& url = request->url();
 
-  bool isValidCredentials() {
-    return this->webServer->authenticate(settings.portal.login, settings.portal.password);
-  }
-
-  void onCaptivePortal() {
-    const String& uri = this->webServer->uri();
-
-    if (uri.equals(F("/connecttest.txt"))) {
-      this->webServer->sendHeader(F("Location"), F("http://logout.net"));
-      this->webServer->send(302);
+    if (url.equals("/connecttest.txt")) {
+      request->redirect("http://logout.net", 302);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to http://logout.net with 302 code"));
 
-    } else if (uri.equals(F("/wpad.dat"))) {
-      this->webServer->send(404);
+    } else if (url.equals(F("/wpad.dat"))) {
+      request->send(404);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 404 code"));
 
-    } else if (uri.equals(F("/success.txt"))) {
-      this->webServer->send(200);
+    } else if (url.equals(F("/success.txt"))) {
+      request->send(200);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 200 code"));
 
     } else {
-      String portalUrl = F("http://");
+      String portalUrl = "http://";
       portalUrl += network->getApIp().toString().c_str();
       portalUrl += '/';
 
-      this->webServer->sendHeader(F("Location"), portalUrl);
-      this->webServer->send(302);
+      request->redirect(portalUrl, 302);
 
       Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to portal page with 302 code"));
     }
@@ -1006,9 +741,6 @@ protected:
     }
 
     this->webServer->begin();
-    #ifdef ARDUINO_ARCH_ESP8266
-    this->webServer->getServer().setNoDelay(true);
-    #endif
     this->webServerEnabled = true;
     this->webServerChangeState = millis();
   }
@@ -1018,8 +750,7 @@ protected:
       return;
     }
 
-    //this->webServer->handleClient();
-    this->webServer->stop();
+    this->webServer->end();
     this->webServerEnabled = false;
     this->webServerChangeState = millis();
   }

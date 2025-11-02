@@ -455,6 +455,7 @@
       "extPump": {
         "use": "Использовать доп. насос",
         "gpio": "GPIO реле",
+        "invertState": "Инвертировать состояние GPIO",
         "postCirculationTime": "Время постциркуляции <small>(в минутах)</small>",
         "antiStuckInterval": "Интервал защиты от блокировки <small>(в днях)</small>",
         "antiStuckTime": "Время работы насоса <small>(в минутах)</small>"

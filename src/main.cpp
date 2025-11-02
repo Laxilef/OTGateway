@@ -1,6 +1,3 @@
-#define ARDUINOJSON_USE_DOUBLE 0
-#define ARDUINOJSON_USE_LONG_LONG 0
-
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <FileData.h>
@@ -216,7 +213,7 @@ void setup() {
   tRegulator = new RegulatorTask(true, 10000);
   Scheduler.start(tRegulator);
 
-  tPortal = new PortalTask(true, 0);
+  tPortal = new PortalTask(true, 10);
   Scheduler.start(tPortal);
 
   tMain = new MainTask(true, 100);

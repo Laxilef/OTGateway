@@ -455,6 +455,7 @@
       "extPump": {
         "use": "使用外置循环泵",
         "gpio": "继电器 GPIO引脚",
+        "invertState": "切换 GPIO 状态",
         "postCirculationTime": "后循环时间 <small>(分钟)</small>",
         "antiStuckInterval": "防卡死间隔时间<small>(天)</small>",
         "antiStuckTime": "防卡死运行时长<small>(分钟)</small>"

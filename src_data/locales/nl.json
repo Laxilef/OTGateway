@@ -417,6 +417,7 @@
       "extPump": {
         "use": "Gebruik externe pomp",
         "gpio": "Relais GPIO",
+        "invertState": "Inverteer GPIO-status",
         "postCirculationTime": "Nacirculatietijd <small>(min)</small>",
         "antiStuckInterval": "Anti-vastloopinterval <small>(dagen)</small>",
         "antiStuckTime": "Anti-vastlooptijd <small>(min)</small>"
