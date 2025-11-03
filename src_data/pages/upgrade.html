@@ -65,7 +65,7 @@
               <label>
                 <span data-i18n>upgrade.fw</span>:
                 <div class="grid">
-                  <input type="file" name="fw[file]" accept=".bin">
+                  <input type="file" name="fw" accept=".bin">
                   <button type="button" class="fwResult hidden" disabled></button>
                 </div>
               </label>
@@ -73,7 +73,7 @@
               <label>
                 <span data-i18n>upgrade.fs</span>:
                 <div class="grid">
-                  <input type="file" name="fs[file]" accept=".bin">
+                  <input type="file" name="fs" accept=".bin">
                   <button type="button" class="fsResult hidden" disabled></button>
                 </div>
               </label>
@@ -149,18 +149,16 @@
             try {
               let fd = new FormData();
 
-              const fw = upgradeForm.querySelector("[name='fw[file]']").files;
+              const fw = upgradeForm.querySelector("[name='fw']").files;
               if (fw.length > 0) {
-                fd.append("fw[name]", fw[0].name);
-                fd.append("fw[size]", fw[0].size);
-                fd.append("fw[file]", fw[0]);
+                fd.append("fw_size", fw[0].size);
+                fd.append("fw", fw[0]);
               }
 
-              const fs = upgradeForm.querySelector("[name='fs[file]']").files;
+              const fs = upgradeForm.querySelector("[name='fs']").files;
               if (fs.length > 0) {
-                fd.append("fs[name]", fs[0].name);
-                fd.append("fs[size]", fs[0].size);
-                fd.append("fs[file]", fs[0]);
+                fd.append("fs_size", fs[0].size);
+                fd.append("fs", fs[0]);
               }
 
               let response = await fetch(upgradeForm.action, {
