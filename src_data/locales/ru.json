@@ -341,12 +341,8 @@
           "enable": "Вкл. Serial порт",
           "baud": "Скорость Serial порта"
         },
-        "telnet": {
-          "enable": "Вкл. Telnet",
-          "port": {
-            "title": "Telnet порт",
-            "note": "По умолчанию: 23"
-          }
+        "webSerial": {
+          "enable": "Вкл. WebSerial"
         },
         "ntp": {
           "server": "NTP сервер",

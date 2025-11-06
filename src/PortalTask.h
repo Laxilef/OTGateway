@@ -13,6 +13,7 @@ using namespace NetworkUtils;
 extern NetworkMgr* network;
 extern FileData fsNetworkSettings, fsSettings, fsSensorsSettings;
 extern MqttTask* tMqtt;
+extern WebSerial* webSerial;
 
 
 class PortalTask : public LeanTask {
@@ -75,6 +76,11 @@ protected:
       
       return request->requestAuthentication(AsyncAuthType::AUTH_BASIC, PROJECT_NAME, "Authentication failed");
     });
+
+    // web serial
+    if (webSerial != nullptr) {
+      webSerial->begin(this->webServer);
+    }
 
     // index page
     this->webServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {

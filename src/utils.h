@@ -425,9 +425,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     serial[FPSTR(S_ENABLED)] = src.system.serial.enabled;
     serial[FPSTR(S_BAUDRATE)] = src.system.serial.baudrate;
 
-    auto telnet = system[FPSTR(S_TELNET)].to<JsonObject>();
-    telnet[FPSTR(S_ENABLED)] = src.system.telnet.enabled;
-    telnet[FPSTR(S_PORT)] = src.system.telnet.port;
+    auto webSerial = system[FPSTR(S_WEBSERIAL)].to<JsonObject>();
+    webSerial[FPSTR(S_ENABLED)] = src.system.webSerial.enabled;
 
     auto ntp = system[FPSTR(S_NTP)].to<JsonObject>();
     ntp[FPSTR(S_SERVER)] = src.system.ntp.server;
@@ -576,7 +575,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src[FPSTR(S_SYSTEM)][FPSTR(S_LOG_LEVEL)].isNull()) {
       uint8_t value = src[FPSTR(S_SYSTEM)][FPSTR(S_LOG_LEVEL)].as<uint8_t>();
 
-      if (value != dst.system.logLevel && value >= TinyLogger::Level::SILENT && value <= TinyLogger::Level::VERBOSE) {
+      if (value != dst.system.logLevel && value >= TinyLoggerLevel::SILENT && value <= TinyLoggerLevel::VERBOSE) {
         dst.system.logLevel = value;
         changed = true;
       }
@@ -602,20 +601,11 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_ENABLED)].is<bool>()) {
-      bool value = src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_ENABLED)].as<bool>();
+    if (src[FPSTR(S_SYSTEM)][FPSTR(S_WEBSERIAL)][FPSTR(S_ENABLED)].is<bool>()) {
+      bool value = src[FPSTR(S_SYSTEM)][FPSTR(S_WEBSERIAL)][FPSTR(S_ENABLED)].as<bool>();
 
-      if (value != dst.system.telnet.enabled) {
-        dst.system.telnet.enabled = value;
-        changed = true;
-      }
-    }
-
-    if (!src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_PORT)].isNull()) {
-      unsigned short value = src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_PORT)].as<unsigned short>();
-
-      if (value > 0 && value <= 65535 && value != dst.system.telnet.port) {
-        dst.system.telnet.port = value;
+      if (value != dst.system.webSerial.enabled) {
+        dst.system.webSerial.enabled = value;
         changed = true;
       }
     }

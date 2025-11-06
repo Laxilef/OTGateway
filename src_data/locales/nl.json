@@ -313,12 +313,8 @@
           "enable": "Seriële poort ingeschakeld",
           "baud": "Baudrate seriële poort"
         },
-        "telnet": {
-          "enable": "Telnet ingeschakeld",
-          "port": {
-            "title": "Telnet-poort",
-            "note": "Standaard: 23"
-          }
+        "webSerial": {
+          "enable": "WebSerial ingeschakeld"
         },
         "ntp": {
           "server": "NTP-server",

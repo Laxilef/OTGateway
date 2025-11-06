@@ -341,12 +341,8 @@
           "enable": "Porta seriale attivata",
           "baud": "Porta seriale baud rate"
         },
-        "telnet": {
-          "enable": "Telnet attivato",
-          "port": {
-            "title": "Porta Telnet",
-            "note": "Default: 23"
-          }
+        "webSerial": {
+          "enable": "WebSerial attivato"
         },
         "ntp": {
           "server": "NTP server",

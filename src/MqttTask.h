@@ -416,7 +416,7 @@ protected:
       return;
     }
 
-    if (settings.system.logLevel >= TinyLogger::Level::TRACE) {
+    if (settings.system.logLevel >= TinyLoggerLevel::TRACE) {
       Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
       if (Log.lock()) {
         for (size_t i = 0; i < length; i++) {

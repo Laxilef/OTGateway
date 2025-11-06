@@ -341,12 +341,8 @@
           "enable": "启用串口",
           "baud": "串口波特率"
         },
-        "telnet": {
-          "enable": "启用 Telnet",
-          "port": {
-            "title": "Telnet 端口",
-            "note": "默认值：23"
-          }
+        "webSerial": {
+          "enable": "启用 WebSerial"
         },
         "ntp": {
           "server": "NTP服务器",

@@ -32,9 +32,8 @@ struct Settings {
     } serial;
 
     struct {
-      bool enabled = DEFAULT_TELNET_ENABLED;
-      unsigned short port = DEFAULT_TELNET_PORT;
-    } telnet;
+      bool enabled = DEFAULT_WEBSERIAL_ENABLED;
+    } webSerial;
 
     struct {
       char server[49] = "pool.ntp.org";

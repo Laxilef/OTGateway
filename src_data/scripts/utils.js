@@ -313,19 +313,25 @@ const setupRestoreBackupForm = (formSelector) => {
         console.log("Backup: ", data);
 
         if (data.settings != undefined) {
-          let response = await fetch(url, {
-            method: "POST",
-            cache: "no-cache",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({"settings": data.settings})
-          });
+          for (var key in data.settings) {
+            let response = await fetch(url, {
+              method: "POST",
+              cache: "no-cache",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "settings": {
+                  [key]: data.settings[key]
+                }
+              })
+            });
 
-          if (!response.ok) {
-            onFailed();
-            return;
+            if (!response.ok) {
+              onFailed();
+              return;
+            }
           }
         }
 

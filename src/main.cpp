@@ -2,7 +2,7 @@
 #include <ArduinoJson.h>
 #include <FileData.h>
 #include <LittleFS.h>
-#include <ESPTelnetStream.h>
+#include <MycilaWebSerial.h>
 
 #include "defines.h"
 #include "strings.h"
@@ -34,7 +34,7 @@
 using namespace NetworkUtils;
 
 // Vars
-ESPTelnetStream* telnetStream = nullptr;
+WebSerial* webSerial = nullptr;
 NetworkMgr* network = nullptr;
 Sensors::Result sensorsResults[SENSORS_AMOUNT];
 
@@ -58,7 +58,7 @@ void setup() {
   Sensors::results = sensorsResults;
   LittleFS.begin();
 
-  Log.setLevel(TinyLogger::Level::VERBOSE);
+  Log.setLevel(TinyLoggerLevel::VERBOSE);
   Log.setServiceTemplate("\033[1m[%s]\033[22m");
   Log.setLevelTemplate("\033[1m[%s]\033[22m");
   Log.setMsgPrefix("\033[m ");
@@ -76,7 +76,7 @@ void setup() {
   #if ARDUINO_USB_MODE
   Serial.setTxBufferSize(512);
   #endif
-  Log.addStream(&Serial);
+  Log.addHandler(&Serial);
   Log.print("\n\n\r");
 
   //
@@ -160,24 +160,24 @@ void setup() {
   // Logs settings
   if (!settings.system.serial.enabled) {
     Serial.end();
-    Log.clearStreams();
+    Log.clearHandlers();
 
   } else if (settings.system.serial.baudrate != 115200) {
     Serial.end();
-    Log.clearStreams();
+    Log.clearHandlers();
 
     Serial.begin(settings.system.serial.baudrate);
-    Log.addStream(&Serial);
+    Log.addHandler(&Serial);
   }
 
-  if (settings.system.telnet.enabled) {
-    telnetStream = new ESPTelnetStream;
-    telnetStream->setKeepAliveInterval(500);
-    Log.addStream(telnetStream);
+  if (settings.system.webSerial.enabled) {
+    webSerial = new WebSerial();
+    webSerial->setBuffer(100);
+    Log.addHandler(webSerial);
   }
 
-  if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
-    Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
+  if (settings.system.logLevel >= TinyLoggerLevel::SILENT && settings.system.logLevel <= TinyLoggerLevel::VERBOSE) {
+    Log.setLevel(static_cast<TinyLoggerLevel>(settings.system.logLevel));
   }
 
   //
