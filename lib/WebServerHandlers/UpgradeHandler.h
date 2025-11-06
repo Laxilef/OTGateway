@@ -22,7 +22,8 @@ public:
     UpgradeType type;
     UpgradeStatus status;
     String error;
-    unsigned int written = 0;
+    size_t progress = 0;
+    size_t size = 0;
   } UpgradeResult;
 
   typedef std::function<bool(AsyncWebServerRequest *request, UpgradeType)> BeforeUpgradeCallback;
@@ -57,34 +58,47 @@ public:
 
     this->firmwareResult.status = UpgradeStatus::NONE;
     this->firmwareResult.error.clear();
-    this->firmwareResult.written = 0;
 
     this->filesystemResult.status = UpgradeStatus::NONE;
     this->filesystemResult.error.clear();
-    this->filesystemResult.written = 0;
   }
 
   void handleUpload(AsyncWebServerRequest *request, const String &fileName, size_t index, uint8_t *data, size_t dataLength, bool isFinal) override final {
     UpgradeResult* result = nullptr;
-    unsigned int fileSize = 0;
 
-    const auto& fwName = request->hasParam("fw[name]", true) ? request->getParam("fw[name]", true)->value() : String();
-    const auto& fsName = request->hasParam("fs[name]", true) ? request->getParam("fs[name]", true)->value() : String();
-
-    if (fileName.equals(fwName)) {
-      result = &this->firmwareResult;
-      if (request->hasParam("fw[size]", true)) {
-        fileSize = request->getParam("fw[size]", true)->value().toInt();
-      }
-
-    } else if (fileName.equals(fsName)) {
-      result = &this->filesystemResult;
-      if (request->hasParam("fs[size]", true)) {
-        fileSize = request->getParam("fs[size]", true)->value().toInt();
-      } 
+    if (!request->hasParam(asyncsrv::T_name, true, true)) {
+      // Missing content-disposition 'name' parameter
+      return;
     }
 
-    if (result == nullptr || result->status != UpgradeStatus::NONE) {
+    const auto& pName = request->getParam(asyncsrv::T_name, true, true)->value();
+    if (pName.equals("fw")) {
+      result = &this->firmwareResult;
+
+      if (!index) {
+        result->progress = 0;
+        result->size = request->hasParam("fw_size", true)
+          ? request->getParam("fw_size", true)->value().toInt()
+          : 0;
+      }
+
+    } else if (pName.equals("fs")) {
+      result = &this->filesystemResult;
+
+      if (!index) {
+        result->progress = 0;
+        result->size = request->hasParam("fs_size", true)
+          ? request->getParam("fs_size", true)->value().toInt()
+          : 0;
+      }
+
+    } else {
+      // Unknown parameter name
+      return;
+    }
+
+    // check result status
+    if (result->status != UpgradeStatus::NONE) {
       return;
     }
 
@@ -93,18 +107,19 @@ public:
       return;
     }
 
-    if (!fileName.length() || !fileSize) {
+    if (!fileName.length()) {
       result->status = UpgradeStatus::NO_FILE;
       return;
     }
 
-    if (index == 0) {
+    if (!index) {
       // reset
       if (Update.isRunning()) {
         Update.end(false);
         Update.clearError();
       }
 
+      // try begin
       bool begin = false;
       if (result->type == UpgradeType::FIRMWARE) {
         begin = Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH);
@@ -117,54 +132,52 @@ public:
         result->status = UpgradeStatus::ERROR_ON_START;
         result->error = Update.errorString();
 
-        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on start: %s"), fileName.c_str(), result->error.c_str());
+        Log.serrorln(FPSTR(L_PORTAL_OTA), "File '%s', on start: %s", fileName.c_str(), result->error.c_str());
         return;
       }
       
-      Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s', started"), fileName.c_str());
+      Log.sinfoln(FPSTR(L_PORTAL_OTA), "File '%s', started", fileName.c_str());
     }
     
     if (dataLength) {
-      result->written += dataLength;
-
       if (Update.write(data, dataLength) != dataLength) {
         Update.end(false);
         result->status = UpgradeStatus::ERROR_ON_WRITE;
         result->error = Update.errorString();
 
         Log.serrorln(
-          FPSTR(L_PORTAL_OTA),
-          F("File '%s', on write %d bytes, %d of %d bytes"),
+          FPSTR(L_PORTAL_OTA), "File '%s', on write %d bytes, %d of %d bytes",
           fileName.c_str(),
           dataLength,
-          result->written,
-          fileSize
+          result->progress + dataLength,
+          result->size
         );
         return;
       }
-
+      
+      result->progress += dataLength;
       Log.sinfoln(
-        FPSTR(L_PORTAL_OTA),
-        F("File '%s', write %d bytes, %d of %d bytes"),
+        FPSTR(L_PORTAL_OTA), "File '%s', write %d bytes, %d of %d bytes",
         fileName.c_str(),
         dataLength,
-        result->written,
-        fileSize
+        result->progress,
+        result->size
       );
     }
 
-    if (result->written > fileSize || (isFinal && result->written < fileSize)) {
-      Update.end(false);
-      result->status = UpgradeStatus::SIZE_MISMATCH;
+    if (result->size > 0) {
+      if (result->progress > result->size || (isFinal && result->progress < result->size)) {
+        Update.end(false);
+        result->status = UpgradeStatus::SIZE_MISMATCH;
 
-      Log.serrorln(
-        FPSTR(L_PORTAL_OTA),
-        F("File '%s', size mismatch: %d of %d bytes"),
-        fileName.c_str(),
-        result->written,
-        fileSize
-      );
-      return;
+        Log.serrorln(
+          FPSTR(L_PORTAL_OTA), "File '%s', size mismatch: %d of %d bytes",
+          fileName.c_str(),
+          result->progress,
+          result->size
+        );
+        return;
+      }
     }
     
     if (isFinal) {
@@ -172,12 +185,12 @@ public:
         result->status = UpgradeStatus::ERROR_ON_FINISH;
         result->error = Update.errorString();
 
-        Log.serrorln(FPSTR(L_PORTAL_OTA), F("File '%s', on finish: %s"), fileName.c_str(), result->error);
+        Log.serrorln(FPSTR(L_PORTAL_OTA), "File '%s', on finish: %s", fileName.c_str(), result->error);
         return;
       }
 
       result->status = UpgradeStatus::SUCCESS;
-      Log.sinfoln(FPSTR(L_PORTAL_OTA), F("File '%s': finish"), fileName.c_str());
+      Log.sinfoln(FPSTR(L_PORTAL_OTA), "File '%s': finish", fileName.c_str());
     }
   }
 
