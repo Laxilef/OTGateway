@@ -80,6 +80,7 @@ struct Settings {
       bool setDateAndTime = false;
       bool nativeHeatingControl = false;
       bool immergasFix = false;
+      bool alwaysSendIndoorTemp = false;
     } options;
   } opentherm;
 

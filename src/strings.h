@@ -108,6 +108,7 @@ const char S_HYSTERESIS[]                           PROGMEM = "hysteresis";
 const char S_ID[]                                   PROGMEM = "id";
 const char S_IGNORE_DIAG_STATE[]                    PROGMEM = "ignoreDiagState";
 const char S_IMMERGAS_FIX[]                         PROGMEM = "immergasFix";
+const char S_ALWAYS_SEND_INDOOR_TEMP[]              PROGMEM = "alwaysSendIndoorTemp";
 const char S_INDOOR_TEMP[]                          PROGMEM = "indoorTemp";
 const char S_INDOOR_TEMP_CONTROL[]                  PROGMEM = "indoorTempControl";
 const char S_IN_GPIO[]                              PROGMEM = "inGpio";
