@@ -433,7 +433,8 @@
           "autoFaultReset": "Auto fault reset <small>(not recommended!)</small>",
           "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
           "setDateAndTime": "Set date & time on boiler",
-          "immergasFix": "Fix for Immergas boilers"
+          "immergasFix": "Fix for Immergas boilers",
+          "alwaysSendIndoorTemp": "Always send current and target indoor temp"
         },
 
         "nativeHeating": {

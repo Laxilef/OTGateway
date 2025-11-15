@@ -642,6 +642,11 @@
                       <span data-i18n>settings.ot.options.immergasFix</span>
                     </label>
 
+                    <label>
+                      <input type="checkbox" name="opentherm[options][alwaysSendIndoorTemp]" value="true">
+                      <span data-i18n>settings.ot.options.alwaysSendIndoorTemp</span>
+                    </label>
+
                     <hr />
 
                     <label>
@@ -917,6 +922,7 @@
           setCheckboxValue("[name='opentherm[options][setDateAndTime]']", data.opentherm.options.setDateAndTime);
           setCheckboxValue("[name='opentherm[options][nativeHeatingControl]']", data.opentherm.options.nativeHeatingControl);
           setCheckboxValue("[name='opentherm[options][immergasFix]']", data.opentherm.options.immergasFix);
+          setCheckboxValue("[name='opentherm[options][alwaysSendIndoorTemp]']", data.opentherm.options.alwaysSendIndoorTemp);
           setBusy('#ot-settings-busy', '#ot-settings', false);
 
           // MQTT

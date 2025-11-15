@@ -1209,8 +1209,8 @@ protected:
       }
     }
 
-    // Native heating control
-    if (settings.opentherm.options.nativeHeatingControl) {
+    // Native heating control or if the always send Indoor temp option is enabled.
+    if ((settings.opentherm.options.nativeHeatingControl) || (settings.opentherm.options.alwaysSendIndoorTemp)) {
       // Converted current indoor temp
       float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
