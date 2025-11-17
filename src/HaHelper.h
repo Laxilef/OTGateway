@@ -261,8 +261,13 @@ public:
     }
 
     // object id's
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(objId.c_str());
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(objId.c_str());
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(
+      sSensor.type == Sensors::Type::MANUAL 
+        ? FPSTR(HA_ENTITY_NUMBER) 
+        : FPSTR(HA_ENTITY_SENSOR),
+      objId.c_str()
+    );
 
     const String& configTopic = this->makeConfigTopic(
       sSensor.type == Sensors::Type::MANUAL ? FPSTR(HA_ENTITY_NUMBER) : FPSTR(HA_ENTITY_SENSOR),
@@ -323,8 +328,8 @@ public:
     String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("connected"));
 
     // object id's
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(objId.c_str());
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(objId.c_str());
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), objId.c_str());
 
     // state topic
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
@@ -370,8 +375,8 @@ public:
     String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("signal_quality"));
 
     // object id's
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(objId.c_str());
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(objId.c_str());
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), objId.c_str());
 
     // state topic
     doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
@@ -407,7 +412,6 @@ public:
   }
 
   bool deleteSignalQualityDynamicSensor(Sensors::Settings& sSensor) {
-    JsonDocument doc;
     const String& configTopic = this->makeConfigTopic(
       FPSTR(HA_ENTITY_SENSOR),
       Sensors::makeObjectIdWithSuffix(sSensor.name, F("signal_quality")).c_str()
@@ -421,8 +425,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_turbo"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_turbo"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("heating_turbo"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("Turbo heating");
     doc[FPSTR(HA_ICON)] = F("mdi:rocket-launch-outline");
@@ -443,8 +447,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_hysteresis"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_hysteresis"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("heating_hysteresis"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -475,8 +479,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_turbo_factor"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_turbo_factor"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("heating_turbo_factor"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
     doc[FPSTR(HA_NAME)] = F("Heating turbo factor");
@@ -499,8 +503,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_min_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_min_temp"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("heating_min_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -533,8 +537,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_max_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_max_temp"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("heating_max_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -568,8 +572,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw_min_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dhw_min_temp"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("dhw_min_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -602,8 +606,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw_max_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dhw_max_temp"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("dhw_max_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -637,8 +641,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("pid"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("PID");
     doc[FPSTR(HA_ICON)] = F("mdi:chart-bar-stacked");
@@ -659,8 +663,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_p"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_p"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_p"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("PID factor P");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-p-circle-outline");
@@ -682,8 +686,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_i"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_i"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_i"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("PID factor I");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-i-circle-outline");
@@ -705,8 +709,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_d"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_d"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_d"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("PID factor D");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-d-circle-outline");
@@ -728,8 +732,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_dt"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_dt"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_dt"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("duration");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("s");
@@ -753,8 +757,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_min_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_min_temp"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_min_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -787,8 +791,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("pid_max_temp"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_max_temp"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_max_temp"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
 
@@ -822,8 +826,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("equitherm"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("Equitherm");
     doc[FPSTR(HA_ICON)] = F("mdi:sun-snowflake-variant");
@@ -844,8 +848,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_n"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm_n"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_n"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("Equitherm factor N");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-n-circle-outline");
@@ -867,8 +871,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_k"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm_k"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_k"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("Equitherm factor K");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-k-circle-outline");
@@ -893,8 +897,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.pid.enabled, 'offline', 'online') }}");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("equitherm_t"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm_t"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_t"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("Equitherm factor T");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-t-circle-outline");
@@ -916,8 +920,8 @@ public:
   bool publishStatusState(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("status"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("status"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("status"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
     doc[FPSTR(HA_NAME)] = F("Status");
@@ -934,8 +938,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("emergency"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("emergency"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("emergency"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
     doc[FPSTR(HA_NAME)] = F("Emergency");
@@ -952,8 +956,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("ot_status"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("ot_status"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("ot_status"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("connectivity");
     doc[FPSTR(HA_NAME)] = F("Opentherm status");
@@ -973,9 +977,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
-    //doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("heating"));
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
     doc[FPSTR(HA_NAME)] = F("Heating");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
@@ -994,9 +997,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
-    //doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dhw"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dhw"));
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
     doc[FPSTR(HA_NAME)] = F("DHW");
     doc[FPSTR(HA_ICON)] = F("mdi:faucet");
@@ -1015,9 +1017,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("flame"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
-    //doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("flame"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("flame"));
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
     doc[FPSTR(HA_NAME)] = F("Flame");
     doc[FPSTR(HA_ICON)] = F("mdi:gas-burner");
@@ -1036,8 +1037,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("fault"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("fault"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("fault"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
     doc[FPSTR(HA_NAME)] = F("Fault");
@@ -1057,8 +1058,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_OT_CONN, true);
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
     doc[FPSTR(HA_NAME)] = F("Diagnostic");
@@ -1075,8 +1076,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("ext_pump"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("ext_pump"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("ext_pump"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
     doc[FPSTR(HA_NAME)] = F("External pump");
@@ -1096,8 +1097,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.connected and value_json.slave.fault.active, 'online', 'offline') }}");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("fault_code"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("fault_code"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("fault_code"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_NAME)] = F("Fault code");
     doc[FPSTR(HA_ICON)] = F("mdi:cog-box");
@@ -1116,8 +1117,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.connected and value_json.slave.fault.active or value_json.slave.diag.active, 'online', 'offline') }}");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("diagnostic_code"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("diagnostic_code"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("diagnostic_code"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_NAME)] = F("Diagnostic code");
     doc[FPSTR(HA_ICON)] = F("mdi:information-box");
@@ -1133,8 +1134,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(FPSTR(S_RSSI));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(FPSTR(S_RSSI));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), FPSTR(S_RSSI));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
     doc[FPSTR(HA_STATE_CLASS)] = FPSTR(HA_STATE_CLASS_MEASUREMENT);
@@ -1153,8 +1154,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("uptime"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("uptime"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("uptime"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("duration");
     doc[FPSTR(HA_STATE_CLASS)] = F("total_increasing");
@@ -1174,8 +1175,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_CLIMATE), F("heating"));
     doc[FPSTR(HA_NAME)] = F("Heating");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
 
@@ -1226,8 +1227,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("dhw"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dhw"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_CLIMATE), F("dhw"));
     doc[FPSTR(HA_NAME)] = F("DHW");
     doc[FPSTR(HA_ICON)] = F("mdi:faucet");
 
@@ -1271,8 +1272,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(FPSTR(S_RESTART));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(FPSTR(S_RESTART));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BUTTON), FPSTR(S_RESTART));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
     doc[FPSTR(HA_NAME)] = F("Restart");
@@ -1291,8 +1292,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.fault.active, 'online', 'offline') }}");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("reset_fault"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("reset_fault"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BUTTON), F("reset_fault"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
     doc[FPSTR(HA_NAME)] = F("Reset fault");
@@ -1311,8 +1312,8 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.diag.active, 'online', 'offline') }}");
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("reset_diagnostic"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("reset_diagnostic"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BUTTON), F("reset_diagnostic"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
     doc[FPSTR(HA_NAME)] = F("Reset diagnostic");
