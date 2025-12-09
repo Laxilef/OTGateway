@@ -380,11 +380,26 @@
       },
 
       "equitherm": {
-        "n": "N 系数",
-        "k": "K 系数",
-        "t": {
-          "title": "T 系数",
-          "note": "启用PID时此参数无效"
+        "slope": {
+          "title": "斜率",
+          "note": "热损失补偿。主要调谐参数。"
+        },
+        "exponent": {
+          "title": "指数",
+          "note": "散热器效率。典型值：<code>1.1</code> - 地板采暖，<code>1.2</code> - 铸铁，<code>1.3</code> - 面板散热器，<code>1.4</code> - 对流器。"
+        },
+        "shift": {
+          "title": "偏移",
+          "note": "补偿额外热损失（例如，在管道中）或额外热源。"
+        },
+        "targetDiffFactor": {
+          "title": "T 因子",
+          "note": "如果启用 PID，则不使用。将目标和当前室内温度之间的差值添加到设定点：<code>setpoint = setpoint + ((target - indoor) * T)</code>。"
+        },
+        "chart": {
+          "targetTemp": "目标室内温度",
+          "setpointTemp": "热载体温度",
+          "outdoorTemp": "室外温度"
         }
       },
 
