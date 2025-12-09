@@ -490,7 +490,9 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_ENABLED)] = src.heating.enabled;
   heating[FPSTR(S_TURBO)] = src.heating.turbo;
   heating[FPSTR(S_TARGET)] = roundf(src.heating.target, 2);
-  heating[FPSTR(S_HYSTERESIS)] = roundf(src.heating.hysteresis, 3);
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)] = src.heating.hysteresis.enabled;
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)] = roundf(src.heating.hysteresis.value, 3);
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)] = static_cast<uint8_t>(src.heating.hysteresis.action);
   heating[FPSTR(S_TURBO_FACTOR)] = roundf(src.heating.turboFactor, 3);
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
@@ -517,9 +519,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
-  equitherm[FPSTR(S_N_FACTOR)] = roundf(src.equitherm.n_factor, 3);
-  equitherm[FPSTR(S_K_FACTOR)] = roundf(src.equitherm.k_factor, 3);
-  equitherm[FPSTR(S_T_FACTOR)] = roundf(src.equitherm.t_factor, 3);
+  equitherm[FPSTR(S_SLOPE)] = roundf(src.equitherm.slope, 3);
+  equitherm[FPSTR(S_EXPONENT)] = roundf(src.equitherm.exponent, 3);
+  equitherm[FPSTR(S_SHIFT)] = roundf(src.equitherm.shift, 2);
+  equitherm[FPSTR(S_TARGET_DIFF_FACTOR)] = roundf(src.equitherm.targetDiffFactor, 3);
 
   auto pid = dst[FPSTR(S_PID)].to<JsonObject>();
   pid[FPSTR(S_ENABLED)] = src.pid.enabled;
@@ -1113,29 +1116,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_N_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_N_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_SLOPE)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_SLOPE)].as<float>();
 
-    if (value > 0 && value <= 10 && fabsf(value - dst.equitherm.n_factor) > 0.0001f) {
-      dst.equitherm.n_factor = roundf(value, 3);
+    if (value > 0.0f && value <= 10.0f && fabsf(value - dst.equitherm.slope) > 0.0001f) {
+      dst.equitherm.slope = roundf(value, 3);
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_EXPONENT)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_EXPONENT)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.k_factor) > 0.0001f) {
-      dst.equitherm.k_factor = roundf(value, 3);
+    if (value > 0.0f && value <= 2.0f && fabsf(value - dst.equitherm.exponent) > 0.0001f) {
+      dst.equitherm.exponent = roundf(value, 3);
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_SHIFT)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_SHIFT)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.t_factor) > 0.0001f) {
-      dst.equitherm.t_factor = roundf(value, 3);
+    if (value >= -15.0f && value <= 15.0f && fabsf(value - dst.equitherm.shift) > 0.0001f) {
+      dst.equitherm.shift = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_TARGET_DIFF_FACTOR)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_TARGET_DIFF_FACTOR)].as<float>();
+
+    if (value >= 0.0f && value <= 10.0f && fabsf(value - dst.equitherm.targetDiffFactor) > 0.0001f) {
+      dst.equitherm.targetDiffFactor = roundf(value, 3);
       changed = true;
     }
   }
@@ -1288,12 +1300,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)].isNull()) {
-    float value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)].as<float>();
+  if (src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis) > 0.0001f) {
-      dst.heating.hysteresis = roundf(value, 2);
+    if (value != dst.heating.hysteresis.enabled) {
+      dst.heating.hysteresis.enabled = value;
       changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)].isNull()) {
+    float value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)].as<float>();
+
+    if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis.value) > 0.0001f) {
+      dst.heating.hysteresis.value = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].isNull()) {
+    uint8_t value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].as<uint8_t>();
+
+    switch (value) {
+      case static_cast<uint8_t>(HysteresisAction::DISABLE_HEATING):
+      case static_cast<uint8_t>(HysteresisAction::SET_ZERO_TARGET):
+        if (static_cast<uint8_t>(dst.heating.hysteresis.action) != value) {
+         dst.heating.hysteresis.action = static_cast<HysteresisAction>(value);
+          changed = true;
+        }
+        break;
+
+      default:
+        break;
     }
   }
 

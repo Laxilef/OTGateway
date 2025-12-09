@@ -327,7 +327,16 @@
         }
       },
       "heating": {
-        "hyst": "Hysterese <small>(in graden)</small>",
+        "hyst": {
+          "title": "Hysterese",
+          "desc": "Hysterese is nuttig voor het handhaven van een ingestelde binnentemperatuur (bij gebruik van «Equitherm» en/of «PID»). Forceert uitschakelen van verwarming wanneer <code>current indoor > target + value</code> en inschakelen van verwarming wanneer <code>current indoor < (target - value)</code>.",
+          "value": "Waarde <small>(in graden)</small>",
+          "action": {
+            "title": "Actie",
+            "disableHeating": "Verwarming uitschakelen",
+            "set0target": "Stel null target in"
+          }
+        },
         "turboFactor": "Turbomodus coëff."
       },
       "emergency": {
@@ -339,11 +348,26 @@
         "treshold": "Drempeltijd <small>(sec)</small>"
       },
       "equitherm": {
-        "n": "N-factor",
-        "k": "K-factor",
-        "t": {
-          "title": "T-factor",
-          "note": "Niet gebruikt als PID is ingeschakeld"
+        "slope": {
+          "title": "Helling",
+          "note": "Compensatie voor warmteverlies. Hoofdafstelparameter."
+        },
+        "exponent": {
+          "title": "Exponent",
+          "note": "Radiator efficiëntie. Typische waarden: <code>1.1</code> - Vloerverwarming, <code>1.2</code> - Gietijzer, <code>1.3</code> - Paneelradiatoren, <code>1.4</code> - Convectors."
+        },
+        "shift": {
+          "title": "Verschuiving",
+          "note": "Compenseert voor extra warmteverliezen (bijv. in leidingen) of extra warmtebronnen."
+        },
+        "targetDiffFactor": {
+          "title": "T factor",
+          "note": "Niet gebruikt als PID is ingeschakeld. Voegt aan de setpoint de verschil tussen de target en huidige binnentemperatuur toe: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Doel binnentemperatuur",
+          "setpointTemp": "Warmtedrager temperatuur",
+          "outdoorTemp": "Buitentemperatuur"
         }
       },
       "pid": {
