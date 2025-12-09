@@ -103,11 +103,16 @@ struct Settings {
     bool enabled = true;
     bool turbo = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
-    float hysteresis = 0.5f;
     float turboFactor = 7.5f;
     uint8_t minTemp = DEFAULT_HEATING_MIN_TEMP;
     uint8_t maxTemp = DEFAULT_HEATING_MAX_TEMP;
     uint8_t maxModulation = 100;
+
+    struct {
+      bool enabled = true;
+      float value = 0.5f;
+      HysteresisAction action = HysteresisAction::DISABLE_HEATING;
+    } hysteresis;
 
     struct {
       uint8_t highTemp = 95;

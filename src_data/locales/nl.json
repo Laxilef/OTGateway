@@ -327,7 +327,16 @@
         }
       },
       "heating": {
-        "hyst": "Hysterese <small>(in graden)</small>",
+        "hyst": {
+          "title": "Hysterese",
+          "desc": "Hysterese is nuttig voor het handhaven van een ingestelde binnentemperatuur (bij gebruik van «Equitherm» en/of «PID»). Forceert uitschakelen van verwarming wanneer <code>current indoor > target + value</code> en inschakelen van verwarming wanneer <code>current indoor < (target - value)</code>.",
+          "value": "Waarde <small>(in graden)</small>",
+          "action": {
+            "title": "Actie",
+            "disableHeating": "Verwarming uitschakelen",
+            "set0target": "Stel null target in"
+          }
+        },
         "turboFactor": "Turbomodus coëff."
       },
       "emergency": {

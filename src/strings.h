@@ -34,6 +34,7 @@ const char L_CASCADE_OUTPUT[]                       PROGMEM = "CASCADE.OUTPUT";
 const char L_EXTPUMP[]                              PROGMEM = "EXTPUMP";
 
 
+const char S_ACTION[]                               PROGMEM = "action";
 const char S_ACTIONS[]                              PROGMEM = "actions";
 const char S_ACTIVE[]                               PROGMEM = "active";
 const char S_ADDRESS[]                              PROGMEM = "address";

@@ -443,6 +443,28 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SWITCH), F("heating_turbo")).c_str(), doc);
   }
 
+  bool publishSwitchHeatingHysteresis(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_hysteresis"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("heating_hysteresis"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
+    doc[FPSTR(HA_NAME)] = F("Use heating hysteresis");
+    doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
+    doc[FPSTR(HA_STATE_ON)] = true;
+    doc[FPSTR(HA_STATE_OFF)] = false;
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.hysteresis.enabled }}");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("{\"heating\": {\"hysteresis\" : {\"enabled\" : true}}}");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("{\"heating\": {\"hysteresis\" : {\"enabled\" : false}}}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SWITCH), F("heating_hysteresis")).c_str(), doc);
+  }
+
   bool publishInputHeatingHysteresis(UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
@@ -462,9 +484,9 @@ public:
     doc[FPSTR(HA_NAME)] = F("Heating hysteresis");
     doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.hysteresis|float(0)|round(2) }}");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.hysteresis.value|float(0)|round(2) }}");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setSettingsTopic.c_str();
-    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"hysteresis\" : {{ value }}}}");
+    doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"heating\": {\"hysteresis\" : {\"value\" : {{ value }}}}}");
     doc[FPSTR(HA_MIN)] = 0;
     doc[FPSTR(HA_MAX)] = 15;
     doc[FPSTR(HA_STEP)] = 0.01f;

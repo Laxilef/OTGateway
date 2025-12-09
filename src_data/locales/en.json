@@ -356,7 +356,16 @@
       },
 
       "heating": {
-        "hyst": "Hysteresis <small>(in degrees)</small>",
+        "hyst": {
+          "title": "Hysteresis",
+          "desc": "Hysteresis is useful for maintaining a set indoor temp (when using «Equitherm» and/or «PID»). Forces disable heating when <code>current indoor > target + value</code> and enable heating when <code>current indoor < (target - value)</code>.",
+          "value": "Value <small>(in degrees)</small>",
+          "action": {
+            "title": "Action",
+            "disableHeating": "Disable heating",
+            "set0target": "Set null target"
+          }
+        },
         "turboFactor": "Turbo mode coeff."
       },
 
