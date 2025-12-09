@@ -147,8 +147,19 @@ public:
     return topic;
   }
 
+  template <class DT, class VT> 
+  String getEntityIdWithPrefix(DT domain, VT value, char separator = '_') {
+    String topic = "";
+    topic.concat(domain);
+    topic.concat('.');
+    topic.concat(this->devicePrefix);
+    topic.concat(separator);
+    topic.concat(value);
+    return topic;
+  }
+
   template <class T> 
-  String getObjectIdWithPrefix(T value, char separator = '_') {
+  String getUniqueIdWithPrefix(T value, char separator = '_') {
     String topic = "";
     topic.concat(this->devicePrefix);
     topic.concat(separator);
