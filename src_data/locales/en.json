@@ -356,7 +356,16 @@
       },
 
       "heating": {
-        "hyst": "Hysteresis <small>(in degrees)</small>",
+        "hyst": {
+          "title": "Hysteresis",
+          "desc": "Hysteresis is useful for maintaining a set indoor temp (when using «Equitherm» and/or «PID»). Forces disable heating when <code>current indoor > target + value</code> and enable heating when <code>current indoor < (target - value)</code>.",
+          "value": "Value <small>(in degrees)</small>",
+          "action": {
+            "title": "Action",
+            "disableHeating": "Disable heating",
+            "set0target": "Set null target"
+          }
+        },
         "turboFactor": "Turbo mode coeff."
       },
 
@@ -371,11 +380,26 @@
       },
 
       "equitherm": {
-        "n": "N factor",
-        "k": "K factor",
-        "t": {
+        "slope": {
+          "title": "Slope",
+          "note": "Heat loss compensation. Main tuning parameter."
+        },
+        "exponent": {
+          "title": "Exponent",
+          "note": "Radiator efficiency.  Typical values: <code>1.1</code> - Floor heating, <code>1.2</code> - Cast iron, <code>1.3</code> - Panel radiators, <code>1.4</code> - Convectors."
+        },
+        "shift": {
+          "title": "Shift",
+          "note": "Compensates for additional heat losses (e.g., in pipes) or extra heat sources."
+        },
+        "targetDiffFactor": {
           "title": "T factor",
-          "note": "Not used if PID is enabled"
+          "note": "Not used if PID is enabled. Adds to the setpoint the difference between the target and current indoor temp: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Target indoor temperature",
+          "setpointTemp": "Heat carrier temperature",
+          "outdoorTemp": "Outdoor temperature"
         }
       },
 

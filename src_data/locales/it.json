@@ -356,7 +356,16 @@
       },
 
       "heating": {
-        "hyst": "Isteresi <small>(in gradi)</small>",
+        "hyst": {
+          "title": "Isteresi",
+          "desc": "L'isteresi è utile per mantenere una temperatura interna impostata (quando si utilizza «Equitherm» e/o «PID»). Forza la disabilitazione del riscaldamento quando <code>current indoor > target + value</code> e abilita il riscaldamento quando <code>current indoor < (target - value)</code>.",
+          "value": "Valore <small>(in gradi)</small>",
+          "action": {
+            "title": "Azione",
+            "disableHeating": "Disabilita riscaldamento",
+            "set0target": "Imposta target nullo"
+          }
+        },
         "turboFactor": "Turbo mode coeff."
       },
 
@@ -371,11 +380,26 @@
       },
 
       "equitherm": {
-        "n": "Fattore N",
-        "k": "Fattore K",
-        "t": {
+        "slope": {
+          "title": "Pendenza",
+          "note": "Compensazione della perdita di calore. Parametro di regolazione principale."
+        },
+        "exponent": {
+          "title": "Esponente",
+          "note": "Efficienza del radiatore. Valori tipici: <code>1.1</code> - Riscaldamento a pavimento, <code>1.2</code> - Ghisa, <code>1.3</code> - Radiatori a pannello, <code>1.4</code> - Convettori."
+        },
+        "shift": {
+          "title": "Spostamento",
+          "note": "Compensa perdite di calore aggiuntive (ad es., nelle tubature) o fonti di calore extra."
+        },
+        "targetDiffFactor": {
           "title": "Fattore T",
-          "note": "Non usato se PID è attivato"
+          "note": "Non utilizzato se PID è abilitato. Aggiunge al setpoint la differenza tra la temperatura target e quella interna attuale: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Temperatura interna target",
+          "setpointTemp": "Temperatura del vettore termico",
+          "outdoorTemp": "Temperatura esterna"
         }
       },
 

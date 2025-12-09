@@ -171,7 +171,7 @@ protected:
     vars.master.heating.enabled = this->isReady()
       && settings.heating.enabled
       && vars.cascadeControl.input 
-      && !vars.master.heating.blocking
+      && (!vars.master.heating.blocking || settings.heating.hysteresis.action != HysteresisAction::DISABLE_HEATING)
       && !vars.master.heating.overheat;
 
     // DHW settings
