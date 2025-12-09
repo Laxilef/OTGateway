@@ -358,7 +358,7 @@
       "heating": {
         "hyst": {
           "title": "Гистерезис",
-          "desc": "Гистерезис полезен для поддержания заданной внутр. темп. (при использовании «Equitherm» и/или «PID»). Принудительно откл. отопление, когда <code>current indoor > target + value</code>, и вкл. отопление, когда <code>current indoor < (target - value)</code>.",
+          "desc": "Гистерезис полезен для поддержания заданной внутр. темп. (при использовании «ПЗА» и/или «ПИД»). Принудительно откл. отопление, когда <code>current indoor > target + value</code>, и вкл. отопление, когда <code>current indoor < (target - value)</code>.",
           "value": "Значение <small>(в градусах)</small>",
           "action": {
             "title": "Действие",
