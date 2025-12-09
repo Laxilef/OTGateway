@@ -180,6 +180,9 @@ protected:
       && !vars.master.dhw.overheat;
     vars.master.dhw.targetTemp = settings.dhw.target;
 
+    //  (Outside Temperature Compensation)
+    bool OTC = false;
+
     // CH2 settings
     vars.master.ch2.enabled = settings.opentherm.options.ch2AlwaysEnabled
       || (settings.opentherm.options.heatingToCh2 && vars.master.heating.enabled)
@@ -218,6 +221,7 @@ protected:
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
       settings.opentherm.options.coolingSupport,
+      OTC,
       vars.master.ch2.enabled,
       summerWinterMode,
       dhwBlocking,
@@ -1209,7 +1213,7 @@ protected:
     }
 
     // if the 'always send Indoor temps' option is enabled, previously 'nativeHeating' option
-    if ( (settings.opentherm.options.alwaysSendIndoorTemp)) {
+    if (settings.opentherm.options.alwaysSendIndoorTemp) {
       // Converted current indoor temp
       float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 

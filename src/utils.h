@@ -1140,17 +1140,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-
   // pid
   if (src[FPSTR(S_PID)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_PID)][FPSTR(S_ENABLED)].as<bool>();
 
     if (value != dst.pid.enabled) {
       dst.pid.enabled = value;
-      changed = true;
-    }
-    else if (dst.pid.enabled) {
-      dst.pid.enabled = false;
       changed = true;
     }
   }
