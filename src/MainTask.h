@@ -609,7 +609,12 @@ protected:
       if (GPIO_IS_VALID(settings.externalPump.gpio)) {
         configuredGpio = settings.externalPump.gpio;
         pinMode(configuredGpio, OUTPUT);
-        digitalWrite(configuredGpio, LOW);
+        digitalWrite(
+          configuredGpio,
+          settings.externalPump.invertState
+            ? HIGH 
+            : LOW
+        );
 
       } else if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
         configuredGpio = GPIO_IS_NOT_CONFIGURED;
@@ -637,7 +642,12 @@ protected:
     
     if (!settings.externalPump.use) {
       if (vars.externalPump.state) {
-        digitalWrite(configuredGpio, LOW);
+        digitalWrite(
+          configuredGpio,
+          settings.externalPump.invertState
+            ? HIGH 
+            : LOW
+        );
 
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
@@ -650,7 +660,12 @@ protected:
 
     if (vars.externalPump.state && !this->heatingEnabled) {
       if (this->extPumpStartReason == MainTask::PumpStartReason::HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
-        digitalWrite(configuredGpio, LOW);
+        digitalWrite(
+          configuredGpio,
+          settings.externalPump.invertState
+            ? HIGH 
+            : LOW
+        );
 
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
@@ -658,7 +673,12 @@ protected:
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired post circulation time"));
 
       } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
-        digitalWrite(configuredGpio, LOW);
+        digitalWrite(
+          configuredGpio,
+          settings.externalPump.invertState
+            ? HIGH 
+            : LOW
+        );
 
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
@@ -674,7 +694,12 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
-      digitalWrite(configuredGpio, HIGH);
+      digitalWrite(
+        configuredGpio,
+        settings.externalPump.invertState
+          ? LOW 
+          : HIGH
+      );
 
       Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: heating on"));
 
@@ -683,7 +708,12 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;
 
-      digitalWrite(configuredGpio, HIGH);
+      digitalWrite(
+        configuredGpio,
+        settings.externalPump.invertState
+          ? LOW 
+          : HIGH
+      );
 
       Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: anti stuck"));
     }

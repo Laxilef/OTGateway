@@ -109,7 +109,8 @@
 
         "sConnected": "OpenTherm 通讯状态",
         "sFlame": "火焰",
-        "sCooling": "制冷",
+        "sCoolingActive": "制冷",
+        "sCoolingSetpoint": "冷却设定点",
         "sFaultActive": "报警状态",
         "sFaultCode": "报警代码",
         "sDiagActive": "诊断状态",
@@ -454,6 +455,7 @@
       "extPump": {
         "use": "使用外置循环泵",
         "gpio": "继电器 GPIO引脚",
+        "invertState": "切换 GPIO 状态",
         "postCirculationTime": "后循环时间 <small>(分钟)</small>",
         "antiStuckInterval": "防卡死间隔时间<small>(天)</small>",
         "antiStuckTime": "防卡死运行时长<small>(分钟)</small>"

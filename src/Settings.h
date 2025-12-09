@@ -167,6 +167,7 @@ struct Settings {
   struct {
     bool use = false;
     uint8_t gpio = DEFAULT_EXT_PUMP_GPIO;
+    bool invertState = false;
     unsigned short postCirculationTime = 600;
     unsigned int antiStuckInterval = 2592000;
     unsigned short antiStuckTime = 300;
@@ -334,9 +335,13 @@ struct Variables {
 
     bool connected = false;
     bool flame = false;
-    bool cooling = false;
     float pressure = 0.0f;
     float heatExchangerTemp = 0.0f;
+
+    struct {
+      bool active = false;
+      uint8_t setpoint = 0;
+    } cooling;
 
     struct {
       bool active = false;
