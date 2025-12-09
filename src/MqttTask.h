@@ -502,9 +502,10 @@ protected:
 
     // equitherm
     this->haHelper->publishSwitchEquitherm();
-    this->haHelper->publishInputEquithermFactorN(false);
-    this->haHelper->publishInputEquithermFactorK(false);
-    this->haHelper->publishInputEquithermFactorT(false);
+    this->haHelper->publishInputEquithermSlope(false);
+    this->haHelper->publishInputEquithermExponent(false);
+    this->haHelper->publishInputEquithermShift(false);
+    this->haHelper->publishInputEquithermTargetDiffFactor(false);
 
     // states
     this->haHelper->publishStatusState();
