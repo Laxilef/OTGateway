@@ -447,8 +447,8 @@ public:
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_UNIQUE_ID)] = this->getObjectIdWithPrefix(F("heating_hysteresis"));
-    doc[FPSTR(HA_OBJECT_ID)] = doc[FPSTR(HA_UNIQUE_ID)];
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_hysteresis"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("heating_hysteresis"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_NAME)] = F("Use heating hysteresis");
     doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
