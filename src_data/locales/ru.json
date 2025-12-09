@@ -356,7 +356,16 @@
       },
 
       "heating": {
-        "hyst": "Гистерезис <small>(в градусах)</small>",
+        "hyst": {
+          "title": "Гистерезис",
+          "desc": "Гистерезис полезен для поддержания заданной внутр. темп. (при использовании «Equitherm» и/или «PID»). Принудительно откл. отопление, когда <code>current indoor > target + value</code>, и вкл. отопление, когда <code>current indoor < (target - value)</code>.",
+          "value": "Значение <small>(в градусах)</small>",
+          "action": {
+            "title": "Действие",
+            "disableHeating": "Отключить отопление",
+            "set0target": "Установить 0 в качестве целевой темп."
+          }
+        },
         "turboFactor": "Коэфф. турбо режима"
       },
 

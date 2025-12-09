@@ -356,7 +356,16 @@
       },
 
       "heating": {
-        "hyst": "Isteresi <small>(in gradi)</small>",
+        "hyst": {
+          "title": "Isteresi",
+          "desc": "L'isteresi è utile per mantenere una temperatura interna impostata (quando si utilizza «Equitherm» e/o «PID»). Forza la disabilitazione del riscaldamento quando <code>current indoor > target + value</code> e abilita il riscaldamento quando <code>current indoor < (target - value)</code>.",
+          "value": "Valore <small>(in gradi)</small>",
+          "action": {
+            "title": "Azione",
+            "disableHeating": "Disabilita riscaldamento",
+            "set0target": "Imposta target nullo"
+          }
+        },
         "turboFactor": "Turbo mode coeff."
       },
 
