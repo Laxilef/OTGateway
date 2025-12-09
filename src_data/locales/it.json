@@ -361,7 +361,7 @@
       },
 
       "emergency": {
-        "desc": "Il modo emergenza è attivato automaticamente quando «PID» o «Equitherm» non possono calcolare il setpoint:<br />- se «Equitherm» è attivato e il sensore della temperatura esternare è disconnesso;<br />- se «PID» o l'opzione OT <i>«Impostazioni riscaldamento native»</i> è attiva e il sensore di temperatura interno è disconnesso.<br /><b>Nota:</b> In mancanza di rete o MQTT, sensore di tipo <i>«Manuale via MQTT/API»</i> è in stato Disconnesso.",
+        "desc": "Il modo emergenza è attivato automaticamente quando «PID» o «Equitherm» non possono calcolare il setpoint:<br />- se «Equitherm» è attivato e il sensore della temperatura esternare è disconnesso;<br />- se «PID» è attiva e il sensore di temperatura interno è disconnesso.<br /><b>Nota:</b> In mancanza di rete o MQTT, sensore di tipo <i>«Manuale via MQTT/API»</i> è in stato Disconnesso.",
         
         "target": {
           "title": "Temperatura impostata",
@@ -434,11 +434,6 @@
           "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
           "setDateAndTime": "Imposta data e ora sulla caldaia",
           "immergasFix": "Fix per caldiaie Immergas"
-        },
-
-        "nativeHeating": {
-          "title": "Controllo del riscaldamento nativo (caldaia)",
-          "note": "Lavora <u>SOLO</u> se la caldaia richiede la temperatura ambiente desiderata e regola autonomamente la temperatura del fluido. Non compatiblile con regolazioni PID e Equitherm del sistema."
         }
       },
 

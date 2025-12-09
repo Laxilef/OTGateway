@@ -78,9 +78,8 @@ struct Settings {
       bool autoFaultReset = false;
       bool autoDiagReset = false;
       bool setDateAndTime = false;
-      bool nativeHeatingControl = false;
       bool immergasFix = false;
-      bool alwaysSendIndoorTemp = false;
+      bool alwaysSendIndoorTemp = true;
     } options;
   } opentherm;
 

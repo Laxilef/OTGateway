@@ -218,7 +218,6 @@ protected:
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
       settings.opentherm.options.coolingSupport,
-      settings.opentherm.options.nativeHeatingControl,
       vars.master.ch2.enabled,
       summerWinterMode,
       dhwBlocking,
@@ -911,7 +910,7 @@ protected:
 
     // Update CH2 temp
     if (Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP, true)) {
-      if (vars.master.ch2.enabled && !settings.opentherm.options.nativeHeatingControl) {
+      if (vars.master.ch2.enabled) {
         if (this->updateCh2Temp()) {
           float convertedCh2Temp = convertTemp(
             vars.slave.ch2.currentTemp,
@@ -1209,8 +1208,8 @@ protected:
       }
     }
 
-    // Native heating control or if the always send Indoor temp option is enabled.
-    if ((settings.opentherm.options.nativeHeatingControl) || (settings.opentherm.options.alwaysSendIndoorTemp)) {
+    // if the 'always send Indoor temps' option is enabled, previously 'nativeHeating' option
+    if ( (settings.opentherm.options.alwaysSendIndoorTemp)) {
       // Converted current indoor temp
       float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
@@ -1274,7 +1273,7 @@ protected:
     }
 
     // Normal heating control
-    if (!settings.opentherm.options.nativeHeatingControl && vars.master.heating.enabled) {
+    if (vars.master.heating.enabled) {
       // Converted target heating temp
       float convertedTemp = convertTemp(vars.master.heating.setpointTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
@@ -1311,7 +1310,7 @@ protected:
     }
 
     // Set CH2 temp
-    if (!settings.opentherm.options.nativeHeatingControl && vars.master.ch2.enabled) {
+    if (vars.master.ch2.enabled) {
       if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2) {
         // Converted target CH2 temp
         float convertedTemp = convertTemp(

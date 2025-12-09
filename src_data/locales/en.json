@@ -361,11 +361,11 @@
       },
 
       "emergency": {
-        "desc": "Emergency mode is activated automatically when «PID» or «Equitherm» cannot calculate the heat carrier setpoint:<br />- if «Equitherm» is enabled and the outdoor temperature sensor is disconnected;<br />- if «PID» or OT option <i>«Native heating control»</i> is enabled and the indoor temperature sensor is disconnected.<br /><b>Note:</b> On network fault or MQTT fault, sensors with <i>«Manual via MQTT/API»</i> type will be in DISCONNECTED state.",
+        "desc": "Emergency mode is activated automatically when «PID» or «Equitherm» cannot calculate the heat carrier setpoint:<br />- if «Equitherm» is enabled and the outdoor temperature sensor is disconnected;<br />- if «PID» is enabled and the indoor temperature sensor is disconnected.<br /><b>Note:</b> On network fault or MQTT fault, sensors with <i>«Manual via MQTT/API»</i> type will be in DISCONNECTED state.",
         
         "target": {
           "title": "Target temperature",
-          "note": "<b>Important:</b> <u>Target indoor temperature</u> if OT option <i>«Native heating control»</i> is enabled.<br />In all other cases, the <u>target heat carrier temperature</u>."
+          "note": "<b>Important:</b> <u>Target indoor temperature</u> the <u>target heat carrier temperature</u>."
         },
         "treshold": "Treshold time <small>(sec)</small>"
       },
@@ -434,12 +434,7 @@
           "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
           "setDateAndTime": "Set date & time on boiler",
           "immergasFix": "Fix for Immergas boilers",
-          "alwaysSendIndoorTemp": "Always send current and target indoor temp"
-        },
-
-        "nativeHeating": {
-          "title": "Native heating control (boiler)",
-          "note": "Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators in firmware."
+          "alwaysSendIndoorTemp": "Always send current and target indoor temp, useful for logging or native heating control"
         }
       },
 

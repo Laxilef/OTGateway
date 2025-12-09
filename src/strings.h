@@ -141,7 +141,6 @@ const char S_MODEL[]                                PROGMEM = "model";
 const char S_MODULATION[]                           PROGMEM = "modulation";
 const char S_MQTT[]                                 PROGMEM = "mqtt";
 const char S_NAME[]                                 PROGMEM = "name";
-const char S_NATIVE_HEATING_CONTROL[]               PROGMEM = "nativeHeatingControl";
 const char S_NETWORK[]                              PROGMEM = "network";
 const char S_NTP[]                                  PROGMEM = "ntp";
 const char S_N_FACTOR[]                             PROGMEM = "n_factor";

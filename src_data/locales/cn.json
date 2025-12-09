@@ -434,11 +434,6 @@
           "autoDiagReset": "自动诊断复位 <small>(不推荐！)</small>",
           "setDateAndTime": "同步设置锅炉日期与时间",
           "immergasFix": "针对Immergas锅炉的兼容性修复"
-        },
-
-        "nativeHeating": {
-          "title": "原生锅炉供暖控制",
-          "note": "<u>注意：</u> 仅适用于锅炉需接收目标室温并自主调节载热介质温度的场景，与固件中的PID及Equithermq气候补偿功能不兼容。"
         }
       },
 

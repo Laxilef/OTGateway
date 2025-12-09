@@ -318,10 +318,6 @@ protected:
       if (!settings.equitherm.enabled && settings.pid.enabled) {
         emergencyFlags |= 0b00000010;
       }
-      
-      if (settings.opentherm.options.nativeHeatingControl) {
-        emergencyFlags |= 0b00000100;
-      }
     }
 
     // if any flags is true

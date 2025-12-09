@@ -331,7 +331,7 @@
         "turboFactor": "Turbomodus coëff."
       },
       "emergency": {
-        "desc": "Noodmodus wordt automatisch geactiveerd wanneer «PID» of «Equitherm» het instelpunt van de warmtedrager niet kan berekenen:<br />- als «Equitherm» is ingeschakeld en de buitentemperatuursensor is losgekoppeld;<br />- als «PID» of OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld en de binnentemperatuursensor is losgekoppeld.<br /><b>Let op:</b> Bij een netwerk- of MQTT-storing krijgen sensoren van het type <i>«Handmatig via MQTT/API»</i> de status ONVERBONDEN.",
+        "desc": "Noodmodus wordt automatisch geactiveerd wanneer «PID» of «Equitherm» het instelpunt van de warmtedrager niet kan berekenen:<br />- als «Equitherm» is ingeschakeld en de buitentemperatuursensor is losgekoppeld;<br />- als «PID» is ingeschakeld en de binnentemperatuursensor is losgekoppeld.<br /><b>Let op:</b> Bij een netwerk- of MQTT-storing krijgen sensoren van het type <i>«Handmatig via MQTT/API»</i> de status ONVERBONDEN.",
         "target": {
           "title": "Doeltemperatuur",
           "note": "<b>Belangrijk:</b> <u>Doel binnentemperatuur</u> als OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld.<br />In alle andere gevallen, de <u>doel warmtedragertemperatuur</u>."
@@ -399,10 +399,6 @@
           "autoDiagReset": "Automatische diagnosereset <small>(niet aanbevolen!)</small>",
           "setDateAndTime": "Stel datum & tijd in op ketel",
           "immergasFix": "Fix voor Immergas-ketels"
-        },
-        "nativeHeating": {
-          "title": "Natuurlijke verwarmingsregeling (ketel)",
-          "note": "Werkt <u>ALLEEN</u> als de ketel de gewenste kamertemperatuur vereist en zelf de temperatuur van de warmtedrager regelt. Niet compatibel met PID- en Equitherm-regelaars in de firmware."
         }
       },
       "mqtt": {
