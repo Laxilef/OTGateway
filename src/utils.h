@@ -468,9 +468,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_AUTO_FAULT_RESET)] = src.opentherm.options.autoFaultReset;
     otOptions[FPSTR(S_AUTO_DIAG_RESET)] = src.opentherm.options.autoDiagReset;
     otOptions[FPSTR(S_SET_DATE_AND_TIME)] = src.opentherm.options.setDateAndTime;
+    otOptions[FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)] = src.opentherm.options.alwaysSendIndoorTemp;
     otOptions[FPSTR(S_NATIVE_OTC)] = src.opentherm.options.nativeOTC;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
-    otOptions[FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)] = src.opentherm.options.alwaysSendIndoorTemp;
+    
 
     auto mqtt = dst[FPSTR(S_MQTT)].to<JsonObject>();
     mqtt[FPSTR(S_ENABLED)] = src.mqtt.enabled;
@@ -1004,6 +1005,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].as<bool>();
+
+      if (value != dst.opentherm.options.alwaysSendIndoorTemp) {
+        dst.opentherm.options.alwaysSendIndoorTemp = value;
+        changed = true;
+      }
+    }
+
     if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_OTC)].is<bool>()) {
       bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_OTC)].as<bool>();
 
@@ -1024,15 +1034,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.immergasFix) {
         dst.opentherm.options.immergasFix = value;
-        changed = true;
-      }
-    }
-
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].as<bool>();
-
-      if (value != dst.opentherm.options.alwaysSendIndoorTemp) {
-        dst.opentherm.options.alwaysSendIndoorTemp = value;
         changed = true;
       }
     }
