@@ -1209,8 +1209,8 @@ protected:
       }
     }
 
-    // Native heating control
-    if (settings.opentherm.options.nativeHeatingControl) {
+    // Set indoor temp for Native heating control/Always set indoor temp
+    if (settings.opentherm.options.nativeHeatingControl || settings.opentherm.options.alwaysSetIndoorTemp) {
       // Converted current indoor temp
       float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
@@ -1237,10 +1237,13 @@ protected:
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current CH2 indoor temp"));
         }
       }
+    }
 
 
+    // Native heating control
+    if (settings.opentherm.options.nativeHeatingControl) {
       // Converted target indoor temp
-      convertedTemp = convertTemp(vars.master.heating.targetTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      float convertedTemp = convertTemp(vars.master.heating.targetTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
       // Set target indoor temp
       if (this->needSetHeatingTemp(convertedTemp)) {

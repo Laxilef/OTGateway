@@ -38,6 +38,7 @@ const char S_ACTION[]                               PROGMEM = "action";
 const char S_ACTIONS[]                              PROGMEM = "actions";
 const char S_ACTIVE[]                               PROGMEM = "active";
 const char S_ADDRESS[]                              PROGMEM = "address";
+const char S_ALWAYS_SET_INDOOR_TEMP[]               PROGMEM = "alwaysSetIndoorTemp";
 const char S_ANTI_STUCK_INTERVAL[]                  PROGMEM = "antiStuckInterval";
 const char S_ANTI_STUCK_TIME[]                      PROGMEM = "antiStuckTime";
 const char S_AP[]                                   PROGMEM = "ap";

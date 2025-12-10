@@ -468,6 +468,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_AUTO_FAULT_RESET)] = src.opentherm.options.autoFaultReset;
     otOptions[FPSTR(S_AUTO_DIAG_RESET)] = src.opentherm.options.autoDiagReset;
     otOptions[FPSTR(S_SET_DATE_AND_TIME)] = src.opentherm.options.setDateAndTime;
+    otOptions[FPSTR(S_ALWAYS_SET_INDOOR_TEMP)] = src.opentherm.options.alwaysSetIndoorTemp;
     otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
 
@@ -999,6 +1000,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value != dst.opentherm.options.setDateAndTime) {
         dst.opentherm.options.setDateAndTime = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SET_INDOOR_TEMP)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SET_INDOOR_TEMP)].as<bool>();
+
+      if (value != dst.opentherm.options.alwaysSetIndoorTemp) {
+        dst.opentherm.options.alwaysSetIndoorTemp = value;
         changed = true;
       }
     }

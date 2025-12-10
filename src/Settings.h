@@ -78,6 +78,7 @@ struct Settings {
       bool autoFaultReset = false;
       bool autoDiagReset = false;
       bool setDateAndTime = false;
+      bool alwaysSetIndoorTemp = true;
       bool nativeHeatingControl = false;
       bool immergasFix = false;
     } options;
