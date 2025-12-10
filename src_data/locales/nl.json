@@ -422,11 +422,12 @@
           "autoFaultReset": "Automatische storingsreset <small>(niet aanbevolen!)</small>",
           "autoDiagReset": "Automatische diagnosereset <small>(niet aanbevolen!)</small>",
           "setDateAndTime": "Stel datum & tijd in op ketel",
-          "immergasFix": "Fix voor Immergas-ketels"
+          "immergasFix": "Fix voor Immergas-ketels",
+          "alwaysSendIndoorTemp": "Stuur altijd de stroom- en streeftemperatuur binnen naar de ketel"
         },
-        "nativeHeating": {
-          "title": "Natuurlijke verwarmingsregeling (ketel)",
-          "note": "Werkt <u>ALLEEN</u> als de ketel de gewenste kamertemperatuur vereist en zelf de temperatuur van de warmtedrager regelt. Niet compatibel met PID- en Equitherm-regelaars in de firmware."
+        "nativeOTC": {
+          "title": "Native (afgehandeld door de ketel) Buitentemperatuurcompensatie",
+          "note": "Werkt <u>ALLEEN</u> als de ketel de temperatuur van de koelvloeistof zelf regelt. Geteste. Niet compatibel met PID- en Equitherm-regelaars in firmware"
         }
       },
       "mqtt": {

@@ -458,12 +458,12 @@
           "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
           "setDateAndTime": "Set date & time on boiler",
           "immergasFix": "Fix for Immergas boilers",
-          "alwaysSendIndoorTemp": "Always send current and target indoor temp"
+          "alwaysSendIndoorTemp": "Always send current and target indoor temp to boiler"
         },
 
-        "nativeHeating": {
-          "title": "Native heating control (boiler)",
-          "note": "Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators in firmware."
+        "nativeOTC": {
+          "title": "Native (handled by boiler) Outside Temp Compensation",
+          "note": "Works <u>ONLY</u> if the boiler regulates the temperature of the coolant itself. Untested. Not compatible with PID and Equitherm regulators in firmware."
         }
       },
 

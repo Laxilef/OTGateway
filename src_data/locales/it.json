@@ -457,12 +457,13 @@
           "autoFaultReset": "Ripristino automatico degli errori <small>(sconsigliato!)</small>",
           "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
           "setDateAndTime": "Imposta data e ora sulla caldaia",
-          "immergasFix": "Fix per caldiaie Immergas"
+          "immergasFix": "Fix per caldiaie Immergas",
+          "alwaysSendIndoorTemp": "Invia sempre corrente e la temperatura interna target alla caldaia"
         },
 
-        "nativeHeating": {
-          "title": "Controllo del riscaldamento nativo (caldaia)",
-          "note": "Lavora <u>SOLO</u> se la caldaia richiede la temperatura ambiente desiderata e regola autonomamente la temperatura del fluido. Non compatiblile con regolazioni PID e Equitherm del sistema."
+        "nativeOTC": {
+          "title": "Compensazione della temperatura esterna nativa (gestita dalla caldaia)",
+          "note": "Lavora <u>SOLO</u> se la caldaia regola la temperatura del liquido refrigerante stesso. Testate. Non compatibile con i regolatori PID ed Equitherm nel firmware."
         }
       },
 
