@@ -1,7 +1,5 @@
-#include <Equitherm.h>
 #include <GyverPID.h>
 
-Equitherm etRegulator;
 GyverPID pidRegulator(0, 0, 0);
 
 
@@ -59,12 +57,23 @@ protected:
     this->turbo();
     this->hysteresis();
 
-    vars.master.heating.targetTemp = settings.heating.target;
-    vars.master.heating.setpointTemp = roundf(constrain(
-      this->getHeatingSetpointTemp(),
-      this->getHeatingMinSetpointTemp(),
-      this->getHeatingMaxSetpointTemp()
-    ), 0);
+    if (vars.master.heating.blocking && settings.heating.hysteresis.action == HysteresisAction::SET_ZERO_TARGET) {
+      vars.master.heating.targetTemp = 0.0f;
+      vars.master.heating.setpointTemp = 0.0f;
+
+      // tick if PID enabled
+      if (settings.pid.enabled) {
+        this->getHeatingSetpointTemp();
+      }
+
+    } else {
+      vars.master.heating.targetTemp = settings.heating.target;
+      vars.master.heating.setpointTemp = roundf(constrain(
+        this->getHeatingSetpointTemp(),
+        this->getHeatingMinSetpointTemp(),
+        this->getHeatingMaxSetpointTemp()
+      ), 0);
+    }
 
     Sensors::setValueByType(
       Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.setpointTemp,
@@ -92,15 +101,15 @@ protected:
 
   void hysteresis() {
     bool useHyst = false;
-    if (settings.heating.hysteresis > 0.01f && this->indoorSensorsConnected) {
+    if (settings.heating.hysteresis.enabled && this->indoorSensorsConnected) {
       useHyst = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeHeatingControl;
     }
 
     if (useHyst) {
-      if (!vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target + 0.0001f >= settings.heating.hysteresis) {
+      if (!vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target + 0.0001f >= settings.heating.hysteresis.value) {
         vars.master.heating.blocking = true;
 
-      } else if (vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis)) {
+      } else if (vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target - 0.0001f <= -(settings.heating.hysteresis.value)) {
         vars.master.heating.blocking = false;
       }
 
@@ -146,39 +155,32 @@ protected:
 
     // if use equitherm
     if (settings.equitherm.enabled) {
-      unsigned short minTemp = settings.heating.minTemp;
-      unsigned short maxTemp = settings.heating.maxTemp;
-      float targetTemp = settings.heating.target;
-      float indoorTemp = vars.master.heating.indoorTemp;
-      float outdoorTemp = vars.master.heating.outdoorTemp;
+      float tempDelta = settings.heating.target - vars.master.heating.outdoorTemp;
+      float maxPoint = settings.heating.target - (
+        settings.heating.maxTemp - settings.heating.target
+      ) / settings.equitherm.slope;
 
-      if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
-        minTemp = f2c(minTemp);
-        maxTemp = f2c(maxTemp);
-        targetTemp = f2c(targetTemp);
-        indoorTemp = f2c(indoorTemp);
-        outdoorTemp = f2c(outdoorTemp);
+      float sf = (settings.heating.maxTemp - settings.heating.target) / pow(
+        settings.heating.target - maxPoint,
+        1.0f / settings.equitherm.exponent
+      );
+      float etResult = settings.heating.target + settings.equitherm.shift + sf * (
+        tempDelta >= 0 
+          ? pow(tempDelta, 1.0f / settings.equitherm.exponent) 
+          : -(pow(-(tempDelta), 1.0f / settings.equitherm.exponent))
+      );
+
+      // add diff
+      if (this->indoorSensorsConnected && !settings.pid.enabled && !settings.heating.turbo) {
+        etResult += constrain(
+          settings.heating.target - vars.master.heating.indoorTemp,
+          -3.0f,
+          3.0f
+        ) * settings.equitherm.targetDiffFactor;
       }
 
-      if (!this->indoorSensorsConnected || settings.pid.enabled) {
-        etRegulator.Kt = 0.0f;
-        etRegulator.indoorTemp = 0.0f;
-
-      } else {
-        etRegulator.Kt = settings.heating.turbo ? 0.0f : settings.equitherm.t_factor;
-        etRegulator.indoorTemp = indoorTemp;
-      }
-
-      etRegulator.setLimits(minTemp, maxTemp);
-      etRegulator.Kn = settings.equitherm.n_factor;
-      etRegulator.Kk = settings.equitherm.k_factor;
-      etRegulator.targetTemp = targetTemp;
-      etRegulator.outdoorTemp = outdoorTemp;
-      float etResult = etRegulator.getResult();
-
-      if (settings.system.unitSystem == UnitSystem::IMPERIAL) {
-        etResult = c2f(etResult);
-      }
+      // limit
+      etResult = constrain(etResult, settings.heating.minTemp, settings.heating.maxTemp);
 
       if (fabsf(prevEtResult - etResult) > 0.09f) {
         prevEtResult = etResult;
