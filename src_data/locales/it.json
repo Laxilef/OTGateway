@@ -458,12 +458,12 @@
           "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
           "setDateAndTime": "Imposta data e ora sulla caldaia",
           "immergasFix": "Fix per caldiaie Immergas",
-          "alwaysSendIndoorTemp": "Invia sempre corrente e la temperatura interna target alla caldaia"
+          "alwaysSendIndoorTemp": "Invia la temp attuale interna alla caldaia"
         },
 
         "nativeOTC": {
-          "title": "Compensazione della temperatura esterna nativa (gestita dalla caldaia)",
-          "note": "Lavora <u>SOLO</u> se la caldaia regola la temperatura del liquido refrigerante stesso. Testate. Non compatibile con i regolatori PID ed Equitherm nel firmware."
+          "title": "Modalità nativa di calcolo della temperatura del vettore termico",
+          "note": "Funziona <u>SOLO</u> se la caldaia è in modalità OTC: richiede e accetta la temperatura interna target e regola autonomamente la temperatura del vettore termico basata sulla modalità curve integrata. Incompatibile con PID e Equitherm."
         }
       },
 

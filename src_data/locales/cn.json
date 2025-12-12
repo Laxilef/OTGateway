@@ -458,12 +458,12 @@
           "autoDiagReset": "自动诊断复位 <small>(不推荐！)</small>",
           "setDateAndTime": "同步设置锅炉日期与时间",
           "immergasFix": "针对Immergas锅炉的兼容性修复",
-          "alwaysSendIndoorTemp": "一定要给锅炉输送电流和目标温度"
+          "alwaysSendIndoorTemp": "向锅炉发送当前室内温度"
         },
 
         "nativeOTC": {
-          "title": "本地（由锅炉处理）外部温度补偿",
-          "note": "只有 锅炉能调节冷却液温度时才有效。未经测试。固件中不兼容PID和Equitherm的调压器。"
+          "title": "原生热载体温度计算模式",
+          "note": "仅在锅炉处于 OTC 模式时<u>才</u>工作：需要并接受目标室内温度，并基于内置曲线模式自行调节热载体温度。与 PID 和 Equitherm 不兼容。"
         }
       },
 
