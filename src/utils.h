@@ -468,8 +468,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_AUTO_FAULT_RESET)] = src.opentherm.options.autoFaultReset;
     otOptions[FPSTR(S_AUTO_DIAG_RESET)] = src.opentherm.options.autoDiagReset;
     otOptions[FPSTR(S_SET_DATE_AND_TIME)] = src.opentherm.options.setDateAndTime;
-    otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
+    otOptions[FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)] = src.opentherm.options.alwaysSendIndoorTemp;
+    otOptions[FPSTR(S_NATIVE_OTC)] = src.opentherm.options.nativeOTC;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
+    
 
     auto mqtt = dst[FPSTR(S_MQTT)].to<JsonObject>();
     mqtt[FPSTR(S_ENABLED)] = src.mqtt.enabled;
@@ -1003,11 +1005,20 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_HEATING_CONTROL)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_HEATING_CONTROL)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].as<bool>();
 
-      if (value != dst.opentherm.options.nativeHeatingControl) {
-        dst.opentherm.options.nativeHeatingControl = value;
+      if (value != dst.opentherm.options.alwaysSendIndoorTemp) {
+        dst.opentherm.options.alwaysSendIndoorTemp = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_OTC)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_OTC)].as<bool>();
+
+      if (value != dst.opentherm.options.nativeOTC) {
+        dst.opentherm.options.nativeOTC = value;
 
         if (value) {
           dst.equitherm.enabled = false;
@@ -1026,7 +1037,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         changed = true;
       }
     }
-
 
     // mqtt
     if (src[FPSTR(S_MQTT)][FPSTR(S_ENABLED)].is<bool>()) {
@@ -1118,7 +1128,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (src[FPSTR(S_EQUITHERM)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_EQUITHERM)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (!dst.opentherm.options.nativeHeatingControl) {
+    if (!dst.opentherm.options.nativeOTC) {
       if (value != dst.equitherm.enabled) {
         dst.equitherm.enabled = value;
         changed = true;
@@ -1171,7 +1181,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (src[FPSTR(S_PID)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_PID)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (!dst.opentherm.options.nativeHeatingControl) {
+    if (!dst.opentherm.options.nativeOTC) {
       if (value != dst.pid.enabled) {
         dst.pid.enabled = value;
         changed = true;
@@ -1704,7 +1714,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   // force check emergency target
   {
     float value = !src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].isNull() ? src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].as<float>() : dst.emergency.target;
-    bool noRegulators = !dst.opentherm.options.nativeHeatingControl;
+    bool noRegulators = !dst.opentherm.options.nativeOTC;
     bool valid = isValidTemp(
       value,
       dst.system.unitSystem,
@@ -1729,7 +1739,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // force check heating target
   {
-    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.options.nativeHeatingControl;
+    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.options.nativeOTC;
     float minTemp = indoorTempControl ? THERMOSTAT_INDOOR_MIN_TEMP : dst.heating.minTemp;
     float maxTemp = indoorTempControl ? THERMOSTAT_INDOOR_MAX_TEMP : dst.heating.maxTemp;
 

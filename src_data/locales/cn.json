@@ -457,12 +457,13 @@
           "autoFaultReset": "自动报警复位 <small>(不推荐！)</small>",
           "autoDiagReset": "自动诊断复位 <small>(不推荐！)</small>",
           "setDateAndTime": "同步设置锅炉日期与时间",
-          "immergasFix": "针对Immergas锅炉的兼容性修复"
+          "immergasFix": "针对Immergas锅炉的兼容性修复",
+          "alwaysSendIndoorTemp": "一定要给锅炉输送电流和目标温度"
         },
 
-        "nativeHeating": {
-          "title": "原生锅炉供暖控制",
-          "note": "<u>注意：</u> 仅适用于锅炉需接收目标室温并自主调节载热介质温度的场景，与固件中的PID及Equithermq气候补偿功能不兼容。"
+        "nativeOTC": {
+          "title": "本地（由锅炉处理）外部温度补偿",
+          "note": "只有 锅炉能调节冷却液温度时才有效。未经测试。固件中不兼容PID和Equitherm的调压器。"
         }
       },
 
