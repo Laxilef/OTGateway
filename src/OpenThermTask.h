@@ -1209,8 +1209,8 @@ protected:
       }
     }
 
-    // NativeOTC or if the AlwaysSendIndoorTemp option is enabled.
-    if ((settings.opentherm.options.nativeOTC) || (settings.opentherm.options.alwaysSendIndoorTemp)) {
+    // Send indoor temp if AlwaysSendIndoorTemp option is enabled.
+    if (settings.opentherm.options.nativeOTC || settings.opentherm.options.alwaysSendIndoorTemp) {
       // Converted current indoor temp
       float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
@@ -1237,9 +1237,12 @@ protected:
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current CH2 indoor temp"));
         }
       }
+    }
 
+    // NativeOTC
+    if (settings.opentherm.options.nativeOTC) {
       // Converted target indoor temp
-      convertedTemp = convertTemp(vars.master.heating.targetTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      float convertedTemp = convertTemp(vars.master.heating.targetTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
       // Set target indoor temp
       if (this->needSetHeatingTemp(convertedTemp)) {
