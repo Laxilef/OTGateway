@@ -2131,7 +2131,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   slave[FPSTR(S_FLAGS)] = src.slave.flags;
   slave[FPSTR(S_TYPE)] = src.slave.type;
   slave[FPSTR(S_APP_VERSION)] = src.slave.appVersion;
-  slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.appVersion;
+  slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.protocolVersion;
   slave[FPSTR(S_CONNECTED)] = src.slave.connected;
   slave[FPSTR(S_FLAME)] = src.slave.flame;
 
