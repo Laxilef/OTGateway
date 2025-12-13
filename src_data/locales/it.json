@@ -243,6 +243,7 @@
         "otDhwBurnerHours": "OpenTherm, numero di ore di funzionamento del bruciatore (ACS)",
         "otHeatingPumpHours": "OpenTherm, numero di ore di funzionamento della pompa (riscaldamento)",
         "otDhwPumpHours": "OpenTherm, numero di ore di funzionamento della pompa (ACS)",
+        "otCoolingHours": "OpenTherm, numero di ore di funzionamento della cooling",
         
         "ntcTemp": "Sensore NTC",
         "dallasTemp": "Sensore DALLAS",

@@ -305,6 +305,7 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_HOURS, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_HOURS, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_COOLING_HOURS, false);
 
       this->initialized = false;
       this->disconnectedTime = millis();
@@ -674,6 +675,21 @@ protected:
 
         } else {
           Log.swarningln(FPSTR(L_OT), F("Failed receive DHW pump hours"));
+        }
+      }
+
+      // Update cooling hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_COOLING_HOURS, true)) {
+        if (this->updateCoolingHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received cooling hours: %hu"), vars.slave.stats.coolingHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_COOLING_HOURS, vars.slave.stats.coolingHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive cooling hours"));
         }
       }
 
@@ -2167,6 +2183,25 @@ protected:
     }
 
     vars.slave.stats.dhwPumpHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
+  bool updateCoolingHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CoolingOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CoolingOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.coolingHours = CustomOpenTherm::getUInt(response);
 
     return true;
   }

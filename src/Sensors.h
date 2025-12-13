@@ -34,6 +34,7 @@ public:
     OT_DHW_BURNER_HOURS     = 24,
     OT_HEATING_PUMP_HOURS   = 25,
     OT_DHW_PUMP_HOURS       = 26,
+    OT_COOLING_HOURS        = 27,
     
     NTC_10K_TEMP            = 50,
     DALLAS_TEMP             = 51,

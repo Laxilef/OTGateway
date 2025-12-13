@@ -243,6 +243,7 @@
         "otDhwBurnerHours": "OpenTherm, number of burner operating hours (DHW)",
         "otHeatingPumpHours": "OpenTherm, number of pump operating hours (heating)",
         "otDhwPumpHours": "OpenTherm, number of pump operating hours (DHW)",
+        "otCoolingHours": "OpenTherm, number of cooling hours",
         
         "ntcTemp": "NTC 传感器",
         "dallasTemp": "DALLAS 传感器",

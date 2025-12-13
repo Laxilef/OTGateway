@@ -222,6 +222,8 @@
         "otDhwBurnerHours": "OpenTherm, aantal branderuren (warm water)",
         "otHeatingPumpHours": "OpenTherm, aantal pompuren (verwarming)",
         "otDhwPumpHours": "OpenTherm, aantal pompuren (warm water)",
+        "otCoolingHours": "OpenTherm, aantal cooling",
+
         "ntcTemp": "NTC-sensor",
         "dallasTemp": "DALLAS-sensor",
         "bluetooth": "BLE-sensor",

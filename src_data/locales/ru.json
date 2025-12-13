@@ -243,6 +243,7 @@
         "otDhwBurnerHours": "OpenTherm, кол-во часов работы горелки (ГВС)",
         "otHeatingPumpHours": "OpenTherm, кол-во часов работы насоса (отопление)",
         "otDhwPumpHours": "OpenTherm, кол-во часов работы насоса (ГВС)",
+        "otCoolingHours": "OpenTherm, кол-во часов работы охлаждения",
         
         "ntcTemp": "NTC датчик",
         "dallasTemp": "DALLAS датчик",
