@@ -34,6 +34,7 @@ public:
     OT_DHW_BURNER_HOURS     = 24,
     OT_HEATING_PUMP_HOURS   = 25,
     OT_DHW_PUMP_HOURS       = 26,
+    OT_COOLING_HOURS        = 27,
     
     NTC_10K_TEMP            = 50,
     DALLAS_TEMP             = 51,
@@ -149,7 +150,7 @@ public:
 
   static int16_t getIdByName(const char* name) {
     if (settings == nullptr) {
-      return 0;
+      return -1;
     }
 
     for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
@@ -163,7 +164,7 @@ public:
 
   static int16_t getIdByObjectId(const char* objectId) {
     if (settings == nullptr) {
-      return 0;
+      return -1;
     }
 
     String refObjectId;
@@ -329,12 +330,12 @@ public:
 
   static float getMeanValueByPurpose(Purpose purpose, const ValueType valueType, bool onlyConnected = true) {
     if (settings == nullptr || results == nullptr) {
-      return 0;
+      return 0.0f;
     }
 
     uint8_t valueId = (uint8_t) valueType;
     if (!isValidValueId(valueId)) {
-      return 0;
+      return 0.0f;
     }
     
     float value = 0.0f;
@@ -363,7 +364,7 @@ public:
 
   static bool existsConnectedSensorsByPurpose(Purpose purpose) {
     if (settings == nullptr || results == nullptr) {
-      return 0;
+      return false;
     }
 
     for (uint8_t id = 0; id <= getMaxSensorId(); id++) {

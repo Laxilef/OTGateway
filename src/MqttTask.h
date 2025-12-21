@@ -486,6 +486,7 @@ protected:
   void publishHaEntities() {
     // heating
     this->haHelper->publishSwitchHeatingTurbo(false);
+    this->haHelper->publishSwitchHeatingHysteresis();
     this->haHelper->publishInputHeatingHysteresis(settings.system.unitSystem);
     this->haHelper->publishInputHeatingTurboFactor(false);
     this->haHelper->publishInputHeatingMinTemp(settings.system.unitSystem);
@@ -502,9 +503,10 @@ protected:
 
     // equitherm
     this->haHelper->publishSwitchEquitherm();
-    this->haHelper->publishInputEquithermFactorN(false);
-    this->haHelper->publishInputEquithermFactorK(false);
-    this->haHelper->publishInputEquithermFactorT(false);
+    this->haHelper->publishInputEquithermSlope(false);
+    this->haHelper->publishInputEquithermExponent(false);
+    this->haHelper->publishInputEquithermShift(false);
+    this->haHelper->publishInputEquithermTargetDiffFactor(false);
 
     // states
     this->haHelper->publishStatusState();

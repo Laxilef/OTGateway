@@ -77,7 +77,8 @@ struct Settings {
       bool autoFaultReset = false;
       bool autoDiagReset = false;
       bool setDateAndTime = false;
-      bool nativeHeatingControl = false;
+      bool alwaysSendIndoorTemp = true;
+      bool nativeOTC = false;
       bool immergasFix = false;
     } options;
   } opentherm;
@@ -102,11 +103,16 @@ struct Settings {
     bool enabled = true;
     bool turbo = false;
     float target = DEFAULT_HEATING_TARGET_TEMP;
-    float hysteresis = 0.5f;
     float turboFactor = 7.5f;
     uint8_t minTemp = DEFAULT_HEATING_MIN_TEMP;
     uint8_t maxTemp = DEFAULT_HEATING_MAX_TEMP;
     uint8_t maxModulation = 100;
+
+    struct {
+      bool enabled = true;
+      float value = 0.5f;
+      HysteresisAction action = HysteresisAction::DISABLE_HEATING;
+    } hysteresis;
 
     struct {
       uint8_t highTemp = 95;
@@ -153,9 +159,10 @@ struct Settings {
 
   struct {
     bool enabled = false;
-    float n_factor = 0.7f;
-    float k_factor = 3.0f;
-    float t_factor = 2.0f;
+    float slope = 0.7f;
+    float exponent = 1.3f;
+    float shift = 0.0f;
+    float targetDiffFactor = 2.0f;
   } equitherm;
 
   struct {
@@ -381,6 +388,7 @@ struct Variables {
       uint16_t dhwBurnerStarts = 0;
       uint16_t heatingPumpStarts = 0;
       uint16_t dhwPumpStarts = 0;
+      uint16_t coolingHours = 0;
       uint16_t burnerHours = 0;
       uint16_t dhwBurnerHours = 0;
       uint16_t heatingPumpHours = 0;

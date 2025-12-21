@@ -5,8 +5,13 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
   }
 
   form.querySelectorAll('input').forEach(item => {
-    item.addEventListener('change', (e) => {
-      e.target.setAttribute('aria-invalid', !e.target.checkValidity());
+    item.addEventListener('change', (event) => {
+      if (!event.target.checkValidity()) {
+        event.target.setAttribute('aria-invalid', true);
+
+      } else if (event.target.hasAttribute('aria-invalid')) {
+        event.target.removeAttribute('aria-invalid');
+      }
     })
   });
 
@@ -636,6 +641,10 @@ const setCheckboxValue = (selector, value, parent = undefined) => {
   }
 
   item.checked = value;
+
+  setTimeout(() => {
+    item.dispatchEvent(new Event("change"));
+  }, 10);
 }
 
 const setRadioValue = (selector, value, parent = undefined) => {
@@ -649,7 +658,14 @@ const setRadioValue = (selector, value, parent = undefined) => {
   }
 
   for (let item of items) {
-    item.checked = item.value == value;
+    const checked = item.value == value;
+    if (item.checked != checked) {
+      item.checked = checked;
+
+      setTimeout(() => {
+        item.dispatchEvent(new Event("change"));
+      }, 10);
+    }
   }
 }
 
@@ -664,13 +680,17 @@ const setInputValue = (selector, value, attrs = {}, parent = undefined) => {
   }
 
   for (let item of items) {
-    item.value = value;
-
     if (attrs instanceof Object) {
       for (let attrKey of Object.keys(attrs)) {
         item.setAttribute(attrKey, attrs[attrKey]);
       }
     }
+
+    item.value = value;
+
+    setTimeout(() => {
+      item.dispatchEvent(new Event("change"));
+    }, 10);
   }
 }
 
@@ -859,4 +879,12 @@ function dec2hex(i) {
 
 function constrain(amt, low, high) {
   return ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)));
+}
+
+function c2f(value) {
+  return (9 / 5) * value + 32;
+}
+
+function f2c(value) {
+  return (value - 32) * (5 / 9);
 }

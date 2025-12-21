@@ -106,7 +106,7 @@
                       <option disabled selected data-i18n>settings.system.ntp.timezonePresets</option>
                     </select>
                   </div>
-                  </label>
+                </label>
               </fieldset>
 
               <fieldset>
@@ -188,20 +188,47 @@
 
               <div class="grid">
                 <label>
-                  <span data-i18n>settings.heating.hyst</span>
-                  <input type="number" inputmode="decimal" name="heating[hysteresis]" min="0" max="5" step="0.05" required>
-                </label>
-
-                <label>
                   <span data-i18n>settings.heating.turboFactor</span>
                   <input type="number" inputmode="decimal" name="heating[turboFactor]" min="1.5" max="10" step="0.1" required>
                 </label>
+
+                <label>
+                  <span data-i18n>settings.maxModulation</span>
+                  <input type="number" inputmode="numeric" name="heating[maxModulation]" min="1" max="100" step="1" required>
+                </label>
               </div>
 
-              <label>
-                <span data-i18n>settings.maxModulation</span>
-                <input type="number" inputmode="numeric" name="heating[maxModulation]" min="1" max="100" step="1" required>
-              </label>
+              <hr />
+
+              <details>
+                <summary><b data-i18n>settings.heating.hyst.title</b></summary>
+                
+                <div>
+                  <fieldset>
+                    <label>
+                      <input type="checkbox" name="heating[hysteresis][enabled]" value="true">
+                      <span data-i18n>settings.enable</span>
+                    </label>
+                  </fieldset>
+
+                  <div class="grid">
+                    <label>
+                      <span data-i18n>settings.heating.hyst.value</span>
+                      <input type="number" inputmode="decimal" name="heating[hysteresis][value]" min="0" max="5" step="0.05" required>
+                    </label>
+
+                    <label>
+                      <span data-i18n>settings.heating.hyst.action.title</span>
+                      <select name="heating[hysteresis][action]">
+                        <option value="0" data-i18n>settings.heating.hyst.action.disableHeating</option>
+                        <option value="1" data-i18n>settings.heating.hyst.action.set0target</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <small data-i18n>settings.heating.hyst.desc</small>
+              </details>
 
               <hr />
 
@@ -348,21 +375,44 @@
                 </label>
               </fieldset>
 
+              <div>
+                <div>
+                  <canvas id="etChart"></canvas>
+                </div>
+
+                <label>
+                  <div>
+                    <span data-i18n>settings.equitherm.chart.targetTemp</span>: <b class="etChartTargetTempValue"></b>°
+                  </div>
+                  <input class="etChartTargetTemp" type="range" value="0" min="0" max="0" step="0.5">
+                </label>
+              </div>
+
               <div class="grid">
                 <label>
-                  <span data-i18n>settings.equitherm.n</span>
-                  <input type="number" inputmode="decimal" name="equitherm[n_factor]" min="0.001" max="10" step="0.001" required>
+                  <span data-i18n>settings.equitherm.slope.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[slope]" min="0.001" max="10" step="0.001" required>
+                  <small data-i18n>settings.equitherm.slope.note</small>
                 </label>
 
                 <label>
-                  <span data-i18n>settings.equitherm.k</span>
-                  <input type="number" inputmode="decimal" name="equitherm[k_factor]" min="0" max="10" step="0.01" required>
+                  <span data-i18n>settings.equitherm.exponent.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[exponent]" min="0.1" max="2" step="0.001" required>
+                  <small data-i18n>settings.equitherm.exponent.note</small>
+                </label>
+              </div>
+
+              <div class="grid">
+                <label>
+                  <span data-i18n>settings.equitherm.shift.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[shift]" min="-15" max="15" step="0.01" required>
+                  <small data-i18n>settings.equitherm.shift.note</small>
                 </label>
 
                 <label>
-                  <span data-i18n>settings.equitherm.t.title</span>
-                  <input type="number" inputmode="decimal" name="equitherm[t_factor]" min="0" max="10" step="0.01" required>
-                  <small data-i18n>settings.equitherm.t.note</small>
+                  <span data-i18n>settings.equitherm.targetDiffFactor.title</span>
+                  <input type="number" inputmode="decimal" name="equitherm[targetDiffFactor]" min="0" max="10" step="0.01" required>
+                  <small data-i18n>settings.equitherm.targetDiffFactor.note</small>
                 </label>
               </div>
 
@@ -418,7 +468,7 @@
                       <span data-i18n>settings.temp.min</span>
                       <input type="number" inputmode="decimal" name="pid[minTemp]" min="0" max="0" step="1" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.temp.max</span>
                       <input type="number" inputmode="numeric" name="pid[maxTemp]" min="0" max="0" step="1" required>
@@ -447,12 +497,12 @@
                       <span data-i18n>settings.pid.deadband.p_multiplier</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][p_multiplier]" min="0" max="5" step="0.001" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.pid.deadband.i_multiplier</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][i_multiplier]" min="0" max="1" step="0.001" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.pid.deadband.d_multiplier</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][d_multiplier]" min="0" max="1" step="0.001" required>
@@ -464,7 +514,7 @@
                       <span data-i18n>settings.pid.deadband.thresholdHigh</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][thresholdHigh]" min="0" max="5" step="0.01" required>
                     </label>
-    
+
                     <label>
                       <span data-i18n>settings.pid.deadband.thresholdLow</span>
                       <input type="number" inputmode="decimal" name="pid[deadband][thresholdLow]" min="0" max="5" step="0.01" required>
@@ -636,17 +686,22 @@
                       <span data-i18n>settings.ot.options.immergasFix</span>
                     </label>
 
+                    <label>
+                      <input type="checkbox" name="opentherm[options][alwaysSendIndoorTemp]" value="true">
+                      <span data-i18n>settings.ot.options.alwaysSendIndoorTemp</span>
+                    </label>
+
                     <hr />
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][nativeHeatingControl]" value="true">
-                      <span data-i18n>settings.ot.nativeHeating.title</span><br />
-                      <small data-i18n>settings.ot.nativeHeating.note</small>
+                      <input type="checkbox" name="opentherm[options][nativeOTC]" value="true">
+                      <span data-i18n>settings.ot.nativeOTC.title</span><br />
+                      <small data-i18n>settings.ot.nativeOTC.note</small>
                     </label>
                   </fieldset>
                 </div>
               </details>
-              
+
               <br />
               <button type="submit" data-i18n>button.save</button>
             </form>
@@ -860,10 +915,162 @@
     </footer>
 
     <script src="/static/app.js?{BUILD_TIME}"></script>
+    <script src="/static/chart.js?{BUILD_TIME}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
         lang.build();
+
+        let etChart = null;
+        let etChartConfig = {
+          slope: null,
+          exponent: null,
+          shift: null,
+          unitSystem: null,
+          targetTemp: null,
+          minTemp: null,
+          maxTemp: null,
+          decimated: false
+        };
+
+        const hasNeedDecimationChart = () => {
+          return window.innerWidth <= 800;
+        }
+
+        const makeEquithermChart = () => {
+          if (etChart == null) {
+            const ctx = document.getElementById('etChart').getContext('2d');
+
+            try {
+              etChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                  datasets: [{
+                    borderColor: (context) => {
+                      const chart = context.chart;
+                      const { ctx, chartArea } = chart;
+
+                      if (!chartArea) {
+                        return;
+                      }
+
+                      const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                      gradient.addColorStop(0, 'rgba(1, 114, 173, 1)');
+                      gradient.addColorStop(0.5, 'rgba(255, 99, 132, 1)');
+
+                      return gradient;
+                    },
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    indexAxis: "x",
+                    data: []
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  resizeDelay: 500,
+                  parsing: false,
+                  interaction: {
+                    mode: 'nearest',
+                    intersect: false
+                  },
+                  plugins: {
+                    tooltip: {
+                      enabled: true,
+                      position: 'nearest',
+                      displayColors: false,
+                      callbacks: {
+                        title: (items) => {
+                          return `${i18n("settings.equitherm.chart.outdoorTemp")}: ${items[0].label}`;
+                        }
+                      }
+                    },
+                    legend: {
+                      display: false
+                    }
+                  },
+                  scales: {
+                    x: {
+                      display: true,
+                      type: "linear",
+                      reverse: true,
+                      title: {
+                        display: true
+                      },
+                      ticks: {
+                        stepSize: 1,
+                        format: {
+                          style: "unit",
+                          unit: "degree",
+                          unitDisplay: "narrow"
+                        }
+                      }
+                    },
+                    y: {
+                      display: true,
+                      title: {
+                        display: true
+                      },
+                      ticks: {
+                        format: {
+                          style: "unit",
+                          unit: "degree",
+                          unitDisplay: "narrow"
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+
+            } catch (error) {
+              console.log(error);
+            }
+          }
+
+          if (!etChart) {
+            return;
+          }
+
+          let data = [];
+          etChartConfig.decimated = hasNeedDecimationChart();
+          for (let value = 30; value >= -30; value -= etChartConfig.decimated ? 2 : 1) {
+            const outdoorTemp = etChartConfig.unitSystem == 0 ? value : c2f(value);
+
+            data.push({
+              x: parseFloat(outdoorTemp.toFixed(1)),
+              y: parseFloat(calculateEquithermTemp(outdoorTemp).toFixed(1))
+            });
+          }
+
+          etChart.data.datasets[0].data = data;
+          etChart.data.datasets[0].label = i18n("settings.equitherm.chart.setpointTemp");
+          etChart.options.scales.x.title.text = i18n("settings.equitherm.chart.outdoorTemp");
+          etChart.options.scales.y.title.text = i18n("settings.equitherm.chart.setpointTemp");
+          etChart.update();
+        }
+
+        const calculateEquithermTemp = (outdoorTemp) => {
+          const tempDelta = etChartConfig.targetTemp - outdoorTemp;
+          const maxPoint = etChartConfig.targetTemp - (
+            etChartConfig.maxTemp - etChartConfig.targetTemp
+          ) / etChartConfig.slope;
+
+          const sf = (etChartConfig.maxTemp - etChartConfig.targetTemp) / Math.pow(
+            etChartConfig.targetTemp - maxPoint,
+            1 / etChartConfig.exponent
+          );
+          const result = etChartConfig.targetTemp + etChartConfig.shift + sf * (
+            tempDelta >= 0
+              ? Math.pow(tempDelta, 1 / etChartConfig.exponent)
+              : -(Math.pow(-(tempDelta), 1 / etChartConfig.exponent))
+          );
+
+          return Math.max(Math.min(result, etChartConfig.maxTemp), etChartConfig.minTemp);
+        }
 
         const fillData = (data) => {
           // System
@@ -908,8 +1115,9 @@
           setCheckboxValue("[name='opentherm[options][autoFaultReset]']", data.opentherm.options.autoFaultReset);
           setCheckboxValue("[name='opentherm[options][autoDiagReset]']", data.opentherm.options.autoDiagReset);
           setCheckboxValue("[name='opentherm[options][setDateAndTime]']", data.opentherm.options.setDateAndTime);
-          setCheckboxValue("[name='opentherm[options][nativeHeatingControl]']", data.opentherm.options.nativeHeatingControl);
+          setCheckboxValue("[name='opentherm[options][nativeOTC]']", data.opentherm.options.nativeOTC);
           setCheckboxValue("[name='opentherm[options][immergasFix]']", data.opentherm.options.immergasFix);
+          setCheckboxValue("[name='opentherm[options][alwaysSendIndoorTemp]']", data.opentherm.options.alwaysSendIndoorTemp);
           setBusy('#ot-settings-busy', '#ot-settings', false);
 
           // MQTT
@@ -956,7 +1164,9 @@
             "min": data.system.unitSystem == 0 ? 1 : 33,
             "max": data.system.unitSystem == 0 ? 100 : 212
           });
-          setInputValue("[name='heating[hysteresis]']", data.heating.hysteresis);
+          setCheckboxValue("[name='heating[hysteresis][enabled]']", data.heating.hysteresis.enabled);
+          setInputValue("[name='heating[hysteresis][value]']", data.heating.hysteresis.value);
+          setSelectValue("[name='heating[hysteresis][action]']", data.heating.hysteresis.action);
           setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
           setInputValue("[name='heating[maxModulation]']", data.heating.maxModulation);
           setInputValue("[name='heating[overheatProtection][highTemp]']", data.heating.overheatProtection.highTemp, {
@@ -995,7 +1205,7 @@
           setBusy('#dhw-settings-busy', '#dhw-settings', false);
 
           // Emergency mode
-          if (data.opentherm.options.nativeHeatingControl) {
+          if (data.opentherm.options.nativeOTC) {
             setInputValue("[name='emergency[target]']", data.emergency.target, {
               "min": data.system.unitSystem == 0 ? 5 : 41,
               "max": data.system.unitSystem == 0 ? 40 : 104
@@ -1012,9 +1222,10 @@
 
           // Equitherm
           setCheckboxValue("[name='equitherm[enabled]']", data.equitherm.enabled);
-          setInputValue("[name='equitherm[n_factor]']", data.equitherm.n_factor);
-          setInputValue("[name='equitherm[k_factor]']", data.equitherm.k_factor);
-          setInputValue("[name='equitherm[t_factor]']", data.equitherm.t_factor);
+          setInputValue("[name='equitherm[slope]']", data.equitherm.slope);
+          setInputValue("[name='equitherm[exponent]']", data.equitherm.exponent);
+          setInputValue("[name='equitherm[shift]']", data.equitherm.shift);
+          setInputValue("[name='equitherm[targetDiffFactor]']", data.equitherm.targetDiffFactor);
           setBusy('#equitherm-settings-busy', '#equitherm-settings', false);
 
           // PID
@@ -1038,6 +1249,24 @@
           setInputValue("[name='pid[deadband][thresholdHigh]']", data.pid.deadband.thresholdHigh);
           setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
+
+          const etMinTemp = parseInt(data.system.unitSystem == 0 ? 5 : 41);
+          const etMaxTemp = parseInt(data.system.unitSystem == 0 ? 30 : 86);
+          const etTargetTemp = constrain(parseFloat(data.heating.target), etMinTemp, etMaxTemp);
+
+          setInputValue(".etChartTargetTemp", etTargetTemp.toFixed(1), {
+            "min": etMinTemp,
+            "max": etMaxTemp
+          });
+
+          etChartConfig.slope = data.equitherm.slope;
+          etChartConfig.exponent = data.equitherm.exponent;
+          etChartConfig.shift = data.equitherm.shift;
+          etChartConfig.unitSystem = data.system.unitSystem;
+          etChartConfig.minTemp = data.heating.minTemp;
+          etChartConfig.maxTemp = data.heating.maxTemp;
+
+          makeEquithermChart();
         };
 
         try {
@@ -1067,7 +1296,7 @@
             cache: "no-cache",
             credentials: "include"
           });
-          
+
           if (!response.ok) {
             throw new Error('Response not valid');
           }
@@ -1090,6 +1319,57 @@
         } catch (error) {
           console.log(error);
         }
+
+        document.querySelector(".etChartTargetTemp").addEventListener("input", async (event) => {
+          setValue('.etChartTargetTempValue', parseFloat(event.target.value).toFixed(1));
+        });
+
+        document.querySelector(".etChartTargetTemp").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.targetTemp = parseFloat(event.target.value);
+          setValue('.etChartTargetTempValue', etChartConfig.targetTemp.toFixed(1));
+          makeEquithermChart();
+        });
+
+        document.querySelector("[name='equitherm[slope]']").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.slope = parseFloat(event.target.value);
+          makeEquithermChart();
+        });
+
+        document.querySelector("[name='equitherm[exponent]']").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.exponent = parseFloat(event.target.value);
+          makeEquithermChart();
+        });
+
+        document.querySelector("[name='equitherm[shift]']").addEventListener("change", async (event) => {
+          if (!event.target.checkValidity()) {
+            return;
+          }
+
+          etChartConfig.shift = parseFloat(event.target.value);
+          makeEquithermChart();
+        });
+
+        window.addEventListener('resize', async (event) => {
+          if (etChart) {
+            etChart.resize();
+
+            if (etChartConfig.decimated != hasNeedDecimationChart()) {
+              makeEquithermChart();
+            }
+          }
+        });
       });
     </script>
   </body>

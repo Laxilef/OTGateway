@@ -70,50 +70,89 @@ public:
     }
   }
 
-  bool sendBoilerReset() {
-    unsigned int data = 1;
-    data <<= 8;
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::RemoteRequest,
-      data
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
+  inline auto sendBoilerReset() {
+    return this->sendRequestCode(1);
   }
 
-  bool sendServiceReset() {
-    unsigned int data = 10;
-    data <<= 8;
-    unsigned long response = this->sendRequest(buildRequest(
-      OpenThermMessageType::WRITE_DATA,
-      OpenThermMessageID::RemoteRequest,
-      data
-    ));
-
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
+  inline auto sendServiceReset() {
+    return this->sendRequestCode(10);
   }
 
-  bool sendWaterFilling() {
-    unsigned int data = 2;
-    data <<= 8;
+  inline auto sendWaterFilling() {
+    return this->sendRequestCode(2);
+  }
+
+  bool sendRequestCode(const uint8_t requestCode) {
     unsigned long response = this->sendRequest(buildRequest(
       OpenThermMessageType::WRITE_DATA,
       OpenThermMessageID::RemoteRequest,
-      data
+      static_cast<unsigned int>(requestCode) << 8
     ));
 
-    return isValidResponse(response) && isValidResponseId(response, OpenThermMessageID::RemoteRequest);
+    if (!isValidResponse(response) || !isValidResponseId(response, OpenThermMessageID::RemoteRequest)) {
+      return false;
+    }
+
+    const uint8_t responseRequestCode = (response & 0xFFFF) >> 8;
+    const uint8_t responseCode = response & 0xFF;
+    if (responseRequestCode != requestCode || responseCode < 128) {
+      return false;
+    }
+
+    // reset
+    this->sendRequest(buildRequest(
+      OpenThermMessageType::WRITE_DATA,
+      OpenThermMessageID::RemoteRequest,
+      0u << 8
+    ));
+
+    return true;
+  }
+
+  bool getStr(OpenThermMessageID id, char* buffer, uint16_t length = 50) {
+    if (buffer == nullptr || length == 0) {
+      return false;
+    }
+
+    unsigned long response;
+    uint8_t index = 0;
+    uint8_t maxIndex = 255;
+
+    while (index <= maxIndex && index < length) {
+      response = this->sendRequest(buildRequest(
+        OpenThermMessageType::READ_DATA,
+        id,
+        static_cast<unsigned int>(index) << 8
+      ));
+
+      if (!isValidResponse(response) || !isValidResponseId(response, id)) {
+        break;
+      }
+
+      const uint8_t character = response & 0xFF;
+      if (character == 0) {
+        break;
+      }
+
+      if (index == 0) {
+        maxIndex = (response & 0xFFFF) >> 8;
+      }
+
+      buffer[index++] = static_cast<char>(character);
+    }
+
+    buffer[index] = '\0';
+    return index > 0;
   }
 
   static bool isCh2Active(unsigned long response) {
-      return response & 0x20;
+    return response & 0x20;
   }
 
   static bool isValidResponseId(unsigned long response, OpenThermMessageID id) {
-    uint8_t responseId = (response >> 16) & 0xFF;
+    const uint8_t responseId = (response >> 16) & 0xFF;
 
-    return (uint8_t)id == responseId;
+    return static_cast<uint8_t>(id) == responseId;
   }
 
   static uint8_t getResponseMessageTypeId(unsigned long response) {
@@ -124,10 +163,10 @@ public:
     uint8_t msgType = getResponseMessageTypeId(response);
 
     switch (msgType) {
-      case (uint8_t) OpenThermMessageType::READ_ACK:
-      case (uint8_t) OpenThermMessageType::WRITE_ACK:
-      case (uint8_t) OpenThermMessageType::DATA_INVALID:
-      case (uint8_t) OpenThermMessageType::UNKNOWN_DATA_ID:
+      case static_cast<uint8_t>(OpenThermMessageType::READ_ACK):
+      case static_cast<uint8_t>(OpenThermMessageType::WRITE_ACK):
+      case static_cast<uint8_t>(OpenThermMessageType::DATA_INVALID):
+      case static_cast<uint8_t>(OpenThermMessageType::UNKNOWN_DATA_ID):
         return CustomOpenTherm::messageTypeToString(
           static_cast<OpenThermMessageType>(msgType)
         );
