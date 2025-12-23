@@ -241,12 +241,15 @@ protected:
 
       doc.shrinkToFit();
 
+      char filename[64];
+      getFilename(filename, sizeof(filename), "backup");
+
       char contentDispositionHeaderValue[128];
       snprintf_P(
         contentDispositionHeaderValue,
         sizeof(contentDispositionHeaderValue),
         PSTR("attachment; filename=\"%s\""),
-        getFilename("backup")
+        filename
       );
       this->webServer->sendHeader(F("Content-Disposition"), contentDispositionHeaderValue);
       this->bufferedWebServer->send(200, F("application/json"), doc);
@@ -846,12 +849,15 @@ protected:
       
       doc.shrinkToFit();
 
+      char filename[64];
+      getFilename(filename, sizeof(filename), "debug");
+
       char contentDispositionHeaderValue[128];
       snprintf_P(
         contentDispositionHeaderValue,
         sizeof(contentDispositionHeaderValue),
         PSTR("attachment; filename=\"%s\""),
-        getFilename("debug")
+        filename
       );
 
       this->webServer->sendHeader(F("Content-Disposition"), contentDispositionHeaderValue);
@@ -1062,13 +1068,11 @@ protected:
     this->dnsServerEnabled = false;
   }
 
-  static const char* getFilename(const char* type) {
-    static char filename[64];
+  static void getFilename(char* filename, size_t maxSizeFilename, const char* type) {
     const time_t now = time(nullptr);
     const tm* localNow = localtime(&now);
     char localNowValue[20];
     strftime(localNowValue, sizeof(localNowValue), PSTR("%Y-%m-%d-%H-%M-%S"), localNow);
-    snprintf_P(filename, sizeof(filename), PSTR("%s_%s_%s.json"), networkSettings.hostname, localNowValue, type);
-    return filename;
+    snprintf_P(filename, maxSizeFilename, PSTR("%s_%s_%s.json"), networkSettings.hostname, localNowValue, type);
   }
 };
