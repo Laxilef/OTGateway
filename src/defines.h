@@ -26,6 +26,8 @@
 #define DEFAULT_NTC_VLOW_TRESHOLD       25.0f
 #define DEFAULT_NTC_VHIGH_TRESHOLD      3298.0f
 
+#define DALLAS_DEFAULT_REGVAL_C         85
+
 #ifndef BUILD_VERSION
   #define BUILD_VERSION                 "0.0.0"
 #endif
