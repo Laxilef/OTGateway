@@ -350,10 +350,16 @@ protected:
           
           auto& rSensor = Sensors::results[sensorId];
           float value = instance.getTempC(sSensor.address);
-          if (value == DEVICE_DISCONNECTED_C) {
+          
+          Log.straceln(
+            FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', received data: %.2f"),
+            sSensor.gpio, sensorId, sSensor.name, value
+          );
+
+          if (value == DEVICE_DISCONNECTED_C || value == DALLAS_DEFAULT_REGVAL_C) {
             Log.swarningln(
-              FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s': failed receiving data"),
-              sSensor.gpio, sensorId, sSensor.name
+              FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s': failed receiving data, code: %.2f"),
+              sSensor.gpio, sensorId, sSensor.name, value
             );
 
             if (rSensor.signalQuality > 0) {
@@ -363,10 +369,7 @@ protected:
             continue;
           }
 
-          Log.straceln(
-            FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', received data: %.2f"),
-            sSensor.gpio, sensorId, sSensor.name, value
-          );
+
 
           if (rSensor.signalQuality < 100) {
             rSensor.signalQuality++;
