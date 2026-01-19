@@ -172,8 +172,19 @@ protected:
         sensorSettingsToJson(sensorId, Sensors::settings[sensorId], sensorsettingsDoc);
       }
 
+      char filename[64];
+      getFilename(filename, sizeof(filename), "backup");
+
+      char contentDispositionValue[128];
+      snprintf_P(
+        contentDispositionValue,
+        sizeof(contentDispositionValue),
+        PSTR("attachment; filename=\"%s\""),
+        filename
+      );
+
       // send response
-      response->addHeader("Content-Disposition", "attachment; filename=\"backup.json\"");
+      response->addHeader("Content-Disposition", contentDispositionValue);
       response->setLength();
       request->send(response);
     }).addMiddleware(&authMiddleware);
@@ -624,8 +635,19 @@ protected:
           docCrash[FPSTR(S_EPC)] = epcStr;
         }
       }
+      char filename[64];
+      getFilename(filename, sizeof(filename), "debug");
+
+      char contentDispositionValue[128];
+      snprintf_P(
+        contentDispositionValue,
+        sizeof(contentDispositionValue),
+        PSTR("attachment; filename=\"%s\""),
+        filename
+      );
+
       // send response
-      response->addHeader("Content-Disposition", "attachment; filename=\"debug.json\"");
+      response->addHeader("Content-Disposition", contentDispositionValue);
       response->setLength();
       request->send(response);
     }).addMiddleware(&authMiddleware);
@@ -782,5 +804,13 @@ protected:
     //this->dnsServer->processNextRequest();
     this->dnsServer->stop();
     this->dnsServerEnabled = false;
+  }
+
+  static void getFilename(char* filename, size_t maxSizeFilename, const char* type) {
+    const time_t now = time(nullptr);
+    const tm* localNow = localtime(&now);
+    char localNowValue[20];
+    strftime(localNowValue, sizeof(localNowValue), PSTR("%Y-%m-%d-%H-%M-%S"), localNow);
+    snprintf_P(filename, maxSizeFilename, PSTR("%s_%s_%s.json"), networkSettings.hostname, localNowValue, type);
   }
 };
