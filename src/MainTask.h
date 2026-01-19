@@ -6,7 +6,6 @@ extern NetworkMgr* network;
 extern MqttTask* tMqtt;
 extern OpenThermTask* tOt;
 extern FileData fsNetworkSettings, fsSettings, fsSensorsSettings;
-extern ESPTelnetStream* telnetStream;
 
 
 class MainTask : public Task {
@@ -40,7 +39,6 @@ protected:
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
   unsigned long externalPumpStartTime = 0;
   bool ntpStarted = false;
-  bool telnetStarted = false;
   bool emergencyDetected = false;
   unsigned long emergencyFlipTime = 0;
   bool freezeDetected = false;
@@ -110,9 +108,9 @@ protected:
     vars.network.connected = network->isConnected();
     vars.network.rssi = network->isConnected() ? WiFi.RSSI() : 0;
 
-    if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
+    if (settings.system.logLevel >= TinyLoggerLevel::SILENT && settings.system.logLevel <= TinyLoggerLevel::VERBOSE) {
       if (Log.getLevel() != settings.system.logLevel) {
-        Log.setLevel(static_cast<TinyLogger::Level>(settings.system.logLevel));
+        Log.setLevel(static_cast<TinyLoggerLevel>(settings.system.logLevel));
       }
     }
 
@@ -125,11 +123,6 @@ protected:
 
           this->ntpStarted = true;
         }
-      }
-
-      if (!this->telnetStarted && telnetStream != nullptr) {
-        telnetStream->begin(23, false);
-        this->telnetStarted = true;
       }
 
       if (settings.mqtt.enabled && !tMqtt->isEnabled()) {
@@ -146,11 +139,6 @@ protected:
         this->ntpStarted = false;
       }
 
-      if (this->telnetStarted) {
-        telnetStream->stop();
-        this->telnetStarted = false;
-      }
-
       if (tMqtt->isEnabled()) {
         tMqtt->disable();
       }
@@ -164,23 +152,10 @@ protected:
     }
     this->ledStatus();
 
-    // telnet
-    if (this->telnetStarted) {
-      this->yield();
-      telnetStream->loop();
-      this->yield();
-    }
-
 
     // anti memory leak
-    for (Stream* stream : Log.getStreams()) {
-      while (stream->available() > 0) {
-        stream->read();
-
-        #ifdef ARDUINO_ARCH_ESP8266
-        ::optimistic_yield(1000);
-        #endif
-      }
+    while (Serial.available() > 0) {
+      Serial.read();
     }
 
     // heap info
@@ -219,7 +194,7 @@ protected:
       vars.states.restarting = true;
     }
 
-    if (settings.system.logLevel < TinyLogger::Level::VERBOSE) {
+    if (settings.system.logLevel < TinyLoggerLevel::VERBOSE) {
       return;
     }
 
@@ -323,7 +298,7 @@ protected:
         emergencyFlags |= 0b00000010;
       }
       
-      if (settings.opentherm.options.nativeHeatingControl) {
+      if (settings.opentherm.options.nativeOTC) {
         emergencyFlags |= 0b00000100;
       }
     }

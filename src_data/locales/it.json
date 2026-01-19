@@ -243,6 +243,7 @@
         "otDhwBurnerHours": "OpenTherm, numero di ore di funzionamento del bruciatore (ACS)",
         "otHeatingPumpHours": "OpenTherm, numero di ore di funzionamento della pompa (riscaldamento)",
         "otDhwPumpHours": "OpenTherm, numero di ore di funzionamento della pompa (ACS)",
+        "otCoolingHours": "OpenTherm, numero di ore di funzionamento della cooling",
         
         "ntcTemp": "Sensore NTC",
         "dallasTemp": "Sensore DALLAS",
@@ -341,12 +342,8 @@
           "enable": "Porta seriale attivata",
           "baud": "Porta seriale baud rate"
         },
-        "telnet": {
-          "enable": "Telnet attivato",
-          "port": {
-            "title": "Porta Telnet",
-            "note": "Default: 23"
-          }
+        "webSerial": {
+          "enable": "WebSerial attivato"
         },
         "ntp": {
           "server": "NTP server",
@@ -356,7 +353,16 @@
       },
 
       "heating": {
-        "hyst": "Isteresi <small>(in gradi)</small>",
+        "hyst": {
+          "title": "Isteresi",
+          "desc": "L'isteresi è utile per mantenere una temperatura interna impostata (quando si utilizza «Equitherm» e/o «PID»). Forza la disabilitazione del riscaldamento quando <code>current indoor > target + value</code> e abilita il riscaldamento quando <code>current indoor < (target - value)</code>.",
+          "value": "Valore <small>(in gradi)</small>",
+          "action": {
+            "title": "Azione",
+            "disableHeating": "Disabilita riscaldamento",
+            "set0target": "Imposta target nullo"
+          }
+        },
         "turboFactor": "Turbo mode coeff."
       },
 
@@ -371,11 +377,26 @@
       },
 
       "equitherm": {
-        "n": "Fattore N",
-        "k": "Fattore K",
-        "t": {
+        "slope": {
+          "title": "Pendenza",
+          "note": "Compensazione della perdita di calore. Parametro di regolazione principale."
+        },
+        "exponent": {
+          "title": "Esponente",
+          "note": "Efficienza del radiatore. Valori tipici: <code>1.1</code> - Riscaldamento a pavimento, <code>1.2</code> - Ghisa, <code>1.3</code> - Radiatori a pannello, <code>1.4</code> - Convettori."
+        },
+        "shift": {
+          "title": "Spostamento",
+          "note": "Compensa perdite di calore aggiuntive (ad es., nelle tubature) o fonti di calore extra."
+        },
+        "targetDiffFactor": {
           "title": "Fattore T",
-          "note": "Non usato se PID è attivato"
+          "note": "Non utilizzato se PID è abilitato. Aggiunge al setpoint la differenza tra la temperatura target e quella interna attuale: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Temperatura interna target",
+          "setpointTemp": "Temperatura del vettore termico",
+          "outdoorTemp": "Temperatura esterna"
         }
       },
 
@@ -433,12 +454,13 @@
           "autoFaultReset": "Ripristino automatico degli errori <small>(sconsigliato!)</small>",
           "autoDiagReset": "Ripristino diagnostico automatica <small>(sconsigliato!)</small>",
           "setDateAndTime": "Imposta data e ora sulla caldaia",
-          "immergasFix": "Fix per caldiaie Immergas"
+          "immergasFix": "Fix per caldiaie Immergas",
+          "alwaysSendIndoorTemp": "Invia la temp attuale interna alla caldaia"
         },
 
-        "nativeHeating": {
-          "title": "Controllo del riscaldamento nativo (caldaia)",
-          "note": "Lavora <u>SOLO</u> se la caldaia richiede la temperatura ambiente desiderata e regola autonomamente la temperatura del fluido. Non compatiblile con regolazioni PID e Equitherm del sistema."
+        "nativeOTC": {
+          "title": "Modalità nativa di calcolo della temperatura del vettore termico",
+          "note": "Funziona <u>SOLO</u> se la caldaia è in modalità OTC: richiede e accetta la temperatura interna target e regola autonomamente la temperatura del vettore termico basata sulla modalità curve integrata. Incompatibile con PID e Equitherm."
         }
       },
 

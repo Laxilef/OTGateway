@@ -222,6 +222,8 @@
         "otDhwBurnerHours": "OpenTherm, aantal branderuren (warm water)",
         "otHeatingPumpHours": "OpenTherm, aantal pompuren (verwarming)",
         "otDhwPumpHours": "OpenTherm, aantal pompuren (warm water)",
+        "otCoolingHours": "OpenTherm, aantal cooling",
+
         "ntcTemp": "NTC-sensor",
         "dallasTemp": "DALLAS-sensor",
         "bluetooth": "BLE-sensor",
@@ -313,12 +315,8 @@
           "enable": "Seriële poort ingeschakeld",
           "baud": "Baudrate seriële poort"
         },
-        "telnet": {
-          "enable": "Telnet ingeschakeld",
-          "port": {
-            "title": "Telnet-poort",
-            "note": "Standaard: 23"
-          }
+        "webSerial": {
+          "enable": "WebSerial ingeschakeld"
         },
         "ntp": {
           "server": "NTP-server",
@@ -327,7 +325,16 @@
         }
       },
       "heating": {
-        "hyst": "Hysterese <small>(in graden)</small>",
+        "hyst": {
+          "title": "Hysterese",
+          "desc": "Hysterese is nuttig voor het handhaven van een ingestelde binnentemperatuur (bij gebruik van «Equitherm» en/of «PID»). Forceert uitschakelen van verwarming wanneer <code>current indoor > target + value</code> en inschakelen van verwarming wanneer <code>current indoor < (target - value)</code>.",
+          "value": "Waarde <small>(in graden)</small>",
+          "action": {
+            "title": "Actie",
+            "disableHeating": "Verwarming uitschakelen",
+            "set0target": "Stel null target in"
+          }
+        },
         "turboFactor": "Turbomodus coëff."
       },
       "emergency": {
@@ -339,11 +346,26 @@
         "treshold": "Drempeltijd <small>(sec)</small>"
       },
       "equitherm": {
-        "n": "N-factor",
-        "k": "K-factor",
-        "t": {
-          "title": "T-factor",
-          "note": "Niet gebruikt als PID is ingeschakeld"
+        "slope": {
+          "title": "Helling",
+          "note": "Compensatie voor warmteverlies. Hoofdafstelparameter."
+        },
+        "exponent": {
+          "title": "Exponent",
+          "note": "Radiator efficiëntie. Typische waarden: <code>1.1</code> - Vloerverwarming, <code>1.2</code> - Gietijzer, <code>1.3</code> - Paneelradiatoren, <code>1.4</code> - Convectors."
+        },
+        "shift": {
+          "title": "Verschuiving",
+          "note": "Compenseert voor extra warmteverliezen (bijv. in leidingen) of extra warmtebronnen."
+        },
+        "targetDiffFactor": {
+          "title": "T factor",
+          "note": "Niet gebruikt als PID is ingeschakeld. Voegt aan de setpoint de verschil tussen de target en huidige binnentemperatuur toe: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Doel binnentemperatuur",
+          "setpointTemp": "Warmtedrager temperatuur",
+          "outdoorTemp": "Buitentemperatuur"
         }
       },
       "pid": {
@@ -398,11 +420,13 @@
           "autoFaultReset": "Automatische storingsreset <small>(niet aanbevolen!)</small>",
           "autoDiagReset": "Automatische diagnosereset <small>(niet aanbevolen!)</small>",
           "setDateAndTime": "Stel datum & tijd in op ketel",
-          "immergasFix": "Fix voor Immergas-ketels"
+          "immergasFix": "Fix voor Immergas-ketels",
+          "alwaysSendIndoorTemp": "Stuur huidige binnentemp naar ketel"
         },
-        "nativeHeating": {
-          "title": "Natuurlijke verwarmingsregeling (ketel)",
-          "note": "Werkt <u>ALLEEN</u> als de ketel de gewenste kamertemperatuur vereist en zelf de temperatuur van de warmtedrager regelt. Niet compatibel met PID- en Equitherm-regelaars in de firmware."
+
+        "nativeOTC": {
+          "title": "Native warmtedrager temperatuur berekeningsmodus",
+          "note": "Werkt <u>ALLEEN</u> als de ketel in OTC-modus is: vereist en accepteert de doel binnentemperatuur en regelt zelf de warmtedrager temperatuur op basis van de ingebouwde curves modus. Incompatibel met PID en Equitherm."
         }
       },
       "mqtt": {

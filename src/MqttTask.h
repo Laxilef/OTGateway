@@ -416,7 +416,7 @@ protected:
       return;
     }
 
-    if (settings.system.logLevel >= TinyLogger::Level::TRACE) {
+    if (settings.system.logLevel >= TinyLoggerLevel::TRACE) {
       Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
       if (Log.lock()) {
         for (size_t i = 0; i < length; i++) {
@@ -486,6 +486,7 @@ protected:
   void publishHaEntities() {
     // heating
     this->haHelper->publishSwitchHeatingTurbo(false);
+    this->haHelper->publishSwitchHeatingHysteresis();
     this->haHelper->publishInputHeatingHysteresis(settings.system.unitSystem);
     this->haHelper->publishInputHeatingTurboFactor(false);
     this->haHelper->publishInputHeatingMinTemp(settings.system.unitSystem);
@@ -502,9 +503,10 @@ protected:
 
     // equitherm
     this->haHelper->publishSwitchEquitherm();
-    this->haHelper->publishInputEquithermFactorN(false);
-    this->haHelper->publishInputEquithermFactorK(false);
-    this->haHelper->publishInputEquithermFactorT(false);
+    this->haHelper->publishInputEquithermSlope(false);
+    this->haHelper->publishInputEquithermExponent(false);
+    this->haHelper->publishInputEquithermShift(false);
+    this->haHelper->publishInputEquithermTargetDiffFactor(false);
 
     // states
     this->haHelper->publishStatusState();

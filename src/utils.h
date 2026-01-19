@@ -425,9 +425,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     serial[FPSTR(S_ENABLED)] = src.system.serial.enabled;
     serial[FPSTR(S_BAUDRATE)] = src.system.serial.baudrate;
 
-    auto telnet = system[FPSTR(S_TELNET)].to<JsonObject>();
-    telnet[FPSTR(S_ENABLED)] = src.system.telnet.enabled;
-    telnet[FPSTR(S_PORT)] = src.system.telnet.port;
+    auto webSerial = system[FPSTR(S_WEBSERIAL)].to<JsonObject>();
+    webSerial[FPSTR(S_ENABLED)] = src.system.webSerial.enabled;
 
     auto ntp = system[FPSTR(S_NTP)].to<JsonObject>();
     ntp[FPSTR(S_SERVER)] = src.system.ntp.server;
@@ -468,8 +467,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_AUTO_FAULT_RESET)] = src.opentherm.options.autoFaultReset;
     otOptions[FPSTR(S_AUTO_DIAG_RESET)] = src.opentherm.options.autoDiagReset;
     otOptions[FPSTR(S_SET_DATE_AND_TIME)] = src.opentherm.options.setDateAndTime;
-    otOptions[FPSTR(S_NATIVE_HEATING_CONTROL)] = src.opentherm.options.nativeHeatingControl;
+    otOptions[FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)] = src.opentherm.options.alwaysSendIndoorTemp;
+    otOptions[FPSTR(S_NATIVE_OTC)] = src.opentherm.options.nativeOTC;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
+    
 
     auto mqtt = dst[FPSTR(S_MQTT)].to<JsonObject>();
     mqtt[FPSTR(S_ENABLED)] = src.mqtt.enabled;
@@ -490,7 +491,9 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_ENABLED)] = src.heating.enabled;
   heating[FPSTR(S_TURBO)] = src.heating.turbo;
   heating[FPSTR(S_TARGET)] = roundf(src.heating.target, 2);
-  heating[FPSTR(S_HYSTERESIS)] = roundf(src.heating.hysteresis, 3);
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)] = src.heating.hysteresis.enabled;
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)] = roundf(src.heating.hysteresis.value, 3);
+  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)] = static_cast<uint8_t>(src.heating.hysteresis.action);
   heating[FPSTR(S_TURBO_FACTOR)] = roundf(src.heating.turboFactor, 3);
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
@@ -517,9 +520,10 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
   auto equitherm = dst[FPSTR(S_EQUITHERM)].to<JsonObject>();
   equitherm[FPSTR(S_ENABLED)] = src.equitherm.enabled;
-  equitherm[FPSTR(S_N_FACTOR)] = roundf(src.equitherm.n_factor, 3);
-  equitherm[FPSTR(S_K_FACTOR)] = roundf(src.equitherm.k_factor, 3);
-  equitherm[FPSTR(S_T_FACTOR)] = roundf(src.equitherm.t_factor, 3);
+  equitherm[FPSTR(S_SLOPE)] = roundf(src.equitherm.slope, 3);
+  equitherm[FPSTR(S_EXPONENT)] = roundf(src.equitherm.exponent, 3);
+  equitherm[FPSTR(S_SHIFT)] = roundf(src.equitherm.shift, 2);
+  equitherm[FPSTR(S_TARGET_DIFF_FACTOR)] = roundf(src.equitherm.targetDiffFactor, 3);
 
   auto pid = dst[FPSTR(S_PID)].to<JsonObject>();
   pid[FPSTR(S_ENABLED)] = src.pid.enabled;
@@ -576,7 +580,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (!src[FPSTR(S_SYSTEM)][FPSTR(S_LOG_LEVEL)].isNull()) {
       uint8_t value = src[FPSTR(S_SYSTEM)][FPSTR(S_LOG_LEVEL)].as<uint8_t>();
 
-      if (value != dst.system.logLevel && value >= TinyLogger::Level::SILENT && value <= TinyLogger::Level::VERBOSE) {
+      if (value != dst.system.logLevel && value >= TinyLoggerLevel::SILENT && value <= TinyLoggerLevel::VERBOSE) {
         dst.system.logLevel = value;
         changed = true;
       }
@@ -602,20 +606,11 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_ENABLED)].is<bool>()) {
-      bool value = src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_ENABLED)].as<bool>();
+    if (src[FPSTR(S_SYSTEM)][FPSTR(S_WEBSERIAL)][FPSTR(S_ENABLED)].is<bool>()) {
+      bool value = src[FPSTR(S_SYSTEM)][FPSTR(S_WEBSERIAL)][FPSTR(S_ENABLED)].as<bool>();
 
-      if (value != dst.system.telnet.enabled) {
-        dst.system.telnet.enabled = value;
-        changed = true;
-      }
-    }
-
-    if (!src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_PORT)].isNull()) {
-      unsigned short value = src[FPSTR(S_SYSTEM)][FPSTR(S_TELNET)][FPSTR(S_PORT)].as<unsigned short>();
-
-      if (value > 0 && value <= 65535 && value != dst.system.telnet.port) {
-        dst.system.telnet.port = value;
+      if (value != dst.system.webSerial.enabled) {
+        dst.system.webSerial.enabled = value;
         changed = true;
       }
     }
@@ -1000,11 +995,20 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
       }
     }
 
-    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_HEATING_CONTROL)].is<bool>()) {
-      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_HEATING_CONTROL)].as<bool>();
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)].as<bool>();
 
-      if (value != dst.opentherm.options.nativeHeatingControl) {
-        dst.opentherm.options.nativeHeatingControl = value;
+      if (value != dst.opentherm.options.alwaysSendIndoorTemp) {
+        dst.opentherm.options.alwaysSendIndoorTemp = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_OTC)].is<bool>()) {
+      bool value = src[FPSTR(S_OPENTHERM)][FPSTR(S_OPTIONS)][FPSTR(S_NATIVE_OTC)].as<bool>();
+
+      if (value != dst.opentherm.options.nativeOTC) {
+        dst.opentherm.options.nativeOTC = value;
 
         if (value) {
           dst.equitherm.enabled = false;
@@ -1023,7 +1027,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         changed = true;
       }
     }
-
 
     // mqtt
     if (src[FPSTR(S_MQTT)][FPSTR(S_ENABLED)].is<bool>()) {
@@ -1115,7 +1118,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (src[FPSTR(S_EQUITHERM)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_EQUITHERM)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (!dst.opentherm.options.nativeHeatingControl) {
+    if (!dst.opentherm.options.nativeOTC) {
       if (value != dst.equitherm.enabled) {
         dst.equitherm.enabled = value;
         changed = true;
@@ -1127,29 +1130,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_N_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_N_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_SLOPE)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_SLOPE)].as<float>();
 
-    if (value > 0 && value <= 10 && fabsf(value - dst.equitherm.n_factor) > 0.0001f) {
-      dst.equitherm.n_factor = roundf(value, 3);
+    if (value > 0.0f && value <= 10.0f && fabsf(value - dst.equitherm.slope) > 0.0001f) {
+      dst.equitherm.slope = roundf(value, 3);
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_K_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_EXPONENT)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_EXPONENT)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.k_factor) > 0.0001f) {
-      dst.equitherm.k_factor = roundf(value, 3);
+    if (value > 0.0f && value <= 2.0f && fabsf(value - dst.equitherm.exponent) > 0.0001f) {
+      dst.equitherm.exponent = roundf(value, 3);
       changed = true;
     }
   }
 
-  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].isNull()) {
-    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_T_FACTOR)].as<float>();
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_SHIFT)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_SHIFT)].as<float>();
 
-    if (value >= 0 && value <= 10 && fabsf(value - dst.equitherm.t_factor) > 0.0001f) {
-      dst.equitherm.t_factor = roundf(value, 3);
+    if (value >= -15.0f && value <= 15.0f && fabsf(value - dst.equitherm.shift) > 0.0001f) {
+      dst.equitherm.shift = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_EQUITHERM)][FPSTR(S_TARGET_DIFF_FACTOR)].isNull()) {
+    float value = src[FPSTR(S_EQUITHERM)][FPSTR(S_TARGET_DIFF_FACTOR)].as<float>();
+
+    if (value >= 0.0f && value <= 10.0f && fabsf(value - dst.equitherm.targetDiffFactor) > 0.0001f) {
+      dst.equitherm.targetDiffFactor = roundf(value, 3);
       changed = true;
     }
   }
@@ -1159,7 +1171,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   if (src[FPSTR(S_PID)][FPSTR(S_ENABLED)].is<bool>()) {
     bool value = src[FPSTR(S_PID)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (!dst.opentherm.options.nativeHeatingControl) {
+    if (!dst.opentherm.options.nativeOTC) {
       if (value != dst.pid.enabled) {
         dst.pid.enabled = value;
         changed = true;
@@ -1304,12 +1316,38 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)].isNull()) {
-    float value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)].as<float>();
+  if (src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)].as<bool>();
 
-    if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis) > 0.0001f) {
-      dst.heating.hysteresis = roundf(value, 2);
+    if (value != dst.heating.hysteresis.enabled) {
+      dst.heating.hysteresis.enabled = value;
       changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)].isNull()) {
+    float value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)].as<float>();
+
+    if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis.value) > 0.0001f) {
+      dst.heating.hysteresis.value = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].isNull()) {
+    uint8_t value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].as<uint8_t>();
+
+    switch (value) {
+      case static_cast<uint8_t>(HysteresisAction::DISABLE_HEATING):
+      case static_cast<uint8_t>(HysteresisAction::SET_ZERO_TARGET):
+        if (static_cast<uint8_t>(dst.heating.hysteresis.action) != value) {
+         dst.heating.hysteresis.action = static_cast<HysteresisAction>(value);
+          changed = true;
+        }
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -1666,7 +1704,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   // force check emergency target
   {
     float value = !src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].isNull() ? src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].as<float>() : dst.emergency.target;
-    bool noRegulators = !dst.opentherm.options.nativeHeatingControl;
+    bool noRegulators = !dst.opentherm.options.nativeOTC;
     bool valid = isValidTemp(
       value,
       dst.system.unitSystem,
@@ -1691,7 +1729,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // force check heating target
   {
-    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.options.nativeHeatingControl;
+    bool indoorTempControl = dst.equitherm.enabled || dst.pid.enabled || dst.opentherm.options.nativeOTC;
     float minTemp = indoorTempControl ? THERMOSTAT_INDOOR_MIN_TEMP : dst.heating.minTemp;
     float maxTemp = indoorTempControl ? THERMOSTAT_INDOOR_MAX_TEMP : dst.heating.maxTemp;
 
@@ -1884,6 +1922,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       case static_cast<uint8_t>(Sensors::Type::OT_DHW_BURNER_HOURS):
       case static_cast<uint8_t>(Sensors::Type::OT_HEATING_PUMP_HOURS):
       case static_cast<uint8_t>(Sensors::Type::OT_DHW_PUMP_HOURS):
+      case static_cast<uint8_t>(Sensors::Type::OT_COOLING_HOURS):
 
       case static_cast<uint8_t>(Sensors::Type::NTC_10K_TEMP):
       case static_cast<uint8_t>(Sensors::Type::DALLAS_TEMP):
@@ -2083,7 +2122,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   slave[FPSTR(S_FLAGS)] = src.slave.flags;
   slave[FPSTR(S_TYPE)] = src.slave.type;
   slave[FPSTR(S_APP_VERSION)] = src.slave.appVersion;
-  slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.appVersion;
+  slave[FPSTR(S_PROTOCOL_VERSION)] = src.slave.protocolVersion;
   slave[FPSTR(S_CONNECTED)] = src.slave.connected;
   slave[FPSTR(S_FLAME)] = src.slave.flame;
 

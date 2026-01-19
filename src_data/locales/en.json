@@ -243,6 +243,7 @@
         "otDhwBurnerHours": "OpenTherm, number of burner operating hours (DHW)",
         "otHeatingPumpHours": "OpenTherm, number of pump operating hours (heating)",
         "otDhwPumpHours": "OpenTherm, number of pump operating hours (DHW)",
+        "otCoolingHours": "OpenTherm, number of cooling hours",
         
         "ntcTemp": "NTC sensor",
         "dallasTemp": "DALLAS sensor",
@@ -341,12 +342,8 @@
           "enable": "Enabled Serial port",
           "baud": "Serial port baud rate"
         },
-        "telnet": {
-          "enable": "Enabled Telnet",
-          "port": {
-            "title": "Telnet port",
-            "note": "Default: 23"
-          }
+        "webSerial": {
+          "enable": "Enabled WebSerial"
         },
         "ntp": {
           "server": "NTP server",
@@ -356,7 +353,16 @@
       },
 
       "heating": {
-        "hyst": "Hysteresis <small>(in degrees)</small>",
+        "hyst": {
+          "title": "Hysteresis",
+          "desc": "Hysteresis is useful for maintaining a set indoor temp (when using «Equitherm» and/or «PID»). Forces disable heating when <code>current indoor > target + value</code> and enable heating when <code>current indoor < (target - value)</code>.",
+          "value": "Value <small>(in degrees)</small>",
+          "action": {
+            "title": "Action",
+            "disableHeating": "Disable heating",
+            "set0target": "Set null target"
+          }
+        },
         "turboFactor": "Turbo mode coeff."
       },
 
@@ -371,11 +377,26 @@
       },
 
       "equitherm": {
-        "n": "N factor",
-        "k": "K factor",
-        "t": {
+        "slope": {
+          "title": "Slope",
+          "note": "Heat loss compensation. Main tuning parameter."
+        },
+        "exponent": {
+          "title": "Exponent",
+          "note": "Radiator efficiency.  Typical values: <code>1.1</code> - Floor heating, <code>1.2</code> - Cast iron, <code>1.3</code> - Panel radiators, <code>1.4</code> - Convectors."
+        },
+        "shift": {
+          "title": "Shift",
+          "note": "Compensates for additional heat losses (e.g., in pipes) or extra heat sources."
+        },
+        "targetDiffFactor": {
           "title": "T factor",
-          "note": "Not used if PID is enabled"
+          "note": "Not used if PID is enabled. Adds to the setpoint the difference between the target and current indoor temp: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Target indoor temperature",
+          "setpointTemp": "Heat carrier temperature",
+          "outdoorTemp": "Outdoor temperature"
         }
       },
 
@@ -433,12 +454,13 @@
           "autoFaultReset": "Auto fault reset <small>(not recommended!)</small>",
           "autoDiagReset": "Auto diag reset <small>(not recommended!)</small>",
           "setDateAndTime": "Set date & time on boiler",
-          "immergasFix": "Fix for Immergas boilers"
+          "immergasFix": "Fix for Immergas boilers",
+          "alwaysSendIndoorTemp": "Send current indoor temp to boiler"
         },
 
-        "nativeHeating": {
-          "title": "Native heating control (boiler)",
-          "note": "Works <u>ONLY</u> if the boiler requires the desired room temperature and regulates the temperature of the coolant itself. Not compatible with PID and Equitherm regulators in firmware."
+        "nativeOTC": {
+          "title": "Native OTC mode",
+          "note": "Works <u>ONLY</u> if the boiler is in OTC mode: requires and accepts the target indoor temperature and self-regulates the heat carrier temperature based on the built-in curves mode. Incompatible with PID and Equitherm."
         }
       },
 

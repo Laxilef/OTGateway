@@ -42,12 +42,8 @@
   #define DEFAULT_SERIAL_BAUD 115200
 #endif
 
-#ifndef DEFAULT_TELNET_ENABLED
-  #define DEFAULT_TELNET_ENABLED true
-#endif
-
-#ifndef DEFAULT_TELNET_PORT
-  #define DEFAULT_TELNET_PORT 23
+#ifndef DEFAULT_WEBSERIAL_ENABLED
+  #define DEFAULT_WEBSERIAL_ENABLED true
 #endif
 
 #ifndef USE_BLE
@@ -75,7 +71,7 @@
 #endif
 
 #ifndef DEFAULT_LOG_LEVEL
-  #define DEFAULT_LOG_LEVEL TinyLogger::Level::VERBOSE
+  #define DEFAULT_LOG_LEVEL TinyLoggerLevel::VERBOSE
 #endif
 
 #ifndef DEFAULT_STATUS_LED_GPIO
@@ -161,6 +157,11 @@
 enum class UnitSystem : uint8_t {
   METRIC    = 0,
   IMPERIAL  = 1
+};
+
+enum class HysteresisAction : uint8_t {
+  DISABLE_HEATING = 0,
+  SET_ZERO_TARGET = 1
 };
 
 char buffer[255];

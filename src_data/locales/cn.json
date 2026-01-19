@@ -243,6 +243,7 @@
         "otDhwBurnerHours": "OpenTherm, number of burner operating hours (DHW)",
         "otHeatingPumpHours": "OpenTherm, number of pump operating hours (heating)",
         "otDhwPumpHours": "OpenTherm, number of pump operating hours (DHW)",
+        "otCoolingHours": "OpenTherm, number of cooling hours",
         
         "ntcTemp": "NTC 传感器",
         "dallasTemp": "DALLAS 传感器",
@@ -341,12 +342,8 @@
           "enable": "启用串口",
           "baud": "串口波特率"
         },
-        "telnet": {
-          "enable": "启用 Telnet",
-          "port": {
-            "title": "Telnet 端口",
-            "note": "默认值：23"
-          }
+        "webSerial": {
+          "enable": "启用 WebSerial"
         },
         "ntp": {
           "server": "NTP服务器",
@@ -356,7 +353,16 @@
       },
 
       "heating": {
-        "hyst": "滞后值<small>(单位：度)</small>",
+        "hyst": {
+          "title": "滞回",
+          "desc": "滞回有助于维持设定的室内温度（在使用«Equitherm»和/或«PID»时）。强制禁用加热当<code>current indoor > target + value</code>，启用加热当<code>current indoor < (target - value)</code>。",
+          "value": "值 <small>(以度为单位)</small>",
+          "action": {
+            "title": "行动",
+            "disableHeating": "禁用加热",
+            "set0target": "设置空目标"
+          }
+        },
         "turboFactor": "Turbo 模式系数"
       },
 
@@ -371,11 +377,26 @@
       },
 
       "equitherm": {
-        "n": "N 系数",
-        "k": "K 系数",
-        "t": {
-          "title": "T 系数",
-          "note": "启用PID时此参数无效"
+        "slope": {
+          "title": "斜率",
+          "note": "热损失补偿。主要调谐参数。"
+        },
+        "exponent": {
+          "title": "指数",
+          "note": "散热器效率。典型值：<code>1.1</code> - 地板采暖，<code>1.2</code> - 铸铁，<code>1.3</code> - 面板散热器，<code>1.4</code> - 对流器。"
+        },
+        "shift": {
+          "title": "偏移",
+          "note": "补偿额外热损失（例如，在管道中）或额外热源。"
+        },
+        "targetDiffFactor": {
+          "title": "T 因子",
+          "note": "如果启用 PID，则不使用。将目标和当前室内温度之间的差值添加到设定点：<code>setpoint = setpoint + ((target - indoor) * T)</code>。"
+        },
+        "chart": {
+          "targetTemp": "目标室内温度",
+          "setpointTemp": "热载体温度",
+          "outdoorTemp": "室外温度"
         }
       },
 
@@ -433,12 +454,13 @@
           "autoFaultReset": "自动报警复位 <small>(不推荐！)</small>",
           "autoDiagReset": "自动诊断复位 <small>(不推荐！)</small>",
           "setDateAndTime": "同步设置锅炉日期与时间",
-          "immergasFix": "针对Immergas锅炉的兼容性修复"
+          "immergasFix": "针对Immergas锅炉的兼容性修复",
+          "alwaysSendIndoorTemp": "向锅炉发送当前室内温度"
         },
 
-        "nativeHeating": {
-          "title": "原生锅炉供暖控制",
-          "note": "<u>注意：</u> 仅适用于锅炉需接收目标室温并自主调节载热介质温度的场景，与固件中的PID及Equithermq气候补偿功能不兼容。"
+        "nativeOTC": {
+          "title": "原生热载体温度计算模式",
+          "note": "仅在锅炉处于 OTC 模式时<u>才</u>工作：需要并接受目标室内温度，并基于内置曲线模式自行调节热载体温度。与 PID 和 Equitherm 不兼容。"
         }
       },
 

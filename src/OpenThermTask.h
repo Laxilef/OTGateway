@@ -190,7 +190,9 @@ protected:
       || (settings.opentherm.options.dhwToCh2 && settings.opentherm.options.dhwSupport && settings.dhw.enabled);
 
     if (settings.opentherm.options.heatingToCh2) {
-      vars.master.ch2.targetTemp = vars.master.heating.setpointTemp;
+      vars.master.ch2.targetTemp = !settings.opentherm.options.nativeOTC
+        ? vars.master.heating.setpointTemp
+        : vars.master.heating.targetTemp;
 
     } else if (settings.opentherm.options.dhwToCh2) {
       vars.master.ch2.targetTemp = vars.master.dhw.targetTemp;
@@ -222,7 +224,7 @@ protected:
       vars.master.heating.enabled,
       vars.master.dhw.enabled,
       settings.opentherm.options.coolingSupport,
-      settings.opentherm.options.nativeHeatingControl,
+      settings.opentherm.options.nativeOTC,
       vars.master.ch2.enabled,
       summerWinterMode,
       dhwBlocking,
@@ -309,6 +311,7 @@ protected:
       Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_HOURS, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_HOURS, false);
       Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_HOURS, false);
+      Sensors::setConnectionStatusByType(Sensors::Type::OT_COOLING_HOURS, false);
 
       this->initialized = false;
       this->disconnectedTime = millis();
@@ -681,6 +684,21 @@ protected:
         }
       }
 
+      // Update cooling hours
+      if (Sensors::getAmountByType(Sensors::Type::OT_COOLING_HOURS, true)) {
+        if (this->updateCoolingHours()) {
+          Log.snoticeln(FPSTR(L_OT), F("Received cooling hours: %hu"), vars.slave.stats.coolingHours);
+
+          Sensors::setValueByType(
+            Sensors::Type::OT_COOLING_HOURS, vars.slave.stats.coolingHours,
+            Sensors::ValueType::PRIMARY, true, true
+          );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT), F("Failed receive cooling hours"));
+        }
+      }
+
       // Auto fault reset
       if (settings.opentherm.options.autoFaultReset && vars.slave.fault.active && !vars.actions.resetFault) {
         vars.actions.resetFault = true;
@@ -796,7 +814,7 @@ protected:
       bool result = this->updateDhwTemp();
 
       if (result) {
-        float convertedDhwTemp = convertTemp(
+        const float convertedDhwTemp = convertTemp(
           vars.slave.dhw.currentTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -820,7 +838,7 @@ protected:
     // Update DHW temp 2
     if (settings.opentherm.options.dhwSupport && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2, true)) {
       if (this->updateDhwTemp2()) {
-        float convertedDhwTemp2 = convertTemp(
+        const float convertedDhwTemp2 = convertTemp(
           vars.slave.dhw.currentTemp2,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -844,7 +862,7 @@ protected:
     // Update DHW flow rate
     if (settings.opentherm.options.dhwSupport && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE, true)) {
       if (this->updateDhwFlowRate()) {
-        float convertedDhwFlowRate = convertVolume(
+        const float convertedDhwFlowRate = convertVolume(
           vars.slave.dhw.flowRate,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -868,7 +886,7 @@ protected:
     // Update heating temp
     if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_TEMP, true)) {
       if (this->updateHeatingTemp()) {
-        float convertedHeatingTemp = convertTemp(
+        const float convertedHeatingTemp = convertTemp(
           vars.slave.heating.currentTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -892,7 +910,7 @@ protected:
     // Update heating return temp
     if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_RETURN_TEMP, true)) {
       if (this->updateHeatingReturnTemp()) {
-        float convertedHeatingReturnTemp = convertTemp(
+        const float convertedHeatingReturnTemp = convertTemp(
           vars.slave.heating.returnTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -915,9 +933,9 @@ protected:
 
     // Update CH2 temp
     if (Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP, true)) {
-      if (vars.master.ch2.enabled && !settings.opentherm.options.nativeHeatingControl) {
+      if (vars.master.ch2.enabled && !settings.opentherm.options.nativeOTC) {
         if (this->updateCh2Temp()) {
-          float convertedCh2Temp = convertTemp(
+          const float convertedCh2Temp = convertTemp(
             vars.slave.ch2.currentTemp,
             settings.opentherm.unitSystem,
             settings.system.unitSystem
@@ -942,7 +960,7 @@ protected:
     // Update exhaust temp
     if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_TEMP, true)) {
       if (this->updateExhaustTemp()) {
-        float convertedExhaustTemp = convertTemp(
+        const float convertedExhaustTemp = convertTemp(
           vars.slave.exhaust.temp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -966,7 +984,7 @@ protected:
     // Update heat exchanger temp
     if (Sensors::getAmountByType(Sensors::Type::OT_HEAT_EXCHANGER_TEMP, true)) {
       if (this->updateHeatExchangerTemp()) {
-        float convertedHeatExchTemp = convertTemp(
+        const float convertedHeatExchTemp = convertTemp(
           vars.slave.heatExchangerTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -990,7 +1008,7 @@ protected:
     // Update outdoor temp
     if (Sensors::getAmountByType(Sensors::Type::OT_OUTDOOR_TEMP, true)) {
       if (this->updateOutdoorTemp()) {
-        float convertedOutdoorTemp = convertTemp(
+        const float convertedOutdoorTemp = convertTemp(
           vars.slave.heating.outdoorTemp,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -1014,7 +1032,7 @@ protected:
     // Update solar storage temp
     if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP, true)) {
       if (this->updateSolarStorageTemp()) {
-        float convertedSolarStorageTemp = convertTemp(
+        const float convertedSolarStorageTemp = convertTemp(
           vars.slave.solar.storage,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -1038,7 +1056,7 @@ protected:
     // Update solar collector temp
     if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, true)) {
       if (this->updateSolarCollectorTemp()) {
-        float convertedSolarCollectorTemp = convertTemp(
+        const float convertedSolarCollectorTemp = convertTemp(
           vars.slave.solar.collector,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -1084,7 +1102,7 @@ protected:
     // Update pressure
     if (Sensors::getAmountByType(Sensors::Type::OT_PRESSURE, true)) {
       if (this->updatePressure()) {
-        float convertedPressure = convertPressure(
+        const float convertedPressure = convertPressure(
           vars.slave.pressure,
           settings.opentherm.unitSystem,
           settings.system.unitSystem
@@ -1190,9 +1208,12 @@ protected:
 
     // Update DHW temp
     if (vars.master.dhw.enabled) {
+      // Target dhw temp
+      const float& targetTemp = vars.master.dhw.targetTemp;
+
       // Converted target dhw temp
-      float convertedTemp = convertTemp(
-        vars.master.dhw.targetTemp,
+      const float convertedTemp = convertTemp(
+        targetTemp,
         settings.system.unitSystem,
         settings.opentherm.unitSystem
       );
@@ -1204,7 +1225,7 @@ protected:
 
           Log.sinfoln(
             FPSTR(L_OT_DHW), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.dhw.targetTemp, convertedTemp, vars.slave.dhw.targetTemp
+            targetTemp, convertedTemp, vars.slave.dhw.targetTemp
           );
 
         } else {
@@ -1213,16 +1234,19 @@ protected:
       }
     }
 
-    // Native heating control
-    if (settings.opentherm.options.nativeHeatingControl) {
+    // Send indoor temp if AlwaysSendIndoorTemp option is enabled.
+    if (settings.opentherm.options.nativeOTC || settings.opentherm.options.alwaysSendIndoorTemp) {
+      // Current indoor temp
+      const float& indoorTemp = vars.master.heating.indoorTemp;
+
       // Converted current indoor temp
-      float convertedTemp = convertTemp(vars.master.heating.indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      const float convertedTemp = convertTemp(indoorTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
 
       // Set current indoor temp
       if (this->setRoomTemp(convertedTemp)) {
         Log.sinfoln(
           FPSTR(L_OT_HEATING), F("Set current indoor temp: %.2f (converted: %.2f, response: %.2f)"),
-          vars.master.heating.indoorTemp, convertedTemp, vars.slave.heating.indoorTemp
+          indoorTemp, convertedTemp, vars.slave.heating.indoorTemp
         );
         
       } else {
@@ -1234,17 +1258,26 @@ protected:
         if (this->setRoomTempCh2(convertedTemp)) {
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set current CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.heating.indoorTemp, convertedTemp, vars.slave.ch2.indoorTemp
+            indoorTemp, convertedTemp, vars.slave.ch2.indoorTemp
           );
 
         } else {
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current CH2 indoor temp"));
         }
       }
+    }
 
+    // NativeOTC
+    if (settings.opentherm.options.nativeOTC) {
+      // Target indoor temp
+      const float& targetTemp = vars.master.heating.targetTemp;
 
       // Converted target indoor temp
-      convertedTemp = convertTemp(vars.master.heating.targetTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      const float convertedTemp = convertTemp(
+        targetTemp,
+        settings.system.unitSystem,
+        settings.opentherm.unitSystem
+      );
 
       // Set target indoor temp
       if (this->needSetHeatingTemp(convertedTemp)) {
@@ -1253,7 +1286,7 @@ protected:
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set target indoor temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.heating.targetTemp, convertedTemp, vars.slave.heating.targetTemp
+            targetTemp, convertedTemp, vars.slave.heating.targetTemp
           );
 
         } else {
@@ -1268,7 +1301,7 @@ protected:
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set target CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.heating.targetTemp, convertedTemp, vars.slave.ch2.targetTemp
+            targetTemp, convertedTemp, vars.slave.ch2.targetTemp
           );
 
         } else {
@@ -1277,10 +1310,22 @@ protected:
       }
     }
 
-    // Normal heating control
-    if (!settings.opentherm.options.nativeHeatingControl && vars.master.heating.enabled) {
+    // Set heating temp
+    {
+      // Target heating temp
+      float targetTemp = 0.0f;
+      if (vars.master.heating.enabled) {
+        targetTemp = !settings.opentherm.options.nativeOTC
+          ? vars.master.heating.setpointTemp
+          : vars.master.heating.targetTemp;
+      }
+
       // Converted target heating temp
-      float convertedTemp = convertTemp(vars.master.heating.setpointTemp, settings.system.unitSystem, settings.opentherm.unitSystem);
+      const float convertedTemp = convertTemp(
+        targetTemp,
+        settings.system.unitSystem,
+        settings.opentherm.unitSystem
+      );
 
       if (this->needSetHeatingTemp(convertedTemp)) {
         // Set max heating temp
@@ -1288,13 +1333,13 @@ protected:
           if (this->setMaxHeatingTemp(convertedTemp)) {
             Log.sinfoln(
               FPSTR(L_OT_HEATING), F("Set max heating temp: %.2f (converted: %.2f)"),
-              vars.master.heating.setpointTemp, convertedTemp
+              targetTemp, convertedTemp
             );
 
           } else {
             Log.swarningln(
               FPSTR(L_OT_HEATING), F("Failed set max heating temp: %.2f (converted: %.2f)"),
-              vars.master.heating.setpointTemp, convertedTemp
+              targetTemp, convertedTemp
             );
           }
         }
@@ -1305,7 +1350,7 @@ protected:
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set target temp: %.2f (converted: %.2f, response: %.2f)"),
-            vars.master.heating.setpointTemp, convertedTemp, vars.slave.heating.targetTemp
+            targetTemp, convertedTemp, vars.slave.heating.targetTemp
           );
 
         } else {
@@ -1315,27 +1360,30 @@ protected:
     }
 
     // Set CH2 temp
-    if (!settings.opentherm.options.nativeHeatingControl && vars.master.ch2.enabled) {
-      if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2) {
-        // Converted target CH2 temp
-        float convertedTemp = convertTemp(
-          vars.master.ch2.targetTemp,
-          settings.system.unitSystem,
-          settings.opentherm.unitSystem
-        );
+    if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2) {
+      // Target CH2 heating temp
+      const float targetTemp = vars.master.ch2.enabled
+        ? vars.master.ch2.targetTemp
+        : 0.0f;
 
-        if (this->needSetCh2Temp(convertedTemp)) {
-          if (this->setCh2Temp(convertedTemp)) {
-            this->ch2SetTempTime = millis();
+      // Converted target CH2 temp
+      const float convertedTemp = convertTemp(
+        targetTemp,
+        settings.system.unitSystem,
+        settings.opentherm.unitSystem
+      );
 
-            Log.sinfoln(
-              FPSTR(L_OT_CH2), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
-              vars.master.ch2.targetTemp, convertedTemp, vars.slave.ch2.targetTemp
-            );
+      if (this->needSetCh2Temp(convertedTemp)) {
+        if (this->setCh2Temp(convertedTemp)) {
+          this->ch2SetTempTime = millis();
 
-          } else {
-            Log.swarningln(FPSTR(L_OT_CH2), F("Failed set temp"));
-          }
+          Log.sinfoln(
+            FPSTR(L_OT_CH2), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
+            targetTemp, convertedTemp, vars.slave.ch2.targetTemp
+          );
+
+        } else {
+          Log.swarningln(FPSTR(L_OT_CH2), F("Failed set temp"));
         }
       }
     }
@@ -1343,7 +1391,7 @@ protected:
 
     // Heating overheat control
     if (settings.heating.overheatProtection.highTemp > 0 && settings.heating.overheatProtection.lowTemp > 0) {
-      float highTemp = convertTemp(
+      const float highTemp = convertTemp(
         max({
           vars.slave.heating.currentTemp,
           vars.slave.heating.returnTemp,
@@ -1380,7 +1428,7 @@ protected:
 
     // DHW overheat control
     if (settings.dhw.overheatProtection.highTemp > 0 && settings.dhw.overheatProtection.lowTemp > 0) {
-      float highTemp = convertTemp(
+      const float highTemp = convertTemp(
         max({
           vars.slave.heating.currentTemp,
           vars.slave.heating.returnTemp,
@@ -1474,6 +1522,19 @@ protected:
     } else {
       Log.swarningln(FPSTR(L_OT), F("Failed set master config"));
     }
+
+    /*char buf[100];
+    if (this->instance->getStr(OpenThermMessageID::Brand, buf, sizeof(buf) - 1)) {
+      Log.snoticeln(FPSTR(L_OT), F("Slave brand: %s"), buf);
+    }
+
+    if (this->instance->getStr(OpenThermMessageID::BrandVersion, buf, sizeof(buf) - 1)) {
+      Log.snoticeln(FPSTR(L_OT), F("Slave brand version: %s"), buf);
+    }
+
+    if (this->instance->getStr(OpenThermMessageID::BrandSerialNumber, buf, sizeof(buf) - 1)) {
+      Log.snoticeln(FPSTR(L_OT), F("Slave brand s/n: %s"), buf);
+    }*/
   }
 
   bool isReady() {
@@ -1651,7 +1712,7 @@ protected:
   }
 
 
-  bool setRoomTemp(float temperature) {
+  bool setRoomTemp(const float temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
@@ -1671,7 +1732,7 @@ protected:
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  bool setRoomTempCh2(float temperature) {
+  bool setRoomTempCh2(const float temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermMessageType::WRITE_DATA,
@@ -2173,6 +2234,25 @@ protected:
     return true;
   }
 
+  bool updateCoolingHours() {
+    const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
+      OpenThermRequestType::READ_DATA,
+      OpenThermMessageID::CoolingOperationHours,
+      0
+    ));
+
+    if (!CustomOpenTherm::isValidResponse(response)) {
+      return false;
+
+    } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::CoolingOperationHours)) {
+      return false;
+    }
+
+    vars.slave.stats.coolingHours = CustomOpenTherm::getUInt(response);
+
+    return true;
+  }
+
   bool updateModulationLevel() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::READ_DATA,
@@ -2187,7 +2267,7 @@ protected:
       return false;
     }
 
-    float value = CustomOpenTherm::getFloat(response);
+    const float value = CustomOpenTherm::getFloat(response);
     if (value < 0) {
       return false;
     }
@@ -2211,7 +2291,7 @@ protected:
       return false;
     }
 
-    float value = CustomOpenTherm::getFloat(response);
+    const float value = CustomOpenTherm::getFloat(response);
     if (value <= 0) {
       return false;
     }
@@ -2235,7 +2315,7 @@ protected:
       return false;
     }
 
-    float value = CustomOpenTherm::getFloat(response);
+    const float value = CustomOpenTherm::getFloat(response);
     if (value <= 0) {
       return false;
     }
@@ -2289,7 +2369,7 @@ protected:
       return false;
     }
 
-    float value = CustomOpenTherm::getFloat(response);
+    const float value = CustomOpenTherm::getFloat(response);
     if (value <= 0) {
       return false;
     }
@@ -2353,7 +2433,7 @@ protected:
       return false;
     }
 
-    float value = (float) CustomOpenTherm::getInt(response);
+    const float value = (float) CustomOpenTherm::getInt(response);
     if (!isValidTemp(value, settings.opentherm.unitSystem, -40, 500)) {
       return false;
     }
@@ -2377,7 +2457,7 @@ protected:
       return false;
     }
 
-    float value = (float) CustomOpenTherm::getInt(response);
+    const float value = (float) CustomOpenTherm::getInt(response);
     if (value <= 0) {
       return false;
     }
@@ -2478,7 +2558,7 @@ protected:
       return false;
     }
 
-    float value = CustomOpenTherm::getFloat(response);
+    const float value = CustomOpenTherm::getFloat(response);
     if (value < 0) {
       return false;
     }

@@ -491,6 +491,9 @@
             if (modified) {
               parameters.method = "POST";
               parameters.body = JSON.stringify(newSettings);
+              parameters.headers = {
+                "Content-Type": "application/json"
+              };
             }
 
             const response = await fetch("/api/settings", parameters);
