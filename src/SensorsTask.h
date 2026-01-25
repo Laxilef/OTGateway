@@ -40,15 +40,15 @@ public:
     auto deviceName = device->getName();
     auto deviceRssi = device->getRSSI();
 
-    Log.straceln(
+    Log.sinfoln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': discovered device %s, name: %s, RSSI: %hhd"),
       sensorId, sSensor.name,
       deviceAddress.toString().c_str(), deviceName.c_str(), deviceRssi
     );
 
     if (!device->haveServiceData()) {
-      Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found service data"),
+      Log.swarningln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found service data!"),
         sensorId, sSensor.name
       );
       return;
@@ -63,6 +63,12 @@ public:
     if (parseAtcData(device, sensorId) || parsePvvxData(device, sensorId) || parseBTHomeData(device, sensorId)) {
       // update rssi
       Sensors::setValueById(sensorId, deviceRssi, Sensors::ValueType::RSSI, false, false);
+
+    } else {
+      Log.swarningln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': unsupported data format!"),
+        sensorId, sSensor.name
+      );
     }
   }
 
@@ -85,7 +91,7 @@ public:
       return false;
     }
   
-    Log.straceln(
+    Log.snoticeln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found ATC1441 format"),
       sensorId, serviceUuid.toString().c_str()
     );
@@ -108,7 +114,7 @@ public:
     uint16_t batteryMv = (static_cast<uint8_t>(serviceData[10]) << 8) | static_cast<uint8_t>(serviceData[11]);
 
     // Log
-    Log.straceln(
+    Log.snoticeln(
       FPSTR(L_SENSORS_BLE),
       F("Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
       sensorId, temperature, humidity, batteryMv, batteryLevel
@@ -136,7 +142,7 @@ public:
       return false;
     }
   
-    Log.straceln(
+    Log.snoticeln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found PVVX format"),
       sensorId, serviceUuid.toString().c_str()
     );
@@ -161,7 +167,7 @@ public:
     uint16_t batteryMv = (static_cast<uint8_t>(serviceData[11]) << 8) | static_cast<uint8_t>(serviceData[10]);
 
     // Log
-    Log.straceln(
+    Log.snoticeln(
       FPSTR(L_SENSORS_BLE),
       F("Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
       sensorId, temperature, humidity, batteryMv, batteryLevel
@@ -196,7 +202,7 @@ public:
       return false;
     }
   
-    Log.straceln(
+    Log.snoticeln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found BTHome format"),
       sensorId, serviceUuid.toString().c_str()
     );
@@ -221,8 +227,9 @@ public:
           uint8_t batteryLevel = static_cast<uint8_t>(serviceData[serviceDataPos]);
           Sensors::setValueById(sensorId, batteryLevel, Sensors::ValueType::BATTERY, true, true);
           serviceDataPos += 1;
+          foundData = true;
 
-          Log.straceln(
+          Log.snoticeln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received battery level: %hhu"),
             sensorId, batteryLevel
           );
@@ -242,7 +249,7 @@ public:
           serviceDataPos += 2;
           foundData = true;
 
-          Log.straceln(
+          Log.snoticeln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received temp: %.2f"),
             sensorId, temperature
           );
@@ -260,8 +267,9 @@ public:
           float humidity = static_cast<float>(rawHumidity) * 0.01f;
           Sensors::setValueById(sensorId, humidity, Sensors::ValueType::HUMIDITY, true, true);
           serviceDataPos += 2;
+          foundData = true;
 
-          Log.straceln(
+          Log.snoticeln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received humidity: %.2f"),
             sensorId, humidity
           );
@@ -275,10 +283,11 @@ public:
           }
 
           uint16_t batteryMv = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8) 
-                      | static_cast<uint8_t>(serviceData[serviceDataPos]);
+                               | static_cast<uint8_t>(serviceData[serviceDataPos]);
           serviceDataPos += 2;
+          foundData = true;
 
-          Log.straceln(
+          Log.snoticeln(
             FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received battery voltage: %hu"),
             sensorId, batteryMv
           );
