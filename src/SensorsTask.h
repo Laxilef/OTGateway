@@ -60,84 +60,234 @@ public:
       sensorId, sSensor.name, serviceDataCount
     );
 
+    if (parseAtcData(device, sensorId) || parsePvvxData(device, sensorId) || parseBTHomeData(device, sensorId)) {
+      // update rssi
+      Sensors::setValueById(sensorId, deviceRssi, Sensors::ValueType::RSSI, false, false);
+    }
+  }
+
+  static bool parseAtcData(const NimBLEAdvertisedDevice* device, uint8_t sensorId) {
     NimBLEUUID serviceUuid((uint16_t) 0x181A);
+
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': NOT found %s env service data"),
-        sensorId, sSensor.name, serviceUuid.toString().c_str()
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not found ATC1441 data"),
+        sensorId, serviceUuid.toString().c_str()
       );
-      return;
+      return false;
+
+    } else if (serviceData.size() != 13) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not in ATC1441 format"),
+        sensorId, serviceUuid.toString().c_str()
+      );
+      return false;
     }
   
     Log.straceln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found %s env service data"),
-      sensorId, sSensor.name, serviceUuid.toString().c_str()
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found ATC1441 format"),
+      sensorId, serviceUuid.toString().c_str()
     );
 
-    float temperature, humidity;
-    uint16_t batteryMv;
-    uint8_t batteryLevel;
-
-    if (serviceData.size() == 13) {
-      // atc1441 format
-
-      // Temperature (2 bytes, big-endian)
-      temperature = (
-        (static_cast<uint8_t>(serviceData[6]) << 8) | static_cast<uint8_t>(serviceData[7])
-      ) * 0.1f;
-
-      // Humidity (1 byte)
-      humidity = static_cast<uint8_t>(serviceData[8]);
-
-      // Battery mV (2 bytes, big-endian)
-      batteryMv = (static_cast<uint8_t>(serviceData[10]) << 8) | static_cast<uint8_t>(serviceData[11]);
-
-      // Battery level (1 byte)
-      batteryLevel = static_cast<uint8_t>(serviceData[9]);
-
-    } else if (serviceData.size() == 15) {
-      // custom pvvx format
-
-      // Temperature (2 bytes, little-endian)
-      temperature = (
-        (static_cast<uint8_t>(serviceData[7]) << 8) | static_cast<uint8_t>(serviceData[6])
-      ) * 0.01f;
-
-      // Humidity (2 bytes, little-endian)
-      humidity = (
-        (static_cast<uint8_t>(serviceData[9]) << 8) | static_cast<uint8_t>(serviceData[8])
-      ) * 0.01f;
-
-      // Battery mV (2 bytes, little-endian)
-      batteryMv = (static_cast<uint8_t>(serviceData[11]) << 8) | static_cast<uint8_t>(serviceData[10]);
-
-      // Battery level (1 byte)
-      batteryLevel = static_cast<uint8_t>(serviceData[12]);
-
-    } else {
-      // unknown format
-      Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': unknown data format (size: %i)"),
-        sensorId, sSensor.name, serviceData.size()
-      );
-      return;
-    }
-
-    Log.straceln(
-      FPSTR(L_SENSORS_BLE),
-      F("Sensor #%hhu '%s', received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
-      sensorId, sSensor.name,
-      temperature, humidity, batteryMv, batteryLevel
-    );
-
-    // update data
+    // Temperature (2 bytes, big-endian)
+    float temperature = (
+      (static_cast<uint8_t>(serviceData[6]) << 8) | static_cast<uint8_t>(serviceData[7])
+    ) * 0.1f;
     Sensors::setValueById(sensorId, temperature, Sensors::ValueType::TEMPERATURE, true, true);
+
+    // Humidity (1 byte)
+    float humidity = static_cast<uint8_t>(serviceData[8]);
     Sensors::setValueById(sensorId, humidity, Sensors::ValueType::HUMIDITY, true, true);
+
+    // Battery level (1 byte)
+    uint8_t batteryLevel = static_cast<uint8_t>(serviceData[9]);
     Sensors::setValueById(sensorId, batteryLevel, Sensors::ValueType::BATTERY, true, true);
 
-    // update rssi
-    Sensors::setValueById(sensorId, deviceRssi, Sensors::ValueType::RSSI, false, false);
+    // Battery mV (2 bytes, big-endian)
+    uint16_t batteryMv = (static_cast<uint8_t>(serviceData[10]) << 8) | static_cast<uint8_t>(serviceData[11]);
+
+    // Log
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE),
+      F("Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
+      sensorId, temperature, humidity, batteryMv, batteryLevel
+    );
+
+    return true;
+  }
+
+  static bool parsePvvxData(const NimBLEAdvertisedDevice* device, uint8_t sensorId) {
+    NimBLEUUID serviceUuid((uint16_t) 0x181A);
+
+    auto serviceData = device->getServiceData(serviceUuid);
+    if (!serviceData.size()) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not found PVVX data"),
+        sensorId, serviceUuid.toString().c_str()
+      );
+      return false;
+
+    } else if (serviceData.size() != 15) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not in PVVX format"),
+        sensorId, serviceUuid.toString().c_str()
+      );
+      return false;
+    }
+  
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found PVVX format"),
+      sensorId, serviceUuid.toString().c_str()
+    );
+
+    // Temperature (2 bytes, little-endian)
+    float temperature = (
+      (static_cast<uint8_t>(serviceData[7]) << 8) | static_cast<uint8_t>(serviceData[6])
+    ) * 0.01f;
+    Sensors::setValueById(sensorId, temperature, Sensors::ValueType::TEMPERATURE, true, true);
+
+    // Humidity (2 bytes, little-endian)
+    float humidity = (
+      (static_cast<uint8_t>(serviceData[9]) << 8) | static_cast<uint8_t>(serviceData[8])
+    ) * 0.01f;
+    Sensors::setValueById(sensorId, humidity, Sensors::ValueType::HUMIDITY, true, true);
+
+    // Battery level (1 byte)
+    uint8_t batteryLevel = static_cast<uint8_t>(serviceData[12]);
+    Sensors::setValueById(sensorId, batteryLevel, Sensors::ValueType::BATTERY, true, true);
+
+    // Battery mV (2 bytes, little-endian)
+    uint16_t batteryMv = (static_cast<uint8_t>(serviceData[11]) << 8) | static_cast<uint8_t>(serviceData[10]);
+
+    // Log
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE),
+      F("Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
+      sensorId, temperature, humidity, batteryMv, batteryLevel
+    );
+
+    return true;
+  }
+
+  static bool parseBTHomeData(const NimBLEAdvertisedDevice* device, uint8_t sensorId) {
+    NimBLEUUID serviceUuid((uint16_t) 0xFCD2);
+
+    auto serviceData = device->getServiceData(serviceUuid);
+    if (!serviceData.size()) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not found BTHome data"),
+        sensorId, serviceUuid.toString().c_str()
+      );
+      return false;
+
+    } else if ((serviceData[0] & 0xE0) != 0x40) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: unsupported BTHome version"),
+        sensorId, serviceUuid.toString().c_str()
+      );
+      return false;
+
+    } else if ((serviceData[0] & 0x01) != 0) {
+      Log.straceln(
+        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: unsupported BTHome encrypted data"),
+        sensorId, serviceUuid.toString().c_str()
+      );
+      return false;
+    }
+  
+    Log.straceln(
+      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found BTHome format"),
+      sensorId, serviceUuid.toString().c_str()
+    );
+
+    bool foundData = false;
+    size_t serviceDataPos = 0;
+    while (serviceDataPos < serviceData.size()) {
+      uint8_t objectId = serviceData[serviceDataPos++];
+
+      switch (objectId) {
+        // Packet ID (1 byte)
+        case 0x00:
+          serviceDataPos += 1;
+          break;
+
+        // Battery (1 byte)
+        case 0x01: {
+          if (serviceDataPos + 1 > serviceData.size()) {
+            break;
+          }
+
+          uint8_t batteryLevel = static_cast<uint8_t>(serviceData[serviceDataPos]);
+          Sensors::setValueById(sensorId, batteryLevel, Sensors::ValueType::BATTERY, true, true);
+          serviceDataPos += 1;
+
+          Log.straceln(
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received battery level: %hhu"),
+            sensorId, batteryLevel
+          );
+          break;
+        }
+
+        // Temperature (2 bytes, little-endian)
+        case 0x02: {
+          if (serviceDataPos + 2 > serviceData.size()) {
+            break;
+          }
+
+          int16_t rawTemp = (static_cast<int16_t>(serviceData[serviceDataPos + 1]) << 8)
+                            | static_cast<uint8_t>(serviceData[serviceDataPos]);
+          float temperature = static_cast<float>(rawTemp) * 0.01f;
+          Sensors::setValueById(sensorId, temperature, Sensors::ValueType::TEMPERATURE, true, true);
+          serviceDataPos += 2;
+          foundData = true;
+
+          Log.straceln(
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received temp: %.2f"),
+            sensorId, temperature
+          );
+          break;
+        }
+
+        // Humidity (2 bytes, little-endian)
+        case 0x03: {
+          if (serviceDataPos + 2 > serviceData.size()) {
+            break;
+          }
+
+          uint16_t rawHumidity = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8) 
+                                 | static_cast<uint8_t>(serviceData[serviceDataPos]);
+          float humidity = static_cast<float>(rawHumidity) * 0.01f;
+          Sensors::setValueById(sensorId, humidity, Sensors::ValueType::HUMIDITY, true, true);
+          serviceDataPos += 2;
+
+          Log.straceln(
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received humidity: %.2f"),
+            sensorId, humidity
+          );
+          break;
+        }
+
+        // Voltage (2 bytes, little-endian)
+        case 0x0C: {
+          if (serviceDataPos + 2 > serviceData.size()) {
+            break;
+          }
+
+          uint16_t batteryMv = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8) 
+                      | static_cast<uint8_t>(serviceData[serviceDataPos]);
+          serviceDataPos += 2;
+
+          Log.straceln(
+            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received battery voltage: %hu"),
+            sensorId, batteryMv
+          );
+          break;
+        }
+      }
+    }
+
+    return foundData;
   }
 };
 #endif
