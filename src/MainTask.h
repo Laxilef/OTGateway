@@ -132,8 +132,6 @@ protected:
         tMqtt->disable();
       }
 
-      Sensors::setConnectionStatusByType(Sensors::Type::MANUAL, !settings.mqtt.enabled || vars.mqtt.connected, false);
-
     } else {
       if (this->ntpStarted) {
         this->ntpStarted = false;
