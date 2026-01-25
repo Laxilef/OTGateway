@@ -15,7 +15,6 @@ blueprint:
           multiple: false
           filter:
             - domain: sensor
-              device_class: temperature
     target_entity:
       name: Target entity
       description: "Usually ``number.opentherm_indoor_temp`` or ``number.opentherm_outdoor_temp``"
