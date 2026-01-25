@@ -66,7 +66,8 @@ public:
   }
 
 protected:
-  const unsigned int disconnectedTimeout = 120000;
+  const unsigned int wiredDisconnectTimeout = 180000u;
+  const unsigned int wirelessDisconnectTimeout = 600000u;
   const unsigned short dallasSearchInterval = 60000;
   const unsigned short dallasPollingInterval = 10000;
   const unsigned short globalPollingInterval = 15000;
@@ -1004,12 +1005,16 @@ protected:
       } else if (rSensor.connected && sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
         Sensors::setConnectionStatusById(sensorId, false, false);
 
-      } else if (sSensor.type != Sensors::Type::MANUAL && rSensor.connected && (millis() - rSensor.activityTime) > this->disconnectedTimeout) {
-        Sensors::setConnectionStatusById(sensorId, false, false);
+      } else if (rSensor.connected) {
+        if (sSensor.type == Sensors::Type::MANUAL || sSensor.type == Sensors::Type::BLUETOOTH) {
+          if ((millis() - rSensor.activityTime) > this->wirelessDisconnectTimeout) {
+            Sensors::setConnectionStatusById(sensorId, false, false);
+          }
 
-      }/* else if (!rSensor.connected) {
-        rSensor.connected = true;
-      }*/
+        } else if ((millis() - rSensor.activityTime) > this->wiredDisconnectTimeout) {
+          Sensors::setConnectionStatusById(sensorId, false, false);
+        }
+      }
     }
   }
 

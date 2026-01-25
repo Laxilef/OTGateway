@@ -1,5 +1,5 @@
 # Blueprint for reporting temperature to OpenTherm Gateway from home assistant weather integration
-# Updated: 03.09.2024
+# Updated: 26.01.2026
 
 blueprint:
   name: Report temp to OpenTherm Gateway from Weather
@@ -37,8 +37,12 @@ condition:
     value_template: "{{ states(source_entity) != 'unavailable' and states(target_entity) != 'unavailable' }}"
 action:
   - if:
-      - condition: template
-        value_template: "{{ (state_attr(source_entity, 'temperature')|float(0) - states(target_entity)|float(0)) | abs | round(2) >= 0.1 }}"
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ (state_attr(source_entity, 'temperature')|float(0) - states(target_entity)|float(0)) | abs | round(2) >= 0.1 }}"
+          - condition: template
+            value_template: "{{ (as_timestamp(now()) - as_timestamp(states[target_entity].last_updated)) | int(0) > 300 }}"
     then:
       - service: number.set_value
         data:
