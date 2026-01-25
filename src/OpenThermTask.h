@@ -43,7 +43,7 @@ protected:
   }
   
   BaseType_t getTaskCore() override {
-    return 1;
+    return 0;
   }
 
   int getTaskPriority() override {
