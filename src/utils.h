@@ -2109,21 +2109,18 @@ bool jsonToSensorResult(const uint8_t sensorId, const JsonVariantConst src) {
     return false;
   }
 
-  auto& dst = Sensors::results[sensorId];
-  bool changed = false;
-
   // value
   if (!src[FPSTR(S_VALUE)].isNull()) {
-    float value = src[FPSTR(S_VALUE)].as<float>();
-
-    uint8_t vType = static_cast<uint8_t>(Sensors::ValueType::PRIMARY);
-    if (fabsf(value - dst.values[vType]) > 0.0001f) {
-      dst.values[vType] = roundf(value, 2);
-      changed = true;
-    }
+    return Sensors::setValueById(
+      sensorId,
+      src[FPSTR(S_VALUE)].as<float>(),
+      Sensors::ValueType::PRIMARY,
+      true,
+      true
+    );
   }
 
-  return changed;
+  return false;
 }
 
 void varsToJson(const Variables& src, JsonVariant dst) {
