@@ -406,6 +406,8 @@
           "title": "Max. ketelvermogen <small>(kW)</small>",
           "note": "<b>0</b> - probeer automatisch te detecteren. Typisch te vinden in de ketelspecificatie als \"maximum nuttig warmtevermogen\"."
         },
+        "targetTempStep": "Regelstap verwarming",
+        "dhwTargetTempStep": "Regelstap warm water",
         "options": {
           "title": "Opties (aanvullende instellingen)",
           "desc": "Opties kunnen de logica van de ketel veranderen. Niet alle opties zijn gedocumenteerd in het protocol, dus dezelfde optie kan verschillende effecten hebben op verschillende ketels.<br /><b>Let op:</b> Het is niet nodig om iets te veranderen als alles goed werkt.",

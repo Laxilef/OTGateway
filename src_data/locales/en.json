@@ -439,6 +439,8 @@
           "title": "Max boiler power <small>(kW)</small>",
           "note": "<b>0</b> - try detect automatically. Typically found in the boiler specification as \"maximum useful heat output\"."
         },
+        "targetTempStep": "Heating control step",
+        "dhwTargetTempStep": "DHW control step",
 
         "options": {
           "title": "Options (additional settings)",
