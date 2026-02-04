@@ -1196,6 +1196,23 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), FPSTR(S_RSSI)).c_str(), doc);
   }
 
+  bool publishNetworkIp(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(FPSTR(S_IP));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), FPSTR(S_IP));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
+    doc[FPSTR(HA_NAME)] = F("IP");
+    doc[FPSTR(HA_ICON)] = F("mdi:ip-network");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.master.network.ip }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), FPSTR(S_IP)).c_str(), doc);
+  }
+
   bool publishUptime(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();

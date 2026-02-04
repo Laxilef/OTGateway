@@ -2210,6 +2210,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTED)] = src.network.connected;
   master[FPSTR(S_NETWORK)][FPSTR(S_RSSI)] = src.network.rssi;
+  master[FPSTR(S_NETWORK)][FPSTR(S_IP)] = src.network.ip;
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;

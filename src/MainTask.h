@@ -105,6 +105,16 @@ protected:
     vars.mqtt.connected = tMqtt->isConnected();
     vars.network.connected = network->isConnected();
     vars.network.rssi = network->isConnected() ? WiFi.RSSI() : 0;
+    if (vars.network.connected) {
+      const String ip = WiFi.localIP().toString();
+      if (ip.length() < sizeof(vars.network.ip)) {
+        strcpy(vars.network.ip, ip.c_str());
+      } else {
+        vars.network.ip[0] = '\0';
+      }
+    } else {
+      vars.network.ip[0] = '\0';
+    }
 
     if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
       if (Log.getLevel() != settings.system.logLevel) {

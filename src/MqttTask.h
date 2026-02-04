@@ -522,6 +522,7 @@ protected:
     this->haHelper->publishFaultCode();
     this->haHelper->publishDiagCode();
     this->haHelper->publishNetworkRssi(false);
+    this->haHelper->publishNetworkIp(false);
     this->haHelper->publishUptime(false);
 
     // buttons
