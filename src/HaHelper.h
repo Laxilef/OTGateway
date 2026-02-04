@@ -1217,7 +1217,7 @@ public:
   }
 
 
-  bool publishClimateHeating(UnitSystem unit = UnitSystem::METRIC, uint8_t minTemp = 20, uint8_t maxTemp = 90, bool enabledByDefault = true) {
+  bool publishClimateHeating(UnitSystem unit = UnitSystem::METRIC, uint8_t minTemp = 20, uint8_t maxTemp = 90, float tempStep = 0.1f, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1262,14 +1262,14 @@ public:
 
     doc[FPSTR(HA_MIN_TEMP)] = minTemp;
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
-    doc[FPSTR(HA_TEMP_STEP)] = 0.1f;
+    doc[FPSTR(HA_TEMP_STEP)] = tempStep;
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_CLIMATE), F("heating"), '_').c_str(), doc);
   }
 
-  bool publishClimateDhw(UnitSystem unit = UnitSystem::METRIC, uint8_t minTemp = 40, uint8_t maxTemp = 60, bool enabledByDefault = true) {
+  bool publishClimateDhw(UnitSystem unit = UnitSystem::METRIC, uint8_t minTemp = 40, uint8_t maxTemp = 60, float tempStep = 1.0f, bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
@@ -1307,6 +1307,7 @@ public:
 
     doc[FPSTR(HA_MIN_TEMP)] = minTemp;
     doc[FPSTR(HA_MAX_TEMP)] = maxTemp;
+    doc[FPSTR(HA_TEMP_STEP)] = tempStep;
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
