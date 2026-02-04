@@ -367,7 +367,12 @@
             "set0target": "Set null target"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "targetTempStep": "Heating control step"
+      },
+
+      "dhw": {
+        "targetTempStep": "DHW control step"
       },
 
       "emergency": {

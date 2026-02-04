@@ -339,7 +339,12 @@
             "set0target": "Stel null target in"
           }
         },
-        "turboFactor": "Turbomodus coëff."
+        "turboFactor": "Turbomodus coëff.",
+        "targetTempStep": "Regelstap verwarming"
+      },
+
+      "dhw": {
+        "targetTempStep": "Regelstap warm water"
       },
       "emergency": {
         "desc": "Noodmodus wordt automatisch geactiveerd wanneer «PID» of «Equitherm» het instelpunt van de warmtedrager niet kan berekenen:<br />- als «Equitherm» is ingeschakeld en de buitentemperatuursensor is losgekoppeld;<br />- als «PID» of OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld en de binnentemperatuursensor is losgekoppeld.<br /><b>Let op:</b> Bij een netwerk- of MQTT-storing krijgen sensoren van het type <i>«Handmatig via MQTT/API»</i> de status ONVERBONDEN.",

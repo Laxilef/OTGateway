@@ -367,7 +367,12 @@
             "set0target": "Imposta target nullo"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "targetTempStep": "Passo regolazione riscaldamento"
+      },
+
+      "dhw": {
+        "targetTempStep": "Passo regolazione ACS"
       },
 
       "emergency": {

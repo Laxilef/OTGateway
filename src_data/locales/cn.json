@@ -367,7 +367,12 @@
             "set0target": "设置空目标"
           }
         },
-        "turboFactor": "Turbo 模式系数"
+        "turboFactor": "Turbo 模式系数",
+        "targetTempStep": "供暖调节步长"
+      },
+
+      "dhw": {
+        "targetTempStep": "生活热水调节步长"
       },
 
       "emergency": {
