@@ -19,7 +19,7 @@ protected:
   const char* getTaskName() override {
     return "Regulator";
   }
-  
+
   /*BaseType_t getTaskCore() override {
     return 1;
   }*/
@@ -28,7 +28,7 @@ protected:
     return 4;
   }
   #endif
-  
+
   void loop() {
     if (vars.states.restarting || vars.states.upgrading) {
       return;
@@ -155,7 +155,7 @@ protected:
       );
       float etResult = settings.heating.target + settings.equitherm.shift + sf * (
         tempDelta >= 0 
-          ? pow(tempDelta, 1.0f / settings.equitherm.exponent) 
+          ? pow(tempDelta, 1.0f / settings.equitherm.exponent)
           : -(pow(-(tempDelta), 1.0f / settings.equitherm.exponent))
       );
 
@@ -204,7 +204,7 @@ protected:
         }*/
 
         float error = pidRegulator.setpoint - pidRegulator.input;
-        bool hasDeadband = settings.pid.deadband.enabled 
+        bool hasDeadband = settings.pid.deadband.enabled
           && (error > -(settings.pid.deadband.thresholdHigh))
           && (error < settings.pid.deadband.thresholdLow);
 
