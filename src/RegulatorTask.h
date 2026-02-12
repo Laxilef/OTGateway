@@ -240,6 +240,11 @@ protected:
       ) * settings.heating.turboFactor;
     }
 
+    // If freezing, set temperature to no lower than low temp provided by freeze protection
+    if (vars.master.heating.freezing && fabsf(settings.heating.freezeProtection.lowTemp - newTemp) < 0.0001f) {
+      newTemp = settings.heating.freezeProtection.lowTemp;
+    }
+
     return newTemp;
   }
 };

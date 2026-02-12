@@ -119,6 +119,7 @@
         "mHeatEnabled": "Heating enabled",
         "mHeatBlocking": "Heating blocked",
         "mHeatOverheat": "Heating overheat",
+        "mHeatFreezing": "Heating freezing",
         "sHeatActive": "Heating active",
         "mHeatSetpointTemp": "Heating setpoint temp",
         "mHeatTargetTemp": "Heating target temp",

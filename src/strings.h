@@ -87,6 +87,7 @@ const char S_EXTERNAL_PUMP[]                        PROGMEM = "externalPump";
 const char S_FACTOR[]                               PROGMEM = "factor";
 const char S_FAULT[]                                PROGMEM = "fault";
 const char S_FREEZE_PROTECTION[]                    PROGMEM = "freezeProtection";
+const char S_FREEZING[]                             PROGMEM = "freezing";
 const char S_FILTERING[]                            PROGMEM = "filtering";
 const char S_FILTERING_FACTOR[]                     PROGMEM = "filteringFactor";
 const char S_FLAGS[]                                PROGMEM = "flags";

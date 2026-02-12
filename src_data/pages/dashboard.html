@@ -196,6 +196,10 @@
                   <td><i class="mHeatOverheat"></i></td>
                 </tr>
                 <tr>
+                  <th scope="row" data-i18n>dashboard.states.mHeatFreezing</th>
+                  <td><i class="mHeatFreezing"></i></td>
+                </tr>
+                <tr>
                   <th scope="row" data-i18n>dashboard.states.sHeatActive</th>
                   <td><i class="sHeatActive"></i></td>
                 </tr>
@@ -632,6 +636,11 @@
               '.mHeatOverheat',
               result.master.heating.overheat ? "success" : "error",
               result.master.heating.overheat ? "red" : "green"
+            );
+            setStatus(
+              '.mHeatFreezing',
+              result.master.heating.freezing ? "success" : "error",
+              result.master.heating.freezing ? "red" : "green"
             );
             setValue('.mHeatSetpointTemp', result.master.heating.setpointTemp);
             setValue('.mHeatTargetTemp', result.master.heating.targetTemp);

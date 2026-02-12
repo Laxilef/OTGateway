@@ -243,7 +243,7 @@ protected:
 
   void heating() {
     // freeze protection
-    if (!settings.heating.enabled) {
+    {
       float lowTemp = 255.0f;
       uint8_t availableSensors = 0;
 
@@ -275,28 +275,43 @@ protected:
       }
 
       if (availableSensors && lowTemp <= settings.heating.freezeProtection.lowTemp) {
-        if (!this->freezeDetected) {
-          this->freezeDetected = true;
-          this->freezeDetectedTime = millis();
+        if (!vars.master.heating.freezing) {
+          if (!this->freezeDetected) {
+            this->freezeDetected = true;
+            this->freezeDetectedTime = millis();
 
-        } else if (millis() - this->freezeDetectedTime > (settings.heating.freezeProtection.thresholdTime * 1000)) {
+          } else if (millis() - this->freezeDetectedTime > (settings.heating.freezeProtection.thresholdTime * 1000)) {
+            this->freezeDetected = false;
+            vars.master.heating.freezing = true;
+
+            if (!settings.heating.enabled) {
+              settings.heating.enabled = true;
+              fsSettings.update();
+            }
+
+            Log.sinfoln(
+              FPSTR(L_MAIN),
+              F("Heating turned on by freeze protection, current low temp: %.2f, threshold: %hhu"),
+              lowTemp, settings.heating.freezeProtection.lowTemp
+            );
+          }
+        }
+
+      } else {
+        if (this->freezeDetected) {
           this->freezeDetected = false;
-          settings.heating.enabled = true;
-          fsSettings.update();
+        }
+
+        if (vars.master.heating.freezing) {
+          vars.master.heating.freezing = false;
 
           Log.sinfoln(
             FPSTR(L_MAIN),
-            F("Heating turned on by freeze protection, current low temp: %.2f, threshold: %hhu"),
+            F("No freezing detected, current low temp: %.2f, threshold: %hhu"),
             lowTemp, settings.heating.freezeProtection.lowTemp
           );
         }
-
-      } else if (this->freezeDetected) {
-        this->freezeDetected = false;
       }
-
-    } else if (this->freezeDetected) {
-      this->freezeDetected = false;
     }
   }
 

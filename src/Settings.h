@@ -304,6 +304,7 @@ struct Variables {
       bool enabled = false;
       bool indoorTempControl = false;
       bool overheat = false;
+      bool freezing = false;
       float setpointTemp = 0.0f;
       float targetTemp = 0.0f;
       float currentTemp = 0.0f;

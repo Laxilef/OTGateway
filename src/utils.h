@@ -2170,6 +2170,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   mHeating[FPSTR(S_BLOCKING)] = src.master.heating.blocking;
   mHeating[FPSTR(S_INDOOR_TEMP_CONTROL)] = src.master.heating.indoorTempControl;
   mHeating[FPSTR(S_OVERHEAT)] = src.master.heating.overheat;
+  mHeating[FPSTR(S_FREEZING)] = src.master.heating.freezing;
   mHeating[FPSTR(S_SETPOINT_TEMP)] = roundf(src.master.heating.setpointTemp, 2);
   mHeating[FPSTR(S_TARGET_TEMP)] = roundf(src.master.heating.targetTemp, 2);
   mHeating[FPSTR(S_CURRENT_TEMP)] = roundf(src.master.heating.currentTemp, 2);
