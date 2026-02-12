@@ -248,6 +248,8 @@
         "ntcTemp": "NTC sensor",
         "dallasTemp": "DALLAS sensor",
         "bluetooth": "BLE sensor",
+        "dht11": "DHT11 sensor",
+        "dht22": "DHT22 sensor",
         "heatSetpointTemp": "Heating, setpoint temp",
         "manual": "Manual via MQTT/API",
         "notConfigured": "Not configured"
