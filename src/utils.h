@@ -451,6 +451,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     opentherm[FPSTR(S_FLAGS)] = src.opentherm.flags;
     opentherm[FPSTR(S_MIN_POWER)] = roundf(src.opentherm.minPower, 2);
     opentherm[FPSTR(S_MAX_POWER)] = roundf(src.opentherm.maxPower, 2);
+    opentherm[FPSTR(S_TARGET_TEMP_STEP)] = roundf(src.opentherm.targetTempStep, 2);
+    opentherm[FPSTR(S_DHW_TARGET_TEMP_STEP)] = roundf(src.opentherm.dhwTargetTempStep, 2);
 
     auto otOptions = opentherm[FPSTR(S_OPTIONS)].to<JsonObject>();
     otOptions[FPSTR(S_DHW_SUPPORT)] = src.opentherm.options.dhwSupport;
@@ -848,6 +850,24 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value >= 0 && value <= 1000 && fabsf(value - dst.opentherm.maxPower) > 0.0001f) {
         dst.opentherm.maxPower = roundf(value, 2);
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_TARGET_TEMP_STEP)].isNull()) {
+      float value = src[FPSTR(S_OPENTHERM)][FPSTR(S_TARGET_TEMP_STEP)].as<float>();
+
+      if (value >= 0.1f && value <= 5.0f && fabsf(value - dst.opentherm.targetTempStep) > 0.0001f) {
+        dst.opentherm.targetTempStep = roundf(value, 2);
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_TARGET_TEMP_STEP)].isNull()) {
+      float value = src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_TARGET_TEMP_STEP)].as<float>();
+
+      if (value >= 0.1f && value <= 5.0f && fabsf(value - dst.opentherm.dhwTargetTempStep) > 0.0001f) {
+        dst.opentherm.dhwTargetTempStep = roundf(value, 2);
         changed = true;
       }
     }
@@ -2190,6 +2210,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTED)] = src.network.connected;
   master[FPSTR(S_NETWORK)][FPSTR(S_RSSI)] = src.network.rssi;
+  master[FPSTR(S_NETWORK)][FPSTR(S_IP)] = src.network.ip;
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;

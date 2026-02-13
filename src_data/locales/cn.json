@@ -439,6 +439,8 @@
           "title": "最大锅炉功率 <small>(kW)</small>",
           "note": "<b>0</b> - 自动检测，通常在锅炉参数设置中的\"最大有效热输出\"。 "
         },
+        "targetTempStep": "供暖调节步长",
+        "dhwTargetTempStep": "生活热水调节步长",
 
         "options": {
           "title": "选项（附加设置）",

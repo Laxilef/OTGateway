@@ -61,6 +61,8 @@ struct Settings {
     uint8_t flags = 0;
     float minPower = 0.0f;
     float maxPower = 0.0f;
+    float targetTempStep = DEFAULT_OT_TARGET_TEMP_STEP;
+    float dhwTargetTempStep = DEFAULT_OT_DHW_TEMP_STEP;
 
     struct {
       bool dhwSupport = true;
@@ -272,6 +274,7 @@ struct Variables {
   struct {
     bool connected = false;
     int8_t rssi = 0;
+    char ip[16] = "";
   } network;
 
   struct {
