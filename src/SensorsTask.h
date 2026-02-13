@@ -484,14 +484,11 @@ protected:
           this->dhtIsPolling = false;
         });
 
-        DHT::Type sType;
+        DHT::Type sType = DHT::Type::DHT22;
         if (sSensor.type == Sensors::Type::DHT11) {
           sType = DHT::Type::DHT11;
 
-        } else if (sSensor.type == Sensors::Type::DHT11) {
-          sType = DHT::Type::DHT22;
-
-        } else {
+        } else if (sSensor.type == Sensors::Type::DHT22) {
           sType = DHT::Type::DHT22;
         }
 
@@ -499,7 +496,10 @@ protected:
           Log.sinfoln(FPSTR(L_SENSORS_DHT), F("Started on GPIO %hhu"), sSensor.gpio);
 
         } else {
-          Log.swarningln(FPSTR(L_SENSORS_DHT), F("Failed to start on GPIO %hhu"), sSensor.gpio);
+          Log.swarningln(
+            FPSTR(L_SENSORS_DHT), F("Failed to start on GPIO %hhu (err: %s)"),
+            sSensor.gpio, DHT::statusToString(this->dhtInstance.getStatus())
+          );
         }
       }
 
