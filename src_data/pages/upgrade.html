@@ -105,7 +105,7 @@
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
-        lang.build();
+        await lang.build();
 
         setupRestoreBackupForm('#restore');
         setupUpgradeForm('#upgrade');

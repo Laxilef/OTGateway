@@ -179,7 +179,7 @@
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
-        lang.build();
+        await lang.build();
 
         const fillData = (data) => {
           setInputValue("[name='hostname']", data.hostname);

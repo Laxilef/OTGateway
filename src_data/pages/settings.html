@@ -925,7 +925,7 @@
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
-        lang.build();
+        await lang.build();
 
         let etChart = null;
         let etChartConfig = {

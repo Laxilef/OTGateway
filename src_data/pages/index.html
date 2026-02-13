@@ -169,7 +169,7 @@
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
-        lang.build();
+        await lang.build();
 
         setTimeout(async function onLoadPage() {
           try {

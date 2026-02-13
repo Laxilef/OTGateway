@@ -201,7 +201,7 @@
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
         const lang = new Lang(document.getElementById("lang"));
-        lang.build();
+        await lang.build();
 
         const container = document.querySelector("article");
         const templateNode = container.querySelector("#template");
