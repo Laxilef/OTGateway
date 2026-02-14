@@ -1,4 +1,5 @@
 .pio
+.dummy
 .vscode
 .PVS-Studio
 build/*
@@ -10,5 +11,4 @@ package-lock.json
 *.lock
 sdkconfig.*
 CMakeLists.txt
-!sdkconfig.defaults
 !.gitkeep
