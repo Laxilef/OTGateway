@@ -51,27 +51,23 @@ protected:
 class SensorsTask : public LeanTask {
 public:
   SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
+    this->gpioLastPollingTime.reserve(2);
+
     // OneWire
     this->owInstances.reserve(2);
     this->dallasInstances.reserve(2);
     this->dallasSearchTime.reserve(2);
     this->dallasPolling.reserve(2);
-    this->dallasLastPollingTime.reserve(2);
-
-    // DHT
-    this->dhtLastPollingTime.reserve(2);
   }
 
   ~SensorsTask() {
+    this->gpioLastPollingTime.clear();
+
     // OneWire
     this->dallasInstances.clear();
     this->owInstances.clear();
     this->dallasSearchTime.clear();
     this->dallasPolling.clear();
-    this->dallasLastPollingTime.clear();
-
-    // DHT
-    this->dhtLastPollingTime.clear();
   }
 
 protected:
@@ -85,17 +81,17 @@ protected:
   const unsigned int bleSetDtInterval = 7200000;
   #endif
 
+  std::unordered_map<uint8_t, unsigned long> gpioLastPollingTime;
+
   // OneWire
   std::unordered_map<uint8_t, OneWire> owInstances;
   std::unordered_map<uint8_t, DallasTemperature> dallasInstances;
   std::unordered_map<uint8_t, unsigned long> dallasSearchTime;
   std::unordered_map<uint8_t, bool> dallasPolling;
-  std::unordered_map<uint8_t, unsigned long> dallasLastPollingTime;
 
   // DHT
   DHT dhtInstance;
   bool dhtIsPolling = false;
-  std::unordered_map<uint8_t, unsigned long> dhtLastPollingTime;
 
   #if USE_BLE
   // Bluetooth
@@ -194,7 +190,7 @@ protected:
 
       this->dallasSearchTime[sSensor.gpio] = 0;
       this->dallasPolling[sSensor.gpio] = false;
-      this->dallasLastPollingTime[sSensor.gpio] = 0;
+      this->gpioLastPollingTime[sSensor.gpio] = 0;
 
       auto& instance = this->dallasInstances[sSensor.gpio];
       instance.setOneWire(&owInstance);
@@ -229,7 +225,7 @@ protected:
         this->owInstances.erase(gpio);
         this->dallasSearchTime.erase(gpio);
         this->dallasPolling.erase(gpio);
-        this->dallasLastPollingTime.erase(gpio);
+        this->gpioLastPollingTime.erase(gpio);
 
         Log.sinfoln(FPSTR(L_SENSORS_DALLAS), F("Stopped on GPIO %hhu"), gpio);
         continue;
@@ -350,7 +346,7 @@ protected:
 
       if (this->dallasPolling[gpio]) {
         unsigned long minPollingTime = instance.millisToWaitForConversion(12) * 2;
-        unsigned long estimatePollingTime = ts - this->dallasLastPollingTime[gpio];
+        unsigned long estimatePollingTime = ts - this->gpioLastPollingTime[gpio];
 
         // check conversion time
         // isConversionComplete does not work with chinese clones!
@@ -402,7 +398,7 @@ protected:
         this->dallasPolling[gpio] = false;
 
       } else if (newPolling) {
-        auto estimateLastPollingTime = ts - this->dallasLastPollingTime[gpio];
+        auto estimateLastPollingTime = ts - this->gpioLastPollingTime[gpio];
 
         // check last polling time
         if (estimateLastPollingTime < this->dallasPollingInterval) {
@@ -413,7 +409,7 @@ protected:
         instance.setResolution(12);
         instance.requestTemperatures();
         this->dallasPolling[gpio] = true;
-        this->dallasLastPollingTime[gpio] = ts;
+        this->gpioLastPollingTime[gpio] = ts;
 
         Log.straceln(FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, polling..."), gpio);
       }
@@ -437,7 +433,7 @@ protected:
         continue;
       }
 
-      if (this->dhtLastPollingTime.count(sSensor.gpio) && millis() - this->dhtLastPollingTime[sSensor.gpio] < this->dhtPollingInterval) {
+      if (this->gpioLastPollingTime.count(sSensor.gpio) && millis() - this->gpioLastPollingTime[sSensor.gpio] < this->dhtPollingInterval) {
         continue;
       }
 
@@ -463,7 +459,7 @@ protected:
             rSensor.signalQuality++;
           }
 
-          this->dhtLastPollingTime[sSensor.gpio] = millis();
+          this->gpioLastPollingTime[sSensor.gpio] = millis();
           this->dhtIsPolling = false;
         });
 
@@ -480,7 +476,7 @@ protected:
             rSensor.signalQuality--;
           }
           
-          this->dhtLastPollingTime[sSensor.gpio] = millis();
+          this->gpioLastPollingTime[sSensor.gpio] = millis();
           this->dhtIsPolling = false;
         });
 
