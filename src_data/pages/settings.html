@@ -202,7 +202,13 @@
                   <span data-i18n>settings.maxModulation</span>
                   <input type="number" inputmode="numeric" name="heating[maxModulation]" min="1" max="100" step="1" required>
                 </label>
+
               </div>
+
+              <label>
+                <span data-i18n>settings.heating.targetTempStep</span>
+                <input type="number" inputmode="decimal" name="opentherm[targetTempStep]" min="0.1" max="5" step="0.1">
+              </label>
 
               <hr />
 
@@ -304,10 +310,17 @@
                 </label>
               </div>
 
-              <label>
-                <span data-i18n>settings.maxModulation</span>
-                <input type="number" inputmode="numeric" name="dhw[maxModulation]" min="1" max="100" step="1" required>
-              </label>
+              <div class="grid">
+                <label>
+                  <span data-i18n>settings.maxModulation</span>
+                  <input type="number" inputmode="numeric" name="dhw[maxModulation]" min="1" max="100" step="1" required>
+                </label>
+
+                <label>
+                  <span data-i18n>settings.dhw.targetTempStep</span>
+                  <input type="number" inputmode="decimal" name="opentherm[dhwTargetTempStep]" min="0.1" max="5" step="0.1">
+                </label>
+              </div>
 
               <hr />
 
@@ -1107,6 +1120,8 @@
           setInputValue("[name='opentherm[flags]']", data.opentherm.flags);
           setInputValue("[name='opentherm[minPower]']", data.opentherm.minPower);
           setInputValue("[name='opentherm[maxPower]']", data.opentherm.maxPower);
+          setInputValue("[name='opentherm[targetTempStep]']", data.opentherm.targetTempStep);
+          setInputValue("[name='opentherm[dhwTargetTempStep]']", data.opentherm.dhwTargetTempStep);
           setCheckboxValue("[name='opentherm[options][dhwSupport]']", data.opentherm.options.dhwSupport);
           setCheckboxValue("[name='opentherm[options][coolingSupport]']", data.opentherm.options.coolingSupport);
           setCheckboxValue("[name='opentherm[options][summerWinterMode]']", data.opentherm.options.summerWinterMode);

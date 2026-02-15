@@ -520,6 +520,12 @@
             setCheckboxValue('#tDhwEnabled', result.dhw.enabled);
             setValue('.tDhw .targetTemp', result.dhw.target);
 
+            const tHeat = document.querySelector('.tHeat');
+            tHeat.dataset.step = result.opentherm.targetTempStep;
+
+            const tDhw = document.querySelector('.tDhw');
+            tDhw.dataset.step = result.opentherm.dhwTargetTempStep;
+
             setValue('.tempUnit', temperatureUnit(unitSystem));
             setValue('.pressureUnit', pressureUnit(unitSystem));
             setValue('.volumeUnit', volumeUnit(unitSystem));
