@@ -1,3 +1,0 @@
-dependencies:
-  idf: ">=5.3.2"
-  h2zero/esp-nimble-cpp: ">=2.2.1"
