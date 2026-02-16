@@ -505,8 +505,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heatingOverheatProtection[FPSTR(S_LOW_TEMP)] = src.heating.overheatProtection.lowTemp;
 
   auto freezeProtection = heating[FPSTR(S_FREEZE_PROTECTION)].to<JsonObject>();
+  freezeProtection[FPSTR(S_HIGH_TEMP)] = src.heating.freezeProtection.highTemp;
   freezeProtection[FPSTR(S_LOW_TEMP)] = src.heating.freezeProtection.lowTemp;
-  freezeProtection[FPSTR(S_THRESHOLD_TIME)] = src.heating.freezeProtection.thresholdTime;
 
   auto dhw = dst[FPSTR(S_DHW)].to<JsonObject>();
   dhw[FPSTR(S_ENABLED)] = src.dhw.enabled;
@@ -1426,6 +1426,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     changed = true;
   }
 
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_HIGH_TEMP)].isNull()) {
+    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_HIGH_TEMP)].as<uint8_t>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 1, 50) && value != dst.heating.freezeProtection.highTemp) {
+      dst.heating.freezeProtection.highTemp = value;
+      changed = true;
+    }
+  }
+
   if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_LOW_TEMP)].isNull()) {
     unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_LOW_TEMP)].as<uint8_t>();
 
@@ -1435,15 +1444,9 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_THRESHOLD_TIME)].isNull()) {
-    unsigned short value = src[FPSTR(S_HEATING)][FPSTR(S_FREEZE_PROTECTION)][FPSTR(S_THRESHOLD_TIME)].as<unsigned short>();
-
-    if (value >= 30 && value <= 1800) {
-      if (value != dst.heating.freezeProtection.thresholdTime) {
-        dst.heating.freezeProtection.thresholdTime = value;
-        changed = true;
-      }
-    }
+  if (dst.heating.freezeProtection.highTemp < dst.heating.freezeProtection.lowTemp) {
+    dst.heating.freezeProtection.highTemp = dst.heating.freezeProtection.lowTemp;
+    changed = true;
   }
 
 

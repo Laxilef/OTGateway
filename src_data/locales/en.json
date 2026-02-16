@@ -321,9 +321,15 @@
       },
       "freezeProtection": {
         "title": "Freeze protection",
-        "desc": "Heating will be forced to turn on if the heat carrier or indoor temperature drops below <b>Low temperature</b> during <b>Waiting time</b>.",
-        "lowTemp": "Low temperature threshold",
-        "thresholdTime": "Waiting time <small>(sec)</small>"
+        "desc": "Heating will be forced to turn on if the heat carrier or indoor temperature drops below <b>Low temperature</b>.",
+        "highTemp": {
+          "title": "High temperature threshold",
+          "note": "Threshold when the system returns to normal mode after freeze protection activation"
+        },
+        "lowTemp": {
+          "title": "Low temperature threshold",
+          "note": "Threshold when heating is forced to turn on"
+        }
       },
 
       "portal": {

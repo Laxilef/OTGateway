@@ -265,13 +265,15 @@
 
                 <div class="grid">
                   <label>
-                    <span data-i18n>settings.freezeProtection.lowTemp</span>
-                    <input type="number" inputmode="numeric" name="heating[freezeProtection][lowTemp]" min="0" max="0" step="1" required>
+                    <span data-i18n>settings.freezeProtection.highTemp.title</span>
+                    <input type="number" inputmode="numeric" name="heating[freezeProtection][highTemp]" min="0" max="0" step="1" required>
+                    <small data-i18n>settings.freezeProtection.highTemp.note</small>
                   </label>
 
                   <label>
-                    <span data-i18n>settings.freezeProtection.thresholdTime</span>
-                    <input type="number" inputmode="numeric" name="heating[freezeProtection][thresholdTime]" min="30" max="1800" step="1" required>
+                    <span data-i18n>settings.freezeProtection.lowTemp.title</span>
+                    <input type="number" inputmode="numeric" name="heating[freezeProtection][lowTemp]" min="0" max="0" step="1" required>
+                    <small data-i18n>settings.freezeProtection.lowTemp.note</small>
                   </label>
                 </div>
 
@@ -1184,11 +1186,14 @@
             "min": 0,
             "max": data.system.unitSystem == 0 ? 99 : 211
           });
+          setInputValue("[name='heating[freezeProtection][highTemp]']", data.heating.freezeProtection.highTemp, {
+            "min": data.system.unitSystem == 0 ? 1 : 34,
+            "max": data.system.unitSystem == 0 ? 50 : 122
+          });
           setInputValue("[name='heating[freezeProtection][lowTemp]']", data.heating.freezeProtection.lowTemp, {
             "min": data.system.unitSystem == 0 ? 1 : 34,
             "max": data.system.unitSystem == 0 ? 30 : 86
           });
-          setInputValue("[name='heating[freezeProtection][thresholdTime]']", data.heating.freezeProtection.thresholdTime);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
           // DHW

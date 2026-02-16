@@ -121,8 +121,8 @@ struct Settings {
     } overheatProtection;
 
     struct {
+      uint8_t highTemp = 15;
       uint8_t lowTemp = 10;
-      unsigned short thresholdTime = 600;
     } freezeProtection;
   } heating;
 

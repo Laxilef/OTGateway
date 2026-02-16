@@ -320,9 +320,15 @@
       },
       "freezeProtection": {
         "title": "Protezione antigelo",
-        "desc": "Il riscaldamento verrà attivato forzatamente se la temperatura del vettore di calore o interna scende al di sotto della <b>temperatura minima</b> durante il <b>tempo di attesa</b>.",
-        "lowTemp": "Soglia di temperatura minima",
-        "thresholdTime": "Tempo di attesa <small>(sec)</small>"
+        "desc": "Il riscaldamento verrà forzatamente attivato se la temperatura del vettore termico o la temperatura interna scende al di sotto della <b>Soglia di temperatura bassa</b>.",
+        "highTemp": {
+          "title": "Soglia di temperatura alta",
+          "note": "Soglia quando il sistema ritorna alla modalità normale dopo l'attivazione della protezione antigelo"
+        },
+        "lowTemp": {
+          "title": "Soglia di temperatura bassa",
+          "note": "Soglia quando il riscaldamento viene forzatamente attivato"
+        }
       },
 
       "portal": {

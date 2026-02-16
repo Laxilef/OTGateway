@@ -43,8 +43,6 @@ protected:
   bool telnetStarted = false;
   bool emergencyDetected = false;
   unsigned long emergencyFlipTime = 0;
-  bool freezeDetected = false;
-  unsigned long freezeDetectedTime = 0;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -274,14 +272,20 @@ protected:
         availableSensors++;
       }
 
-      if (availableSensors && lowTemp <= settings.heating.freezeProtection.lowTemp) {
-        if (!vars.master.heating.freezing) {
-          if (!this->freezeDetected) {
-            this->freezeDetected = true;
-            this->freezeDetectedTime = millis();
+      if (availableSensors) {
+        if (vars.master.heating.freezing) {
+          if (lowTemp - (float) settings.heating.freezeProtection.highTemp + 0.0001f >= 0.0f) {
+            vars.master.heating.freezing = false;
 
-          } else if (millis() - this->freezeDetectedTime > (settings.heating.freezeProtection.thresholdTime * 1000)) {
-            this->freezeDetected = false;
+            Log.sinfoln(
+              FPSTR(L_MAIN),
+              F("No freezing detected. Current low temp: %.2f, threshold (high): %hhu"),
+              lowTemp, settings.heating.freezeProtection.highTemp
+            );
+          }
+
+        } else {
+          if ((float) settings.heating.freezeProtection.lowTemp - lowTemp + 0.0001f >= 0.0f) {
             vars.master.heating.freezing = true;
 
             if (!settings.heating.enabled) {
@@ -291,26 +295,16 @@ protected:
 
             Log.sinfoln(
               FPSTR(L_MAIN),
-              F("Heating turned on by freeze protection, current low temp: %.2f, threshold: %hhu"),
+              F("Freezing detected! Current low temp: %.2f, threshold (low): %hhu"),
               lowTemp, settings.heating.freezeProtection.lowTemp
             );
           }
         }
 
-      } else {
-        if (this->freezeDetected) {
-          this->freezeDetected = false;
-        }
+      } else if (vars.master.heating.freezing) {
+        vars.master.heating.freezing = false;
 
-        if (vars.master.heating.freezing) {
-          vars.master.heating.freezing = false;
-
-          Log.sinfoln(
-            FPSTR(L_MAIN),
-            F("No freezing detected, current low temp: %.2f, threshold: %hhu"),
-            lowTemp, settings.heating.freezeProtection.lowTemp
-          );
-        }
+        Log.sinfoln(FPSTR(L_MAIN), F("No sensors available, freeze protection unavailable!"));
       }
     }
   }

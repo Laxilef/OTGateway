@@ -294,11 +294,18 @@
         }
       },
       "freezeProtection": {
-        "title": "Vorstbeveiliging",
-        "desc": "De verwarming wordt geforceerd ingeschakeld als de temperatuur van de warmtedrager of de binnentemperatuur onder de <b>Lage temperatuur</b> daalt gedurende de <b>Wachttijd</b>.",
-        "lowTemp": "Drempelwaarde lage temperatuur",
-        "thresholdTime": "Wachttijd <small>(sec)</small>"
+        "title": "Vorbeveiliging",
+        "desc": "Verwarming zal geforceerd worden ingeschakeld als de temperatuur van de warmtedrager of de binnentemperatuur daalt onder de <b>Lage temperatuurdrempel</b>.",
+        "highTemp": {
+          "title": "Hoge temperatuurdrempel",
+          "note": "Drempel waarna het systeem terugkeert naar de normale modus na activering van de vorbeveiliging"
+        },
+        "lowTemp": {
+          "title": "Lage temperatuurdrempel",
+          "note": "Drempel wanneer de verwarming geforceerd wordt ingeschakeld"
+        }
       },
+
       "portal": {
         "login": "Gebruikersnaam",
         "password": "Wachtwoord",

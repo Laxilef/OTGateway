@@ -320,9 +320,15 @@
       },
       "freezeProtection": {
         "title": "防冻保护",
-        "desc": "当热媒或室内温度在<b>等待时间</b> 内降至<b>低温阈值</b>以下时，系统将强制启动加热功能。",
-        "lowTemp": "低温阈值",
-        "thresholdTime": "等待时间<small>(秒)</small>"
+        "desc": "如果热载体或室内温度低于 <b>低温</b>，加热将被强制开启。",
+        "highTemp": {
+          "title": "高温阈值",
+          "note": "防冻保护激活后系统恢复正常模式的阈值"
+        },
+        "lowTemp": {
+          "title": "低温阈值",
+          "note": "强制开启加热的阈值"
+        }
       },
 
       "portal": {
