@@ -104,6 +104,7 @@
                 <th scope="row" data-i18n>index.system.build.title</th>
                 <td>
                   Env: <b id="build-env"></b><br />
+                  <span data-i18n>index.system.build.commit</span>: <b id="build-commit"></b><br />
                   <span data-i18n>index.system.build.date</span>: <b id="build-date"></b><br />
                   <span data-i18n>index.system.build.core</span>: <b id="build-core"></b><br />
                   <span data-i18n>index.system.build.sdk</span>: <b id="build-sdk"></b>
@@ -206,6 +207,7 @@
             setBusy('#main-busy', '#main-table', false);
 
             setValue('#build-version', result.build.version);
+            setValue('#build-commit', result.build.commit);
             setValue('#build-date', result.build.date);
             setValue('#build-env', result.build.env);
             setValue('#build-core', result.build.core);

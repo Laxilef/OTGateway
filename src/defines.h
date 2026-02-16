@@ -30,6 +30,10 @@
   #define BUILD_VERSION                 "0.0.0"
 #endif
 
+#ifndef BUILD_COMMIT
+  #define BUILD_COMMIT                  "undefined"
+#endif
+
 #ifndef BUILD_ENV
   #define BUILD_ENV                     "undefined"
 #endif

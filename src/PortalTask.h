@@ -552,6 +552,7 @@ protected:
 
       auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
       docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
+      docBuild[FPSTR(S_COMMIT)] = BUILD_COMMIT;
       docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
       docBuild[FPSTR(S_ENV)] = BUILD_ENV;
       docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
@@ -592,6 +593,7 @@ protected:
 
       auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
       docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
+      docBuild[FPSTR(S_COMMIT)] = BUILD_COMMIT;
       docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
       docBuild[FPSTR(S_ENV)] = BUILD_ENV;
       docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
