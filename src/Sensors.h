@@ -39,6 +39,8 @@ public:
     NTC_10K_TEMP            = 50,
     DALLAS_TEMP             = 51,
     BLUETOOTH               = 52,
+    DHT11                   = 53,
+    DHT22                   = 54,
 
     HEATING_SETPOINT_TEMP   = 253,
     MANUAL                  = 254,
