@@ -44,6 +44,7 @@
         "build": {
           "title": "Build",
           "version": "固件版本",
+          "commit": "Commit",
           "date": "日期",
           "core": "内核版本",
           "sdk": "SDK"

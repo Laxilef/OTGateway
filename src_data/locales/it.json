@@ -44,6 +44,7 @@
         "build": {
           "title": "Build",
           "version": "Versione",
+          "commit": "Commit",
           "date": "Data",
           "core": "Core",
           "sdk": "SDK"

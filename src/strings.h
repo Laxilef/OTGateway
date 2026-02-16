@@ -56,6 +56,7 @@ const char S_CHANNEL[]                              PROGMEM = "channel";
 const char S_CH2_ALWAYS_ENABLED[]                   PROGMEM = "ch2AlwaysEnabled";
 const char S_CHIP[]                                 PROGMEM = "chip";
 const char S_CODE[]                                 PROGMEM = "code";
+const char S_COMMIT[]                               PROGMEM = "commit";
 const char S_CONNECTED[]                            PROGMEM = "connected";
 const char S_CONTINUES[]                            PROGMEM = "continues";
 const char S_COOLING[]                              PROGMEM = "cooling";

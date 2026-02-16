@@ -40,6 +40,7 @@
         "build": {
           "title": "Build",
           "version": "Versie",
+          "commit": "Commit",
           "date": "Datum",
           "core": "Core",
           "sdk": "SDK"

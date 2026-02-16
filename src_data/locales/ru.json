@@ -44,6 +44,7 @@
         "build": {
           "title": "Билд",
           "version": "Версия",
+          "commit": "Коммит",
           "date": "Дата",
           "core": "Ядро",
           "sdk": "SDK"
