@@ -367,7 +367,12 @@
             "set0target": "Imposta target nullo"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "targetTempStep": "Passo regolazione riscaldamento"
+      },
+
+      "dhw": {
+        "targetTempStep": "Passo regolazione ACS"
       },
 
       "emergency": {
@@ -439,6 +444,8 @@
           "title": "Potenza massima caldaia <small>(kW)</small>",
           "note": "<b>0</b> - prova a rilevarla automaticamente. Di solito si trova nelle specifiche delle caldaia come \"potenza massima disponibile\"."
         },
+        "targetTempStep": "Passo regolazione riscaldamento",
+        "dhwTargetTempStep": "Passo regolazione ACS",
 
         "options": {
           "title": "Opzioni (impostazioni aggiuntive)",
