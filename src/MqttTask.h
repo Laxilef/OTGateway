@@ -637,7 +637,7 @@ protected:
         Sensors::makeObjectId(sSettings.name).c_str()
       ).c_str(),
       doc,
-      true
+      false
     );
   }
 
