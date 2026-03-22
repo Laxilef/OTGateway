@@ -107,7 +107,73 @@ protected:
     }
   }
 
-  inline float getHeatingMinSetpointTemp() {
+  float roundToStep(float value, float step) {
+    if (step <= 0.0f) return value;
+    return roundf(value / step) * step;
+  }
+
+  float applyHeatPumpSetpointLogic(float demandedTemp) {
+    if (!settings.heatPump.enabled || !settings.heatPump.atlanticLoriaMode) {
+      return demandedTemp;
+    }
+
+    float result = demandedTemp;
+
+    // vlastne limity pre TČ profil
+    result = constrain(
+      result,
+      settings.heatPump.minSetpoint,
+      settings.heatPump.maxSetpoint
+    );
+
+    // pri malej odchylke miestnosti nemenit zbytocne setpoint
+    if (this->indoorSensorsConnected) {
+      float roomError = settings.heating.target - vars.master.heating.indoorTemp;
+
+      if (fabsf(roomError) < settings.heatPump.roomDeadband) {
+        result = vars.heatPump.lastHeatingSetpoint;
+      }
+    }
+
+    // pomala zmena setpointu
+    if (settings.heatPump.useSetpointRamp) {
+      float prev = vars.heatPump.lastHeatingSetpoint;
+
+      // prva inicializacia po starte
+      if (fabsf(prev) < 0.01f) {
+        prev = constrain(
+          result,
+          settings.heatPump.minSetpoint,
+          settings.heatPump.maxSetpoint
+        );
+      }
+
+      float delta = result - prev;
+      delta = constrain(
+        delta,
+        -settings.heatPump.maxSetpointStep,
+         settings.heatPump.maxSetpointStep
+      );
+
+      result = prev + delta;
+    }
+
+    // kroky po 0.5 °C
+    if (settings.heatPump.forceHalfDegreeSteps) {
+      result = roundToStep(result, 0.5f);
+    }
+
+    result = constrain(
+      result,
+      settings.heatPump.minSetpoint,
+      settings.heatPump.maxSetpoint
+    );
+
+    vars.heatPump.lastHeatingSetpoint = result;
+    return result;
+  }
+
+    inline float getHeatingMinSetpointTemp() {
     return settings.opentherm.options.nativeOTC
       ? vars.master.heating.minTemp
       : settings.heating.minTemp;
