@@ -33,7 +33,7 @@ protected:
       return value;
     }
 
-    return roundf(value / step) * step;
+    return ::roundf(value / step) * step;
   }
 
   float applyHeatPumpSetpointLogic(float demandedTemp) {
@@ -131,7 +131,7 @@ protected:
     heatingSetpoint = this->applyHeatPumpSetpointLogic(heatingSetpoint);
 
     if (!(settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode && settings.heatPump.forceHalfDegreeSteps)) {
-      heatingSetpoint = roundf(heatingSetpoint);
+      heatingSetpoint = roundf(heatingSetpoint, 0);
     }
 
     vars.master.heating.setpointTemp = heatingSetpoint;
