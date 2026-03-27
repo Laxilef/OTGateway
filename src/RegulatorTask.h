@@ -28,12 +28,23 @@ protected:
   }
   #endif
 
+  float roundNearest(float value) {
+    return value >= 0.0f
+      ? floorf(value + 0.5f)
+      : ceilf(value - 0.5f);
+  }
+
   float roundToStep(float value, float step) {
     if (step <= 0.0f) {
       return value;
     }
 
-    return ::roundf(value / step) * step;
+    float scaled = value / step;
+    scaled = scaled >= 0.0f
+      ? floorf(scaled + 0.5f)
+      : ceilf(scaled - 0.5f);
+
+    return scaled * step;
   }
 
   float applyHeatPumpSetpointLogic(float demandedTemp) {
@@ -131,7 +142,7 @@ protected:
     heatingSetpoint = this->applyHeatPumpSetpointLogic(heatingSetpoint);
 
     if (!(settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode && settings.heatPump.forceHalfDegreeSteps)) {
-      heatingSetpoint = roundf(heatingSetpoint, 0);
+      heatingSetpoint = roundNearest(heatingSetpoint);
     }
 
     vars.master.heating.setpointTemp = heatingSetpoint;
@@ -272,7 +283,6 @@ protected:
 
     // if use pid
     if (settings.pid.enabled) {
-      //if (vars.parameters.heatingEnabled) {
       if (settings.heating.enabled && this->indoorSensorsConnected) {
         pidRegulator.Kp = settings.heating.turbo ? 0.0f : settings.pid.p_factor;
         pidRegulator.Ki = settings.pid.i_factor;
@@ -282,14 +292,6 @@ protected:
         pidRegulator.setDt(settings.pid.dt * 1000u);
         pidRegulator.input = vars.master.heating.indoorTemp;
         pidRegulator.setpoint = settings.heating.target;
-
-        /*if (fabsf(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
-          pidRegulator.Ki = settings.pid.i_factor;
-          pidRegulator.integral = 0.0f;
-          pidRegulator.getResultNow();
-
-          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
-        }*/
 
         float error = pidRegulator.setpoint - pidRegulator.input;
         bool hasDeadband = settings.pid.deadband.enabled
