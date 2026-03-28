@@ -1878,7 +1878,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
   // force check emergency target
   {
     float value = !src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].isNull() ? src[FPSTR(S_EMERGENCY)][FPSTR(S_TARGET)].as<float>() : dst.emergency.target;
-    bool noRegulators = !dsc.opentherm.options.nativeOTC;
+    bool noRegulators = !dst.opentherm.options.nativeOTC;
     bool valid = isValidTemp(
       value,
       dst.system.unitSystem,
