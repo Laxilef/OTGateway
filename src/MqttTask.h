@@ -412,76 +412,96 @@ protected:
   }
 
   void onMessage(const String& topic, uint8_t* payload, size_t length) {
-    if (!length) {
-      return;
-    }
+  if (!length) {
+    return;
+  }
 
-    if (settings.system.logLevel >= TinyLogger::Level::TRACE) {
-      Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
-      if (Log.lock()) {
-        for (size_t i = 0; i < length; i++) {
-          if (payload[i] == 0) {
-            break;
-          } else if (payload[i] == 13) {
-            continue;
-          } else if (payload[i] == 10) {
-            Log.print(F("\r\n>  "));
-          } else {
-            Log.print((char) payload[i]);
-          }
+  if (settings.system.logLevel >= TinyLogger::Level::TRACE) {
+    Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
+    if (Log.lock()) {
+      for (size_t i = 0; i < length; i++) {
+        if (payload[i] == 0) {
+          break;
+        } else if (payload[i] == 13) {
+          continue;
+        } else if (payload[i] == 10) {
+          Log.print(F("\r\n>  "));
+        } else {
+          Log.print((char) payload[i]);
         }
-        Log.print(F("\r\n\n"));
-        Log.flush();
-        Log.unlock();
       }
+      Log.print(F("\r\n\n"));
+      Log.flush();
+      Log.unlock();
+    }
+  }
+
+  JsonDocument doc;
+  DeserializationError dErr = deserializeJson(doc, payload, length);
+  if (dErr != DeserializationError::Ok) {
+    Log.swarningln(FPSTR(L_MQTT_MSG), F("Error on deserialization: %s"), dErr.f_str());
+    return;
+
+  } else if (doc.isNull() || !doc.size()) {
+    Log.swarningln(FPSTR(L_MQTT_MSG), F("Not valid json"));
+    return;
+  }
+  doc.shrinkToFit();
+
+  // delete topic
+  this->writer->publish(topic.c_str(), nullptr, 0, true);
+
+  if (this->haHelper->getDeviceTopic(F("state/set")).equals(topic)) {
+    if (jsonToVars(doc, vars)) {
+      this->resetPublishedVarsTime();
     }
 
-    JsonDocument doc;
-    DeserializationError dErr = deserializeJson(doc, payload, length);
-    if (dErr != DeserializationError::Ok) {
-      Log.swarningln(FPSTR(L_MQTT_MSG), F("Error on deserialization: %s"), dErr.f_str());
-      return;
+  } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
+    Log.sinfoln(
+      FPSTR(L_MQTT),
+      F("Before settings update: heating.target=%.2f, heating.enabled=%hhu"),
+      settings.heating.target,
+      settings.heating.enabled
+    );
 
-    } else if (doc.isNull() || !doc.size()) {
-      Log.swarningln(FPSTR(L_MQTT_MSG), F("Not valid json"));
-      return;
-    }
-    doc.shrinkToFit();
+    bool changed = jsonToSettings(doc, settings, false);
 
-    // delete topic
-    this->writer->publish(topic.c_str(), nullptr, 0, true);
+    Log.sinfoln(
+      FPSTR(L_MQTT),
+      F("After settings update: changed=%hhu heating.target=%.2f heating.enabled=%hhu"),
+      changed,
+      settings.heating.target,
+      settings.heating.enabled
+    );
 
-    if (this->haHelper->getDeviceTopic(F("state/set")).equals(topic)) {
-      if (jsonToVars(doc, vars)) {
-        this->resetPublishedVarsTime();
-      }
-
-    } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
-      if (safeJsonToSettings(doc, settings)) {
-        this->resetPublishedSettingsTime();
-        fsSettings.update();
-      }
-
+    if (changed) {
+      this->resetPublishedSettingsTime();
+      fsSettings.update();
+      Log.sinfoln(FPSTR(L_MQTT), F("Settings updated and saved"));
     } else {
-      const String& sensorsTopic = this->haHelper->getDeviceTopic(F("sensors/"));
-      auto stLength = sensorsTopic.length();
+      Log.swarningln(FPSTR(L_MQTT), F("Settings message processed but nothing changed"));
+    }
 
-      if (topic.startsWith(sensorsTopic) && topic.endsWith(F("/set"))) {
-        if (topic.length() > stLength + 4) {
-          const String& name = topic.substring(stLength, topic.indexOf('/', stLength));
-          int16_t id = Sensors::getIdByObjectId(name.c_str());
+  } else {
+    const String& sensorsTopic = this->haHelper->getDeviceTopic(F("sensors/"));
+    auto stLength = sensorsTopic.length();
 
-          if (id == -1) {
-            return;
-          }
+    if (topic.startsWith(sensorsTopic) && topic.endsWith(F("/set"))) {
+      if (topic.length() > stLength + 4) {
+        const String& name = topic.substring(stLength, topic.indexOf('/', stLength));
+        int16_t id = Sensors::getIdByObjectId(name.c_str());
 
-          if (jsonToSensorResult(id, doc)) {
-            this->resetPublishedSensorTime(id);
-          }
+        if (id == -1) {
+          return;
+        }
+
+        if (jsonToSensorResult(id, doc)) {
+          this->resetPublishedSensorTime(id);
         }
       }
     }
   }
+}
 
   void publishHaEntities() {
     // heating
