@@ -1,0 +1,261 @@
+{
+  "values": {
+    "logo": "OpenTherm Gateway",
+    "nav": {
+      "license": "Licencia",
+      "source": "Zdrojový kód",
+      "help": "Pomoc",
+      "issues": "Vydania",
+      "releases": "Vydania"
+    },
+    "dbm": "dBm",
+    "kw": "kW",
+    "time": {
+      "days": "d.",
+      "hours": "h.",
+      "min": "min.",
+      "sec": "sek."
+    },
+
+    "button": {
+      "upgrade": "Aktualizovať",
+      "restart": "Reštart",
+      "save": "Ulož",
+      "saved": "Uložené",
+      "refresh": "Obnoviť",
+      "restore": "Obnov",
+      "restored": "Obnovené",
+      "backup": "Zálohuj",
+      "wait": "Prosím čakaj...",
+      "uploading": "Nahrávam...",
+      "success": "Úspešné",
+      "error": "Chyba"
+    },
+
+    "index": {
+      "title": "OpenTherm Gateway",
+
+      "section": {
+        "network": "Sieť",
+        "system": "Systém"
+      },
+
+      "system": {
+        "build": {
+          "title": "Zostavenie",
+          "version": "Verzia",
+          "date": "Dátum",
+          "core": "Jadro",
+          "sdk": "SDK"
+        },
+        "uptime": "Čas behu",
+        "memory": {
+          "title": "Voľná pamäť",
+          "maxFreeBlock": "max voľný blok",
+          "min": "min"
+        },
+        "board": "Doska",
+        "chip": {
+          "model": "Čip",
+          "cores": "Jadrá",
+          "freq": "frekvencia"
+        },
+        "flash": {
+          "size": "Veľkosť flash",
+          "realSize": "reálna veľkosť"
+        },
+        "lastResetReason": "Dôvod posledného resetu"
+      }
+    },
+
+    "dashboard": {
+      "name": "Prehľad",
+      "title": "Prehľad - OpenTherm Gateway",
+
+      "section": {
+        "control": "Ovládanie",
+        "states": "Stavy",
+        "sensors": "Senzory",
+        "diag": "OpenTherm diagnostika"
+      },
+
+      "thermostat": {
+        "heating": "Kúrenie",
+        "dhw": "TUV",
+        "temp.current": "Aktuálna",
+        "enable": "Zapnuté",
+        "turbo": "Turbo mód"
+      },
+
+      "notify": {
+        "fault": {
+          "title": "Porucha kotla je aktívna!",
+          "note": "Odporúča sa skontrolovať kotol a preštudovať dokumentáciu pre interpretáciu chybového kódu:"
+        },
+        "diag": {
+          "title": "Diagnostický stav kotla je aktívny!",
+          "note": "Možno váš kotol potrebuje kontrolu? Odporúča sa preštudovať dokumentáciu pre interpretáciu diagnostického kódu:"
+        },
+        "reset": "Skúsiť reset"
+      },
+
+      "states": {
+        "mNetworkConnected": "Sieťové pripojenie",
+        "mMqttConnected": "MQTT pripojenie",
+        "mEmergencyState": "Núdzový režim",
+        "mExtPumpState": "Externé čerpadlo",
+        "mCascadeControlInput": "Kaskádové riadenie (vstup)",
+        "mCascadeControlOutput": "Kaskádové riadenie (výstup)",
+
+        "sConnected": "OpenTherm pripojenie",
+        "sFlame": "Plameň",
+        "sCoolingActive": "Chladenie",
+        "sCoolingSetpoint": "Nastavenie chladenia",
+        "sFaultActive": "Porucha",
+        "sFaultCode": "Kód poruchy",
+        "sDiagActive": "Diagnostika",
+        "sDiagCode": "Diagnostický kód",
+
+        "mHeatEnabled": "Kúrenie povolené",
+        "mHeatBlocking": "Kúrenie blokované",
+        "mHeatOverheat": "Prehriatie kúrenia",
+        "sHeatActive": "Kúrenie aktívne",
+        "mHeatSetpointTemp": "Nastavená teplota kúrenia",
+        "mHeatTargetTemp": "Cieľová teplota kúrenia",
+        "mHeatCurrTemp": "Aktuálna teplota kúrenia",
+        "mHeatRetTemp": "Spätná teplota kúrenia",
+        "mHeatIndoorTemp": "Kúrenie, vnútorná teplota",
+        "mHeatOutdoorTemp": "Kúrenie, vonkajšia teplota",
+
+        "mDhwEnabled": "TUV povolené",
+        "mDhwOverheat": "Prehriatie TUV",
+        "sDhwActive": "TUV aktívne",
+        "mDhwTargetTemp": "Cieľová teplota TUV",
+        "mDhwCurrTemp": "Aktuálna teplota TUV",
+        "mDhwRetTemp": "Spätná teplota TUV"
+      },
+
+      "sensors": {
+        "values": {
+          "temp": "Teplota",
+          "humidity": "Vlhkosť",
+          "battery": "Batéria",
+          "rssi": "RSSI"
+        }
+      }
+    },
+
+    "network": {
+      "title": "Sieť - OpenTherm Gateway",
+      "name": "Nastavenia siete",
+
+      "section": {
+        "static": "Statické nastavenia",
+        "availableNetworks": "Dostupné siete",
+        "staSettings": "WiFi nastavenia",
+        "apSettings": "AP nastavenia"
+      },
+
+      "scan": {
+        "pos": "#",
+        "info": "Info"
+      },
+
+      "wifi": {
+        "ssid": "SSID",
+        "password": "Heslo",
+        "channel": "Kanál",
+        "signal": "Signál",
+        "connected": "Pripojené"
+      },
+
+      "params": {
+        "hostname": "Hostname",
+        "dhcp": "Použiť DHCP",
+        "mac": "MAC",
+        "ip": "IP",
+        "subnet": "Maska siete",
+        "gateway": "Brána",
+        "dns": "DNS"
+      },
+
+      "sta": {
+        "channel.note": "nastav 0 pre automatický výber"
+      }
+    },
+
+    "sensors": {
+      "title": "Nastavenia senzorov - OpenTherm Gateway",
+      "name": "Nastavenia senzorov",
+
+      "enabled": "Povolené",
+      "sensorName": {
+        "title": "Názov senzora",
+        "note": "Môže obsahovať iba: a-z, A-Z, 0-9, _ a medzeru"
+      },
+      "purpose": "Účel",
+      "type": "Typ/zdroj",
+      "gpio": "GPIO",
+      "address": {
+        "title": "Adresa senzora",
+        "note": "Pre automatickú detekciu DALLAS senzorov nechajte predvolené, pre BLE zariadenia je potrebná MAC adresa"
+      },
+      "correction": {
+        "desc": "Korekcia hodnôt",
+        "offset": "Kompenzácia (offset)",
+        "factor": "Násobiteľ"
+      },
+      "filtering": {
+        "desc": "Filtrovanie hodnôt",
+        "enabled": {
+          "title": "Filtrovanie povolené",
+          "note": "Užitočné pri veľkom množstve šumu v grafoch. Používa sa \"kĺzavý priemer\"."
+        },
+        "factor": {
+          "title": "Faktor filtrácie",
+          "note": "Čím nižšia hodnota, tým plynulejšia a <u>dlhšia</u> zmena hodnôt."
+        }
+      }
+    },
+
+    "settings": {
+      "title": "Nastavenia - OpenTherm Gateway",
+      "name": "Nastavenia",
+
+      "enable": "Povoliť",
+      "note": {
+        "restart": "Po zmene nastavení je potrebné zariadenie reštartovať.",
+        "blankNotUse": "prázdne - nepoužívať",
+        "bleDevice": "BLE zariadenie je možné použiť <u>iba</u> s niektorými ESP32 doskami s podporou BLE!"
+      },
+
+      "portal": {
+        "login": "Prihlásenie",
+        "password": "Heslo",
+        "auth": "Vyžadovať autentifikáciu",
+        "mdns": "Použiť mDNS"
+      }
+    },
+
+    "upgrade": {
+      "title": "Aktualizácia - OpenTherm Gateway",
+      "name": "Aktualizácia",
+
+      "section": {
+        "backupAndRestore": "Záloha a obnova",
+        "backupAndRestore.desc": "V tejto sekcii môžete uložiť a obnoviť zálohu VŠETKÝCH nastavení.",
+        "upgrade": "Aktualizácia",
+        "upgrade.desc": "Tu môžete aktualizovať firmware a súborový systém zariadenia.<br />Najnovšie verzie si môžete stiahnuť zo stránky vydaní projektu."
+      },
+
+      "note": {
+        "disclaimer1": "Po úspešnej aktualizácii budú všetky nastavenia resetované! Vytvorte si zálohu.",
+        "disclaimer2": "Po aktualizácii sa zariadenie automaticky reštartuje po 15 sekundách."
+      },
+
+      "settingsFile": "Súbor nastavení",
+      "fw": "Firmware",
+      "fs": "Súborový systém"
+    }
+  }
+}
