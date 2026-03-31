@@ -284,6 +284,7 @@
         "system": "系统设置",
         "diag": "诊断",
         "heating": "供热设置",
+        "heatingSchedule": "供暖计划",
         "dhw": "生活热水设置",
         "emergency": "应急模式设置",
         "equitherm": "气候补偿设置",
@@ -367,7 +368,58 @@
             "set0target": "设置空目标"
           }
         },
-        "turboFactor": "Turbo 模式系数"
+        "turboFactor": "Turbo 模式系数",
+        "schedule": {
+          "title": "供暖计划",
+          "desc": "每周定时器。每个时间段都可以关闭供暖、开启供暖，或设置目标温度。需要通过 NTP 获取正确的本地时间。",
+          "overrideNote": "通过仪表盘或 MQTT 的手动修改会一直生效，直到下一个计划时间段开始。",
+          "interval": "时间段",
+          "time": "开始时间",
+          "action": "动作",
+          "target": "目标温度",
+          "actions": {
+            "off": "关闭",
+            "on": "开启",
+            "target": "设置温度"
+          },
+          "days": {
+            "monday": "星期一",
+            "tuesday": "星期二",
+            "wednesday": "星期三",
+            "thursday": "星期四",
+            "friday": "星期五",
+            "saturday": "星期六",
+            "sunday": "星期日"
+          }
+        }
+      },
+
+      "heatingSchedule": {
+        "desc": "每周定时器。每个活动时间段都可以关闭供暖、开启供暖，或设置目标温度。需要通过 NTP 获取正确的本地时间。",
+        "overrideNote": "通过仪表盘或 MQTT 的手动修改会一直生效，直到下一个活动计划时间段开始。",
+        "interval": "时间段",
+        "intervalEnabled": "启用",
+        "time": "开始时间",
+        "action": "动作",
+        "target": "目标温度",
+        "actions": {
+          "off": "关闭",
+          "on": "开启",
+          "target": "设置温度"
+        },
+        "scope": {
+          "title": "编辑范围",
+          "allDays": "所有天"
+        },
+        "days": {
+          "monday": "星期一",
+          "tuesday": "星期二",
+          "wednesday": "星期三",
+          "thursday": "星期四",
+          "friday": "星期五",
+          "saturday": "星期六",
+          "sunday": "星期日"
+        }
       },
 
       "emergency": {

@@ -271,7 +271,7 @@ protected:
         this->webServer->send(406);
         return;
 
-      } else if (plain.length() > 2536) {
+      } else if (plain.length() > 4096) {
         this->webServer->send(413);
         return;
       }
@@ -474,7 +474,7 @@ protected:
         this->webServer->send(406);
         return;
 
-      } else if (plain.length() > 2536) {
+      } else if (plain.length() > 4096) {
         this->webServer->send(413);
         return;
       }
