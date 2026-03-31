@@ -40,6 +40,8 @@ protected:
   PumpStartReason extPumpStartReason = PumpStartReason::NONE;
   unsigned long externalPumpStartTime = 0;
   bool ntpStarted = false;
+  char ntpServer[sizeof(settings.system.ntp.server)] = {0};
+  char ntpTimezone[sizeof(settings.system.ntp.timezone)] = {0};
   bool telnetStarted = false;
   bool emergencyDetected = false;
   unsigned long emergencyFlipTime = 0;
@@ -67,6 +69,36 @@ protected:
   #endif
 
   void setup() {}
+
+  inline bool hasNtpConfigChanged() {
+    return strcmp(this->ntpServer, settings.system.ntp.server) != 0
+      || strcmp(this->ntpTimezone, settings.system.ntp.timezone) != 0;
+  }
+
+  inline void clearNtpConfigState() {
+    this->ntpStarted = false;
+    this->ntpServer[0] = '\0';
+    this->ntpTimezone[0] = '\0';
+  }
+
+  inline void applyNtpConfig() {
+    configTime(0, 0, settings.system.ntp.server);
+    setenv("TZ", settings.system.ntp.timezone, 1);
+    tzset();
+
+    strncpy(this->ntpServer, settings.system.ntp.server, sizeof(this->ntpServer) - 1);
+    this->ntpServer[sizeof(this->ntpServer) - 1] = '\0';
+    strncpy(this->ntpTimezone, settings.system.ntp.timezone, sizeof(this->ntpTimezone) - 1);
+    this->ntpTimezone[sizeof(this->ntpTimezone) - 1] = '\0';
+
+    this->ntpStarted = true;
+    Log.sinfoln(
+      FPSTR(L_MAIN),
+      F("NTP configured: server=%s timezone=%s"),
+      settings.system.ntp.server,
+      settings.system.ntp.timezone
+    );
+  }
 
   void loop() {
     network->loop();
@@ -119,14 +151,13 @@ protected:
     }
 
     if (network->isConnected()) {
-      if (!this->ntpStarted) {
-        if (strlen(settings.system.ntp.server)) {
-          configTime(0, 0, settings.system.ntp.server);
-          setenv("TZ", settings.system.ntp.timezone, 1);
-          tzset();
-
-          this->ntpStarted = true;
+      if (strlen(settings.system.ntp.server) == 0) {
+        if (this->ntpStarted) {
+          this->clearNtpConfigState();
         }
+
+      } else if (!this->ntpStarted || this->hasNtpConfigChanged()) {
+        this->applyNtpConfig();
       }
 
       if (!this->telnetStarted && telnetStream != nullptr) {
@@ -143,7 +174,7 @@ protected:
 
     } else {
       if (this->ntpStarted) {
-        this->ntpStarted = false;
+        this->clearNtpConfigState();
       }
 
       if (this->telnetStarted) {
