@@ -1146,11 +1146,7 @@
         const normalizeHeatingSchedule = (data) => {
           const source = data.heatingSchedule
             ? data.heatingSchedule
-            : (
-              data.heating && data.heating.schedule
-                ? data.heating.schedule
-                : {}
-            );
+            : {};
           const result = buildDefaultHeatingSchedule(
             data.heating && !isNaN(parseFloat(data.heating.target))
               ? data.heating.target
@@ -1226,10 +1222,20 @@
             return;
           }
 
+          const targetInput = row.querySelector('.heatingScheduleTargetInput');
+          if (!targetInput) {
+            return;
+          }
+
           if (parseInt(action) == 2) {
             show('.scheduleSlotTarget', row);
+            targetInput.disabled = false;
+            targetInput.required = true;
           } else {
             hide('.scheduleSlotTarget', row);
+            targetInput.required = false;
+            targetInput.disabled = true;
+            targetInput.removeAttribute('aria-invalid');
           }
         };
 
@@ -1333,7 +1339,8 @@
             targetInput.type = 'number';
             targetInput.inputMode = 'decimal';
             targetInput.step = 0.1;
-            targetInput.required = true;
+            targetInput.required = false;
+            targetInput.disabled = true;
             targetInput.classList.add('heatingScheduleTargetInput');
             targetInput.addEventListener('change', (event) => {
               if (!event.target.checkValidity()) {

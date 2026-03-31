@@ -1472,9 +1472,7 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
-  JsonVariantConst heatingScheduleSrc = !src[FPSTR(S_HEATING_SCHEDULE)].isNull()
-    ? src[FPSTR(S_HEATING_SCHEDULE)]
-    : src[FPSTR(S_HEATING)][FPSTR(S_SCHEDULE)];
+  JsonVariantConst heatingScheduleSrc = src[FPSTR(S_HEATING_SCHEDULE)];
 
   if (heatingScheduleSrc[FPSTR(S_ENABLED)].is<bool>()) {
     bool value = heatingScheduleSrc[FPSTR(S_ENABLED)].as<bool>();

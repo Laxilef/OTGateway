@@ -179,7 +179,6 @@ const char S_RETURN_TEMP[]                          PROGMEM = "returnTemp";
 const char S_REV[]                                  PROGMEM = "rev";
 const char S_RSSI[]                                 PROGMEM = "rssi";
 const char S_RX_LED_GPIO[]                          PROGMEM = "rxLedGpio";
-const char S_SCHEDULE[]                             PROGMEM = "schedule";
 const char S_SDK[]                                  PROGMEM = "sdk";
 const char S_SENSORS[]                              PROGMEM = "sensors";
 const char S_SERIAL[]                               PROGMEM = "serial";
