@@ -129,7 +129,7 @@ protected:
 
     this->client->onMessage([this] (void*, size_t length) {
       const String& topic = this->client->messageTopic();
-      if (!length || length > 2048 || !topic.length()) {
+      if (!length || length > 4096 || !topic.length()) {
         return;
       }
 

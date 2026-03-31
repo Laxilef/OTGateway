@@ -288,6 +288,35 @@
         <hr />
 
         <details>
+          <summary><b data-i18n>settings.section.heatingSchedule</b></summary>
+          <div>
+            <div id="heating-schedule-settings-busy" aria-busy="true"></div>
+            <form action="/api/settings" id="heating-schedule-settings" class="hidden">
+              <fieldset>
+                <label>
+                  <input type="checkbox" name="heatingSchedule[enabled]" value="true">
+                  <span data-i18n>settings.enable</span>
+                </label>
+              </fieldset>
+
+              <small data-i18n>settings.heatingSchedule.desc</small>
+              <small data-i18n>settings.heatingSchedule.overrideNote</small>
+
+              <label>
+                <span data-i18n>settings.heatingSchedule.scope.title</span>
+                <select id="heatingScheduleScope"></select>
+              </label>
+
+              <div class="heatingScheduleContainer"></div>
+
+              <button type="submit" data-i18n>button.save</button>
+            </form>
+          </div>
+        </details>
+
+        <hr />
+
+        <details>
           <summary><b data-i18n>settings.section.dhw</b></summary>
           <div>
             <div id="dhw-settings-busy" aria-busy="true"></div>
@@ -1078,6 +1107,379 @@
           return Math.max(Math.min(result, etChartConfig.maxTemp), etChartConfig.minTemp);
         }
 
+        let heatingScheduleData = null;
+        let heatingScheduleLimits = {
+          min: 0,
+          max: 0
+        };
+        let heatingScheduleScope = 'all';
+        const heatingScheduleDayKeys = [
+          "settings.heatingSchedule.days.monday",
+          "settings.heatingSchedule.days.tuesday",
+          "settings.heatingSchedule.days.wednesday",
+          "settings.heatingSchedule.days.thursday",
+          "settings.heatingSchedule.days.friday",
+          "settings.heatingSchedule.days.saturday",
+          "settings.heatingSchedule.days.sunday"
+        ];
+        const heatingScheduleDefaultTimes = [0, 24, 48, 72];
+
+        const heatingScheduleTimeLabel = (timeStep) => {
+          const totalMinutes = timeStep * 15;
+          const hours = `${Math.floor(totalMinutes / 60)}`.padStart(2, '0');
+          const minutes = `${totalMinutes % 60}`.padStart(2, '0');
+          return `${hours}:${minutes}`;
+        };
+
+        const buildDefaultHeatingSchedule = (target = 40) => ({
+          enabled: false,
+          days: Array.from({ length: heatingScheduleDayKeys.length }, () => ({
+            slots: heatingScheduleDefaultTimes.map((timeStep) => ({
+              enabled: true,
+              time: timeStep,
+              action: 1,
+              target: target
+            }))
+          }))
+        });
+
+        const normalizeHeatingSchedule = (data) => {
+          const source = data.heatingSchedule
+            ? data.heatingSchedule
+            : (
+              data.heating && data.heating.schedule
+                ? data.heating.schedule
+                : {}
+            );
+          const result = buildDefaultHeatingSchedule(
+            data.heating && !isNaN(parseFloat(data.heating.target))
+              ? data.heating.target
+              : 40
+          );
+          if (typeof source.enabled === 'boolean') {
+            result.enabled = source.enabled;
+          }
+
+          if (!Array.isArray(source.days)) {
+            return result;
+          }
+
+          for (let dayId = 0; dayId < result.days.length; dayId++) {
+            const srcDay = source.days[dayId];
+            if (!srcDay || !Array.isArray(srcDay.slots)) {
+              continue;
+            }
+
+            for (let slotId = 0; slotId < result.days[dayId].slots.length; slotId++) {
+              const srcSlot = srcDay.slots[slotId];
+              const dstSlot = result.days[dayId].slots[slotId];
+              if (!srcSlot) {
+                continue;
+              }
+
+              if (typeof srcSlot.enabled === 'boolean') {
+                dstSlot.enabled = srcSlot.enabled;
+              }
+
+              if (!isNaN(parseInt(srcSlot.time))) {
+                dstSlot.time = constrain(parseInt(srcSlot.time), 0, 95);
+              }
+
+              if ([0, 1, 2].includes(parseInt(srcSlot.action))) {
+                dstSlot.action = parseInt(srcSlot.action);
+              }
+
+              if (!isNaN(parseFloat(srcSlot.target))) {
+                dstSlot.target = parseFloat(srcSlot.target);
+              }
+            }
+          }
+
+          return result;
+        };
+
+        const getHeatingScheduleScopeDayIds = () => {
+          if (heatingScheduleScope == 'all') {
+            return heatingScheduleDayKeys.map((_, dayId) => dayId);
+          }
+
+          const dayId = parseInt(heatingScheduleScope);
+          if (isNaN(dayId)) {
+            return [0];
+          }
+
+          return [dayId];
+        };
+
+        const getHeatingSchedulePreviewDayId = () => {
+          if (heatingScheduleScope == 'all') {
+            return 0;
+          }
+
+          const dayId = parseInt(heatingScheduleScope);
+          return isNaN(dayId) ? 0 : constrain(dayId, 0, heatingScheduleDayKeys.length - 1);
+        };
+
+        const toggleHeatingScheduleTarget = (slotId, action) => {
+          const row = document.querySelector(`.heatingScheduleSlot[data-slot="${slotId}"]`);
+          if (!row) {
+            return;
+          }
+
+          if (parseInt(action) == 2) {
+            show('.scheduleSlotTarget', row);
+          } else {
+            hide('.scheduleSlotTarget', row);
+          }
+        };
+
+        const setHeatingScheduleSlotField = (slotId, field, value) => {
+          if (!heatingScheduleData) {
+            return;
+          }
+
+          for (const dayId of getHeatingScheduleScopeDayIds()) {
+            heatingScheduleData.days[dayId].slots[slotId][field] = value;
+          }
+        };
+
+        const renderHeatingScheduleScopeOptions = () => {
+          const selector = document.querySelector('#heatingScheduleScope');
+          if (!selector) {
+            return;
+          }
+
+          const selectedValue = heatingScheduleScope;
+          selector.innerHTML = '';
+          selector.appendChild(new Option(i18n('settings.heatingSchedule.scope.allDays'), 'all'));
+          for (let dayId = 0; dayId < heatingScheduleDayKeys.length; dayId++) {
+            selector.appendChild(new Option(i18n(heatingScheduleDayKeys[dayId]), dayId));
+          }
+
+          heatingScheduleScope = selectedValue;
+          selector.value = heatingScheduleScope;
+          if (selector.value != heatingScheduleScope) {
+            heatingScheduleScope = 'all';
+            selector.value = heatingScheduleScope;
+          }
+        };
+
+        const buildHeatingScheduleEditor = () => {
+          const container = document.querySelector('.heatingScheduleContainer');
+          if (!container || container.children.length) {
+            return;
+          }
+
+          for (let slotId = 0; slotId < 4; slotId++) {
+            const row = document.createElement('div');
+            row.classList.add('grid', 'heatingScheduleSlot');
+            row.dataset.slot = slotId;
+
+            const enabledLabel = document.createElement('label');
+            const enabledInput = document.createElement('input');
+            enabledInput.type = 'checkbox';
+            enabledInput.classList.add('heatingScheduleSlotEnabled');
+            enabledInput.addEventListener('change', (event) => {
+              setHeatingScheduleSlotField(slotId, 'enabled', event.target.checked);
+            });
+            enabledLabel.appendChild(enabledInput);
+
+            const enabledTitle = document.createElement('span');
+            enabledTitle.classList.add('heatingScheduleEnabledTitle');
+            enabledLabel.appendChild(enabledTitle);
+            row.appendChild(enabledLabel);
+
+            const timeLabel = document.createElement('label');
+            const timeTitle = document.createElement('span');
+            timeTitle.classList.add('heatingScheduleTimeTitle');
+            timeLabel.appendChild(timeTitle);
+
+            const timeSelect = document.createElement('select');
+            timeSelect.classList.add('heatingScheduleTimeSelect');
+            for (let timeStep = 0; timeStep < 96; timeStep++) {
+              timeSelect.appendChild(new Option(heatingScheduleTimeLabel(timeStep), timeStep));
+            }
+            timeSelect.addEventListener('change', (event) => {
+              setHeatingScheduleSlotField(slotId, 'time', parseInt(event.target.value));
+            });
+            timeLabel.appendChild(timeSelect);
+            row.appendChild(timeLabel);
+
+            const actionLabel = document.createElement('label');
+            const actionTitle = document.createElement('span');
+            actionTitle.classList.add('heatingScheduleActionTitle');
+            actionLabel.appendChild(actionTitle);
+
+            const actionSelect = document.createElement('select');
+            actionSelect.classList.add('heatingScheduleActionSelect');
+            actionSelect.appendChild(new Option('', 0));
+            actionSelect.appendChild(new Option('', 1));
+            actionSelect.appendChild(new Option('', 2));
+            actionSelect.addEventListener('change', (event) => {
+              const actionValue = parseInt(event.target.value);
+              setHeatingScheduleSlotField(slotId, 'action', actionValue);
+              toggleHeatingScheduleTarget(slotId, actionValue);
+            });
+            actionLabel.appendChild(actionSelect);
+            row.appendChild(actionLabel);
+
+            const targetLabel = document.createElement('label');
+            targetLabel.classList.add('scheduleSlotTarget', 'hidden');
+            const targetTitle = document.createElement('span');
+            targetTitle.classList.add('heatingScheduleTargetTitle');
+            targetLabel.appendChild(targetTitle);
+
+            const targetInput = document.createElement('input');
+            targetInput.type = 'number';
+            targetInput.inputMode = 'decimal';
+            targetInput.step = 0.1;
+            targetInput.required = true;
+            targetInput.classList.add('heatingScheduleTargetInput');
+            targetInput.addEventListener('change', (event) => {
+              if (!event.target.checkValidity()) {
+                event.target.setAttribute('aria-invalid', true);
+                return;
+              }
+
+              event.target.removeAttribute('aria-invalid');
+              setHeatingScheduleSlotField(slotId, 'target', parseFloat(event.target.value));
+            });
+            targetLabel.appendChild(targetInput);
+            row.appendChild(targetLabel);
+
+            container.appendChild(row);
+          }
+        };
+
+        const renderHeatingScheduleEditor = () => {
+          if (!heatingScheduleData) {
+            return;
+          }
+
+          const dayId = getHeatingSchedulePreviewDayId();
+          const slots = heatingScheduleData.days[dayId].slots;
+          document.querySelectorAll('.heatingScheduleSlot').forEach((row, slotId) => {
+            const slot = slots[slotId];
+            row.querySelector('.heatingScheduleEnabledTitle').textContent = `${i18n('settings.heatingSchedule.interval')} ${slotId + 1} - ${i18n('settings.heatingSchedule.intervalEnabled')}`;
+            row.querySelector('.heatingScheduleSlotEnabled').checked = slot.enabled;
+            row.querySelector('.heatingScheduleTimeTitle').textContent = `${i18n('settings.heatingSchedule.interval')} ${slotId + 1} - ${i18n('settings.heatingSchedule.time')}`;
+            row.querySelector('.heatingScheduleTimeSelect').value = slot.time;
+            row.querySelector('.heatingScheduleActionTitle').textContent = i18n('settings.heatingSchedule.action');
+            row.querySelector('.heatingScheduleActionSelect').options[0].text = i18n('settings.heatingSchedule.actions.off');
+            row.querySelector('.heatingScheduleActionSelect').options[1].text = i18n('settings.heatingSchedule.actions.on');
+            row.querySelector('.heatingScheduleActionSelect').options[2].text = i18n('settings.heatingSchedule.actions.target');
+            row.querySelector('.heatingScheduleActionSelect').value = slot.action;
+            row.querySelector('.heatingScheduleTargetTitle').textContent = i18n('settings.heatingSchedule.target');
+
+            const targetInput = row.querySelector('.heatingScheduleTargetInput');
+            targetInput.min = heatingScheduleLimits.min;
+            targetInput.max = heatingScheduleLimits.max;
+            targetInput.value = slot.target;
+            toggleHeatingScheduleTarget(slotId, slot.action);
+          });
+        };
+
+        const setupHeatingScheduleForm = (fillDataCallback) => {
+          const form = document.querySelector('#heating-schedule-settings');
+          if (!form || form.dataset.initialized == 'true') {
+            return;
+          }
+
+          form.dataset.initialized = 'true';
+          const scopeSelector = document.querySelector('#heatingScheduleScope');
+          if (scopeSelector) {
+            scopeSelector.addEventListener('change', (event) => {
+              heatingScheduleScope = event.target.value;
+              renderHeatingScheduleEditor();
+            });
+          }
+
+          const enabledInput = form.querySelector("[name='heatingSchedule[enabled]']");
+          if (enabledInput) {
+            enabledInput.addEventListener('change', (event) => {
+              if (!heatingScheduleData) {
+                return;
+              }
+
+              heatingScheduleData.enabled = event.target.checked;
+            });
+          }
+
+          form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!heatingScheduleData) {
+              return;
+            }
+
+            const button = form.querySelector('button[type="submit"]');
+            const defaultText = button ? button.textContent : null;
+            if (button) {
+              button.textContent = i18n("button.wait");
+              button.setAttribute('disabled', true);
+              button.setAttribute('aria-busy', true);
+            }
+
+            const onSuccess = () => {
+              if (!button) {
+                return;
+              }
+
+              button.textContent = i18n('button.saved');
+              button.classList.add('success');
+              button.removeAttribute('aria-busy');
+              setTimeout(() => {
+                button.removeAttribute('disabled');
+                button.classList.remove('success', 'failed');
+                button.textContent = defaultText;
+              }, 5000);
+            };
+
+            const onFailed = () => {
+              if (!button) {
+                return;
+              }
+
+              button.textContent = i18n('button.error');
+              button.classList.add('failed');
+              button.removeAttribute('aria-busy');
+              setTimeout(() => {
+                button.removeAttribute('disabled');
+                button.classList.remove('success', 'failed');
+                button.textContent = defaultText;
+              }, 5000);
+            };
+
+            try {
+              heatingScheduleData.enabled = enabledInput.checked;
+              const response = await fetch(form.action, {
+                method: "POST",
+                cache: "no-cache",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  heatingSchedule: heatingScheduleData
+                })
+              });
+
+              if (!response.ok) {
+                throw new Error('Response not valid');
+              }
+
+              const result = response.status != 204 ? (await response.json()) : null;
+              onSuccess();
+              if (fillDataCallback instanceof Function) {
+                fillDataCallback(result);
+              }
+
+            } catch (error) {
+              console.log(error);
+              onFailed();
+            }
+          });
+        };
+
         const fillData = (data) => {
           // System
           setSelectValue("[name='system[logLevel]']", data.system.logLevel);
@@ -1191,6 +1593,19 @@
           setInputValue("[name='heating[freezeProtection][thresholdTime]']", data.heating.freezeProtection.thresholdTime);
           setBusy('#heating-settings-busy', '#heating-settings', false);
 
+          // Heating schedule
+          heatingScheduleLimits.min = (data.equitherm.enabled || data.pid.enabled || data.opentherm.options.nativeOTC)
+            ? (data.system.unitSystem == 0 ? 5 : 41)
+            : data.heating.minTemp;
+          heatingScheduleLimits.max = (data.equitherm.enabled || data.pid.enabled || data.opentherm.options.nativeOTC)
+            ? (data.system.unitSystem == 0 ? 40 : 104)
+            : data.heating.maxTemp;
+          heatingScheduleData = normalizeHeatingSchedule(data);
+          setCheckboxValue("[name='heatingSchedule[enabled]']", heatingScheduleData.enabled);
+          renderHeatingScheduleScopeOptions();
+          renderHeatingScheduleEditor();
+          setBusy('#heating-schedule-settings-busy', '#heating-schedule-settings', false);
+
           // DHW
           setInputValue("[name='dhw[minTemp]']", data.dhw.minTemp, {
             "min": data.system.unitSystem == 0 ? 0 : 32,
@@ -1276,6 +1691,17 @@
           makeEquithermChart();
         };
 
+        buildHeatingScheduleEditor();
+        renderHeatingScheduleScopeOptions();
+        const defaultTranslatePage = lang.translatePage.bind(lang);
+        lang.translatePage = () => {
+          defaultTranslatePage();
+          renderHeatingScheduleScopeOptions();
+          renderHeatingScheduleEditor();
+        };
+        renderHeatingScheduleEditor();
+        setupHeatingScheduleForm(fillData);
+
         try {
           const response = await fetch("/static/timezones.json");
           if (!response.ok) {
@@ -1314,6 +1740,7 @@
           setupForm('#portal-settings', fillData, ['portal.login', 'portal.password']);
           setupForm('#system-settings', fillData);
           setupForm('#heating-settings', fillData);
+          setupHeatingScheduleForm(fillData);
           setupForm('#dhw-settings', fillData);
           setupForm('#emergency-settings', fillData);
           setupForm('#equitherm-settings', fillData);

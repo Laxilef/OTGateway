@@ -284,6 +284,7 @@
         "system": "Impostazioni sistema",
         "diag": "Diagnostica",
         "heating": "Impostazioni riscaldamento",
+        "heatingSchedule": "Programma riscaldamento",
         "dhw": "Impostazioni ACS",
         "emergency": "Impostazioni modo Emergenza",
         "equitherm": "Impostazioni Equitherm",
@@ -367,7 +368,58 @@
             "set0target": "Imposta target nullo"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Coeff. modalita turbo",
+        "schedule": {
+          "title": "Programma riscaldamento",
+          "desc": "Timer settimanale. Ogni intervallo puo spegnere il riscaldamento, accenderlo o impostare una temperatura target. Richiede l'ora locale corretta tramite NTP.",
+          "overrideNote": "Le modifiche manuali da dashboard o MQTT restano attive fino all'intervallo successivo del programma.",
+          "interval": "Intervallo",
+          "time": "Ora di inizio",
+          "action": "Azione",
+          "target": "Temperatura target",
+          "actions": {
+            "off": "Spento",
+            "on": "Acceso",
+            "target": "Imposta temperatura"
+          },
+          "days": {
+            "monday": "Lunedi",
+            "tuesday": "Martedi",
+            "wednesday": "Mercoledi",
+            "thursday": "Giovedi",
+            "friday": "Venerdi",
+            "saturday": "Sabato",
+            "sunday": "Domenica"
+          }
+        }
+      },
+
+      "heatingSchedule": {
+        "desc": "Timer settimanale. Ogni intervallo attivo puo spegnere il riscaldamento, accenderlo o impostare una temperatura target. Richiede l'ora locale corretta tramite NTP.",
+        "overrideNote": "Le modifiche manuali da dashboard o MQTT restano attive fino all'intervallo attivo successivo del programma.",
+        "interval": "Intervallo",
+        "intervalEnabled": "Attivo",
+        "time": "Ora di inizio",
+        "action": "Azione",
+        "target": "Temperatura target",
+        "actions": {
+          "off": "Spento",
+          "on": "Acceso",
+          "target": "Imposta temperatura"
+        },
+        "scope": {
+          "title": "Ambito di modifica",
+          "allDays": "Tutti i giorni"
+        },
+        "days": {
+          "monday": "Lunedi",
+          "tuesday": "Martedi",
+          "wednesday": "Mercoledi",
+          "thursday": "Giovedi",
+          "friday": "Venerdi",
+          "saturday": "Sabato",
+          "sunday": "Domenica"
+        }
       },
 
       "emergency": {

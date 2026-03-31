@@ -22,6 +22,41 @@ struct NetworkSettings {
   } sta;
 } networkSettings;
 
+struct HeatingScheduleSlot {
+  uint8_t time = 0;
+  HeatingScheduleAction action = HeatingScheduleAction::ON;
+  float target = DEFAULT_HEATING_TARGET_TEMP;
+
+  inline bool isEnabled() const {
+    return (this->time & HEATING_SCHEDULE_SLOT_DISABLED_MASK) == 0;
+  }
+
+  inline void setEnabled(bool value) {
+    if (value) {
+      this->time &= HEATING_SCHEDULE_SLOT_TIME_MASK;
+    } else {
+      this->time = (this->time & HEATING_SCHEDULE_SLOT_TIME_MASK) | HEATING_SCHEDULE_SLOT_DISABLED_MASK;
+    }
+  }
+
+  inline uint8_t getTime() const {
+    return this->time & HEATING_SCHEDULE_SLOT_TIME_MASK;
+  }
+
+  inline void setTime(uint8_t value) {
+    this->time = (this->time & HEATING_SCHEDULE_SLOT_DISABLED_MASK) | (value & HEATING_SCHEDULE_SLOT_TIME_MASK);
+  }
+};
+
+struct HeatingScheduleDay {
+  HeatingScheduleSlot slots[HEATING_SCHEDULE_SLOTS] = {
+    {0, HeatingScheduleAction::ON, DEFAULT_HEATING_TARGET_TEMP},
+    {24, HeatingScheduleAction::ON, DEFAULT_HEATING_TARGET_TEMP},
+    {48, HeatingScheduleAction::ON, DEFAULT_HEATING_TARGET_TEMP},
+    {72, HeatingScheduleAction::ON, DEFAULT_HEATING_TARGET_TEMP}
+  };
+};
+
 struct Settings {
   struct {
     uint8_t logLevel = DEFAULT_LOG_LEVEL;
@@ -125,6 +160,11 @@ struct Settings {
       unsigned short thresholdTime = 600;
     } freezeProtection;
   } heating;
+
+  struct {
+    bool enabled = false;
+    HeatingScheduleDay days[HEATING_SCHEDULE_DAYS];
+  } heatingSchedule;
 
   struct {
     bool enabled = true;

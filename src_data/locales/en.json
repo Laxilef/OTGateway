@@ -284,6 +284,7 @@
         "system": "System settings",
         "diag": "Diagnostic",
         "heating": "Heating settings",
+        "heatingSchedule": "Heating schedule",
         "dhw": "DHW settings",
         "emergency": "Emergency mode settings",
         "equitherm": "Equitherm settings",
@@ -367,7 +368,58 @@
             "set0target": "Set null target"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "schedule": {
+          "title": "Heating schedule",
+          "desc": "Weekly timer. Each interval can switch heating off, switch it on, or set a target temperature. Correct local time via NTP is required.",
+          "overrideNote": "Manual changes from dashboard or MQTT stay active until the next schedule interval.",
+          "interval": "Interval",
+          "time": "Start time",
+          "action": "Action",
+          "target": "Target temperature",
+          "actions": {
+            "off": "Off",
+            "on": "On",
+            "target": "Set temperature"
+          },
+          "days": {
+            "monday": "Monday",
+            "tuesday": "Tuesday",
+            "wednesday": "Wednesday",
+            "thursday": "Thursday",
+            "friday": "Friday",
+            "saturday": "Saturday",
+            "sunday": "Sunday"
+          }
+        }
+      },
+
+      "heatingSchedule": {
+        "desc": "Weekly timer. Each active interval can switch heating off, switch it on, or set a target temperature. Correct local time via NTP is required.",
+        "overrideNote": "Manual changes from dashboard or MQTT stay active until the next active schedule interval.",
+        "interval": "Interval",
+        "intervalEnabled": "Enabled",
+        "time": "Start time",
+        "action": "Action",
+        "target": "Target temperature",
+        "actions": {
+          "off": "Off",
+          "on": "On",
+          "target": "Set temperature"
+        },
+        "scope": {
+          "title": "Edit scope",
+          "allDays": "All days"
+        },
+        "days": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday"
+        }
       },
 
       "emergency": {

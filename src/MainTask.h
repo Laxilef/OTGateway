@@ -45,6 +45,12 @@ protected:
   unsigned long emergencyFlipTime = 0;
   bool freezeDetected = false;
   unsigned long freezeDetectedTime = 0;
+  int8_t heatingScheduleDay = -1;
+  int8_t heatingScheduleSlot = -1;
+  uint8_t heatingScheduleTime = 0;
+  HeatingScheduleAction heatingScheduleAction = HeatingScheduleAction::ON;
+  float heatingScheduleTarget = 0.0f;
+  bool heatingScheduleManualOverride = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -193,6 +199,7 @@ protected:
       ESP.restart();
     }
 
+    this->heatingSchedule();
     this->heating();
     this->emergency();
     this->cascadeControl();
@@ -241,6 +248,174 @@ protected:
     }
   }
 
+  inline void resetHeatingScheduleState() {
+    this->heatingScheduleDay = -1;
+    this->heatingScheduleSlot = -1;
+    this->heatingScheduleTime = 0;
+    this->heatingScheduleAction = HeatingScheduleAction::ON;
+    this->heatingScheduleTarget = 0.0f;
+    this->heatingScheduleManualOverride = false;
+  }
+
+  inline uint8_t getHeatingScheduleDayIndex(const tm& localTime) {
+    return localTime.tm_wday == 0
+      ? (HEATING_SCHEDULE_DAYS - 1)
+      : (localTime.tm_wday - 1);
+  }
+
+  inline uint8_t getHeatingScheduleTimeStep(const tm& localTime) {
+    return (
+      (localTime.tm_hour * 60)
+      + localTime.tm_min
+    ) / HEATING_SCHEDULE_STEP_MINUTES;
+  }
+
+  bool getActiveHeatingScheduleSlot(const tm& localTime, uint8_t& dayId, uint8_t& slotId) {
+    uint8_t currentDayId = this->getHeatingScheduleDayIndex(localTime);
+    uint8_t currentTimeStep = this->getHeatingScheduleTimeStep(localTime);
+    for (uint8_t dayOffset = 0; dayOffset < HEATING_SCHEDULE_DAYS; dayOffset++) {
+      dayId = (
+        currentDayId
+        + HEATING_SCHEDULE_DAYS
+        - dayOffset
+      ) % HEATING_SCHEDULE_DAYS;
+
+      uint8_t maxTimeStep = dayOffset == 0
+        ? currentTimeStep
+        : (HEATING_SCHEDULE_STEPS_PER_DAY - 1);
+      int16_t selectedTime = -1;
+      bool found = false;
+
+      for (uint8_t currentSlotId = 0; currentSlotId < HEATING_SCHEDULE_SLOTS; currentSlotId++) {
+        auto& slot = settings.heatingSchedule.days[dayId].slots[currentSlotId];
+        if (!slot.isEnabled()) {
+          continue;
+        }
+
+        uint8_t slotTime = slot.getTime();
+        if (slotTime <= maxTimeStep && slotTime >= selectedTime) {
+          selectedTime = slotTime;
+          slotId = currentSlotId;
+          found = true;
+        }
+      }
+
+      if (found) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool isHeatingScheduleOverridden(const HeatingScheduleSlot& slot) {
+    switch (slot.action) {
+      case HeatingScheduleAction::OFF:
+        return settings.heating.enabled;
+
+      case HeatingScheduleAction::ON:
+        return !settings.heating.enabled;
+
+      case HeatingScheduleAction::TARGET:
+        return !settings.heating.enabled || fabsf(settings.heating.target - slot.target) > 0.0001f;
+    }
+
+    return false;
+  }
+
+  void applyHeatingScheduleSlot(const uint8_t dayId, const uint8_t slotId) {
+    auto& slot = settings.heatingSchedule.days[dayId].slots[slotId];
+    bool changed = false;
+
+    switch (slot.action) {
+      case HeatingScheduleAction::OFF:
+        if (settings.heating.enabled) {
+          settings.heating.enabled = false;
+          changed = true;
+        }
+        break;
+
+      case HeatingScheduleAction::ON:
+        if (!settings.heating.enabled) {
+          settings.heating.enabled = true;
+          changed = true;
+        }
+        break;
+
+      case HeatingScheduleAction::TARGET:
+        if (!settings.heating.enabled) {
+          settings.heating.enabled = true;
+          changed = true;
+        }
+
+        if (fabsf(settings.heating.target - slot.target) > 0.0001f) {
+          settings.heating.target = slot.target;
+          changed = true;
+        }
+        break;
+    }
+
+    this->heatingScheduleDay = dayId;
+    this->heatingScheduleSlot = slotId;
+    this->heatingScheduleTime = slot.getTime();
+    this->heatingScheduleAction = slot.action;
+    this->heatingScheduleTarget = slot.target;
+
+    if (!changed) {
+      return;
+    }
+
+    tMqtt->resetPublishedSettingsTime();
+    Log.sinfoln(
+      FPSTR(L_MAIN),
+      F("Heating schedule applied: day %hhu slot %hhu action %hhu target %.2f"),
+      dayId,
+      slotId,
+      static_cast<uint8_t>(slot.action),
+      slot.target
+    );
+  }
+
+  void heatingSchedule() {
+    if (!settings.heatingSchedule.enabled) {
+      this->resetHeatingScheduleState();
+      return;
+    }
+
+    struct tm localTime;
+    if (!getLocalTime(&localTime)) {
+      this->heatingScheduleDay = -1;
+      this->heatingScheduleSlot = -1;
+      return;
+    }
+
+    uint8_t dayId, slotId;
+    if (!this->getActiveHeatingScheduleSlot(localTime, dayId, slotId)) {
+      this->resetHeatingScheduleState();
+      return;
+    }
+
+    auto& slot = settings.heatingSchedule.days[dayId].slots[slotId];
+    bool slotChanged = this->heatingScheduleDay != dayId || this->heatingScheduleSlot != slotId;
+    bool slotConfigChanged = this->heatingScheduleTime != slot.getTime()
+      || this->heatingScheduleAction != slot.action
+      || fabsf(this->heatingScheduleTarget - slot.target) > 0.0001f;
+
+    if (slotChanged || slotConfigChanged) {
+      this->heatingScheduleManualOverride = false;
+      this->applyHeatingScheduleSlot(dayId, slotId);
+      return;
+    }
+
+    if (!this->heatingScheduleManualOverride && this->isHeatingScheduleOverridden(slot)) {
+      this->heatingScheduleManualOverride = true;
+      Log.sinfoln(
+        FPSTR(L_MAIN),
+        F("Heating schedule overridden manually until next slot")
+      );
+    }
+  }
+
   void heating() {
     // freeze protection
     if (!settings.heating.enabled) {
@@ -283,6 +458,7 @@ protected:
           this->freezeDetected = false;
           settings.heating.enabled = true;
           fsSettings.update();
+          tMqtt->resetPublishedSettingsTime();
 
           Log.sinfoln(
             FPSTR(L_MAIN),
