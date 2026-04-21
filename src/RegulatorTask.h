@@ -2,7 +2,6 @@
 
 GyverPID pidRegulator(0, 0, 0);
 
-
 class RegulatorTask : public LeanTask {
 public:
   RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
@@ -19,7 +18,7 @@ protected:
   const char* getTaskName() override {
     return "Regulator";
   }
-  
+
   /*BaseType_t getTaskCore() override {
     return 1;
   }*/
@@ -28,7 +27,82 @@ protected:
     return 4;
   }
   #endif
-  
+
+  float roundNearest(float value) {
+    return value >= 0.0f
+      ? floorf(value + 0.5f)
+      : ceilf(value - 0.5f);
+  }
+
+  float roundToStep(float value, float step) {
+    if (step <= 0.0f) {
+      return value;
+    }
+
+    float scaled = value / step;
+    scaled = scaled >= 0.0f
+      ? floorf(scaled + 0.5f)
+      : ceilf(scaled - 0.5f);
+
+    return scaled * step;
+  }
+
+  float applyHeatPumpSetpointLogic(float demandedTemp) {
+    if (!settings.heatPump.enabled || !settings.heatPump.atlanticLoriaMode) {
+      return demandedTemp;
+    }
+
+    float result = demandedTemp;
+
+    result = constrain(
+      result,
+      settings.heatPump.minSetpoint,
+      settings.heatPump.maxSetpoint
+    );
+
+    if (this->indoorSensorsConnected) {
+      float roomError = settings.heating.target - vars.master.heating.indoorTemp;
+
+      if (fabsf(roomError) < settings.heatPump.roomDeadband) {
+        result = vars.heatPump.lastHeatingSetpoint;
+      }
+    }
+
+    if (settings.heatPump.useSetpointRamp) {
+      float prev = vars.heatPump.lastHeatingSetpoint;
+
+      if (fabsf(prev) < 0.01f) {
+        prev = constrain(
+          result,
+          settings.heatPump.minSetpoint,
+          settings.heatPump.maxSetpoint
+        );
+      }
+
+      float delta = result - prev;
+      delta = constrain(
+        delta,
+        -settings.heatPump.maxSetpointStep,
+         settings.heatPump.maxSetpointStep
+      );
+
+      result = prev + delta;
+    }
+
+    if (settings.heatPump.forceHalfDegreeSteps) {
+      result = roundToStep(result, 0.5f);
+    }
+
+    result = constrain(
+      result,
+      settings.heatPump.minSetpoint,
+      settings.heatPump.maxSetpoint
+    );
+
+    vars.heatPump.lastHeatingSetpoint = result;
+    return result;
+  }
+
   void loop() {
     if (vars.states.restarting || vars.states.upgrading) {
       return;
@@ -58,11 +132,20 @@ protected:
     this->hysteresis();
 
     vars.master.heating.targetTemp = settings.heating.target;
-    vars.master.heating.setpointTemp = roundf(constrain(
+
+    float heatingSetpoint = constrain(
       this->getHeatingSetpointTemp(),
       this->getHeatingMinSetpointTemp(),
       this->getHeatingMaxSetpointTemp()
-    ), 0);
+    );
+
+    heatingSetpoint = this->applyHeatPumpSetpointLogic(heatingSetpoint);
+
+    if (!(settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode && settings.heatPump.forceHalfDegreeSteps)) {
+      heatingSetpoint = roundNearest(heatingSetpoint);
+    }
+
+    vars.master.heating.setpointTemp = heatingSetpoint;
 
     Sensors::setValueByType(
       Sensors::Type::HEATING_SETPOINT_TEMP, vars.master.heating.setpointTemp,
@@ -71,6 +154,14 @@ protected:
   }
 
   void turbo() {
+    if (settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode && settings.heatPump.disableTurbo) {
+      if (settings.heating.turbo) {
+        settings.heating.turbo = false;
+        Log.sinfoln(FPSTR(L_REGULATOR), F("Turbo mode disabled by heat pump profile"));
+      }
+      return;
+    }
+
     if (settings.heating.turbo) {
       if (!settings.heating.enabled || vars.emergency.state || !this->indoorSensorsConnected) {
         settings.heating.turbo = false;
@@ -108,12 +199,20 @@ protected:
   }
 
   inline float getHeatingMinSetpointTemp() {
+    if (settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode) {
+      return settings.heatPump.minSetpoint;
+    }
+
     return settings.opentherm.options.nativeOTC
       ? vars.master.heating.minTemp
       : settings.heating.minTemp;
   }
 
   inline float getHeatingMaxSetpointTemp() {
+    if (settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode) {
+      return settings.heatPump.maxSetpoint;
+    }
+
     return settings.opentherm.options.nativeOTC
       ? vars.master.heating.maxTemp
       : settings.heating.maxTemp;
@@ -154,8 +253,8 @@ protected:
         1.0f / settings.equitherm.exponent
       );
       float etResult = settings.heating.target + settings.equitherm.shift + sf * (
-        tempDelta >= 0 
-          ? pow(tempDelta, 1.0f / settings.equitherm.exponent) 
+        tempDelta >= 0
+          ? pow(tempDelta, 1.0f / settings.equitherm.exponent)
           : -(pow(-(tempDelta), 1.0f / settings.equitherm.exponent))
       );
 
@@ -184,7 +283,6 @@ protected:
 
     // if use pid
     if (settings.pid.enabled) {
-      //if (vars.parameters.heatingEnabled) {
       if (settings.heating.enabled && this->indoorSensorsConnected) {
         pidRegulator.Kp = settings.heating.turbo ? 0.0f : settings.pid.p_factor;
         pidRegulator.Ki = settings.pid.i_factor;
@@ -195,16 +293,8 @@ protected:
         pidRegulator.input = vars.master.heating.indoorTemp;
         pidRegulator.setpoint = settings.heating.target;
 
-        /*if (fabsf(pidRegulator.Ki - settings.pid.i_factor) >= 0.0001f) {
-          pidRegulator.Ki = settings.pid.i_factor;
-          pidRegulator.integral = 0.0f;
-          pidRegulator.getResultNow();
-
-          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
-        }*/
-
         float error = pidRegulator.setpoint - pidRegulator.input;
-        bool hasDeadband = settings.pid.deadband.enabled 
+        bool hasDeadband = settings.pid.deadband.enabled
           && (error > -(settings.pid.deadband.thresholdHigh))
           && (error < settings.pid.deadband.thresholdLow);
 
@@ -232,7 +322,11 @@ protected:
     }
 
     // Turbo mode
-    if (settings.heating.turbo && (settings.equitherm.enabled || settings.pid.enabled)) {
+    if (
+      settings.heating.turbo &&
+      !(settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode && settings.heatPump.disableTurbo) &&
+      (settings.equitherm.enabled || settings.pid.enabled)
+    ) {
       newTemp += constrain(
         settings.heating.target - vars.master.heating.indoorTemp,
         -3.0f,

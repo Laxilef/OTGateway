@@ -25,6 +25,7 @@
               <option value="it">IT</option>
               <option value="nl">NL</option>
               <option value="ru">RU</option>
+              <option value="sk">SK</option>
             </select>
           </li>
         </ul>
@@ -540,6 +541,109 @@
 
         <hr />
 
+        <details>
+          <summary><b>Heat Pump / Atlantic Loria</b></summary>
+          <div>
+            <div id="heatpump-settings-busy" aria-busy="true"></div>
+            <form action="/api/settings" id="heatpump-settings" class="hidden">
+              <fieldset>
+                <label>
+                  <input type="checkbox" name="heatPump[enabled]" value="true">
+                  <span>Enable heat pump mode</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="heatPump[atlanticLoriaMode]" value="true">
+                  <span>Atlantic Loria mode</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="heatPump[ignoreModulation]" value="true">
+                  <span>Ignore modulation / power control</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="heatPump[useMinOnOffTimes]" value="true">
+                  <span>Use min on/off anti-cycling</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="heatPump[useSetpointRamp]" value="true">
+                  <span>Use gradual setpoint ramp</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="heatPump[disableTurbo]" value="true">
+                  <span>Disable turbo mode</span>
+                </label>
+
+                <label>
+                  <input type="checkbox" name="heatPump[forceHalfDegreeSteps]" value="true">
+                  <span>Use 0.5 °C steps</span>
+                </label>
+              </fieldset>
+
+              <div class="grid">
+                <label>
+                  <span>Min ON time [s]</span>
+                  <input type="number" inputmode="numeric" name="heatPump[minOnTimeSec]" min="0" max="7200" step="1" required>
+                </label>
+
+                <label>
+                  <span>Min OFF time [s]</span>
+                  <input type="number" inputmode="numeric" name="heatPump[minOffTimeSec]" min="0" max="7200" step="1" required>
+                </label>
+              </div>
+
+              <div class="grid">
+                <label>
+                  <span>Setpoint update interval [s]</span>
+                  <input type="number" inputmode="numeric" name="heatPump[setpointUpdateSec]" min="10" max="3600" step="1" required>
+                </label>
+
+                <label>
+                  <span>Max setpoint step [°]</span>
+                  <input type="number" inputmode="decimal" name="heatPump[maxSetpointStep]" min="0.1" max="10" step="0.1" required>
+                </label>
+              </div>
+
+              <div class="grid">
+                <label>
+                  <span>Room deadband [°]</span>
+                  <input type="number" inputmode="decimal" name="heatPump[roomDeadband]" min="0" max="5" step="0.1" required>
+                </label>
+
+                <label>
+                  <span>Min effective error [°]</span>
+                  <input type="number" inputmode="decimal" name="heatPump[minEffectiveError]" min="0" max="5" step="0.1" required>
+                </label>
+              </div>
+
+              <div class="grid">
+                <label>
+                  <span>Min setpoint [°]</span>
+                  <input type="number" inputmode="decimal" name="heatPump[minSetpoint]" min="0" max="100" step="0.5" required>
+                </label>
+
+                <label>
+                  <span>Max setpoint [°]</span>
+                  <input type="number" inputmode="decimal" name="heatPump[maxSetpoint]" min="0" max="100" step="0.5" required>
+                </label>
+              </div>
+
+              <small>
+                Recommended start for Atlantic Loria floor heating:
+                28–38 °C, 0.5 °C step, 20 min min-on, 15 min min-off.
+              </small>
+
+              <br /><br />
+              <button type="submit" data-i18n>button.save</button>
+            </form>
+          </div>
+        </details>
+
+        <hr />
+        
         <details>
           <summary><b data-i18n>settings.section.ot</b></summary>
           <div>
@@ -1257,6 +1361,52 @@
           setInputValue("[name='pid[deadband][thresholdLow]']", data.pid.deadband.thresholdLow);
           setBusy('#pid-settings-busy', '#pid-settings', false);
 
+          // Heat pump
+          if (!data.heatPump) {
+            data.heatPump = {
+              enabled: false,
+              atlanticLoriaMode: false,
+              ignoreModulation: true,
+              useMinOnOffTimes: true,
+              useSetpointRamp: true,
+              minOnTimeSec: 1200,
+              minOffTimeSec: 900,
+              setpointUpdateSec: 180,
+              maxSetpointStep: 1.0,
+              roomDeadband: 0.3,
+              minEffectiveError: 0.4,
+              minSetpoint: 25.0,
+              maxSetpoint: 40.0,
+              disableTurbo: true,
+              forceHalfDegreeSteps: true
+            };
+          }
+
+          setCheckboxValue("[name='heatPump[enabled]']", data.heatPump.enabled);
+          setCheckboxValue("[name='heatPump[atlanticLoriaMode]']", data.heatPump.atlanticLoriaMode);
+          setCheckboxValue("[name='heatPump[ignoreModulation]']", data.heatPump.ignoreModulation);
+          setCheckboxValue("[name='heatPump[useMinOnOffTimes]']", data.heatPump.useMinOnOffTimes);
+          setCheckboxValue("[name='heatPump[useSetpointRamp]']", data.heatPump.useSetpointRamp);
+          setCheckboxValue("[name='heatPump[disableTurbo]']", data.heatPump.disableTurbo);
+          setCheckboxValue("[name='heatPump[forceHalfDegreeSteps]']", data.heatPump.forceHalfDegreeSteps);
+
+          setInputValue("[name='heatPump[minOnTimeSec]']", data.heatPump.minOnTimeSec);
+          setInputValue("[name='heatPump[minOffTimeSec]']", data.heatPump.minOffTimeSec);
+          setInputValue("[name='heatPump[setpointUpdateSec]']", data.heatPump.setpointUpdateSec);
+          setInputValue("[name='heatPump[maxSetpointStep]']", data.heatPump.maxSetpointStep);
+          setInputValue("[name='heatPump[roomDeadband]']", data.heatPump.roomDeadband);
+          setInputValue("[name='heatPump[minEffectiveError]']", data.heatPump.minEffectiveError);
+          setInputValue("[name='heatPump[minSetpoint]']", data.heatPump.minSetpoint, {
+            "min": data.system.unitSystem == 0 ? 0 : 32,
+            "max": data.system.unitSystem == 0 ? 100 : 212
+          });
+          setInputValue("[name='heatPump[maxSetpoint]']", data.heatPump.maxSetpoint, {
+            "min": data.system.unitSystem == 0 ? 0 : 32,
+            "max": data.system.unitSystem == 0 ? 100 : 212
+          });
+
+          setBusy('#heatpump-settings-busy', '#heatpump-settings', false);
+          
           const etMinTemp = parseInt(data.system.unitSystem == 0 ? 5 : 41);
           const etMaxTemp = parseInt(data.system.unitSystem == 0 ? 30 : 86);
           const etTargetTemp = constrain(parseFloat(data.heating.target), etMinTemp, etMaxTemp);
@@ -1318,6 +1468,7 @@
           setupForm('#emergency-settings', fillData);
           setupForm('#equitherm-settings', fillData);
           setupForm('#pid-settings', fillData);
+          setupForm('#heatpump-settings', fillData);
           setupForm('#ot-settings', fillData);
           setupForm('#mqtt-settings', fillData, ['mqtt.user', 'mqtt.password', 'mqtt.prefix']);
           setupForm('#extpump-settings', fillData);

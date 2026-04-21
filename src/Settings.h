@@ -167,6 +167,28 @@ struct Settings {
   } equitherm;
 
   struct {
+    bool enabled = false;                   // hlavny prepinac pre HP rezim
+    bool atlanticLoriaMode = false;         // explicitny profil pre Loria Duo R32
+    bool ignoreModulation = true;           // nebrat OT modulation ako riadiacu velicinu
+    bool useMinOnOffTimes = true;           // ochrana proti cyklovaniu
+    bool useSetpointRamp = true;            // pomale zmeny vykurovacieho setpointu
+
+    unsigned short minOnTimeSec = 1200;     // min. chod 20 min
+    unsigned short minOffTimeSec = 900;     // min. pauza 15 min
+    unsigned short setpointUpdateSec = 180; // menit setpoint max raz za 3 min
+
+    float maxSetpointStep = 1.0f;           // max zmena setpointu o 1 C na update
+    float roomDeadband = 0.3f;              // pri malej chybe izby nemenit setpoint
+    float minEffectiveError = 0.4f;         // pod touto odchylkou nespustat agresivnu reakciu
+
+    float minSetpoint = 25.0f;              // bezpecne minimum pre podlahovku/TČ
+    float maxSetpoint = 40.0f;              // bezpecne maximum pre bezny rezim
+
+    bool disableTurbo = true;               // turbo je pre TČ vacsinou kontraproduktivne
+    bool forceHalfDegreeSteps = true;       // 0.5 C kroky namiesto celych stupnov
+  } heatPump;
+
+  struct {
     bool use = false;
     uint8_t gpio = DEFAULT_EXT_PUMP_GPIO;
     bool invertState = false;
@@ -427,16 +449,26 @@ struct Variables {
       float currentTemp = 0.0f;
       float indoorTemp = 0.0f;
     } ch2;
-  } slave;
+    } slave;
 
-  struct {
-    bool restart = false;
-    bool resetFault = false;
-    bool resetDiagnostic = false;
-  } actions;
+    struct {
+      bool heatingLockActive = false;
+      bool lastHeatingRequest = false;
+      bool effectiveHeatingState = false;
+      unsigned long lastSetpointUpdateTime = 0;
+      unsigned long lastHeatingOnTime = 0;
+      unsigned long lastHeatingOffTime = 0;
+      float lastHeatingSetpoint = 0.0f;
+    } heatPump;
 
-  struct {
-    bool restarting = false;
-    bool upgrading = false;
-  } states;
-} vars;
+    struct {
+      bool restart = false;
+      bool resetFault = false;
+      bool resetDiagnostic = false;
+    } actions;
+
+    struct {
+      bool restarting = false;
+      bool upgrading = false;
+    } states;
+    } vars;

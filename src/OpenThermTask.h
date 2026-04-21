@@ -47,6 +47,79 @@ protected:
   }
   #endif
 
+  unsigned long getHeatingSetTempInterval() const {
+    if (settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode) {
+      return (unsigned long) settings.heatPump.setpointUpdateSec * 1000u;
+    }
+
+    return heatingSetTempInterval;
+  }
+
+  bool isHeatPumpAtlanticMode() const {
+    return settings.heatPump.enabled && settings.heatPump.atlanticLoriaMode;
+  }
+
+  bool shouldLimitModulationLogic() const {
+    return this->isHeatPumpAtlanticMode() && settings.heatPump.ignoreModulation;
+  }
+
+  bool getEffectiveHeatingState(bool requestedHeating) {
+    if (!this->isHeatPumpAtlanticMode() || !settings.heatPump.useMinOnOffTimes) {
+      vars.heatPump.heatingLockActive = false;
+      vars.heatPump.lastHeatingRequest = requestedHeating;
+      vars.heatPump.effectiveHeatingState = requestedHeating;
+      return requestedHeating;
+    }
+
+    const unsigned long now = millis();
+    bool effectiveHeating = requestedHeating;
+    vars.heatPump.heatingLockActive = false;
+
+    if (vars.slave.heating.active) {
+      if (!requestedHeating && vars.heatPump.lastHeatingOnTime > 0) {
+        const unsigned long onTime = now - vars.heatPump.lastHeatingOnTime;
+        if (onTime < ((unsigned long) settings.heatPump.minOnTimeSec * 1000u)) {
+          effectiveHeating = true;
+          vars.heatPump.heatingLockActive = true;
+        }
+      }
+
+    } else {
+      if (requestedHeating && vars.heatPump.lastHeatingOffTime > 0) {
+        const unsigned long offTime = now - vars.heatPump.lastHeatingOffTime;
+        if (offTime < ((unsigned long) settings.heatPump.minOffTimeSec * 1000u)) {
+          effectiveHeating = false;
+          vars.heatPump.heatingLockActive = true;
+        }
+      }
+    }
+
+    vars.heatPump.lastHeatingRequest = requestedHeating;
+    vars.heatPump.effectiveHeatingState = effectiveHeating;
+    return effectiveHeating;
+  }
+
+  void updateHeatPumpStateTimestamps(bool currentHeatingActive) {
+    if (!this->isHeatPumpAtlanticMode()) {
+      return;
+    }
+
+    const unsigned long now = millis();
+    static bool prevHeatingActive = false;
+
+    if (currentHeatingActive != prevHeatingActive) {
+      if (currentHeatingActive) {
+        vars.heatPump.lastHeatingOnTime = now;
+        Log.sinfoln(FPSTR(L_OT_HEATING), F("Heat pump heating became active"));
+      } else {
+        vars.heatPump.lastHeatingOffTime = now;
+        Log.sinfoln(FPSTR(L_OT_HEATING), F("Heat pump heating became inactive"));
+      }
+
+      prevHeatingActive = currentHeatingActive;
+    }
+  }
+
   void setup() {
     // Convert defaults at start
     if (settings.system.unitSystem != UnitSystem::METRIC) {
@@ -170,7 +243,7 @@ protected:
     // Heating settings
     vars.master.heating.enabled = this->isReady()
       && settings.heating.enabled
-      && vars.cascadeControl.input 
+      && vars.cascadeControl.input
       && !vars.master.heating.blocking
       && !vars.master.heating.overheat;
 
@@ -216,8 +289,19 @@ protected:
       dhwBlocking = vars.master.dhw.enabled == dhwBlocking;
     }
 
+    bool effectiveHeatingEnabled = this->getEffectiveHeatingState(vars.master.heating.enabled);
+
+    if (this->isHeatPumpAtlanticMode() && effectiveHeatingEnabled != vars.master.heating.enabled) {
+      Log.sinfoln(
+        FPSTR(L_OT_HEATING),
+        F("Heating request overridden by anti-cycling. Requested: %hhu, effective: %hhu"),
+        vars.master.heating.enabled,
+        effectiveHeatingEnabled
+      );
+    }
+
     unsigned long response = this->instance->setBoilerStatus(
-      vars.master.heating.enabled,
+      effectiveHeatingEnabled,
       vars.master.dhw.enabled,
       settings.opentherm.options.coolingSupport,
       settings.opentherm.options.nativeOTC,
@@ -236,6 +320,7 @@ protected:
       
     } else {
       vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
+      this->updateHeatPumpStateTimestamps(vars.slave.heating.active);
       vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
       vars.slave.flame = CustomOpenTherm::isFlameOn(response);
       vars.slave.cooling.active = CustomOpenTherm::isCoolingActive(response);
@@ -318,6 +403,12 @@ protected:
     if (!vars.slave.connected) {
       vars.slave.heating.enabled = false;
       vars.slave.heating.active = false;
+
+      if (this->isHeatPumpAtlanticMode()) {
+        vars.heatPump.heatingLockActive = false;
+        vars.heatPump.effectiveHeatingState = false;
+      }
+
       vars.slave.dhw.enabled = false;
       vars.slave.dhw.active = false;
       vars.slave.flame = false;
@@ -436,7 +527,6 @@ protected:
         Log.swarningln(FPSTR(L_OT), F("Failed receive min modulation and max power"));
       }
 
-
       // Get DHW min/max temp (if necessary)
       if (settings.opentherm.options.dhwSupport && settings.opentherm.options.getMinMaxTemp) {
         if (this->updateMinMaxDhwTemp()) {
@@ -482,7 +572,6 @@ protected:
         fsSettings.update();
       }
 
-
       // Get heating min/max temp
       if (settings.opentherm.options.getMinMaxTemp) {
         if (this->updateMinMaxHeatingTemp()) {
@@ -523,8 +612,8 @@ protected:
       }
 
       if (settings.heating.minTemp >= settings.heating.maxTemp) {
-        settings.heating.minTemp = convertTemp(DEFAULT_HEATING_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);;
-        settings.heating.maxTemp = convertTemp(DEFAULT_HEATING_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);;
+        settings.heating.minTemp = convertTemp(DEFAULT_HEATING_MIN_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
+        settings.heating.maxTemp = convertTemp(DEFAULT_HEATING_MAX_TEMP, UnitSystem::METRIC, settings.system.unitSystem);
         fsSettings.update();
       }
 
@@ -724,26 +813,31 @@ protected:
       }
     }
 
-    // Set max modulation level
-    uint8_t targetMaxModulation = vars.slave.modulation.max;
-    if (vars.slave.heating.active) {
-      targetMaxModulation = settings.heating.maxModulation;
+    if (!this->shouldLimitModulationLogic()) {
+      uint8_t targetMaxModulation = vars.slave.modulation.max;
+      if (vars.slave.heating.active) {
+        targetMaxModulation = settings.heating.maxModulation;
 
-    } else if (vars.slave.dhw.active) {
-      targetMaxModulation = settings.dhw.maxModulation;
-    }
+      } else if (vars.slave.dhw.active) {
+        targetMaxModulation = settings.dhw.maxModulation;
+      }
 
-    if (this->setMaxModulationLevel(targetMaxModulation)) {
-      Log.snoticeln(
-        FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
-        targetMaxModulation, vars.slave.modulation.max
-      );
+      if (this->setMaxModulationLevel(targetMaxModulation)) {
+        Log.snoticeln(
+          FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
+          targetMaxModulation, vars.slave.modulation.max
+        );
+
+      } else {
+        Log.swarningln(
+          FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
+          targetMaxModulation, vars.slave.modulation.max
+        );
+      }
 
     } else {
-      Log.swarningln(
-        FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
-        targetMaxModulation, vars.slave.modulation.max
-      );
+      vars.slave.modulation.current = 0;
+      vars.slave.power.current = 0.0f;
     }
 
     // Update modulation level
@@ -751,7 +845,21 @@ protected:
       Sensors::getAmountByType(Sensors::Type::OT_MODULATION_LEVEL, true) ||
       Sensors::getAmountByType(Sensors::Type::OT_CURRENT_POWER, true)
     ) {
-      if (vars.slave.flame) {
+      if (this->shouldLimitModulationLogic()) {
+        vars.slave.modulation.current = 0;
+        vars.slave.power.current = 0.0f;
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_MODULATION_LEVEL, vars.slave.modulation.current,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+        Sensors::setValueByType(
+          Sensors::Type::OT_CURRENT_POWER, vars.slave.power.current,
+          Sensors::ValueType::PRIMARY, true, true
+        );
+
+      } else if (vars.slave.flame) {
         if (this->updateModulationLevel()) {
           float power = 0.0f;
           if (settings.opentherm.maxPower > 0.1f) {
@@ -1201,7 +1309,6 @@ protected:
       vars.actions.resetDiagnostic = false;
     }
 
-
     // Update DHW temp
     if (vars.master.dhw.enabled) {
       // Target dhw temp
@@ -1308,15 +1415,17 @@ protected:
 
     // Set heating temp
     {
-      // Target heating temp
       float targetTemp = 0.0f;
-      if (vars.master.heating.enabled) {
+      const bool effectiveHeatingEnabledForSetpoint = this->isHeatPumpAtlanticMode()
+        ? vars.heatPump.effectiveHeatingState
+        : vars.master.heating.enabled;
+
+      if (effectiveHeatingEnabledForSetpoint) {
         targetTemp = !settings.opentherm.options.nativeOTC
           ? vars.master.heating.setpointTemp
           : vars.master.heating.targetTemp;
       }
 
-      // Converted target heating temp
       const float convertedTemp = convertTemp(
         targetTemp,
         settings.system.unitSystem,
@@ -1324,7 +1433,6 @@ protected:
       );
 
       if (this->needSetHeatingTemp(convertedTemp)) {
-        // Set max heating temp
         if (settings.opentherm.options.maxTempSyncWithTargetTemp) {
           if (this->setMaxHeatingTemp(convertedTemp)) {
             Log.sinfoln(
@@ -1340,7 +1448,6 @@ protected:
           }
         }
 
-        // Set target heating temp
         if (this->setHeatingTemp(convertedTemp)) {
           this->heatingSetTempTime = millis();
 
@@ -1383,7 +1490,6 @@ protected:
         }
       }
     }
-
 
     // Heating overheat control
     if (settings.heating.overheatProtection.highTemp > 0 && settings.heating.overheatProtection.lowTemp > 0) {
@@ -1543,7 +1649,7 @@ protected:
   }
 
   bool needSetHeatingTemp(const float target) {
-    return millis() - this->heatingSetTempTime > this->heatingSetTempInterval
+    return millis() - this->heatingSetTempTime > this->getHeatingSetTempInterval()
       || fabsf(target - vars.slave.heating.targetTemp) > 0.05f;
   }
 
@@ -1568,22 +1674,6 @@ protected:
 
     vars.slave.memberId = response & 0xFF;
     vars.slave.flags = (response & 0xFFFF) >> 8;
-
-    /*uint8_t flags = (response & 0xFFFF) >> 8;
-    Log.straceln(
-      "OT",
-      F("MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n  Raw: %u"),
-      (bool) (flags & 0x01),
-      (bool) (flags & 0x02),
-      (bool) (flags & 0x04),
-      (bool) (flags & 0x08),
-      (bool) (flags & 0x10),
-      (bool) (flags & 0x20),
-      (bool) (flags & 0x40),
-      (bool) (flags & 0x80),
-      response & 0xFF,
-      response
-    );*/
 
     return true;
   }
@@ -1706,7 +1796,6 @@ protected:
 
     return CustomOpenTherm::getUInt(response) == request;
   }
-
 
   bool setRoomTemp(const float temperature) {
     const unsigned int request = CustomOpenTherm::temperatureToData(temperature);
@@ -1884,23 +1973,11 @@ protected:
     return CustomOpenTherm::getUInt(response) == request;
   }
 
-  /**
-   * @brief Set the Master Config
-   * From slave member id code:
-   * id: slave.memberIdCode & 0xFF,
-   * flags: (slave.memberIdCode & 0xFFFF) >> 8
-   * @param id 
-   * @param flags 
-   * @param force 
-   * @return true 
-   * @return false 
-   */
   bool setMasterConfig(const uint8_t id, const uint8_t flags, const bool force = false) {
     const uint8_t rMemberId = (force || id > 0) ? id : vars.slave.memberId;
     const uint8_t rFlags = (force || flags > 0) ? flags : vars.slave.flags;
     const unsigned int request = (unsigned int) rMemberId | (unsigned int) rFlags << 8;
 
-    // if empty request
     if (!request) {
       return true;
     }
@@ -1917,9 +1994,6 @@ protected:
     } else if (!CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::MConfigMMemberIDcode)) {
       return false;
     }
-
-    //uint8_t rMemberId = response & 0xFF;
-    //uint8_t rFlags = (response & 0xFFFF) >> 8;
 
     return CustomOpenTherm::getUInt(response) == request;
   }
@@ -2340,8 +2414,6 @@ protected:
       return false;
     }
 
-    // no minuscule values
-    // some boilers send a response of 0.06 when there is no flow
     if (value < 0.1f) {
       value = 0.0f;
     }
@@ -2412,8 +2484,6 @@ protected:
 
     return true;
   }
-
-
 
   bool updateExhaustTemp() {
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(

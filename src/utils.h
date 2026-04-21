@@ -72,7 +72,7 @@ time_t mkgmtime(const struct tm *ptm) {
 
 inline bool isDigit(const char* ptr) {
   char* endPtr;
-  auto tmp = strtol(ptr, &endPtr, 10);
+  strtol(ptr, &endPtr, 10);
   return *endPtr == 0;
 }
 
@@ -543,6 +543,23 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   pidDeadband[FPSTR(S_THRESHOLD_HIGH)] = src.pid.deadband.thresholdHigh;
   pidDeadband[FPSTR(S_THRESHOLD_LOW)] = src.pid.deadband.thresholdLow;
 
+  auto heatPump = dst["heatPump"].to<JsonObject>();
+  heatPump["enabled"] = src.heatPump.enabled;
+  heatPump["atlanticLoriaMode"] = src.heatPump.atlanticLoriaMode;
+  heatPump["ignoreModulation"] = src.heatPump.ignoreModulation;
+  heatPump["useMinOnOffTimes"] = src.heatPump.useMinOnOffTimes;
+  heatPump["useSetpointRamp"] = src.heatPump.useSetpointRamp;
+  heatPump["minOnTimeSec"] = src.heatPump.minOnTimeSec;
+  heatPump["minOffTimeSec"] = src.heatPump.minOffTimeSec;
+  heatPump["setpointUpdateSec"] = src.heatPump.setpointUpdateSec;
+  heatPump["maxSetpointStep"] = roundf(src.heatPump.maxSetpointStep, 2);
+  heatPump["roomDeadband"] = roundf(src.heatPump.roomDeadband, 2);
+  heatPump["minEffectiveError"] = roundf(src.heatPump.minEffectiveError, 2);
+  heatPump["minSetpoint"] = roundf(src.heatPump.minSetpoint, 2);
+  heatPump["maxSetpoint"] = roundf(src.heatPump.maxSetpoint, 2);
+  heatPump["disableTurbo"] = src.heatPump.disableTurbo;
+  heatPump["forceHalfDegreeSteps"] = src.heatPump.forceHalfDegreeSteps;
+
   if (!safe) {
     auto externalPump = dst[FPSTR(S_EXTERNAL_PUMP)].to<JsonObject>();
     externalPump[FPSTR(S_USE)] = src.externalPump.use;
@@ -677,6 +694,12 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         dst.dhw.maxTemp = convertTemp(dst.dhw.maxTemp, prevUnitSystem, dst.system.unitSystem);
         dst.pid.minTemp = convertTemp(dst.pid.minTemp, prevUnitSystem, dst.system.unitSystem);
         dst.pid.maxTemp = convertTemp(dst.pid.maxTemp, prevUnitSystem, dst.system.unitSystem);
+
+        dst.heatPump.minSetpoint = convertTemp(dst.heatPump.minSetpoint, prevUnitSystem, dst.system.unitSystem);
+        dst.heatPump.maxSetpoint = convertTemp(dst.heatPump.maxSetpoint, prevUnitSystem, dst.system.unitSystem);
+        dst.heatPump.maxSetpointStep = convertTemp(dst.heatPump.maxSetpointStep, prevUnitSystem, dst.system.unitSystem);
+        dst.heatPump.roomDeadband = convertTemp(dst.heatPump.roomDeadband, prevUnitSystem, dst.system.unitSystem) - convertTemp(0.0f, prevUnitSystem, dst.system.unitSystem);
+        dst.heatPump.minEffectiveError = convertTemp(dst.heatPump.minEffectiveError, prevUnitSystem, dst.system.unitSystem) - convertTemp(0.0f, prevUnitSystem, dst.system.unitSystem);
       }
     }
 
@@ -1302,6 +1325,147 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
     if (value >= 0.0f && value <= 5.0f && fabsf(value - dst.pid.deadband.thresholdLow) > 0.0001f) {
       dst.pid.deadband.thresholdLow = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  // heat pump
+  if (src["heatPump"]["enabled"].is<bool>()) {
+    bool value = src["heatPump"]["enabled"].as<bool>();
+
+    if (value != dst.heatPump.enabled) {
+      dst.heatPump.enabled = value;
+      changed = true;
+    }
+  }
+
+  if (src["heatPump"]["atlanticLoriaMode"].is<bool>()) {
+    bool value = src["heatPump"]["atlanticLoriaMode"].as<bool>();
+
+    if (value != dst.heatPump.atlanticLoriaMode) {
+      dst.heatPump.atlanticLoriaMode = value;
+      changed = true;
+    }
+  }
+
+  if (src["heatPump"]["ignoreModulation"].is<bool>()) {
+    bool value = src["heatPump"]["ignoreModulation"].as<bool>();
+
+    if (value != dst.heatPump.ignoreModulation) {
+      dst.heatPump.ignoreModulation = value;
+      changed = true;
+    }
+  }
+
+  if (src["heatPump"]["useMinOnOffTimes"].is<bool>()) {
+    bool value = src["heatPump"]["useMinOnOffTimes"].as<bool>();
+
+    if (value != dst.heatPump.useMinOnOffTimes) {
+      dst.heatPump.useMinOnOffTimes = value;
+      changed = true;
+    }
+  }
+
+  if (src["heatPump"]["useSetpointRamp"].is<bool>()) {
+    bool value = src["heatPump"]["useSetpointRamp"].as<bool>();
+
+    if (value != dst.heatPump.useSetpointRamp) {
+      dst.heatPump.useSetpointRamp = value;
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["minOnTimeSec"].isNull()) {
+    unsigned short value = src["heatPump"]["minOnTimeSec"].as<unsigned short>();
+
+    if (value <= 7200 && value != dst.heatPump.minOnTimeSec) {
+      dst.heatPump.minOnTimeSec = value;
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["minOffTimeSec"].isNull()) {
+    unsigned short value = src["heatPump"]["minOffTimeSec"].as<unsigned short>();
+
+    if (value <= 7200 && value != dst.heatPump.minOffTimeSec) {
+      dst.heatPump.minOffTimeSec = value;
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["setpointUpdateSec"].isNull()) {
+    unsigned short value = src["heatPump"]["setpointUpdateSec"].as<unsigned short>();
+
+    if (value >= 10 && value <= 3600 && value != dst.heatPump.setpointUpdateSec) {
+      dst.heatPump.setpointUpdateSec = value;
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["maxSetpointStep"].isNull()) {
+    float value = src["heatPump"]["maxSetpointStep"].as<float>();
+
+    if (value >= 0.1f && value <= 10.0f && fabsf(value - dst.heatPump.maxSetpointStep) > 0.0001f) {
+      dst.heatPump.maxSetpointStep = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["roomDeadband"].isNull()) {
+    float value = src["heatPump"]["roomDeadband"].as<float>();
+
+    if (value >= 0.0f && value <= 5.0f && fabsf(value - dst.heatPump.roomDeadband) > 0.0001f) {
+      dst.heatPump.roomDeadband = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["minEffectiveError"].isNull()) {
+    float value = src["heatPump"]["minEffectiveError"].as<float>();
+
+    if (value >= 0.0f && value <= 5.0f && fabsf(value - dst.heatPump.minEffectiveError) > 0.0001f) {
+      dst.heatPump.minEffectiveError = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["minSetpoint"].isNull()) {
+    float value = src["heatPump"]["minSetpoint"].as<float>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && fabsf(value - dst.heatPump.minSetpoint) > 0.0001f) {
+      dst.heatPump.minSetpoint = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (!src["heatPump"]["maxSetpoint"].isNull()) {
+    float value = src["heatPump"]["maxSetpoint"].as<float>();
+
+    if (isValidTemp(value, dst.system.unitSystem, 0.0f, 100.0f) && fabsf(value - dst.heatPump.maxSetpoint) > 0.0001f) {
+      dst.heatPump.maxSetpoint = roundf(value, 2);
+      changed = true;
+    }
+  }
+
+  if (dst.heatPump.maxSetpoint < dst.heatPump.minSetpoint) {
+    dst.heatPump.maxSetpoint = dst.heatPump.minSetpoint;
+    changed = true;
+  }
+
+  if (src["heatPump"]["disableTurbo"].is<bool>()) {
+    bool value = src["heatPump"]["disableTurbo"].as<bool>();
+
+    if (value != dst.heatPump.disableTurbo) {
+      dst.heatPump.disableTurbo = value;
+      changed = true;
+    }
+  }
+
+  if (src["heatPump"]["forceHalfDegreeSteps"].is<bool>()) {
+    bool value = src["heatPump"]["forceHalfDegreeSteps"].as<bool>();
+
+    if (value != dst.heatPump.forceHalfDegreeSteps) {
+      dst.heatPump.forceHalfDegreeSteps = value;
       changed = true;
     }
   }
