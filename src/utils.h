@@ -487,6 +487,23 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     emergency[FPSTR(S_TARGET)] = roundf(src.emergency.target, 2);
     emergency[FPSTR(S_TRESHOLD_TIME)] = src.emergency.tresholdTime;
   }
+
+  auto heatingSchedule = dst[FPSTR(S_HEATING_SCHEDULE)].to<JsonObject>();
+  heatingSchedule[FPSTR(S_ENABLED)] = src.heatingSchedule.enabled;
+  auto heatingScheduleDays = heatingSchedule[FPSTR(S_DAYS)].to<JsonArray>();
+  for (uint8_t dayId = 0; dayId < HEATING_SCHEDULE_DAYS; dayId++) {
+    auto scheduleDay = heatingScheduleDays[dayId].to<JsonObject>();
+    auto scheduleSlots = scheduleDay[FPSTR(S_SLOTS)].to<JsonArray>();
+
+    for (uint8_t slotId = 0; slotId < HEATING_SCHEDULE_SLOTS; slotId++) {
+      auto scheduleSlot = scheduleSlots[slotId].to<JsonObject>();
+      auto& srcSlot = src.heatingSchedule.days[dayId].slots[slotId];
+      scheduleSlot[FPSTR(S_ENABLED)] = srcSlot.isEnabled();
+      scheduleSlot[FPSTR(S_TIME)] = srcSlot.getTime();
+      scheduleSlot[FPSTR(S_ACTION)] = static_cast<uint8_t>(srcSlot.action);
+      scheduleSlot[FPSTR(S_TARGET)] = roundf(srcSlot.target, 2);
+    }
+  }
   
   auto heating = dst[FPSTR(S_HEATING)].to<JsonObject>();
   heating[FPSTR(S_ENABLED)] = src.heating.enabled;
@@ -672,6 +689,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         dst.heating.target = convertTemp(dst.heating.target, prevUnitSystem, dst.system.unitSystem);
         dst.heating.minTemp = convertTemp(dst.heating.minTemp, prevUnitSystem, dst.system.unitSystem);
         dst.heating.maxTemp = convertTemp(dst.heating.maxTemp, prevUnitSystem, dst.system.unitSystem);
+        for (uint8_t dayId = 0; dayId < HEATING_SCHEDULE_DAYS; dayId++) {
+          for (uint8_t slotId = 0; slotId < HEATING_SCHEDULE_SLOTS; slotId++) {
+            dst.heatingSchedule.days[dayId].slots[slotId].target = convertTemp(
+              dst.heatingSchedule.days[dayId].slots[slotId].target,
+              prevUnitSystem,
+              dst.system.unitSystem
+            );
+          }
+        }
         dst.dhw.target = convertTemp(dst.dhw.target, prevUnitSystem, dst.system.unitSystem);
         dst.dhw.minTemp = convertTemp(dst.dhw.minTemp, prevUnitSystem, dst.system.unitSystem);
         dst.dhw.maxTemp = convertTemp(dst.dhw.maxTemp, prevUnitSystem, dst.system.unitSystem);
@@ -1446,6 +1472,86 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     }
   }
 
+  JsonVariantConst heatingScheduleSrc = src[FPSTR(S_HEATING_SCHEDULE)];
+
+  if (heatingScheduleSrc[FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = heatingScheduleSrc[FPSTR(S_ENABLED)].as<bool>();
+
+    if (value != dst.heatingSchedule.enabled) {
+      dst.heatingSchedule.enabled = value;
+      changed = true;
+    }
+  }
+
+  for (uint8_t dayId = 0; dayId < HEATING_SCHEDULE_DAYS; dayId++) {
+    for (uint8_t slotId = 0; slotId < HEATING_SCHEDULE_SLOTS; slotId++) {
+      auto srcSlot = heatingScheduleSrc[FPSTR(S_DAYS)][dayId][FPSTR(S_SLOTS)][slotId];
+      auto& dstSlot = dst.heatingSchedule.days[dayId].slots[slotId];
+
+      if (srcSlot[FPSTR(S_ENABLED)].is<bool>()) {
+        bool value = srcSlot[FPSTR(S_ENABLED)].as<bool>();
+
+        if (value != dstSlot.isEnabled()) {
+          dstSlot.setEnabled(value);
+          changed = true;
+        }
+      }
+
+      if (!srcSlot[FPSTR(S_TIME)].isNull()) {
+        uint8_t value = srcSlot[FPSTR(S_TIME)].as<uint8_t>();
+
+        if (value < HEATING_SCHEDULE_STEPS_PER_DAY && value != dstSlot.getTime()) {
+          dstSlot.setTime(value);
+          changed = true;
+        }
+      }
+
+      if (!srcSlot[FPSTR(S_ACTION)].isNull()) {
+        uint8_t value = srcSlot[FPSTR(S_ACTION)].as<uint8_t>();
+
+        switch (value) {
+          case static_cast<uint8_t>(HeatingScheduleAction::OFF):
+          case static_cast<uint8_t>(HeatingScheduleAction::ON):
+          case static_cast<uint8_t>(HeatingScheduleAction::TARGET):
+            if (static_cast<uint8_t>(dstSlot.action) != value) {
+              dstSlot.action = static_cast<HeatingScheduleAction>(value);
+              changed = true;
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if (!srcSlot[FPSTR(S_TARGET)].isNull()) {
+        float value = srcSlot[FPSTR(S_TARGET)].as<float>();
+
+        if (fabsf(dstSlot.target - value) > 0.0001f) {
+          dstSlot.target = roundf(value, 2);
+          changed = true;
+        }
+      }
+    }
+
+    for (uint8_t slotId = 1; slotId < HEATING_SCHEDULE_SLOTS; slotId++) {
+      for (uint8_t cmpSlotId = slotId; cmpSlotId > 0; cmpSlotId--) {
+        auto& leftSlot = dst.heatingSchedule.days[dayId].slots[cmpSlotId - 1];
+        auto& rightSlot = dst.heatingSchedule.days[dayId].slots[cmpSlotId];
+
+        if (rightSlot.getTime() < leftSlot.getTime()) {
+          HeatingScheduleSlot tempSlot = leftSlot;
+          leftSlot = rightSlot;
+          rightSlot = tempSlot;
+          changed = true;
+
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
 
   // dhw
   if (src[FPSTR(S_DHW)][FPSTR(S_ENABLED)].is<bool>()) {
@@ -1765,6 +1871,22 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (fabsf(dst.heating.target - value) > 0.0001f) {
       dst.heating.target = roundf(value, 2);
       changed = true;
+    }
+
+    float defaultValue = convertTemp(
+      indoorTempControl ? THERMOSTAT_INDOOR_DEFAULT_TEMP : DEFAULT_HEATING_TARGET_TEMP,
+      UnitSystem::METRIC,
+      dst.system.unitSystem
+    );
+    for (uint8_t dayId = 0; dayId < HEATING_SCHEDULE_DAYS; dayId++) {
+      for (uint8_t slotId = 0; slotId < HEATING_SCHEDULE_SLOTS; slotId++) {
+        auto& slot = dst.heatingSchedule.days[dayId].slots[slotId];
+
+        if (!isValidTemp(slot.target, dst.system.unitSystem, minTemp, maxTemp, dst.system.unitSystem)) {
+          slot.target = roundf(defaultValue, 2);
+          changed = true;
+        }
+      }
     }
   }
 

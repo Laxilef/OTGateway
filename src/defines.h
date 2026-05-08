@@ -14,6 +14,13 @@
 #define DEFAULT_DHW_MIN_TEMP            30
 #define DEFAULT_DHW_MAX_TEMP            60
 
+#define HEATING_SCHEDULE_DAYS           7
+#define HEATING_SCHEDULE_SLOTS          4
+#define HEATING_SCHEDULE_STEP_MINUTES   15
+#define HEATING_SCHEDULE_STEPS_PER_DAY  (24 * 60 / HEATING_SCHEDULE_STEP_MINUTES)
+#define HEATING_SCHEDULE_SLOT_DISABLED_MASK 0x80
+#define HEATING_SCHEDULE_SLOT_TIME_MASK     0x7f
+
 #define THERMOSTAT_INDOOR_DEFAULT_TEMP  20
 #define THERMOSTAT_INDOOR_MIN_TEMP      5
 #define THERMOSTAT_INDOOR_MAX_TEMP      40
@@ -166,6 +173,12 @@ enum class UnitSystem : uint8_t {
 enum class HysteresisAction : uint8_t {
   DISABLE_HEATING = 0,
   SET_ZERO_TARGET = 1
+};
+
+enum class HeatingScheduleAction : uint8_t {
+  OFF = 0,
+  ON = 1,
+  TARGET = 2
 };
 
 char buffer[255];
