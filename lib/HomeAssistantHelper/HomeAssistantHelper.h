@@ -100,6 +100,39 @@ public:
     return result;
   }
 
+  bool publishClimateHeatingConfig(
+    const char* name,
+    const char* uniqSuffix,
+    const char* tempUnit = "C",
+    float minTemp = 18.0f,
+    float maxTemp = 28.0f,
+    float tempStep = 0.1f
+  ) {
+    JsonDocument doc;
+
+    doc["name"] = name;
+    doc["uniq_id"] = this->getUniqueIdWithPrefix(uniqSuffix);
+    doc["obj_id"] = this->getUniqueIdWithPrefix(uniqSuffix);
+
+    doc["mode_cmd_t"] = this->getDeviceTopic("climate", "heating", "mode/set");
+    doc["mode_stat_t"] = this->getDeviceTopic("climate", "heating", "mode");
+    doc["modes"][0] = "off";
+    doc["modes"][1] = "heat";
+
+    doc["temp_cmd_t"] = this->getDeviceTopic("climate", "heating", "target/set");
+    doc["temp_stat_t"] = this->getDeviceTopic("climate", "heating", "target");
+    doc["curr_temp_t"] = this->getDeviceTopic("climate", "heating", "current");
+    doc["act_t"] = this->getDeviceTopic("climate", "heating", "action");
+
+    doc["min_temp"] = minTemp;
+    doc["max_temp"] = maxTemp;
+    doc["temp_step"] = tempStep;
+    doc["temp_unit"] = tempUnit;
+
+    String topic = this->makeConfigTopic("climate", uniqSuffix);
+    return this->publish(topic.c_str(), doc);
+  }
+
   template <class CT, class NT>
   String makeConfigTopic(CT category, NT name, char nameSeparator = '/') {
     String topic = "";

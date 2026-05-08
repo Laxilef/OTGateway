@@ -1,0 +1,492 @@
+{
+  "values": {
+    "logo": "OpenTherm Gateway",
+    "nav": {
+      "license": "Licencia",
+      "source": "Zdrojový kód",
+      "help": "Pomoc",
+      "issues": "Vydania",
+      "releases": "Vydania"
+    },
+    "dbm": "dBm",
+    "kw": "kW",
+    "time": {
+      "days": "d.",
+      "hours": "h.",
+      "min": "min.",
+      "sec": "sek."
+    },
+    "button": {
+      "upgrade": "Aktualizovať",
+      "restart": "Reštart",
+      "save": "Ulož",
+      "saved": "Uložené",
+      "refresh": "Obnoviť",
+      "restore": "Obnov",
+      "restored": "Obnovené",
+      "backup": "Zálohuj",
+      "wait": "Prosím čakaj...",
+      "uploading": "Nahrávam...",
+      "success": "Úspešné",
+      "error": "Chyba"
+    },
+    "index": {
+      "title": "OpenTherm Gateway",
+      "section": {
+        "network": "Sieť",
+        "system": "Systém"
+      },
+      "system": {
+        "build": {
+          "title": "Zostavenie",
+          "version": "Verzia",
+          "date": "Dátum",
+          "core": "Jadro",
+          "sdk": "SDK"
+        },
+        "uptime": "Čas behu",
+        "memory": {
+          "title": "Voľná pamäť",
+          "maxFreeBlock": "max voľný blok",
+          "min": "min"
+        },
+        "board": "Doska",
+        "chip": {
+          "model": "Čip",
+          "cores": "Jadrá",
+          "freq": "frekvencia"
+        },
+        "flash": {
+          "size": "Veľkosť flash",
+          "realSize": "reálna veľkosť"
+        },
+        "lastResetReason": "Dôvod posledného resetu"
+      }
+    },
+    "dashboard": {
+      "name": "Prehľad",
+      "title": "Prehľad - OpenTherm Gateway",
+      "section": {
+        "control": "Ovládanie",
+        "states": "Stavy",
+        "sensors": "Senzory",
+        "diag": "OpenTherm diagnostika"
+      },
+      "thermostat": {
+        "heating": "Kúrenie",
+        "dhw": "TUV",
+        "temp.current": "Aktuálna",
+        "enable": "Zapnuté",
+        "turbo": "Turbo mód"
+      },
+      "notify": {
+        "fault": {
+          "title": "Porucha kotla je aktívna!",
+          "note": "Odporúča sa skontrolovať kotol a preštudovať dokumentáciu pre interpretáciu chybového kódu:"
+        },
+        "diag": {
+          "title": "Diagnostický stav kotla je aktívny!",
+          "note": "Možno váš kotol potrebuje kontrolu? Odporúča sa preštudovať dokumentáciu pre interpretáciu diagnostického kódu:"
+        },
+        "reset": "Skúsiť reset"
+      },
+      "states": {
+        "mNetworkConnected": "Sieťové pripojenie",
+        "mMqttConnected": "MQTT pripojenie",
+        "mEmergencyState": "Núdzový režim",
+        "mExtPumpState": "Externé čerpadlo",
+        "mCascadeControlInput": "Kaskádové riadenie (vstup)",
+        "mCascadeControlOutput": "Kaskádové riadenie (výstup)",
+        "sConnected": "OpenTherm pripojenie",
+        "sFlame": "Plameň",
+        "sCoolingActive": "Chladenie",
+        "sCoolingSetpoint": "Nastavenie chladenia",
+        "sFaultActive": "Porucha",
+        "sFaultCode": "Kód poruchy",
+        "sDiagActive": "Diagnostika",
+        "sDiagCode": "Diagnostický kód",
+        "mHeatEnabled": "Kúrenie povolené",
+        "mHeatBlocking": "Kúrenie blokované",
+        "mHeatOverheat": "Prehriatie kúrenia",
+        "sHeatActive": "Kúrenie aktívne",
+        "mHeatSetpointTemp": "Nastavená teplota kúrenia",
+        "mHeatTargetTemp": "Cieľová teplota kúrenia",
+        "mHeatCurrTemp": "Aktuálna teplota kúrenia",
+        "mHeatRetTemp": "Spätná teplota kúrenia",
+        "mHeatIndoorTemp": "Kúrenie, vnútorná teplota",
+        "mHeatOutdoorTemp": "Kúrenie, vonkajšia teplota",
+        "mDhwEnabled": "TUV povolené",
+        "mDhwOverheat": "Prehriatie TUV",
+        "sDhwActive": "TUV aktívne",
+        "mDhwTargetTemp": "Cieľová teplota TUV",
+        "mDhwCurrTemp": "Aktuálna teplota TUV",
+        "mDhwRetTemp": "Spätná teplota TUV"
+      },
+      "sensors": {
+        "values": {
+          "temp": "Teplota",
+          "humidity": "Vlhkosť",
+          "battery": "Batéria",
+          "rssi": "RSSI"
+        }
+      }
+    },
+    "network": {
+      "title": "Sieť - OpenTherm Gateway",
+      "name": "Nastavenia siete",
+      "section": {
+        "static": "Statické nastavenia",
+        "availableNetworks": "Dostupné siete",
+        "staSettings": "WiFi nastavenia",
+        "apSettings": "AP nastavenia"
+      },
+      "scan": {
+        "pos": "#",
+        "info": "Info"
+      },
+      "wifi": {
+        "ssid": "SSID",
+        "password": "Heslo",
+        "channel": "Kanál",
+        "signal": "Signál",
+        "connected": "Pripojené"
+      },
+      "params": {
+        "hostname": "Hostname",
+        "dhcp": "Použiť DHCP",
+        "mac": "MAC",
+        "ip": "IP",
+        "subnet": "Maska siete",
+        "gateway": "Brána",
+        "dns": "DNS"
+      },
+      "sta": {
+        "channel.note": "nastav 0 pre automatický výber"
+      }
+    },
+    "sensors": {
+      "title": "Nastavenia senzorov - OpenTherm Gateway",
+      "name": "Nastavenia senzorov",
+      "enabled": "Povolené",
+      "sensorName": {
+        "title": "Názov senzora",
+        "note": "Môže obsahovať iba: a-z, A-Z, 0-9, _ a medzeru"
+      },
+      "purpose": "Účel",
+      "purposes": {
+        "outdoorTemp": "Vonkajšia teplota",
+        "indoorTemp": "Vnútorná teplota",
+        "heatTemp": "Kúrenie, teplota",
+        "heatRetTemp": "Kúrenie, vratná teplota",
+        "dhwTemp": "TUV, teplota",
+        "dhwRetTemp": "TUV, vratná teplota",
+        "dhwFlowRate": "TUV, prietok",
+        "exhaustTemp": "Teplota spalín",
+        "modLevel": "Úroveň modulácie (v percentách)",
+        "number": "Číslo (raw)",
+        "powerFactor": "Výkon (v percentách)",
+        "power": "Výkon (v kWt)",
+        "fanSpeed": "Rýchlosť ventilátora",
+        "co2": "CO2",
+        "pressure": "Tlak",
+        "humidity": "Vlhkosť",
+        "temperature": "Teplota",
+        "notConfigured": "Nenakonfigurované"
+      },
+      "type": "Typ/zdroj",
+      "types": {
+        "otOutdoorTemp": "OpenTherm, vonkajšia teplota",
+        "otHeatTemp": "OpenTherm, teplota kúrenia",
+        "otHeatRetTemp": "OpenTherm, vratná teplota kúrenia",
+        "otDhwTemp": "OpenTherm, TUV, teplota",
+        "otDhwTemp2": "OpenTherm, TUV, teplota 2",
+        "otDhwFlowRate": "OpenTherm, TUV, prietok",
+        "otCh2Temp": "OpenTherm, kanál 2, teplota",
+        "otExhaustTemp": "OpenTherm, teplota spalín",
+        "otHeatExchangerTemp": "OpenTherm, teplota výmenníka",
+        "otPressure": "OpenTherm, tlak",
+        "otModLevel": "OpenTherm, úroveň modulácie",
+        "otCurrentPower": "OpenTherm, aktuálny výkon",
+        "otExhaustCo2": "OpenTherm, CO2 spalín",
+        "otExhaustFanSpeed": "OpenTherm, rýchlosť ventilátora spalín",
+        "otSupplyFanSpeed": "OpenTherm, rýchlosť prívodného ventilátora",
+        "otSolarStorageTemp": "OpenTherm, teplota solárneho zásobníka",
+        "otSolarCollectorTemp": "OpenTherm, teplota solárneho kolektora",
+        "otFanSpeedSetpoint": "OpenTherm, nastavená rýchlosť ventilátora",
+        "otFanSpeedCurrent": "OpenTherm, aktuálna rýchlosť ventilátora",
+        "otBurnerStarts": "OpenTherm, počet štartov horáka",
+        "otDhwBurnerStarts": "OpenTherm, počet štartov horáka (TUV)",
+        "otHeatingPumpStarts": "OpenTherm, počet štartov čerpadla (kúrenie)",
+        "otDhwPumpStarts": "OpenTherm, počet štartov čerpadla (TUV)",
+        "otBurnerHours": "OpenTherm, počet prevádzkových hodín horáka",
+        "otDhwBurnerHours": "OpenTherm, počet prevádzkových hodín horáka (TUV)",
+        "otHeatingPumpHours": "OpenTherm, počet prevádzkových hodín čerpadla (kúrenie)",
+        "otDhwPumpHours": "OpenTherm, počet prevádzkových hodín čerpadla (TUV)",
+        "otCoolingHours": "OpenTherm, počet hodín chladenia",
+        "ntcTemp": "NTC senzor",
+        "dallasTemp": "DALLAS senzor",
+        "bluetooth": "BLE senzor",
+        "heatSetpointTemp": "Kúrenie, nastavená teplota",
+        "manual": "Manuálne cez MQTT/API",
+        "notConfigured": "Nenakonfigurované"
+      },
+      "gpio": "GPIO",
+      "address": {
+        "title": "Adresa senzora",
+        "note": "Pre automatickú detekciu DALLAS senzorov nechajte predvolené, pre BLE zariadenia je potrebná MAC adresa"
+      },
+      "correction": {
+        "desc": "Korekcia hodnôt",
+        "offset": "Kompenzácia (offset)",
+        "factor": "Násobiteľ"
+      },
+      "filtering": {
+        "desc": "Filtrovanie hodnôt",
+        "enabled": {
+          "title": "Filtrovanie povolené",
+          "note": "Užitočné pri veľkom množstve šumu v grafoch. Používa sa \"kĺzavý priemer\"."
+        },
+        "factor": {
+          "title": "Faktor filtrácie",
+          "note": "Čím nižšia hodnota, tým plynulejšia a <u>dlhšia</u> zmena hodnôt."
+        }
+      }
+    },
+    "settings": {
+      "title": "Nastavenia - OpenTherm Gateway",
+      "name": "Nastavenia",
+      "section": {
+        "portal": "Nastavenia portálu",
+        "system": "Systémové nastavenia",
+        "diag": "Diagnostika",
+        "heating": "Nastavenia kúrenia",
+        "dhw": "Nastavenia TUV",
+        "emergency": "Nastavenia núdzového režimu",
+        "equitherm": "Nastavenia Equitherm",
+        "pid": "Nastavenia PID",
+        "ot": "Nastavenia OpenTherm",
+        "mqtt": "Nastavenia MQTT",
+        "extPump": "Nastavenia externého čerpadla",
+        "cascadeControl": "Nastavenia kaskádového riadenia"
+      },
+      "enable": "Povoliť",
+      "note": {
+        "restart": "Po zmene nastavení je potrebné zariadenie reštartovať.",
+        "blankNotUse": "prázdne - nepoužívať",
+        "bleDevice": "BLE zariadenie je možné použiť <u>iba</u> s niektorými ESP32 doskami s podporou BLE!"
+      },
+      "temp": {
+        "min": "Minimálna teplota",
+        "max": "Maximálna teplota"
+      },
+      "maxModulation": "Max úroveň modulácie",
+      "ohProtection": {
+        "title": "Ochrana proti prehriatiu",
+        "desc": "<b>Poznámka:</b> Táto funkcia môže byť užitočná, ak vstavaná ochrana kotla proti prehriatiu nefunguje alebo nefunguje správne a teplonosná kvapalina vrie. Ak ju chcete vypnúť, nastavte <b>hornú</b> aj <b>dolnú</b> teplotu na 0.",
+        "highTemp": {
+          "title": "Prahová hodnota vysokej teploty",
+          "note": "Hodnota, pri ktorej bude horák nútene vypnutý"
+        },
+        "lowTemp": {
+          "title": "Prahová hodnota nízkej teploty",
+          "note": "Hodnota, pri ktorej je možné horák znovu zapnúť"
+        }
+      },
+      "freezeProtection": {
+        "title": "Ochrana proti zamrznutiu",
+        "desc": "Kúrenie sa nútene zapne, ak teplonosná kvapalina alebo vnútorná teplota klesne pod <b>Nízku teplotu</b> počas <b>Doby čakania</b>.",
+        "lowTemp": "Prahová hodnota nízkej teploty",
+        "thresholdTime": "Doba čakania <small>(sek)</small>"
+      },
+      "portal": {
+        "login": "Prihlásenie",
+        "password": "Heslo",
+        "auth": "Vyžadovať autentifikáciu",
+        "mdns": "Použiť mDNS"
+      },
+      "system": {
+        "unit": "Systém jednotiek",
+        "metric": "Metrický <small>(Celzia, litre, bar)</small>",
+        "imperial": "Imperiálny <small>(Fahrenheit, galóny, psi)</small>",
+        "statusLedGpio": "GPIO stavovej LED",
+        "logLevel": "Úroveň logovania",
+        "serial": {
+          "enable": "Povoliť sériový port",
+          "baud": "Prenosová rýchlosť sériového portu"
+        },
+        "telnet": {
+          "enable": "Povoliť Telnet",
+          "port": {
+            "title": "Port Telnetu",
+            "note": "Predvolené: 23"
+          }
+        },
+        "ntp": {
+          "server": "NTP server",
+          "timezone": "Časové pásmo",
+          "timezonePresets": "Vyber predvoľbu..."
+        }
+      },
+      "heating": {
+        "hyst": {
+          "title": "Hysterezia",
+          "desc": "Hysterezia je užitočná na udržiavanie nastavenej vnútornej teploty (pri použití «Equitherm» a/alebo «PID»). Nútene vypne kúrenie, keď <code>aktuálna vnútorná > cieľová + hodnota</code>, a zapne ho, keď <code>aktuálna vnútorná < (cieľová - hodnota)</code>.",
+          "value": "Hodnota <small>(v stupňoch)</small>",
+          "action": {
+            "title": "Akcia",
+            "disableHeating": "Vypnúť kúrenie",
+            "set0target": "Nastaviť nulový cieľ"
+          }
+        },
+        "turboFactor": "Koeficient turbo režimu"
+      },
+      "emergency": {
+        "desc": "Núdzový režim sa aktivuje automaticky, keď «PID» alebo «Equitherm» nedokáže vypočítať nastavenú teplotu teplonosnej kvapaliny:<br />- ak je zapnutý «Equitherm» a senzor vonkajšej teploty je odpojený;<br />- ak je zapnutý «PID» alebo OT voľba <i>«Native heating control»</i> a senzor vnútornej teploty je odpojený.<br /><b>Poznámka:</b> Pri chybe siete alebo MQTT budú senzory typu <i>«Manual via MQTT/API»</i> v stave ODPOJENÉ.",
+        "target": {
+          "title": "Cieľová teplota",
+          "note": "<b>Dôležité:</b> <u>Cieľová vnútorná teplota</u>, ak je zapnutá OT voľba <i>«Native heating control»</i>.<br />Vo všetkých ostatných prípadoch ide o <u>cieľovú teplotu teplonosnej kvapaliny</u>."
+        },
+        "treshold": "Časový prah <small>(sek)</small>"
+      },
+      "equitherm": {
+        "slope": {
+          "title": "Sklon",
+          "note": "Kompenzácia tepelných strát. Hlavný parameter ladenia."
+        },
+        "exponent": {
+          "title": "Exponent",
+          "note": "Účinnosť radiátorov. Typické hodnoty: <code>1.1</code> - podlahové kúrenie, <code>1.2</code> - liatina, <code>1.3</code> - panelové radiátory, <code>1.4</code> - konvektory."
+        },
+        "shift": {
+          "title": "Posun",
+          "note": "Kompenzuje dodatočné tepelné straty (napr. v potrubiach) alebo extra zdroje tepla."
+        },
+        "targetDiffFactor": {
+          "title": "T faktor",
+          "note": "Nepoužíva sa, ak je zapnuté PID. K nastavenej hodnote pridá rozdiel medzi cieľovou a aktuálnou vnútornou teplotou: <code>setpoint = setpoint + ((target - indoor) * T)</code>."
+        },
+        "chart": {
+          "targetTemp": "Cieľová vnútorná teplota",
+          "setpointTemp": "Teplota teplonosnej kvapaliny",
+          "outdoorTemp": "Vonkajšia teplota"
+        }
+      },
+      "pid": {
+        "p": "P faktor",
+        "i": "I faktor",
+        "d": "D faktor",
+        "dt": "DT <small>v sekundách</small>",
+        "limits": {
+          "title": "Limity",
+          "note": "<b>Dôležité:</b> Pri súčasnom použití «Equitherm» a «PID» minimálna a maximálna teplota obmedzujú vplyv na výslednú teplotu z «Equitherm».<br />Ak je teda minimálna teplota nastavená na -15 a maximálna na 15, výsledná nastavená teplota teplonosnej kvapaliny bude od <code>equitherm_result - 15</code> do <code>equitherm_result + 15</code>."
+        },
+        "deadband": {
+          "title": "Mŕtve pásmo",
+          "note": "Mŕtve pásmo je rozsah okolo cieľovej teploty, v ktorom sa PID regulácia stáva menej aktívnou. V tomto rozsahu môže algoritmus znížiť intenzitu alebo pozastaviť úpravy, aby nereagoval príliš citlivo na malé výkyvy.<br /><br />Napríklad pri cieľovej teplote 22°, dolnom prahu 1.0 a hornom prahu 0.5 funguje mŕtve pásmo medzi 21° a 22.5°. Ak je I koeficient 0.0005 a násobiteľ I je 0.05, potom sa v mŕtvom pásme I koeficient zmení na: <code>0.0005 * 0.05 = 0.000025</code>",
+          "p_multiplier": "Násobiteľ P faktora",
+          "i_multiplier": "Násobiteľ I faktora",
+          "d_multiplier": "Násobiteľ D faktora",
+          "thresholdHigh": "Horný prah",
+          "thresholdLow": "Dolný prah"
+        }
+      },
+      "ot": {
+        "advanced": "Rozšírené nastavenia",
+        "inGpio": "Vstupné GPIO",
+        "outGpio": "Výstupné GPIO",
+        "ledGpio": "GPIO RX LED",
+        "memberId": "ID člena master",
+        "flags": "Príznaky master",
+        "minPower": {
+          "title": "Min výkon kotla <small>(kW)</small>",
+          "note": "Táto hodnota zodpovedá 0-1 % úrovne modulácie kotla. Zvyčajne ju nájdete v špecifikácii kotla ako \"minimum useful heat output\"."
+        },
+        "maxPower": {
+          "title": "Max výkon kotla <small>(kW)</small>",
+          "note": "<b>0</b> - pokúsiť sa zistiť automaticky. Zvyčajne ju nájdete v špecifikácii kotla ako \"maximum useful heat output\"."
+        },
+        "options": {
+          "title": "Voľby (dodatočné nastavenia)",
+          "desc": "Voľby môžu zmeniť logiku kotla. Nie všetky voľby sú zdokumentované v protokole, takže tá istá voľba môže mať na rôznych kotloch odlišné účinky.<br /><b>Poznámka:</b> Ak všetko funguje dobre, nie je potrebné nič meniť.",
+          "dhwSupport": "Podpora TUV",
+          "coolingSupport": "Podpora chladenia",
+          "summerWinterMode": "Letný/zimný režim",
+          "heatingStateToSummerWinterMode": "Stav kúrenia ako letný/zimný režim",
+          "ch2AlwaysEnabled": "CH2 vždy povolené",
+          "heatingToCh2": "Duplikovať kúrenie do CH2",
+          "dhwToCh2": "Duplikovať TUV do CH2",
+          "dhwBlocking": "Blokovanie TUV",
+          "dhwStateAsDhwBlocking": "Stav TUV ako blokovanie TUV",
+          "maxTempSyncWithTargetTemp": "Synchronizovať max teplotu kúrenia s cieľovou teplotou",
+          "getMinMaxTemp": "Získať min/max teplotu z kotla",
+          "ignoreDiagState": "Ignorovať diagnostický stav",
+          "autoFaultReset": "Automatický reset poruchy <small>(neodporúča sa!)</small>",
+          "autoDiagReset": "Automatický reset diagnostiky <small>(neodporúča sa!)</small>",
+          "setDateAndTime": "Nastaviť dátum a čas na kotle",
+          "immergasFix": "Oprava pre kotly Immergas",
+          "alwaysSendIndoorTemp": "Poslať aktuálnu vnútornú teplotu do kotla"
+        },
+        "nativeOTC": {
+          "title": "Natívny OTC režim",
+          "note": "Funguje <u>IBA</u>, ak je kotol v OTC režime: vyžaduje a prijíma cieľovú vnútornú teplotu a sám reguluje teplotu teplonosnej kvapaliny podľa vstavaného režimu kriviek. Nie je kompatibilný s PID ani Equitherm."
+        }
+      },
+      "mqtt": {
+        "homeAssistantDiscovery": "Home Assistant Discovery",
+        "server": "Server",
+        "port": "Port",
+        "user": "Používateľ",
+        "password": "Heslo",
+        "prefix": "Prefix",
+        "interval": "Interval publikovania <small>(sek)</small>"
+      },
+      "extPump": {
+        "use": "Použiť externé čerpadlo",
+        "gpio": "GPIO relé",
+        "invertState": "Invertovať stav GPIO",
+        "postCirculationTime": "Dobeh čerpadla <small>(min)</small>",
+        "antiStuckInterval": "Interval proti zadretiu <small>(dni)</small>",
+        "antiStuckTime": "Čas proti zadretiu <small>(min)</small>"
+      },
+      "cascadeControl": {
+        "input": {
+          "desc": "Môže sa použiť na zapnutie kúrenia iba v prípade, že iný kotol je chybný. Regulátor druhého kotla musí pri poruche zmeniť stav GPIO vstupu.",
+          "enable": "Povolený vstup",
+          "gpio": "GPIO",
+          "invertState": "Invertovať stav GPIO",
+          "thresholdTime": "Časový prah zmeny stavu <small>(sek)</small>"
+        },
+        "output": {
+          "desc": "Môže sa použiť na zapnutie ďalšieho kotla <u>cez relé</u>.",
+          "enable": "Povolený výstup",
+          "gpio": "GPIO",
+          "invertState": "Invertovať stav GPIO",
+          "thresholdTime": "Časový prah zmeny stavu <small>(sek)</small>",
+          "events": {
+            "desc": "Udalosti",
+            "onFault": "Ak je aktívny stav poruchy",
+            "onLossConnection": "Ak sa stratí spojenie cez OpenTherm",
+            "onEnabledHeating": "Ak je kúrenie povolené"
+          }
+        }
+      }
+    },
+    "upgrade": {
+      "title": "Aktualizácia - OpenTherm Gateway",
+      "name": "Aktualizácia",
+      "section": {
+        "backupAndRestore": "Záloha a obnova",
+        "backupAndRestore.desc": "V tejto sekcii môžete uložiť a obnoviť zálohu VŠETKÝCH nastavení.",
+        "upgrade": "Aktualizácia",
+        "upgrade.desc": "Tu môžete aktualizovať firmware a súborový systém zariadenia.<br />Najnovšie verzie si môžete stiahnuť zo stránky vydaní projektu."
+      },
+      "note": {
+        "disclaimer1": "Po úspešnej aktualizácii budú všetky nastavenia resetované! Vytvorte si zálohu.",
+        "disclaimer2": "Po aktualizácii sa zariadenie automaticky reštartuje po 15 sekundách."
+      },
+      "settingsFile": "Súbor nastavení",
+      "fw": "Firmware",
+      "fs": "Súborový systém"
+    }
+  }
+}

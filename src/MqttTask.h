@@ -113,13 +113,11 @@ protected:
   void setup() {
     Log.sinfoln(FPSTR(L_MQTT), F("Started"));
 
-    // wificlient settings
     #ifdef ARDUINO_ARCH_ESP8266
     this->wifiClient->setSync(true);
     this->wifiClient->setNoDelay(true);
     #endif
 
-    // client settings
     this->client->setTxPayloadSize(256);
     #ifdef ARDUINO_ARCH_ESP8266
     this->client->setConnectionTimeout(1000);
@@ -141,7 +139,6 @@ protected:
       this->onMessage(topic, payload, length);
     });
 
-    // writer settings
     #ifdef ARDUINO_ARCH_ESP32
     this->writer->setYieldCallback([this] {
       this->delay(10);
@@ -155,7 +152,6 @@ protected:
       ::optimistic_yield(1000);
       #endif
 
-      //this->client->poll();
       this->delay(250);
     });
 
@@ -171,7 +167,6 @@ protected:
     });
     #endif
 
-    // ha helper settings
     this->haHelper->setDevicePrefix(settings.mqtt.prefix);
     this->haHelper->setDeviceVersion(BUILD_VERSION);
     this->haHelper->setDeviceModel(PROJECT_NAME);
@@ -219,7 +214,6 @@ protected:
 
     this->client->poll();
 
-    // delay for publish data
     if (!this->isReadyForSend()) {
       return;
     }
@@ -228,20 +222,17 @@ protected:
     ::optimistic_yield(1000);
     #endif
 
-    // publish variables and status
     if (this->newConnection || millis() - this->prevPubVarsTime > (settings.mqtt.interval * 1000u)) {
       this->writer->publish(this->haHelper->getDeviceTopic(F("status")).c_str(), "online", false);
       this->publishVariables(this->haHelper->getDeviceTopic(F("state")).c_str());
       this->prevPubVarsTime = millis();
     }
 
-    // publish settings
     if (this->newConnection || millis() - this->prevPubSettingsTime > (settings.mqtt.interval * 10000u)) {
       this->publishSettings(this->haHelper->getDeviceTopic(F("settings")).c_str());
       this->prevPubSettingsTime = millis();
     }
 
-    // publish sensors
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
       if (!Sensors::hasEnabledAndValid(sensorId)) {
         continue;
@@ -263,7 +254,6 @@ protected:
       }
     }
 
-    // publish ha entities if not published
     if (settings.mqtt.homeAssistantDiscovery) {
       if (this->newConnection || !this->currentHomeAssistantDiscovery || this->currentUnitSystem != settings.system.unitSystem) {
         this->publishHaEntities();
@@ -272,15 +262,12 @@ protected:
         this->currentUnitSystem = settings.system.unitSystem;
 
       } else {
-        // publish non static ha entities
         this->publishNonStaticHaEntities();
       }
 
-      // rebuilding ha configs
       for (auto& [sensorId, prevSettings] : this->queueReconfigureSensors) {
         Log.sinfoln(FPSTR(L_MQTT_HA), F("Rebuilding config for sensor #%hhu '%s'"), sensorId, prevSettings.name);
 
-        // delete old config
         if (strlen(prevSettings.name) && prevSettings.enabled) {
           switch (prevSettings.type) {
             case Sensors::Type::BLUETOOTH:
@@ -307,7 +294,6 @@ protected:
           continue;
         }
 
-        // make new config
         auto& sSettings = Sensors::settings[sensorId];
         switch (sSettings.type) {
           case Sensors::Type::BLUETOOTH:
@@ -334,9 +320,7 @@ protected:
       this->currentHomeAssistantDiscovery = false;
     }
 
-    // reconfigure manual sensors
     for (auto& [sensorId, prevSettings] : this->queueReconfigureSensors) {
-      // unsubscribe from old topic
       if (strlen(prevSettings.name) && prevSettings.enabled) {
         if (prevSettings.type == Sensors::Type::MANUAL) {
           this->client->unsubscribe(
@@ -353,7 +337,6 @@ protected:
         continue;
       }
 
-      // subscribe to new topic
       auto& sSettings = Sensors::settings[sensorId];
       if (sSettings.type == Sensors::Type::MANUAL) {
         this->client->subscribe(
@@ -366,7 +349,6 @@ protected:
       }
     }
 
-    // clear queue
     this->queueReconfigureSensors.clear();
 
     if (this->newConnection) {
@@ -383,7 +365,6 @@ protected:
     this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
 
-    // subscribe to manual sensors
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
       if (!Sensors::hasEnabledAndValid(sensorId)) {
         continue;
@@ -448,7 +429,6 @@ protected:
     }
     doc.shrinkToFit();
 
-    // delete topic
     this->writer->publish(topic.c_str(), nullptr, 0, true);
 
     if (this->haHelper->getDeviceTopic(F("state/set")).equals(topic)) {
@@ -458,8 +438,10 @@ protected:
 
     } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
       if (safeJsonToSettings(doc, settings)) {
-        this->resetPublishedSettingsTime();
         fsSettings.update();
+        this->resetPublishedSettingsTime();
+
+        Log.sinfoln(FPSTR(L_MQTT_MSG), F("Settings updated from MQTT"));
       }
 
     } else {
@@ -484,7 +466,6 @@ protected:
   }
 
   void publishHaEntities() {
-    // heating
     this->haHelper->publishSwitchHeatingTurbo(false);
     this->haHelper->publishSwitchHeatingHysteresis();
     this->haHelper->publishInputHeatingHysteresis(settings.system.unitSystem);
@@ -492,7 +473,6 @@ protected:
     this->haHelper->publishInputHeatingMinTemp(settings.system.unitSystem);
     this->haHelper->publishInputHeatingMaxTemp(settings.system.unitSystem);
 
-    // pid
     this->haHelper->publishSwitchPid();
     this->haHelper->publishInputPidFactorP(false);
     this->haHelper->publishInputPidFactorI(false);
@@ -501,14 +481,12 @@ protected:
     this->haHelper->publishInputPidMinTemp(settings.system.unitSystem, false);
     this->haHelper->publishInputPidMaxTemp(settings.system.unitSystem, false);
 
-    // equitherm
     this->haHelper->publishSwitchEquitherm();
     this->haHelper->publishInputEquithermSlope(false);
     this->haHelper->publishInputEquithermExponent(false);
     this->haHelper->publishInputEquithermShift(false);
     this->haHelper->publishInputEquithermTargetDiffFactor(false);
 
-    // states
     this->haHelper->publishStatusState();
     this->haHelper->publishEmergencyState();
     this->haHelper->publishOpenthermConnectedState();
@@ -518,18 +496,15 @@ protected:
     this->haHelper->publishDiagState();
     this->haHelper->publishExternalPumpState(false);
 
-    // sensors
     this->haHelper->publishFaultCode();
     this->haHelper->publishDiagCode();
     this->haHelper->publishNetworkRssi(false);
     this->haHelper->publishUptime(false);
 
-    // buttons
     this->haHelper->publishRestartButton(false);
     this->haHelper->publishResetFaultButton();
     this->haHelper->publishResetDiagButton();
 
-    // dynamic sensors
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
       if (!Sensors::hasEnabledAndValid(sensorId)) {
         continue;
