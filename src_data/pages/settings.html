@@ -603,6 +603,18 @@
                 </label>
               </div>
 
+              <div class="grid">
+                <label>
+                  <span data-i18n>settings.ot.targetTempStep</span>
+                  <input type="number" inputmode="decimal" name="opentherm[targetTempStep]" min="0.1" max="5" step="0.1">
+                </label>
+
+                <label>
+                  <span data-i18n>settings.ot.dhwTargetTempStep</span>
+                  <input type="number" inputmode="decimal" name="opentherm[dhwTargetTempStep]" min="0.1" max="5" step="0.1">
+                </label>
+              </div>
+
               <details>
                 <summary><b data-i18n>settings.ot.options.title</b></summary>
 
@@ -1107,6 +1119,8 @@
           setInputValue("[name='opentherm[flags]']", data.opentherm.flags);
           setInputValue("[name='opentherm[minPower]']", data.opentherm.minPower);
           setInputValue("[name='opentherm[maxPower]']", data.opentherm.maxPower);
+          setInputValue("[name='opentherm[targetTempStep]']", data.opentherm.targetTempStep);
+          setInputValue("[name='opentherm[dhwTargetTempStep]']", data.opentherm.dhwTargetTempStep);
           setCheckboxValue("[name='opentherm[options][dhwSupport]']", data.opentherm.options.dhwSupport);
           setCheckboxValue("[name='opentherm[options][coolingSupport]']", data.opentherm.options.coolingSupport);
           setCheckboxValue("[name='opentherm[options][summerWinterMode]']", data.opentherm.options.summerWinterMode);
