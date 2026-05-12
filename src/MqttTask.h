@@ -560,6 +560,8 @@ protected:
 
   bool publishNonStaticHaEntities(bool force = false) {
     static uint8_t _heatingMinTemp, _heatingMaxTemp, _dhwMinTemp, _dhwMaxTemp = 0;
+    static float _heatingTempStep = 0.0f;
+    static float _dhwTempStep = 0.0f;
     static bool _indoorTempControl, _dhwSupport = false;
 
     bool published = false;
@@ -583,25 +585,28 @@ protected:
       published = true;
     }
 
-    if (force || _indoorTempControl != vars.master.heating.indoorTempControl || _heatingMinTemp != vars.master.heating.minTemp || _heatingMaxTemp != vars.master.heating.maxTemp) {
+    if (force || _indoorTempControl != vars.master.heating.indoorTempControl || _heatingMinTemp != vars.master.heating.minTemp || _heatingMaxTemp != vars.master.heating.maxTemp || fabsf(_heatingTempStep - settings.opentherm.targetTempStep) > 0.0001f) {
       _heatingMinTemp = vars.master.heating.minTemp;
       _heatingMaxTemp = vars.master.heating.maxTemp;
       _indoorTempControl = vars.master.heating.indoorTempControl;
+      _heatingTempStep = settings.opentherm.targetTempStep;
 
       this->haHelper->publishClimateHeating(
         settings.system.unitSystem,
         vars.master.heating.minTemp,
-        vars.master.heating.maxTemp
+        vars.master.heating.maxTemp,
+        settings.opentherm.targetTempStep
       );
 
       published = true;
     }
 
-    if (_dhwSupport && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp)) {
+    if (_dhwSupport && (force || _dhwMinTemp != settings.dhw.minTemp || _dhwMaxTemp != settings.dhw.maxTemp || fabsf(_dhwTempStep - settings.opentherm.dhwTargetTempStep) > 0.0001f)) {
       _dhwMinTemp = settings.dhw.minTemp;
       _dhwMaxTemp = settings.dhw.maxTemp;
+      _dhwTempStep = settings.opentherm.dhwTargetTempStep;
 
-      this->haHelper->publishClimateDhw(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp);
+      this->haHelper->publishClimateDhw(settings.system.unitSystem, settings.dhw.minTemp, settings.dhw.maxTemp, settings.opentherm.dhwTargetTempStep);
 
       published = true;
     }
