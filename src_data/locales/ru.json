@@ -8,13 +8,19 @@
       "issues": "Проблемы и вопросы",
       "releases": "Релизы"
     },
-    "dbm": "дБм",
-    "kw": "кВт",
-    "time": {
+
+    "units": {
       "days": "д.",
       "hours": "ч.",
       "min": "мин.",
-      "sec": "сек."
+      "sec": "сек.",
+      "dbm": "дБм",
+      "mhz": "МГц",
+      "kw": "кВт",
+      "rpm": "RPM",
+      "ppm": "ppm",
+      "byte": "байт",
+      "mbyte": "мбайт"
     },
 
     "button": {
@@ -51,7 +57,8 @@
         },
         "uptime": "Аптайм",
         "memory": {
-          "title": "ОЗУ",
+          "heap": "Heap",
+          "psram": "Psram",
           "maxFreeBlock": "макс. блок",
           "min": "мин."
         },
@@ -120,6 +127,7 @@
         "mHeatEnabled": "Отопление",
         "mHeatBlocking": "Блокировка отопления",
         "mHeatOverheat": "Отопление, перегрев",
+        "mHeatFreezing": "Отопление, защита от замерзания",
         "sHeatActive": "Активность отопления",
         "mHeatSetpointTemp": "Отопление, уставка",
         "mHeatTargetTemp": "Отопление, целевая температура",

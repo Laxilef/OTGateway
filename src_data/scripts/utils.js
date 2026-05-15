@@ -784,9 +784,9 @@ const purposeUnit = (purpose, unitSystem) => {
     7:    tUnit,
     8:    "%",
     248:  "%",
-    249:  i18n('kw'),
-    250:  "RPM",
-    251:  "ppm",
+    249:  i18n('units.kw'),
+    250:  i18n('units.rpm'),
+    251:  i18n('units.ppm'),
     252:  pressureUnit(unitSystem),
     253:  "%",
     254:  tUnit

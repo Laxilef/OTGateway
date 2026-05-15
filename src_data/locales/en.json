@@ -8,13 +8,18 @@
       "issues": "Issues & questions",
       "releases": "Releases"
     },
-    "dbm": "dBm",
-    "kw": "kW",
-    "time": {
+    "units": {
       "days": "d.",
       "hours": "h.",
       "min": "min.",
-      "sec": "sec."
+      "sec": "sec.",
+      "dbm": "dBm",
+      "mhz": "MHz",
+      "kw": "kW",
+      "rpm": "RPM",
+      "ppm": "ppm",
+      "byte": "byte",
+      "mbyte": "MB"
     },
 
     "button": {
@@ -51,7 +56,8 @@
         },
         "uptime": "Uptime",
         "memory": {
-          "title": "Free memory",
+          "heap": "Heap",
+          "psram": "Psram",
           "maxFreeBlock": "max free block",
           "min": "min"
         },

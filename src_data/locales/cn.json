@@ -8,13 +8,18 @@
       "issues": "问题与反馈",
       "releases": "发行版"
     },
-    "dbm": "dBm",
-    "kw": "kW",
-    "time": {
+    "units": {
       "days": "天",
       "hours": "小时",
       "min": "分",
-      "sec": "秒"
+      "sec": "秒",
+      "dbm": "dBm",
+      "mhz": "MHz",
+      "kw": "kW",
+      "rpm": "RPM",
+      "ppm": "ppm",
+      "byte": "byte",
+      "mbyte": "MB"
     },
 
     "button": {
@@ -51,7 +56,8 @@
         },
         "uptime": "运行时间",
         "memory": {
-          "title": "可用内存",
+          "heap": "Heap",
+          "psram": "Psram",
           "maxFreeBlock": "max free block",
           "min": "min"
         },
@@ -120,6 +126,7 @@
         "mHeatEnabled": "供暖功能已启用",
         "mHeatBlocking": "供暖",
         "mHeatOverheat": "供暖超热保护",
+        "mHeatFreezing": "防冻保护",
         "sHeatActive": "供暖激活状态",
         "mHeatSetpointTemp": "供暖供水设定温度",
         "mHeatTargetTemp": "供暖供水目标温度",

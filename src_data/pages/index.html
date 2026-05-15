@@ -113,25 +113,32 @@
               <tr>
                 <th scope="row" data-i18n>index.system.uptime</th>
                 <td>
-                  <b id="uptime-days"></b> <span data-i18n>time.days</span>, 
-                  <b id="uptime-hours"></b> <span data-i18n>time.hours</span>, 
-                  <b id="uptime-min"></b> <span data-i18n>time.min</span>, 
-                  <b id="uptime-sec"></b> <span data-i18n>time.sec</span>
+                  <b id="uptime-days"></b> <span data-i18n>units.days</span>, 
+                  <b id="uptime-hours"></b> <span data-i18n>units.hours</span>, 
+                  <b id="uptime-min"></b> <span data-i18n>units.min</span>, 
+                  <b id="uptime-sec"></b> <span data-i18n>units.sec</span>
                 </td>
               </tr>
               <tr>
-                <th scope="row" data-i18n>index.system.memory.title</th>
+                <th scope="row" data-i18n>index.system.memory.heap</th>
                 <td>
-                  <b id="heap-free"></b> of <b id="heap-total"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="heap-min-free"></b> bytes)<br />
-                  <span data-i18n>index.system.memory.maxFreeBlock</span>: <b id="heap-max-free-block"></b> bytes (<span data-i18n>index.system.memory.min</span>: <b id="heap-min-max-free-block"></b> bytes)
+                  <b id="heap-free"></b> of <b id="heap-total"></b> <span data-i18n>units.byte</span> (<span data-i18n>index.system.memory.min</span>: <b id="heap-min-free"></b> <span data-i18n>units.byte</span>)<br />
+                  <span data-i18n>index.system.memory.maxFreeBlock</span>: <b id="heap-max-free-block"></b> <span data-i18n>units.byte</span> (<span data-i18n>index.system.memory.min</span>: <b id="heap-min-max-free-block"></b> <span data-i18n>units.byte</span>)
+                </td>
+              </tr>
+              <tr>
+                <th scope="row" data-i18n>index.system.memory.psram</th>
+                <td>
+                  <b id="psram-free"></b> of <b id="psram-total"></b> <span data-i18n>units.byte</span> (<span data-i18n>index.system.memory.min</span>: <b id="psram-min-free"></b> <span data-i18n>units.byte</span>)<br />
+                  <span data-i18n>index.system.memory.maxFreeBlock</span>: <b id="psram-max-free-block"></b> <span data-i18n>units.byte</span>
                 </td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>index.system.board</th>
                 <td>
                   <span data-i18n>index.system.chip.model</span>: <b id="chip-model"></b> (rev. <span id="chip-rev"></span>)<br />
-                  <span data-i18n>index.system.chip.cores</span>: <b id="chip-cores"></b>, <span data-i18n>index.system.chip.freq</span>: <b id="chip-freq"></b> mHz<br />
-                  <span data-i18n>index.system.flash.size</span>: <b id="flash-size"></b> MB (<span data-i18n>index.system.flash.realSize</span>: <b id="flash-real-size"></b> MB)
+                  <span data-i18n>index.system.chip.cores</span>: <b id="chip-cores"></b>, <span data-i18n>index.system.chip.freq</span>: <b id="chip-freq"></b> <span data-i18n>units.mhz</span><br />
+                  <span data-i18n>index.system.flash.size</span>: <b id="flash-size"></b> <span data-i18n>units.mbyte</span> (<span data-i18n>index.system.flash.realSize</span>: <b id="flash-real-size"></b> <span data-i18n>units.mbyte</span>)
                 </td>
               </tr>
               <tr>
@@ -218,6 +225,11 @@
             setValue('#heap-min-free', result.heap.minFree);
             setValue('#heap-max-free-block', result.heap.maxFreeBlock);
             setValue('#heap-min-max-free-block', result.heap.minMaxFreeBlock);
+
+            setValue('#psram-total', result.psram.total);
+            setValue('#psram-free', result.psram.free);
+            setValue('#psram-min-free', result.psram.minFree);
+            setValue('#psram-max-free-block', result.psram.maxFreeBlock);
 
             setValue('#chip-model', result.chip.model);
             setValue('#chip-rev', result.chip.rev);

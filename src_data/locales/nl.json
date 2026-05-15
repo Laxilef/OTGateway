@@ -8,13 +8,18 @@
       "issues": "Problemen & vragen",
       "releases": "Releases"
     },
-    "dbm": "dBm",
-    "kw": "kW",
-    "time": {
+    "units": {
       "days": "d.",
       "hours": "u.",
       "min": "min.",
-      "sec": "sec."
+      "sec": "sec.",
+      "dbm": "dBm",
+      "mhz": "MHz",
+      "kw": "kW",
+      "rpm": "RPM",
+      "ppm": "ppm",
+      "byte": "byte",
+      "mbyte": "MB"
     },
     "button": {
       "upgrade": "Upgraden",
@@ -47,7 +52,8 @@
         },
         "uptime": "Uptime",
         "memory": {
-          "title": "Vrij geheugen",
+          "heap": "Heap",
+          "psram": "Psram",
           "maxFreeBlock": "max. vrij blok",
           "min": "min"
         },
@@ -109,6 +115,7 @@
         "mHeatEnabled": "Verwarming ingeschakeld",
         "mHeatBlocking": "Verwarming geblokkeerd",
         "mHeatOverheat": "Verwarming oververhit",
+        "mHeatFreezing": "Verwarming vorstbescherming",
         "sHeatActive": "Verwarming actief",
         "mHeatSetpointTemp": "Insteltemperatuur verwarming",
         "mHeatTargetTemp": "Doeltemperatuur verwarming",

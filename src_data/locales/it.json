@@ -8,13 +8,18 @@
       "issues": "Problemi e domande",
       "releases": "Versione"
     },
-    "dbm": "dBm",
-    "kw": "kW",
-    "time": {
+    "units": {
       "days": "d.",
       "hours": "h.",
       "min": "min.",
-      "sec": "sec."
+      "sec": "sec.",
+      "dbm": "dBm",
+      "mhz": "MHz",
+      "kw": "kW",
+      "rpm": "RPM",
+      "ppm": "ppm",
+      "byte": "byte",
+      "mbyte": "MB"
     },
 
     "button": {
@@ -51,7 +56,8 @@
         },
         "uptime": "Tempo di attività",
         "memory": {
-          "title": "Memoria libera",
+          "heap": "Heap",
+          "psram": "Psram",
           "maxFreeBlock": "max free block",
           "min": "min"
         },
@@ -120,6 +126,7 @@
         "mHeatEnabled": "Riscaldamento attivato",
         "mHeatBlocking": "Riscaldamento bloccato",
         "mHeatOverheat": "Riscaldamento surriscaldamento",
+        "mHeatFreezing": "Protezione antigelo",
         "sHeatActive": "Riscaldamento attivo",
         "mHeatSetpointTemp": "Temp riscaldamento impostato",
         "mHeatTargetTemp": "Target Temp caldaia",
