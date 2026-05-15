@@ -77,6 +77,12 @@ public:
     RSSI        = 3
   };
 
+  enum class AverageType : uint8_t {
+    MEAN    = 0,
+    MINIMUM = 1,
+    MAXIMUM = 2
+  };
+
   typedef struct {
     bool enabled = false;
     char name[33];
@@ -330,7 +336,7 @@ public:
     return updated;
   }
 
-  static float getMeanValueByPurpose(Purpose purpose, const ValueType valueType, bool onlyConnected = true) {
+  static float getMeanValueByPurpose(Purpose purpose, const ValueType valueType, const AverageType avgType = AverageType::MEAN, bool onlyConnected = true) {
     if (settings == nullptr || results == nullptr) {
       return 0.0f;
     }
@@ -340,27 +346,65 @@ public:
       return 0.0f;
     }
     
-    float value = 0.0f;
-    uint8_t amount = 0;
+    if (avgType == AverageType::MEAN) {
+      float value = 0.0f;
+      uint8_t amount = 0;
 
-    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
-      auto& sSensor = settings[id];
-      auto& rSensor = results[id];
+      for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
+        auto& sSensor = settings[id];
+        auto& rSensor = results[id];
 
-      if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
-        value += rSensor.values[valueId];
-        amount++;
+        if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
+          value += rSensor.values[valueId];
+          amount++;
+        }
       }
-    }
 
-    if (!amount) {
-      return 0.0f;
-      
-    } else if (amount == 1) {
-      return value;
+      if (!amount) {
+        return 0.0f;
+        
+      } else if (amount == 1) {
+        return value;
+
+      } else {
+        return value / amount;
+      }
+
+    } else if (avgType == AverageType::MINIMUM) {
+      float value = NAN;
+
+      for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
+        auto& sSensor = settings[id];
+        auto& rSensor = results[id];
+
+        if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
+          if (value == NAN || rSensor.values[valueId] < value) {
+            value = rSensor.values[valueId];
+          }
+        }
+      }
+
+      return value != NAN ? value : 0.0f;
+
+    } else if (avgType == AverageType::MAXIMUM) {
+      float value = NAN;
+
+      for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
+        auto& sSensor = settings[id];
+        auto& rSensor = results[id];
+
+        if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
+          if (value == NAN || rSensor.values[valueId] > value) {
+            value = rSensor.values[valueId];
+          }
+        }
+      }
+
+      return value != NAN ? value : 0.0f;
 
     } else {
-      return value / amount;
+      // bad mean type
+      return 0.0f;
     }
   }
 

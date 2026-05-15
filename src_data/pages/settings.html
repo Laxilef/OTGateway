@@ -198,6 +198,28 @@
                 </label>
               </div>
 
+              <div class="grid">
+                <label>
+                  <span data-i18n>settings.heating.indoorTempAvgType.title</span>
+                  <select name="heating[indoorTempAvgType]">
+                    <option value="0" data-i18n>settings.avgType.mean</option>
+                    <option value="1" data-i18n>settings.avgType.min</option>
+                    <option value="2" data-i18n>settings.avgType.max</option>
+                  </select>
+                  <small data-i18n>settings.heating.indoorTempAvgType.desc</small>
+                </label>
+
+                <label>
+                  <span data-i18n>settings.heating.outdoorTempAvgType.title</span>
+                  <select name="heating[outdoorTempAvgType]">
+                    <option value="0" data-i18n>settings.avgType.mean</option>
+                    <option value="1" data-i18n>settings.avgType.min</option>
+                    <option value="2" data-i18n>settings.avgType.max</option>
+                  </select>
+                  <small data-i18n>settings.heating.outdoorTempAvgType.desc</small>
+                </label>
+              </div>
+
               <hr />
 
               <details>
@@ -1171,6 +1193,8 @@
           setSelectValue("[name='heating[hysteresis][action]']", data.heating.hysteresis.action);
           setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
           setInputValue("[name='heating[maxModulation]']", data.heating.maxModulation);
+          setSelectValue("[name='heating[indoorTempAvgType]']", data.heating.indoorTempAvgType);
+          setSelectValue("[name='heating[outdoorTempAvgType]']", data.heating.outdoorTempAvgType);
           setInputValue("[name='heating[overheatProtection][highTemp]']", data.heating.overheatProtection.highTemp, {
             "min": 0,
             "max": data.system.unitSystem == 0 ? 100 : 212

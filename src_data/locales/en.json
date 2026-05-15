@@ -315,6 +315,11 @@
         "min": "Minimum temperature",
         "max": "Maximum temperature"
       },
+      "avgType": {
+        "mean": "Mean temperature",
+        "min": "Minimum temperature",
+        "max": "Maximum temperature"
+      },
       "maxModulation": "Max modulation level",
       "ohProtection": {
         "title": "Overheating protection",
@@ -379,7 +384,15 @@
             "set0target": "Set null target"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "indoorTempAvgType": {
+          "title": "Indoor temp. averaging type",
+          "desc": "May be useful when using two or more indoor temp. sensors (when using «Equitherm» and/or «PID»)."
+        },
+        "outdoorTempAvgType": {
+          "title": "Outdoor temp. averaging type",
+          "desc": "May be useful when using two or more outdoor temp. sensors (when using «Equitherm»)."
+        }
       },
 
       "emergency": {
