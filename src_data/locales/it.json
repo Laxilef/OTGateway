@@ -315,6 +315,11 @@
         "min": "Temperatura minima",
         "max": "Temperatura massima"
       },
+      "avgType": {
+        "mean": "Temperatura media",
+        "min": "Temperatura minima",
+        "max": "Temperatura massima"
+      },
       "maxModulation": "Max livello modulazione",
       "ohProtection": {
         "title": "Protezione contro il surriscaldamento",
@@ -379,7 +384,15 @@
             "set0target": "Imposta target nullo"
           }
         },
-        "turboFactor": "Turbo mode coeff."
+        "turboFactor": "Turbo mode coeff.",
+        "indoorTempAvgType": {
+          "title": "Tipo di media temperatura interna",
+          "desc": "Utile con due o più sensori di temperatura interna (quando si usa «Equitherm» e/o «PID»)."
+        },
+        "outdoorTempAvgType": {
+          "title": "Tipo di media temperatura esterna",
+          "desc": "Utile con due o più sensori di temperatura esterna (quando si usa «Equitherm»)."
+        }
       },
 
       "emergency": {

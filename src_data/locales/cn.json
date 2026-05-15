@@ -315,6 +315,11 @@
         "min": "最低温度",
         "max": "最高温度"
       },
+      "avgType": {
+        "mean": "平均温度",
+        "min": "最低温度",
+        "max": "最高温度"
+      },
       "maxModulation": "最大调制范围",
       "ohProtection": {
         "title": "超温保护",
@@ -379,7 +384,15 @@
             "set0target": "设置空目标"
           }
         },
-        "turboFactor": "Turbo 模式系数"
+        "turboFactor": "Turbo 模式系数",
+        "indoorTempAvgType": {
+          "title": "室内温度平均类型",
+          "desc": "使用两个或更多室内温度传感器时可能有用（使用 «Equitherm» 和/或 «PID» 时）。"
+        },
+        "outdoorTempAvgType": {
+          "title": "室外温度平均类型",
+          "desc": "使用两个或更多室外温度传感器时可能有用（使用 «Equitherm» 时）。"
+        }
       },
 
       "emergency": {

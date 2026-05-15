@@ -290,6 +290,11 @@
         "min": "Minimumtemperatuur",
         "max": "Maximumtemperatuur"
       },
+      "avgType": {
+        "mean": "Gemiddelde temperatuur",
+        "min": "Minimum temperatuur",
+        "max": "Maximum temperatuur"
+      },
       "maxModulation": "Max. modulatieniveau",
       "ohProtection": {
         "title": "Oververhittingsbeveiliging",
@@ -352,7 +357,15 @@
             "set0target": "Stel null target in"
           }
         },
-        "turboFactor": "Turbomodus coëff."
+        "turboFactor": "Turbomodus coëff.",
+        "indoorTempAvgType": {
+          "title": "Binnentemperatuur gemiddelde type",
+          "desc": "Nuttig bij twee of meer binnentemperatuursensoren (bij gebruik van «Equitherm» en/of «PID»)."
+        },
+        "outdoorTempAvgType": {
+          "title": "Buitentemperatuur gemiddelde type",
+          "desc": "Nuttig bij twee of meer buitensensoren (bij gebruik van «Equitherm»)."
+        }
       },
       "emergency": {
         "desc": "Noodmodus wordt automatisch geactiveerd wanneer «PID» of «Equitherm» het instelpunt van de warmtedrager niet kan berekenen:<br />- als «Equitherm» is ingeschakeld en de buitentemperatuursensor is losgekoppeld;<br />- als «PID» of OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld en de binnentemperatuursensor is losgekoppeld.<br /><b>Let op:</b> Bij een netwerk- of MQTT-storing krijgen sensoren van het type <i>«Handmatig via MQTT/API»</i> de status ONVERBONDEN.",
