@@ -52,8 +52,8 @@
         },
         "uptime": "Uptime",
         "memory": {
-          "heap": "Heap",
-          "psram": "Psram",
+          "heap": "Geheugen (heap)",
+          "psram": "Geheugen (PSRAM)",
           "maxFreeBlock": "max. vrij blok",
           "min": "min"
         },
@@ -233,7 +233,6 @@
         "otHeatingPumpHours": "OpenTherm, aantal pompuren (verwarming)",
         "otDhwPumpHours": "OpenTherm, aantal pompuren (warm water)",
         "otCoolingHours": "OpenTherm, aantal cooling",
-
         "ntcTemp": "NTC-sensor",
         "dallasTemp": "DALLAS-sensor",
         "bluetooth": "BLE-sensor",
@@ -317,7 +316,6 @@
           "note": "Drempel wanneer de verwarming geforceerd wordt ingeschakeld"
         }
       },
-
       "portal": {
         "login": "Gebruikersnaam",
         "password": "Wachtwoord",
@@ -442,7 +440,6 @@
           "immergasFix": "Fix voor Immergas-ketels",
           "alwaysSendIndoorTemp": "Stuur huidige binnentemp naar ketel"
         },
-
         "nativeOTC": {
           "title": "Native warmtedrager temperatuur berekeningsmodus",
           "note": "Werkt <u>ALLEEN</u> als de ketel in OTC-modus is: vereist en accepteert de doel binnentemperatuur en regelt zelf de warmtedrager temperatuur op basis van de ingebouwde curves modus. Incompatibel met PID en Equitherm."
