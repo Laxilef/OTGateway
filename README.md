@@ -2,6 +2,7 @@
 
    [![GitHub version](https://img.shields.io/github/release/Laxilef/OTGateway.svg?include_prereleases)](https://github.com/Laxilef/OTGateway/releases)
    [![GitHub download](https://img.shields.io/github/downloads/Laxilef/OTGateway/total.svg)](https://github.com/Laxilef/OTGateway/releases/latest)
+   [![Translations](https://hosted.weblate.org/widget/otgateway/svg-badge.svg)](https://hosted.weblate.org/engage/otgateway/)
    [![License](https://img.shields.io/github/license/Laxilef/OTGateway.svg)](LICENSE.txt)
    [![Telegram](https://img.shields.io/badge/Telegram-Channel-33A8E3)](https://t.me/otgateway)
 
@@ -70,6 +71,14 @@ All available information and instructions can be found in the wiki:
       * [Files for production](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#files-for-production)
       * [Connection](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#connection)
       * [Leds on board](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#leds-on-board)
+
+## Translations
+The project uses [Weblate](https://hosted.weblate.org/new-lang/otgateway/) to manage translations of the interface.<br />
+Anyone is welcome to add their native language as a [new localization](https://hosted.weblate.org/new-lang/otgateway/portal/). All contributions are welcome!
+
+<a href="https://hosted.weblate.org/engage/otgateway/">
+<img src="https://hosted.weblate.org/widget/otgateway/multi-auto.svg" alt="Translation status" />
+</a>
 
 ## Gratitude
 * To the developers of the libraries used: [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library), [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler), [ArduinoJson](https://github.com/bblanchon/ArduinoJson), [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino), [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient), [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet), [FileData](https://github.com/GyverLibs/FileData), [GyverPID](https://github.com/GyverLibs/GyverPID), [GyverBlinker](https://github.com/GyverLibs/GyverBlinker), [OneWireNg](https://github.com/pstolarz/OneWireNg) & [OneWire](https://github.com/PaulStoffregen/OneWire)
