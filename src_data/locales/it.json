@@ -89,7 +89,7 @@
       "thermostat": {
         "heating": "Riscaldamento",
         "dhw": "ACS",
-        "temp.current": "Attuale",
+        "currentTemp": "Attuale",
         "enable": "Attiva",
         "turbo": "Turbo"
       },
@@ -188,7 +188,9 @@
       },
 
       "sta": {
-        "channel.note": "Metti 0 per auto selezione"
+        "channel": {
+          "note": "Metti 0 per auto selezione"
+        }
       }
     },
 
@@ -528,10 +530,14 @@
       "name": "Aggiornamenti",
 
       "section": {
-        "backupAndRestore": "Backup & restore",
-        "backupAndRestore.desc": "In questa sezione puoi salvare e recuperare un backup di tutte le impostazioni.",
-        "upgrade": "Aggiorna",
-        "upgrade.desc": "In questa sezione puoi aggiornare il firmware il filesystem del tuo dispositivo.<br />L'ultimo aggiornamento può essere scaricato da <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> del progetto." 
+        "backupAndRestore": {
+          "title": "Backup & restore",
+          "desc": "In questa sezione puoi salvare e recuperare un backup di tutte le impostazioni."
+        },
+        "upgrade": {
+          "title": "Aggiorna",
+          "desc": "In questa sezione puoi aggiornare il firmware il filesystem del tuo dispositivo.<br />L'ultimo aggiornamento può essere scaricato da <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> del progetto."
+        }
       },
 
       "note": {

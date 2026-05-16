@@ -82,7 +82,7 @@
       "thermostat": {
         "heating": "Verwarming",
         "dhw": "Warm water",
-        "temp.current": "Huidig",
+        "currentTemp": "Huidig",
         "enable": "Inschakelen",
         "turbo": "Turbomodus"
       },
@@ -169,7 +169,9 @@
         "dns": "DNS"
       },
       "sta": {
-        "channel.note": "zet op 0 voor automatische selectie"
+        "channel": {
+          "note": "zet op 0 voor automatische selectie"
+        }
       }
     },
     "sensors": {
@@ -490,10 +492,14 @@
       "title": "Upgrade - OpenTherm Gateway",
       "name": "Upgrade",
       "section": {
-        "backupAndRestore": "Back-up & herstel",
-        "backupAndRestore.desc": "In deze sectie kunt u een back-up van ALLE instellingen opslaan en herstellen.",
-        "upgrade": "Upgrade",
-        "upgrade.desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
+        "backupAndRestore": {
+          "title": "Back-up & herstel",
+          "desc": "In deze sectie kunt u een back-up van ALLE instellingen opslaan en herstellen."
+        },
+        "upgrade": {
+          "title": "Upgrade",
+          "desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
+        }
       },
       "note": {
         "disclaimer1": "Na een succesvolle upgrade van het bestandssysteem worden ALLE instellingen teruggezet naar de standaardwaarden! Sla een back-up op voordat u gaat upgraden.",

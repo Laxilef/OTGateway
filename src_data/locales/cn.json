@@ -89,7 +89,7 @@
       "thermostat": {
         "heating": "供暖",
         "dhw": "生活热水",
-        "temp.current": "当前温度",
+        "currentTemp": "当前温度",
         "enable": "启用",
         "turbo": "Turbo 模式"
       },
@@ -188,7 +188,9 @@
       },
 
       "sta": {
-        "channel.note": "自动选择设置为0"
+        "channel": {
+          "note": "自动选择设置为0"
+        }
       }
     },
 
@@ -528,10 +530,14 @@
       "name": "固件升级",
 
       "section": {
-        "backupAndRestore": "备份与恢复",
-        "backupAndRestore.desc": "本功能支持备份和恢复全部设置",
-        "upgrade": "升级",
-        "upgrade.desc": "本模块支持升级设备的固件与系统文件。<br />可从以下地址下载最新版本 <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> 。" 
+        "backupAndRestore": {
+          "title": "备份与恢复",
+          "desc": "本功能支持备份和恢复全部设置"
+        },
+        "upgrade": {
+          "title": "升级",
+          "desc": "本模块支持升级设备的固件与系统文件。<br />可从以下地址下载最新版本 <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> 。"
+        }
       },
 
       "note": {

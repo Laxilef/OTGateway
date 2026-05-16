@@ -89,7 +89,7 @@
       "thermostat": {
         "heating": "Heating",
         "dhw": "DHW",
-        "temp.current": "Current",
+        "currentTemp": "Current",
         "enable": "Enable",
         "turbo": "Turbo mode"
       },
@@ -188,7 +188,9 @@
       },
 
       "sta": {
-        "channel.note": "set 0 for auto select"
+        "channel": {
+          "note": "set 0 for auto select"
+        }
       }
     },
 
@@ -528,10 +530,14 @@
       "name": "Upgrade",
 
       "section": {
-        "backupAndRestore": "Backup & restore",
-        "backupAndRestore.desc": "In this section you can save and restore a backup of ALL settings.",
-        "upgrade": "Upgrade",
-        "upgrade.desc": "In this section you can upgrade the firmware and filesystem of your device.<br />Latest releases can be downloaded from the <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> of the project repository." 
+        "backupAndRestore": {
+          "title": "Backup & restore",
+          "desc": "In this section you can save and restore a backup of ALL settings."
+        },
+        "upgrade": {
+          "title": "Upgrade",
+          "desc": "In this section you can upgrade the firmware and filesystem of your device.<br />Latest releases can be downloaded from the <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> of the project repository."
+        } 
       },
 
       "note": {
