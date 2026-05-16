@@ -77,6 +77,12 @@ public:
     RSSI        = 3
   };
 
+  enum class AverageType : uint8_t {
+    MEAN    = 0,
+    MINIMUM = 1,
+    MAXIMUM = 2
+  };
+
   typedef struct {
     bool enabled = false;
     char name[33];
@@ -330,38 +336,61 @@ public:
     return updated;
   }
 
-  static float getMeanValueByPurpose(Purpose purpose, const ValueType valueType, bool onlyConnected = true) {
+  static float getMeanValueByPurpose(Purpose purpose, const ValueType valueType, const AverageType avgType = AverageType::MEAN, const bool onlyConnected = true, const float defaultValue = NAN) {
     if (settings == nullptr || results == nullptr) {
-      return 0.0f;
+      return defaultValue;
     }
 
     uint8_t valueId = (uint8_t) valueType;
     if (!isValidValueId(valueId)) {
-      return 0.0f;
+      return defaultValue;
     }
     
     float value = 0.0f;
     uint8_t amount = 0;
 
-    for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
-      auto& sSensor = settings[id];
-      auto& rSensor = results[id];
+    if (avgType == AverageType::MEAN) {
+      float sum = 0.0f;
+      for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
+        auto& sSensor = settings[id];
+        auto& rSensor = results[id];
 
-      if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
-        value += rSensor.values[valueId];
-        amount++;
+        if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
+          sum += rSensor.values[valueId];
+          amount++;
+        }
+      }
+
+      value = amount == 1 ? sum : (sum / amount);
+
+    } else if (avgType == AverageType::MINIMUM) {
+      for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
+        auto& sSensor = settings[id];
+        auto& rSensor = results[id];
+
+        if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
+          if (amount == 0 || rSensor.values[valueId] < value) {
+            value = rSensor.values[valueId];
+            amount++;
+          }
+        }
+      }
+
+    } else if (avgType == AverageType::MAXIMUM) {
+      for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
+        auto& sSensor = settings[id];
+        auto& rSensor = results[id];
+
+        if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
+          if (amount == 0 || rSensor.values[valueId] > value) {
+            value = rSensor.values[valueId];
+            amount++;
+          }
+        }
       }
     }
 
-    if (!amount) {
-      return 0.0f;
-      
-    } else if (amount == 1) {
-      return value;
-
-    } else {
-      return value / amount;
-    }
+    return amount > 0 ? value : defaultValue;
   }
 
   static bool existsConnectedSensorsByPurpose(Purpose purpose) {

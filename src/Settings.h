@@ -107,6 +107,8 @@ struct Settings {
     uint8_t minTemp = DEFAULT_HEATING_MIN_TEMP;
     uint8_t maxTemp = DEFAULT_HEATING_MAX_TEMP;
     uint8_t maxModulation = 100;
+    Sensors::AverageType indoorTempAvgType = Sensors::AverageType::MEAN;
+    Sensors::AverageType outdoorTempAvgType = Sensors::AverageType::MEAN;
 
     struct {
       bool enabled = true;

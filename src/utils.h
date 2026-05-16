@@ -498,6 +498,8 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
   heating[FPSTR(S_MAX_MODULATION)] = src.heating.maxModulation;
+  heating[FPSTR(S_INDOOR_TEMP_AVG_TYPE)] = static_cast<uint8_t>(src.heating.indoorTempAvgType);
+  heating[FPSTR(S_OUTDOOR_TEMP_AVG_TYPE)] = static_cast<uint8_t>(src.heating.outdoorTempAvgType);
 
   auto heatingOverheatProtection = heating[FPSTR(S_OVERHEAT_PROTECTION)].to<JsonObject>();
   heatingOverheatProtection[FPSTR(S_HIGH_TEMP)] = src.heating.overheatProtection.highTemp;
@@ -1390,6 +1392,42 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (value > 0 && value <= 100 && value != dst.heating.maxModulation) {
       dst.heating.maxModulation = value;
       changed = true;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_INDOOR_TEMP_AVG_TYPE)].isNull()) {
+    uint8_t value = src[FPSTR(S_HEATING)][FPSTR(S_INDOOR_TEMP_AVG_TYPE)].as<uint8_t>();
+
+    switch (value) {
+      case static_cast<uint8_t>(Sensors::AverageType::MEAN):
+      case static_cast<uint8_t>(Sensors::AverageType::MINIMUM):
+      case static_cast<uint8_t>(Sensors::AverageType::MAXIMUM):
+        if (static_cast<uint8_t>(dst.heating.indoorTempAvgType) != value) {
+          dst.heating.indoorTempAvgType = static_cast<Sensors::AverageType>(value);
+          changed = true;
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  if (!src[FPSTR(S_HEATING)][FPSTR(S_OUTDOOR_TEMP_AVG_TYPE)].isNull()) {
+    uint8_t value = src[FPSTR(S_HEATING)][FPSTR(S_OUTDOOR_TEMP_AVG_TYPE)].as<uint8_t>();
+
+    switch (value) {
+      case static_cast<uint8_t>(Sensors::AverageType::MEAN):
+      case static_cast<uint8_t>(Sensors::AverageType::MINIMUM):
+      case static_cast<uint8_t>(Sensors::AverageType::MAXIMUM):
+        if (static_cast<uint8_t>(dst.heating.outdoorTempAvgType) != value) {
+          dst.heating.outdoorTempAvgType = static_cast<Sensors::AverageType>(value);
+          changed = true;
+        }
+        break;
+
+      default:
+        break;
     }
   }
 

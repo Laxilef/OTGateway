@@ -291,6 +291,11 @@
         "min": "最低温度",
         "max": "最高温度"
       },
+      "avgType": {
+        "mean": "平均温度",
+        "min": "最低温度",
+        "max": "最高温度"
+      },
       "maxModulation": "最大调制范围",
       "ohProtection": {
         "title": "超温保护",
@@ -352,7 +357,15 @@
             "set0target": "设置空目标"
           }
         },
-        "turboFactor": "Turbo 模式系数"
+        "turboFactor": "Turbo 模式系数",
+        "indoorTempAvgType": {
+          "title": "室内温度平均类型",
+          "desc": "使用两个或更多室内温度传感器时可能有用（使用 «Equitherm» 和/或 «PID» 时）。"
+        },
+        "outdoorTempAvgType": {
+          "title": "室外温度平均类型",
+          "desc": "使用两个或更多室外温度传感器时可能有用（使用 «Equitherm» 时）。"
+        }
       },
       "emergency": {
         "desc": "紧急模式会在以下情况自动激活（当PID或气候补偿无法计算热媒设定值时）：<br />启用气候补偿但室外温度传感器断开连接；<br />启用PID或 OpenTherm 选项中启用<i>原生供暖控制</i>但室内温度传感器断开连接。<br /><b>注意：</b> 网络故障或MQTT 服务器连接故障时，类型为<i>通过MQTT/API手动控制</i>的传感器将显示为断开连接状态。",

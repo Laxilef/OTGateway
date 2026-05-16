@@ -225,7 +225,7 @@ protected:
       uint8_t availableSensors = 0;
 
       if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
-        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY);
+        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY, settings.heating.indoorTempAvgType);
         if (value < lowTemp) {
           lowTemp = value;
         }
