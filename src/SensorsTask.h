@@ -423,14 +423,50 @@ protected:
   }
 
   void updateMasterValues() {
-    vars.master.heating.outdoorTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::OUTDOOR_TEMP, Sensors::ValueType::PRIMARY, settings.heating.outdoorTempAvgType);
-    vars.master.heating.indoorTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY, settings.heating.indoorTempAvgType);
+    vars.master.heating.indoorTemp = Sensors::getMeanValueByPurpose(
+      Sensors::Purpose::INDOOR_TEMP,
+      Sensors::ValueType::PRIMARY,
+      settings.heating.indoorTempAvgType,
+      true,
+      0.0f
+    );
+    vars.master.heating.outdoorTemp = Sensors::getMeanValueByPurpose(
+      Sensors::Purpose::OUTDOOR_TEMP,
+      Sensors::ValueType::PRIMARY,
+      settings.heating.outdoorTempAvgType,
+      true,
+      0.0f
+    );
 
-    vars.master.heating.currentTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_TEMP, Sensors::ValueType::PRIMARY);
-    vars.master.heating.returnTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_RETURN_TEMP, Sensors::ValueType::PRIMARY);
+    vars.master.heating.currentTemp = Sensors::getMeanValueByPurpose(
+      Sensors::Purpose::HEATING_TEMP,
+      Sensors::ValueType::PRIMARY,
+      Sensors::AverageType::MEAN,
+      true,
+      0.0f
+    );
+    vars.master.heating.returnTemp = Sensors::getMeanValueByPurpose(
+      Sensors::Purpose::HEATING_RETURN_TEMP,
+      Sensors::ValueType::PRIMARY,
+      Sensors::AverageType::MEAN,
+      true,
+      0.0f
+    );
 
-    vars.master.dhw.currentTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::DHW_TEMP, Sensors::ValueType::PRIMARY);
-    vars.master.dhw.returnTemp = Sensors::getMeanValueByPurpose(Sensors::Purpose::DHW_RETURN_TEMP, Sensors::ValueType::PRIMARY);
+    vars.master.dhw.currentTemp = Sensors::getMeanValueByPurpose(
+      Sensors::Purpose::DHW_TEMP,
+      Sensors::ValueType::PRIMARY,
+      Sensors::AverageType::MEAN,
+      true,
+      0.0f
+    );
+    vars.master.dhw.returnTemp = Sensors::getMeanValueByPurpose(
+      Sensors::Purpose::DHW_RETURN_TEMP,
+      Sensors::ValueType::PRIMARY,
+      Sensors::AverageType::MEAN,
+      true,
+      0.0f
+    );
   }
 
   void makeDallasInstances() {
