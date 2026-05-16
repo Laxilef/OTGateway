@@ -52,8 +52,8 @@
         },
         "uptime": "Uptime",
         "memory": {
-          "heap": "Heap",
-          "psram": "Psram",
+          "heap": "Geheugen (heap)",
+          "psram": "Geheugen (PSRAM)",
           "maxFreeBlock": "max. vrij blok",
           "min": "min"
         },
@@ -82,7 +82,7 @@
       "thermostat": {
         "heating": "Verwarming",
         "dhw": "Warm water",
-        "temp.current": "Huidig",
+        "currentTemp": "Huidig",
         "enable": "Inschakelen",
         "turbo": "Turbomodus"
       },
@@ -169,7 +169,9 @@
         "dns": "DNS"
       },
       "sta": {
-        "channel.note": "zet op 0 voor automatische selectie"
+        "channel": {
+          "note": "zet op 0 voor automatische selectie"
+        }
       }
     },
     "sensors": {
@@ -231,7 +233,6 @@
         "otHeatingPumpHours": "OpenTherm, aantal pompuren (verwarming)",
         "otDhwPumpHours": "OpenTherm, aantal pompuren (warm water)",
         "otCoolingHours": "OpenTherm, aantal cooling",
-
         "ntcTemp": "NTC-sensor",
         "dallasTemp": "DALLAS-sensor",
         "bluetooth": "BLE-sensor",
@@ -320,7 +321,6 @@
           "note": "Drempel wanneer de verwarming geforceerd wordt ingeschakeld"
         }
       },
-
       "portal": {
         "login": "Gebruikersnaam",
         "password": "Wachtwoord",
@@ -453,7 +453,6 @@
           "immergasFix": "Fix voor Immergas-ketels",
           "alwaysSendIndoorTemp": "Stuur huidige binnentemp naar ketel"
         },
-
         "nativeOTC": {
           "title": "Native warmtedrager temperatuur berekeningsmodus",
           "note": "Werkt <u>ALLEEN</u> als de ketel in OTC-modus is: vereist en accepteert de doel binnentemperatuur en regelt zelf de warmtedrager temperatuur op basis van de ingebouwde curves modus. Incompatibel met PID en Equitherm."
@@ -503,10 +502,14 @@
       "title": "Upgrade - OpenTherm Gateway",
       "name": "Upgrade",
       "section": {
-        "backupAndRestore": "Back-up & herstel",
-        "backupAndRestore.desc": "In deze sectie kunt u een back-up van ALLE instellingen opslaan en herstellen.",
-        "upgrade": "Upgrade",
-        "upgrade.desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
+        "backupAndRestore": {
+          "title": "Back-up & herstel",
+          "desc": "In deze sectie kunt u een back-up van ALLE instellingen opslaan en herstellen."
+        },
+        "upgrade": {
+          "title": "Upgrade",
+          "desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
+        }
       },
       "note": {
         "disclaimer1": "Na een succesvolle upgrade van het bestandssysteem worden ALLE instellingen teruggezet naar de standaardwaarden! Sla een back-up op voordat u gaat upgraden.",
