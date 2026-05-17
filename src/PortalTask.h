@@ -18,7 +18,7 @@ extern WebSerial* webSerial;
 
 class PortalTask : public LeanTask {
 public:
-  PortalTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
+  explicit PortalTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
     this->webServer = new AsyncWebServer(80);
     this->dnsServer = new DNSServer();
   }
@@ -73,7 +73,7 @@ protected:
       if (request->authenticate(settings.portal.login, settings.portal.password, PROJECT_NAME)) {
         return next();
       }
-      
+
       return request->requestAuthentication(AsyncAuthType::AUTH_BASIC, PROJECT_NAME, "Authentication failed");
     });
 
@@ -235,7 +235,7 @@ protected:
           if (sensorId < 0 || sensorId > 255 || !Sensors::isValidSensorId(sensorId)) {
             continue;
           }
-          
+
           if (jsonToSensorSettings(sensorId, sensor.value(), Sensors::settings[sensorId])) {
             fsSensorsSettings.update();
             changed = true;
@@ -407,7 +407,7 @@ protected:
           responseDoc[sensorId] = Sensors::settings[sensorId].name;
         }
       }
-      
+
       // send response
       response->setLength();
       request->send(response);
@@ -436,7 +436,7 @@ protected:
       response->setLength();
       request->send(response);
     }).addMiddleware(&authMiddleware);
-    
+
     auto& ssHandler = this->webServer->on("/api/sensor", HTTP_POST, [](AsyncWebServerRequest *request, JsonVariant &requestDoc) {
       if (vars.states.restarting) {
         return request->send(503);
@@ -459,7 +459,7 @@ protected:
       if (!Sensors::isValidSensorId(sensorId)) {
         return request->send(404);
       }
-      
+
       // prepare request
       auto prevSettings = Sensors::settings[sensorId];
       bool changed = jsonToSensorSettings(sensorId, requestDoc, Sensors::settings[sensorId]);
@@ -471,7 +471,7 @@ protected:
 
       auto& sSettings = Sensors::settings[sensorId];
       sensorSettingsToJson(sensorId, sSettings, responseDoc);
-      
+
       // send response
       response->setLength();
       response->setCode(changed ? 201 : 200);
@@ -515,7 +515,7 @@ protected:
       auto *response = new AsyncJsonResponse();
       auto& responseDoc = response->getRoot();
       varsToJson(vars, responseDoc);
-      
+
       // send response
       response->setLength();
       response->setCode(changed ? 201 : 200);
@@ -570,7 +570,7 @@ protected:
       docPsram[FPSTR(S_FREE)] = ESP.getFreePsram();
       docPsram[FPSTR(S_MIN_FREE)] = ESP.getMinFreePsram();
       docPsram[FPSTR(S_MAX_FREE_BLOCK)] = ESP.getMaxAllocPsram();
-      
+
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
       docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
       docChip[FPSTR(S_REV)] = ESP.getChipRevision();
@@ -605,7 +605,7 @@ protected:
       docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
       docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
-      
+
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
       docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
       docChip[FPSTR(S_REV)] = ESP.getChipRevision();

@@ -7,7 +7,7 @@ String getChipId(const char* prefix = nullptr, const char* suffix = nullptr) {
     + (prefix != nullptr ? strlen(prefix) : 0)
     + (suffix != nullptr ? strlen(suffix) : 0)
   );
-  
+
   if (prefix != nullptr) {
     chipId.concat(prefix);
   }
@@ -139,7 +139,7 @@ inline bool isValidTemp(const float value, UnitSystem unit, const float min = 0.
 
 float roundf(float value, uint8_t decimals = 2) {
   if (decimals == 0) {
-    return (int)(value + 0.5f);
+    return static_cast<int>(value + 0.5f);
 
   } else if (abs(value) < 0.00000001f) {
     return 0.0f;
@@ -147,7 +147,7 @@ float roundf(float value, uint8_t decimals = 2) {
 
   float multiplier = pow10(decimals);
   value += 0.5f / multiplier * (value < 0.0f ? -1.0f : 1.0f);
-  return (int)(value * multiplier) / multiplier;
+  return static_cast<int>(value * multiplier) / multiplier;
 }
 
 inline size_t getTotalHeap() {
@@ -470,7 +470,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     otOptions[FPSTR(S_ALWAYS_SEND_INDOOR_TEMP)] = src.opentherm.options.alwaysSendIndoorTemp;
     otOptions[FPSTR(S_NATIVE_OTC)] = src.opentherm.options.nativeOTC;
     otOptions[FPSTR(S_IMMERGAS_FIX)] = src.opentherm.options.immergasFix;
-    
+
 
     auto mqtt = dst[FPSTR(S_MQTT)].to<JsonObject>();
     mqtt[FPSTR(S_ENABLED)] = src.mqtt.enabled;
@@ -486,7 +486,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     emergency[FPSTR(S_TARGET)] = roundf(src.emergency.target, 2);
     emergency[FPSTR(S_TRESHOLD_TIME)] = src.emergency.tresholdTime;
   }
-  
+
   auto heating = dst[FPSTR(S_HEATING)].to<JsonObject>();
   heating[FPSTR(S_ENABLED)] = src.heating.enabled;
   heating[FPSTR(S_TURBO)] = src.heating.turbo;
@@ -1774,8 +1774,8 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     float minTemp = indoorTempControl ? THERMOSTAT_INDOOR_MIN_TEMP : dst.heating.minTemp;
     float maxTemp = indoorTempControl ? THERMOSTAT_INDOOR_MAX_TEMP : dst.heating.maxTemp;
 
-    float value = !src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].isNull() 
-      ? src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].as<float>() 
+    float value = !src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].isNull()
+      ? src[FPSTR(S_HEATING)][FPSTR(S_TARGET)].as<float>()
       : dst.heating.target;
     bool valid = isValidTemp(
       value,
@@ -1801,8 +1801,8 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
   // force check dhw target
   {
-    float value = !src[FPSTR(S_DHW)][FPSTR(S_TARGET)].isNull() 
-      ? src[FPSTR(S_DHW)][FPSTR(S_TARGET)].as<float>() 
+    float value = !src[FPSTR(S_DHW)][FPSTR(S_TARGET)].isNull()
+      ? src[FPSTR(S_DHW)][FPSTR(S_TARGET)].as<float>()
       : dst.dhw.target;
     bool valid = isValidTemp(
       value,
@@ -2061,7 +2061,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
         for (uint8_t i = 0; i < sizeof(dst.address); i++) {
           dst.address[i] = 0x00;
         }
-        
+
         changed = true;
       }
     }

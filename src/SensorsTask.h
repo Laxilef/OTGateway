@@ -74,7 +74,7 @@ public:
   }
 
   static bool parseAtcData(const NimBLEAdvertisedDevice* device, uint8_t sensorId) {
-    NimBLEUUID serviceUuid((uint16_t) 0x181A);
+    NimBLEUUID serviceUuid(static_cast<uint16_t>(0x181A));
 
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
@@ -91,7 +91,7 @@ public:
       );
       return false;
     }
-  
+
     Log.snoticeln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found ATC1441 format"),
       sensorId, serviceUuid.toString().c_str()
@@ -125,7 +125,7 @@ public:
   }
 
   static bool parsePvvxData(const NimBLEAdvertisedDevice* device, uint8_t sensorId) {
-    NimBLEUUID serviceUuid((uint16_t) 0x181A);
+    NimBLEUUID serviceUuid(static_cast<uint16_t>(0x181A));
 
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
@@ -142,7 +142,7 @@ public:
       );
       return false;
     }
-  
+
     Log.snoticeln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found PVVX format"),
       sensorId, serviceUuid.toString().c_str()
@@ -178,7 +178,7 @@ public:
   }
 
   static bool parseBTHomeData(const NimBLEAdvertisedDevice* device, uint8_t sensorId) {
-    NimBLEUUID serviceUuid((uint16_t) 0xFCD2);
+    NimBLEUUID serviceUuid(static_cast<uint16_t>(0xFCD2));
 
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
@@ -202,7 +202,7 @@ public:
       );
       return false;
     }
-  
+
     Log.snoticeln(
       FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found BTHome format"),
       sensorId, serviceUuid.toString().c_str()
@@ -263,7 +263,7 @@ public:
             break;
           }
 
-          uint16_t rawHumidity = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8) 
+          uint16_t rawHumidity = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8)
                                  | static_cast<uint8_t>(serviceData[serviceDataPos]);
           float humidity = static_cast<float>(rawHumidity) * 0.01f;
           Sensors::setValueById(sensorId, humidity, Sensors::ValueType::HUMIDITY, true, true);
@@ -283,7 +283,7 @@ public:
             break;
           }
 
-          uint16_t batteryMv = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8) 
+          uint16_t batteryMv = (static_cast<uint16_t>(serviceData[serviceDataPos + 1]) << 8)
                                | static_cast<uint8_t>(serviceData[serviceDataPos]);
           serviceDataPos += 2;
           foundData = true;
@@ -304,7 +304,7 @@ public:
 
 class SensorsTask : public LeanTask {
 public:
-  SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
+  explicit SensorsTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {
     this->gpioLastPollingTime.reserve(2);
 
     // OneWire
@@ -506,7 +506,7 @@ protected:
 
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         auto& sSensor = Sensors::settings[sensorId];
-        
+
         if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
           continue;
         }
@@ -560,7 +560,7 @@ protected:
     // check & filling sensors address
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
       auto& sSensor = Sensors::settings[sensorId];
-      
+
       if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
         continue;
 
@@ -593,7 +593,7 @@ protected:
           if (sCheckingSensor.type != Sensors::Type::DALLAS_TEMP || checkingSensorId == sensorId) {
             continue;
           }
-          
+
           if (sCheckingSensor.gpio != sSensor.gpio || isEmptyAddress(sCheckingSensor.address)) {
             continue;
           }
@@ -654,7 +654,7 @@ protected:
         // read sensors data for current instance
         for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
           auto& sSensor = Sensors::settings[sensorId];
-          
+
           // only target & valid sensors
           if (!sSensor.enabled || sSensor.type != Sensors::Type::DALLAS_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
             continue;
@@ -662,7 +662,7 @@ protected:
           } else if (sSensor.gpio != gpio || isEmptyAddress(sSensor.address)) {
             continue;
           }
-          
+
           auto& rSensor = Sensors::results[sensorId];
           float value = instance.getTempC(sSensor.address);
           if (value == DEVICE_DISCONNECTED_C) {
@@ -721,7 +721,7 @@ protected:
 
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
       auto& sSensor = Sensors::settings[sensorId];
-      
+
       if (!sSensor.enabled || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
         continue;
       }
@@ -772,7 +772,7 @@ protected:
           if (rSensor.signalQuality > 0) {
             rSensor.signalQuality--;
           }
-          
+
           this->gpioLastPollingTime[sSensor.gpio] = millis();
           this->dhtIsPolling = false;
         });
@@ -805,7 +805,7 @@ protected:
   void pollingNtcSensors() {
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
       auto& sSensor = Sensors::settings[sensorId];
-      
+
       if (!sSensor.enabled || sSensor.type != Sensors::Type::NTC_10K_TEMP || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
         continue;
       }
@@ -830,7 +830,7 @@ protected:
       }
 
       const float sensorResistance = value > 1
-        ? DEFAULT_NTC_REF_RESISTANCE / (DEFAULT_NTC_VREF / (float) value - 1.0f)
+        ? DEFAULT_NTC_REF_RESISTANCE / (DEFAULT_NTC_VREF / static_cast<float>(value) - 1.0f)
         : 0.0f;
       const float rawTemp = 1.0f / (
         1.0f / (DEFAULT_NTC_NOMINAL_TEMP + 273.15f) +

@@ -7,7 +7,7 @@ class StaticPage : public RequestHandler {
 public:
   typedef std::function<bool(HTTPMethod, const String&)> CanHandleCallback;
   typedef std::function<bool()> BeforeSendCallback;
-  
+
   template <class T>
   StaticPage(const char* uri, FS* fs, T path, const char* cacheHeader = nullptr) {
     this->uri = uri;
@@ -84,7 +84,7 @@ public:
     if (server._eTagEnabled && !this->eTag.isEmpty()) {
       server.sendHeader(F("ETag"), this->eTag);
     }
-    
+
     #if defined(ARDUINO_ARCH_ESP8266)
     server.streamFile(file, F("text/html"), method);
     #else

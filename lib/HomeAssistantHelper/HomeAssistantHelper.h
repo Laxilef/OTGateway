@@ -49,7 +49,7 @@ public:
       if (this->publishEventCallback) {
         this->publishEventCallback(topic, false);
       }
-      
+
       return false;
     }
 
@@ -114,7 +114,7 @@ public:
     return topic;
   }
 
-  template <class T> 
+  template <class T>
   String getDeviceTopic(T value, char dpvSeparator = '/') {
     String topic = "";
     topic.concat(this->devicePrefix);
@@ -147,7 +147,7 @@ public:
     return topic;
   }
 
-  template <class DT, class VT> 
+  template <class DT, class VT>
   String getEntityIdWithPrefix(DT domain, VT value, char separator = '_') {
     String topic = "";
     topic.concat(domain);
@@ -158,7 +158,7 @@ public:
     return topic;
   }
 
-  template <class T> 
+  template <class T>
   String getUniqueIdWithPrefix(T value, char separator = '_') {
     String topic = "";
     topic.concat(this->devicePrefix);

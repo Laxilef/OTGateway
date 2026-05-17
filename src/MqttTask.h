@@ -8,7 +8,7 @@ extern FileData fsSettings;
 
 class MqttTask : public Task {
 public:
-  MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
+  explicit MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
     this->wifiClient = new MqttWiFiClient();
     this->client = new MqttClient(this->wifiClient);
     this->writer = new MqttWriter(this->client, 256);
@@ -42,7 +42,7 @@ public:
       this->onDisconnect();
       this->connected = false;
     }
-    
+
     Task::disable();
 
     Log.sinfoln(FPSTR(L_MQTT), F("Disabled"));
@@ -96,7 +96,7 @@ protected:
   const char* getTaskName() override {
     return "Mqtt";
   }
-  
+
   /*BaseType_t getTaskCore() override {
     return 1;
   }*/
@@ -137,7 +137,7 @@ protected:
       for (size_t i = 0; i < length && this->client->available(); i++) {
         payload[i] = this->client->read();
       }
-      
+
       this->onMessage(topic, payload, length);
     });
 
@@ -340,7 +340,7 @@ protected:
             this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
             this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
             break;
-          
+
           default:
             this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
         }
@@ -443,7 +443,7 @@ protected:
           } else if (payload[i] == 10) {
             Log.print(F("\r\n>  "));
           } else {
-            Log.print((char) payload[i]);
+            Log.print(static_cast<char>(payload[i]));
           }
         }
         Log.print(F("\r\n\n"));
@@ -567,7 +567,7 @@ protected:
           this->haHelper->publishSignalQualityDynamicSensor(sSettings, false);
           this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::TEMPERATURE, settings.system.unitSystem);
           break;
-        
+
         default:
           this->haHelper->publishDynamicSensor(sSettings, Sensors::ValueType::PRIMARY, settings.system.unitSystem);
       }

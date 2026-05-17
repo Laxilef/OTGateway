@@ -133,7 +133,7 @@ struct Settings {
     uint8_t minTemp = DEFAULT_DHW_MIN_TEMP;
     uint8_t maxTemp = DEFAULT_DHW_MAX_TEMP;
     uint8_t maxModulation = 100;
-    
+
     struct {
       uint8_t highTemp = 95;
       uint8_t lowTemp = 90;

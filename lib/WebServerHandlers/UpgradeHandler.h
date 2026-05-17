@@ -28,14 +28,14 @@ public:
 
   typedef std::function<bool(AsyncWebServerRequest *request, UpgradeType)> BeforeUpgradeCallback;
   typedef std::function<void(AsyncWebServerRequest *request, const UpgradeResult&, const UpgradeResult&)> AfterUpgradeCallback;
-  
-  UpgradeHandler(AsyncURIMatcher uri) : uri(uri) {}
 
-  bool canHandle(AsyncWebServerRequest *request) const override final {
+  explicit UpgradeHandler(AsyncURIMatcher uri) : uri(uri) {}
+
+  bool canHandle(AsyncWebServerRequest *request) const final {
     if (!request->isHTTP()) {
       return false;
     }
-    
+
     return this->uri.matches(request);
   }
 
@@ -51,7 +51,7 @@ public:
     return this;
   }
 
-  void handleRequest(AsyncWebServerRequest *request) override final {
+  void handleRequest(AsyncWebServerRequest *request) final {
     if (this->afterUpgradeCallback) {
       this->afterUpgradeCallback(request, this->firmwareResult, this->filesystemResult);
     }
@@ -63,7 +63,7 @@ public:
     this->filesystemResult.error.clear();
   }
 
-  void handleUpload(AsyncWebServerRequest *request, const String &fileName, size_t index, uint8_t *data, size_t dataLength, bool isFinal) override final {
+  void handleUpload(AsyncWebServerRequest *request, const String &fileName, size_t index, uint8_t *data, size_t dataLength, bool isFinal) final {
     UpgradeResult* result = nullptr;
 
     if (!request->hasParam(asyncsrv::T_name, true, true)) {
@@ -123,7 +123,7 @@ public:
       bool begin = false;
       if (result->type == UpgradeType::FIRMWARE) {
         begin = Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH);
-        
+
       } else if (result->type == UpgradeType::FILESYSTEM) {
         begin = Update.begin(UPDATE_SIZE_UNKNOWN, U_SPIFFS);
       }
@@ -135,10 +135,10 @@ public:
         Log.serrorln(FPSTR(L_PORTAL_OTA), "File '%s', on start: %s", fileName.c_str(), result->error.c_str());
         return;
       }
-      
+
       Log.sinfoln(FPSTR(L_PORTAL_OTA), "File '%s', started", fileName.c_str());
     }
-    
+
     if (dataLength) {
       if (Update.write(data, dataLength) != dataLength) {
         Update.end(false);
@@ -154,7 +154,7 @@ public:
         );
         return;
       }
-      
+
       result->progress += dataLength;
       Log.sinfoln(
         FPSTR(L_PORTAL_OTA), "File '%s', write %d bytes, %d of %d bytes",
@@ -179,7 +179,7 @@ public:
         return;
       }
     }
-    
+
     if (isFinal) {
       if (!Update.end(true)) {
         result->status = UpgradeStatus::ERROR_ON_FINISH;
@@ -194,7 +194,7 @@ public:
     }
   }
 
-  bool isRequestHandlerTrivial() const override final {
+  bool isRequestHandlerTrivial() const final {
     return false;
   }
 

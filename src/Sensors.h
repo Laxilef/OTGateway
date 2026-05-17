@@ -35,7 +35,7 @@ public:
     OT_HEATING_PUMP_HOURS   = 25,
     OT_DHW_PUMP_HOURS       = 26,
     OT_COOLING_HOURS        = 27,
-    
+
     NTC_10K_TEMP            = 50,
     DALLAS_TEMP             = 51,
     BLUETOOTH               = 52,
@@ -198,7 +198,7 @@ public:
 
     auto& sSensor = settings[sensorId];
     auto& rSensor = results[sensorId];
-    
+
     float compensatedValue = value;
     if (sSensor.type == Type::HEATING_SETPOINT_TEMP || sSensor.type == Type::MANUAL) {
       rSensor.values[valueId] = compensatedValue;
@@ -221,7 +221,7 @@ public:
 
       if (sSensor.filtering && fabsf(rSensor.values[valueId]) >= 0.1f) {
         rSensor.values[valueId] += (compensatedValue - rSensor.values[valueId]) * sSensor.filteringFactor;
-        
+
       } else {
         rSensor.values[valueId] = compensatedValue;
       }
@@ -254,11 +254,11 @@ public:
     }
 
     uint8_t updated = 0;
-    
+
     // read sensors data for current instance
     for (uint8_t sensorId = 0; sensorId <= getMaxSensorId(); sensorId++) {
       auto& sSensor = settings[sensorId];
-      
+
       // only target & valid sensors
       if (!sSensor.enabled || sSensor.type != type) {
         continue;
@@ -301,7 +301,7 @@ public:
         FPSTR(L_SENSORS), F("#%hhu '%s' new status: %s"),
         sensorId, sSensor.name, status ? F("CONNECTED") : F("DISCONNECTED")
       );
-      
+
       rSensor.connected = status;
     }
 
@@ -318,11 +318,11 @@ public:
     }
 
     uint8_t updated = 0;
-    
+
     // read sensors data for current instance
     for (uint8_t sensorId = 0; sensorId <= getMaxSensorId(); sensorId++) {
       auto& sSensor = settings[sensorId];
-      
+
       // only target & valid sensors
       if (!sSensor.enabled || sSensor.type != type) {
         continue;
@@ -345,7 +345,7 @@ public:
     if (!isValidValueId(valueId)) {
       return defaultValue;
     }
-    
+
     float value = 0.0f;
     uint8_t amount = 0;
 
@@ -440,13 +440,13 @@ public:
     return value;
   }
 
-  template <class T> 
+  template <class T>
   static String cleanName(T value, char space = ' ') {
     String res = value;
     return cleanName(res, space);
   }
 
-  template <class T> 
+  template <class T>
   static String& makeObjectId(String& res, T value, char separator = '_') {
     res = value;
     cleanName(res);
@@ -456,7 +456,7 @@ public:
     return res;
   }
 
-  template <class T> 
+  template <class T>
   static String makeObjectId(T value, char separator = '_') {
     String res;
     makeObjectId(res, value, separator);
@@ -464,7 +464,7 @@ public:
     return res;
   }
 
-  template <class TV, class TS> 
+  template <class TV, class TS>
   static String& makeObjectIdWithSuffix(String& res, TV value, TS suffix, char separator = '_') {
     res.clear();
     makeObjectId(res, value, separator);
@@ -474,14 +474,14 @@ public:
     return res;
   }
 
-  template <class TV, class TS> 
+  template <class TV, class TS>
   static String makeObjectIdWithSuffix(TV value, TS suffix, char separator = '_') {
     String res;
     makeObjectIdWithSuffix(res, value, suffix, separator);
     return res;
   }
 
-  template <class TV, class TP> 
+  template <class TV, class TP>
   static String& makeObjectIdWithPrefix(String& res, TV value, TP prefix, char separator = '_') {
     res = prefix;
     res += separator;
@@ -490,7 +490,7 @@ public:
     return res;
   }
 
-  template <class TV, class TP> 
+  template <class TV, class TP>
   static String makeObjectIdWithPrefix(TV value, TP prefix, char separator = '_') {
     String res;
     return makeObjectIdWithPrefix(res, value, prefix, separator);

@@ -1,6 +1,6 @@
 #pragma once
 #ifndef PROGMEM
-  #define PROGMEM 
+  #define PROGMEM // NOLINT
 #endif
 
 const char HA_ENTITY_BINARY_SENSOR[]            PROGMEM = "binary_sensor";

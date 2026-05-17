@@ -10,7 +10,7 @@ extern FileData fsNetworkSettings, fsSettings, fsSensorsSettings;
 
 class MainTask : public Task {
 public:
-  MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
+  explicit MainTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
     this->blinker = new Blinker();
 
     network->setDelayCallback([this](unsigned int time) {
@@ -175,7 +175,7 @@ protected:
     this->cascadeControl();
     this->externalPump();
     this->miscRunned = millis();
-    
+
     return true;
   }
 
@@ -200,7 +200,7 @@ protected:
       minFreeHeapDiff = this->minFreeHeap - minFreeHeap;
       this->minFreeHeap = minFreeHeap;
     }
-    
+
     size_t minMaxFreeBlockHeap = getMaxFreeBlockHeap(true);
     size_t minMaxFreeBlockHeapDiff = 0;
     if (minMaxFreeBlockHeap < this->minMaxFreeBlockHeap || this->minMaxFreeBlockHeap == 0) {
@@ -229,7 +229,7 @@ protected:
         if (value < lowTemp) {
           lowTemp = value;
         }
-        
+
         availableSensors++;
       }
 
@@ -238,7 +238,7 @@ protected:
         if (value < lowTemp) {
           lowTemp = value;
         }
-        
+
         availableSensors++;
       }
 
@@ -253,7 +253,7 @@ protected:
 
       if (availableSensors) {
         if (vars.master.heating.freezing) {
-          if (lowTemp - (float) settings.heating.freezeProtection.highTemp + 0.0001f >= 0.0f) {
+          if (lowTemp - static_cast<float>(settings.heating.freezeProtection.highTemp) + 0.0001f >= 0.0f) {
             vars.master.heating.freezing = false;
 
             Log.sinfoln(
@@ -264,7 +264,7 @@ protected:
           }
 
         } else {
-          if ((float) settings.heating.freezeProtection.lowTemp - lowTemp + 0.0001f >= 0.0f) {
+          if (static_cast<float>(settings.heating.freezeProtection.lowTemp) - lowTemp + 0.0001f >= 0.0f) {
             vars.master.heating.freezing = true;
 
             if (!settings.heating.enabled) {
@@ -304,7 +304,7 @@ protected:
       if (!settings.equitherm.enabled && settings.pid.enabled) {
         emergencyFlags |= 0b00000010;
       }
-      
+
       if (settings.opentherm.options.nativeOTC) {
         emergencyFlags |= 0b00000100;
       }
@@ -353,7 +353,7 @@ protected:
       if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
         digitalWrite(configuredGpio, LOW);
       }
-      
+
       if (GPIO_IS_VALID(settings.system.statusLedGpio)) {
         configuredGpio = settings.system.statusLedGpio;
         pinMode(configuredGpio, OUTPUT);
@@ -437,7 +437,7 @@ protected:
 
           Log.sinfoln(FPSTR(L_CASCADE_INPUT), F("Deinitialized on GPIO %hhu"), configuredInputGpio);
         }
-        
+
         if (GPIO_IS_VALID(settings.cascadeControl.input.gpio)) {
           configuredInputGpio = settings.cascadeControl.input.gpio;
           pinMode(configuredInputGpio, INPUT);
@@ -479,7 +479,7 @@ protected:
         }
       }
     }
-    
+
     if (!settings.cascadeControl.input.enabled || configuredInputGpio == GPIO_IS_NOT_CONFIGURED) {
       if (!vars.cascadeControl.input) {
         vars.cascadeControl.input = true;
@@ -502,14 +502,14 @@ protected:
 
           Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Deinitialized on GPIO %hhu"), configuredOutputGpio);
         }
-        
+
         if (GPIO_IS_VALID(settings.cascadeControl.output.gpio)) {
           configuredOutputGpio = settings.cascadeControl.output.gpio;
           pinMode(configuredOutputGpio, OUTPUT);
           digitalWrite(
             configuredOutputGpio,
             settings.cascadeControl.output.invertState
-              ? HIGH 
+              ? HIGH
               : LOW
           );
 
@@ -538,7 +538,7 @@ protected:
           if (value != outputTempValue) {
             outputTempValue = value;
             outputChangedTs = millis();
-            
+
           } else if (millis() - outputChangedTs >= settings.cascadeControl.output.thresholdTime * 1000u) {
             vars.cascadeControl.output = value;
 
@@ -591,14 +591,14 @@ protected:
       if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
         digitalWrite(configuredGpio, LOW);
       }
-      
+
       if (GPIO_IS_VALID(settings.externalPump.gpio)) {
         configuredGpio = settings.externalPump.gpio;
         pinMode(configuredGpio, OUTPUT);
         digitalWrite(
           configuredGpio,
           settings.externalPump.invertState
-            ? HIGH 
+            ? HIGH
             : LOW
         );
 
@@ -625,13 +625,13 @@ protected:
     } else if (vars.master.heating.enabled && !this->heatingEnabled) {
       this->heatingEnabled = true;
     }
-    
+
     if (!settings.externalPump.use) {
       if (vars.externalPump.state) {
         digitalWrite(
           configuredGpio,
           settings.externalPump.invertState
-            ? HIGH 
+            ? HIGH
             : LOW
         );
 
@@ -649,7 +649,7 @@ protected:
         digitalWrite(
           configuredGpio,
           settings.externalPump.invertState
-            ? HIGH 
+            ? HIGH
             : LOW
         );
 
@@ -662,7 +662,7 @@ protected:
         digitalWrite(
           configuredGpio,
           settings.externalPump.invertState
-            ? HIGH 
+            ? HIGH
             : LOW
         );
 
@@ -683,7 +683,7 @@ protected:
       digitalWrite(
         configuredGpio,
         settings.externalPump.invertState
-          ? LOW 
+          ? LOW
           : HIGH
       );
 
@@ -697,7 +697,7 @@ protected:
       digitalWrite(
         configuredGpio,
         settings.externalPump.invertState
-          ? LOW 
+          ? LOW
           : HIGH
       );
 

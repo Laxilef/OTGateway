@@ -7,7 +7,7 @@ public:
   typedef std::function<void(unsigned long, uint8_t)> BeforeSendRequestCallback;
   typedef std::function<void(unsigned long, unsigned long, OpenThermResponseStatus, uint8_t)> AfterSendRequestCallback;
 
-  CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false, bool alwaysReceive = false) : OpenTherm(inPin, outPin, isSlave, alwaysReceive) {}
+  explicit CustomOpenTherm(int inPin = 4, int outPin = 5, bool isSlave = false, bool alwaysReceive = false) : OpenTherm(inPin, outPin, isSlave, alwaysReceive) {}
   ~CustomOpenTherm() {}
 
   CustomOpenTherm* setDelayCallback(DelayCallback callback = nullptr) {

@@ -12,10 +12,10 @@ public:
   typedef std::function<void(const char*, size_t, size_t, bool)> PublishEventCallback;
   typedef std::function<void(size_t, size_t)> FlushEventCallback;
 
-  MqttWriter(MqttClient* client, size_t bufferSize = 64) {
+  explicit MqttWriter(MqttClient* client, size_t bufferSize = 64) {
     this->client = client;
     this->bufferSize = bufferSize;
-    this->buffer = (uint8_t*) malloc(bufferSize * sizeof(*this->buffer));
+    this->buffer = static_cast<uint8_t*>(malloc(bufferSize * sizeof(*this->buffer)));
 
 #ifdef ARDUINO_ARCH_ESP32
     this->mutex = new std::mutex();
@@ -96,7 +96,7 @@ public:
       serializeJson(doc, *this);
       this->flush();
       this->client->endMessage();
-      
+
       written = this->writeAfterLock;
     }
     this->unlock();
@@ -134,7 +134,7 @@ public:
       this->write(buffer, length);
       this->flush();
       this->client->endMessage();
-      
+
       written = this->writeAfterLock;
       result = written == length;
     }

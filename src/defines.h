@@ -147,7 +147,7 @@
 #endif
 
 #ifndef PROGMEM
-  #define PROGMEM 
+  #define PROGMEM // NOLINT
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32

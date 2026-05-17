@@ -74,7 +74,7 @@ void NetworkConnection::onEvent(System_Event_t *event) {
         }
       }
       break;
-    
+
     default:
       break;
   }
@@ -106,7 +106,7 @@ void NetworkConnection::onEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
       rawDisconnectReason = info.wifi_sta_disconnected.reason;
       disconnectReason = convertDisconnectReason(info.wifi_sta_disconnected.reason);
       break;
-    
+
     default:
       break;
   }
@@ -146,7 +146,7 @@ NetworkConnection::DisconnectReason NetworkConnection::convertDisconnectReason(u
     case WIFI_REASON_HANDSHAKE_TIMEOUT:
       return DisconnectReason::HANDSHAKE_TIMEOUT;
   #endif
-    
+
     default:
       return DisconnectReason::OTHER;
   }

@@ -3,7 +3,7 @@ extern FileData fsSettings;
 
 class OpenThermTask : public Task {
 public:
-  OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
+  explicit OpenThermTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {}
 
   ~OpenThermTask() {
     delete this->instance;
@@ -41,7 +41,7 @@ protected:
   uint32_t getTaskStackSize() override {
     return 7500;
   }
-  
+
   BaseType_t getTaskCore() override {
     return 0;
   }
@@ -160,7 +160,7 @@ protected:
       if (this->configuredRxLedGpio != GPIO_IS_NOT_CONFIGURED) {
         digitalWrite(this->configuredRxLedGpio, LOW);
       }
-      
+
       if (GPIO_IS_VALID(settings.opentherm.rxLedGpio)) {
         this->configuredRxLedGpio = settings.opentherm.rxLedGpio;
         pinMode(this->configuredRxLedGpio, OUTPUT);
@@ -178,8 +178,8 @@ protected:
       && !vars.master.heating.overheat;
 
     // DHW settings
-    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport 
-      && settings.dhw.enabled 
+    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport
+      && settings.dhw.enabled
       && !vars.master.dhw.overheat;
     vars.master.dhw.targetTemp = settings.dhw.target;
 
@@ -236,7 +236,7 @@ protected:
         F("Failed receive boiler status: %s"),
         CustomOpenTherm::statusToString(this->instance->getLastResponseStatus())
       );
-      
+
     } else {
       vars.slave.heating.active = CustomOpenTherm::isCentralHeatingActive(response);
       vars.slave.dhw.active = settings.opentherm.options.dhwSupport ? CustomOpenTherm::isHotWaterActive(response) : false;
@@ -251,7 +251,7 @@ protected:
       } else if (vars.slave.diag.active) {
         vars.slave.diag.active = false;
       }
-  
+
       Log.snoticeln(
         FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; channel 2: %hhu; fault: %hhu; diag: %hhu"),
         vars.slave.heating.active, vars.slave.dhw.active,
@@ -270,15 +270,15 @@ protected:
         F("Connected, downtime: %lu s."),
         (millis() - this->disconnectedTime) / 1000
       );
-      
+
       this->connectedTime = millis();
       vars.slave.connected = true;
-      
+
     } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 6325) {
       Log.swarningln(
         FPSTR(L_OT),
         F("Disconnected, uptime: %lu s."),
-        (millis() - this->connectedTime) / 1000  
+        (millis() - this->connectedTime) / 1000
       );
 
       // Mark sensors as disconnected
@@ -403,7 +403,7 @@ protected:
           FPSTR(L_OT), F("Received min modulation: %hhu%%, max power: %.2f kW"),
           vars.slave.modulation.min, vars.slave.power.max
         );
-        
+
         if (settings.heating.maxModulation < vars.slave.modulation.min) {
           settings.heating.maxModulation = vars.slave.modulation.min;
           fsSettings.update();
@@ -519,7 +519,7 @@ protected:
 
             Log.swarningln(FPSTR(L_SETTINGS_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
           }
-          
+
         } else {
           Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive min/max temp"));
         }
@@ -542,7 +542,7 @@ protected:
         } else {
           Log.swarningln(FPSTR(L_OT), F("Failed receive fault code"));
         }
-        
+
       } else if (vars.slave.fault.code != 0) {
         vars.slave.fault.code = 0;
       }
@@ -558,7 +558,7 @@ protected:
         } else {
           Log.swarningln(FPSTR(L_OT), F("Failed receive diag code"));
         }
-        
+
       } else if (vars.slave.diag.code != 0) {
         vars.slave.diag.code = 0;
       }
@@ -767,7 +767,7 @@ protected:
             }
           }
           vars.slave.power.current = power;
-          
+
           Log.snoticeln(
             FPSTR(L_OT), F("Received modulation level: %hhu%%, power: %.2f of %.2f kW (min: %.2f kW)"),
             vars.slave.modulation.current, vars.slave.power.current,
@@ -1027,7 +1027,7 @@ protected:
         Log.swarningln(FPSTR(L_OT), F("Failed receive outdoor temp"));
       }
     }
-    
+
     // Update solar storage temp
     if (Sensors::getAmountByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP, true)) {
       if (this->updateSolarStorageTemp()) {
@@ -1195,7 +1195,7 @@ protected:
       if (vars.slave.diag.active) {
         if (this->instance->sendServiceReset()) {
           Log.sinfoln(FPSTR(L_OT), F("Boiler diagnostic reset successfully"));
-          
+
         } else {
           Log.serrorln(FPSTR(L_OT), F("Boiler diagnostic reset failed"));
         }
@@ -1247,7 +1247,7 @@ protected:
           FPSTR(L_OT_HEATING), F("Set current indoor temp: %.2f (converted: %.2f, response: %.2f)"),
           indoorTemp, convertedTemp, vars.slave.heating.indoorTemp
         );
-        
+
       } else {
         Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current indoor temp"));
       }
@@ -1401,7 +1401,7 @@ protected:
       );
 
       if (vars.master.heating.overheat) {
-        if ((float) settings.heating.overheatProtection.lowTemp - highTemp + 0.0001f >= 0.0f) {
+        if (static_cast<float>(settings.heating.overheatProtection.lowTemp) - highTemp + 0.0001f >= 0.0f) {
           vars.master.heating.overheat = false;
 
           Log.sinfoln(
@@ -1411,7 +1411,7 @@ protected:
         }
 
       } else if (vars.slave.heating.active) {
-        if (highTemp - (float) settings.heating.overheatProtection.highTemp + 0.0001f >= 0.0f) {
+        if (highTemp - static_cast<float>(settings.heating.overheatProtection.highTemp) + 0.0001f >= 0.0f) {
           vars.master.heating.overheat = true;
 
           Log.swarningln(
@@ -1441,7 +1441,7 @@ protected:
       );
 
       if (vars.master.dhw.overheat) {
-        if ((float) settings.dhw.overheatProtection.lowTemp - highTemp + 0.0001f >= 0.0f) {
+        if (static_cast<float>(settings.dhw.overheatProtection.lowTemp) - highTemp + 0.0001f >= 0.0f) {
           vars.master.dhw.overheat = false;
 
           Log.sinfoln(
@@ -1451,7 +1451,7 @@ protected:
         }
 
       } else if (vars.slave.dhw.active) {
-        if (highTemp - (float) settings.dhw.overheatProtection.highTemp + 0.0001f >= 0.0f) {
+        if (highTemp - static_cast<float>(settings.dhw.overheatProtection.highTemp) + 0.0001f >= 0.0f) {
           vars.master.dhw.overheat = true;
 
           Log.swarningln(
@@ -1480,10 +1480,10 @@ protected:
 
     if (this->setMasterVersion(vars.master.appVersion, vars.master.type)) {
       Log.snoticeln(
-        FPSTR(L_OT), F("Set master version: %u, type: %u"), 
+        FPSTR(L_OT), F("Set master version: %u, type: %u"),
         vars.master.appVersion, vars.master.type
       );
-      
+
     } else {
       Log.swarningln(FPSTR(L_OT), F("Failed set master version"));
     }
@@ -1517,7 +1517,7 @@ protected:
         FPSTR(L_OT), F("Set master member id: %u, flags: %u"),
         vars.master.memberId, vars.master.flags
       );
-      
+
     } else {
       Log.swarningln(FPSTR(L_OT), F("Failed set master config"));
     }
@@ -1561,7 +1561,7 @@ protected:
       OpenThermMessageID::SConfigSMemberIDcode,
       0
     ));
-    
+
     if (!CustomOpenTherm::isValidResponse(response)) {
       return false;
 
@@ -1633,7 +1633,7 @@ protected:
     const unsigned int request = ((dayOfWeek & 0x07) << 13)
       | ((ptm->tm_hour & 0x1F) << 8)
       | (ptm->tm_min & 0x3F);
-    
+
     const unsigned long response = this->instance->sendRequest(CustomOpenTherm::buildRequest(
       OpenThermRequestType::WRITE_DATA,
       OpenThermMessageID::DayTime,
@@ -1892,11 +1892,11 @@ protected:
    * From slave member id code:
    * id: slave.memberIdCode & 0xFF,
    * flags: (slave.memberIdCode & 0xFFFF) >> 8
-   * @param id 
-   * @param flags 
-   * @param force 
-   * @return true 
-   * @return false 
+   * @param id
+   * @param flags
+   * @param force
+   * @return true
+   * @return false
    */
   bool setMasterConfig(const uint8_t id, const uint8_t flags, const bool force = false) {
     const uint8_t rMemberId = (force || id > 0) ? id : vars.slave.memberId;
@@ -2350,7 +2350,7 @@ protected:
     }
 
     vars.slave.dhw.flowRate = value;
-    
+
     return true;
   }
 
@@ -2393,7 +2393,7 @@ protected:
     }
 
     vars.slave.heating.returnTemp = CustomOpenTherm::getFloat(response);
-    
+
     return true;
   }
 
@@ -2432,7 +2432,7 @@ protected:
       return false;
     }
 
-    const float value = (float) CustomOpenTherm::getInt(response);
+    const float value = CustomOpenTherm::getInt(response);
     if (!isValidTemp(value, settings.opentherm.unitSystem, -40, 500)) {
       return false;
     }
@@ -2456,7 +2456,7 @@ protected:
       return false;
     }
 
-    const float value = (float) CustomOpenTherm::getInt(response);
+    const float value = CustomOpenTherm::getInt(response);
     if (value <= 0) {
       return false;
     }
@@ -2500,7 +2500,7 @@ protected:
     }
 
     vars.slave.solar.storage = CustomOpenTherm::getFloat(response);
-    
+
     return true;
   }
 
@@ -2519,7 +2519,7 @@ protected:
     }
 
     vars.slave.solar.collector = CustomOpenTherm::getFloat(response);
-    
+
     return true;
   }
 

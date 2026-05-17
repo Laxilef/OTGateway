@@ -92,8 +92,10 @@ jobs:
           -whitespace/indent,\
           -whitespace/newline,\
           -whitespace/parens,\
+          -whitespace/blank_line,\
           -readability/braces,\
           -readability/todo,\
+          -readability/namespace,\
           -build/header_guard,\
           -build/include_subdir,\
           -build/include_what_you_use,\

@@ -45,7 +45,7 @@ public:
             doc[FPSTR(HA_MIN)] = -99;
             doc[FPSTR(HA_MAX)] = 99;
           }
-          
+
         } else if (unit == UnitSystem::IMPERIAL) {
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
 
@@ -60,7 +60,7 @@ public:
         doc[FPSTR(HA_DEVICE_CLASS)] = F("volume_flow_rate");
         if (unit == UnitSystem::METRIC) {
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_L_MIN);
-          
+
         } else if (unit == UnitSystem::IMPERIAL) {
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_GAL_MIN);
         }
@@ -110,19 +110,19 @@ public:
       case Sensors::Purpose::OUTDOOR_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:home-thermometer-outline");
         break;
-        
+
       case Sensors::Purpose::INDOOR_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:home-thermometer");
         break;
-        
+
       case Sensors::Purpose::HEATING_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:radiator");
         break;
-        
+
       case Sensors::Purpose::HEATING_RETURN_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:heating-coil");
         break;
-        
+
       case Sensors::Purpose::DHW_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:faucet");
         break;
@@ -130,7 +130,7 @@ public:
       case Sensors::Purpose::DHW_RETURN_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:heating-coil");
         break;
-        
+
       case Sensors::Purpose::EXHAUST_TEMP:
         doc[FPSTR(HA_ICON)] = F("mdi:smoke");
         break;
@@ -193,7 +193,7 @@ public:
           doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
           if (unit == UnitSystem::METRIC) {
             doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
-            
+
           } else if (unit == UnitSystem::IMPERIAL) {
             doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
           }
@@ -214,7 +214,7 @@ public:
         case Sensors::ValueType::BATTERY:
           Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_BATTERY));
           sName += F(" battery");
-          
+
           doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_BATTERY);
           doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
@@ -225,7 +225,7 @@ public:
         case Sensors::ValueType::RSSI:
           Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_RSSI));
           sName += F(" RSSI");
-          
+
           doc[FPSTR(HA_DEVICE_CLASS)] = F("signal_strength");
           doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("dBm");
@@ -264,8 +264,8 @@ public:
     // object id's
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(objId.c_str());
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(
-      sSensor.type == Sensors::Type::MANUAL 
-        ? FPSTR(HA_ENTITY_NUMBER) 
+      sSensor.type == Sensors::Type::MANUAL
+        ? FPSTR(HA_ENTITY_NUMBER)
         : FPSTR(HA_ENTITY_SENSOR),
       objId.c_str()
     );
@@ -346,7 +346,7 @@ public:
 
       doc[FPSTR(HA_NAME)] = sName;
     }
-    
+
     const String& configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), objId.c_str());
     objId.clear();
 
@@ -393,7 +393,7 @@ public:
 
       doc[FPSTR(HA_NAME)] = sName;
     }
-    
+
     const String& configTopic = this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), objId.c_str());
     objId.clear();
 
@@ -477,7 +477,7 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
     }
@@ -535,7 +535,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
       doc[FPSTR(HA_MIN)] = 0;
       doc[FPSTR(HA_MAX)] = 99;
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
       doc[FPSTR(HA_MIN)] = 32;
@@ -569,7 +569,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
       doc[FPSTR(HA_MIN)] = 1;
       doc[FPSTR(HA_MAX)] = 100;
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
       doc[FPSTR(HA_MIN)] = 33;
@@ -604,7 +604,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
       doc[FPSTR(HA_MIN)] = 0;
       doc[FPSTR(HA_MAX)] = 99;
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
       doc[FPSTR(HA_MIN)] = 32;
@@ -638,7 +638,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
       doc[FPSTR(HA_MIN)] = 1;
       doc[FPSTR(HA_MAX)] = 100;
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
       doc[FPSTR(HA_MIN)] = 33;
@@ -789,7 +789,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
       doc[FPSTR(HA_MIN)] = -99;
       doc[FPSTR(HA_MAX)] = 99;
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
       doc[FPSTR(HA_MIN)] = -146;
@@ -823,7 +823,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_C);
       doc[FPSTR(HA_MIN)] = 1;
       doc[FPSTR(HA_MAX)] = 100;
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
       doc[FPSTR(HA_MIN)] = 1;
@@ -1238,7 +1238,7 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_TEMPERATURE_UNIT)] = "F";
     }
@@ -1290,7 +1290,7 @@ public:
 
     if (unit == UnitSystem::METRIC) {
       doc[FPSTR(HA_TEMPERATURE_UNIT)] = "C";
-      
+
     } else if (unit == UnitSystem::IMPERIAL) {
       doc[FPSTR(HA_TEMPERATURE_UNIT)] = "F";
     }
@@ -1393,7 +1393,7 @@ public:
   bool deleteDhwState() {
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dhw")).c_str());
   }
-  
+
   bool deleteInputDhwTarget() {
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_target")).c_str());
   }

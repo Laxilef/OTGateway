@@ -71,7 +71,7 @@ void setup() {
 
     return tm{sec, min, hour};
   });
-  
+
   Serial.begin(115200);
   #if ARDUINO_USB_MODE
   Serial.setTxBufferSize(512);

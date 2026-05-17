@@ -35,9 +35,9 @@ namespace CrashRecorder {
   } ext_t;
 
 
-  __NOINIT_ATTR volatile static backtrace_t backtrace;
-  __NOINIT_ATTR volatile static epc_t epc;
-  __NOINIT_ATTR volatile static ext_t ext;
+  __NOINIT_ATTR volatile static backtrace_t backtrace; // NOLINT
+  __NOINIT_ATTR volatile static epc_t epc; // NOLINT
+  __NOINIT_ATTR volatile static ext_t ext; // NOLINT
 
   uint8_t backtraceMaxLength = sizeof(backtrace.data) / sizeof(*backtrace.data);
   uint8_t epcMaxLength = sizeof(epc.data) / sizeof(*epc.data);
@@ -70,7 +70,7 @@ namespace CrashRecorder {
     }
   }
   #endif
-  
+
   void init() {
     if (backtrace.length > backtraceMaxLength) {
       backtrace.length = 0;
@@ -98,7 +98,7 @@ extern "C" void custom_crash_callback(struct rst_info *info, uint32_t stack, uin
   CrashRecorder::backtrace.continues = false;
   uint32_t value;
   for (uint32_t i = stack; i < stack_end; i += 4) {
-    value = *((uint32_t*) i);
+    value = *((uint32_t*) i); // NOLINT
 
     // keep only addresses in code area
     if ((value >= 0x40000000) && (value < 0x40300000)) {

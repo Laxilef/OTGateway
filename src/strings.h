@@ -1,6 +1,6 @@
 #pragma once
 #ifndef PROGMEM
-  #define PROGMEM 
+  #define PROGMEM // NOLINT
 #endif
 
 const char L_SETTINGS[]                             PROGMEM = "SETTINGS";

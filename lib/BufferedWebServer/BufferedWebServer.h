@@ -1,9 +1,9 @@
 class BufferedWebServer {
 public:
-  BufferedWebServer(WebServer* webServer, size_t bufferSize = 64) {
+  explicit BufferedWebServer(WebServer* webServer, size_t bufferSize = 64) {
     this->webServer = webServer;
     this->bufferSize = bufferSize;
-    this->buffer = (uint8_t*)malloc(bufferSize * sizeof(*this->buffer));
+    this->buffer = static_cast<uint8_t*>(malloc(bufferSize * sizeof(*this->buffer)));
   }
 
   ~BufferedWebServer() {
@@ -28,7 +28,7 @@ public:
 
     if (pretty) {
       serializeJsonPretty(content, *this);
-      
+
     } else {
       serializeJson(content, *this);
     }

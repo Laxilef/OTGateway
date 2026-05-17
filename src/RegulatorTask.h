@@ -5,7 +5,7 @@ GyverPID pidRegulator(0, 0, 0);
 
 class RegulatorTask : public LeanTask {
 public:
-  RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
+  explicit RegulatorTask(bool _enabled = false, unsigned long _interval = 0) : LeanTask(_enabled, _interval) {}
 
 protected:
   float prevHeatingTarget = 0.0f;
@@ -23,7 +23,7 @@ protected:
   uint32_t getTaskStackSize() override {
     return 5000;
   }
-  
+
   /*BaseType_t getTaskCore() override {
     return 1;
   }*/
@@ -158,7 +158,7 @@ protected:
         1.0f / settings.equitherm.exponent
       );
       float etResult = settings.heating.target + settings.equitherm.shift + sf * (
-        tempDelta >= 0 
+        tempDelta >= 0
           ? pow(tempDelta, 1.0f / settings.equitherm.exponent)
           : -(pow(-(tempDelta), 1.0f / settings.equitherm.exponent))
       );

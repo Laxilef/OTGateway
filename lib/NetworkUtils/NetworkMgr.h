@@ -183,7 +183,7 @@ namespace NetworkUtils {
 
       wifi_station_dhcpc_set_maxtry(5);
       #endif
-      
+
       #if defined(ARDUINO_ARCH_ESP32) && ESP_ARDUINO_VERSION_MAJOR < 3
       // Nothing. Because memory leaks when turn off WiFi on ESP32 SDK < 3.0.0
       return true;
