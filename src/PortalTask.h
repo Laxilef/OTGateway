@@ -810,9 +810,13 @@ protected:
 
   static void getFilename(char* filename, size_t maxSizeFilename, const char* type) {
     const time_t now = time(nullptr);
-    const tm* localNow = localtime(&now);
+
+    tm localNow {};
+    localtime_r(&now, &localNow);
+
     char localNowValue[20];
-    strftime(localNowValue, sizeof(localNowValue), PSTR("%Y-%m-%d-%H-%M-%S"), localNow);
+    strftime(localNowValue, sizeof(localNowValue), PSTR("%Y-%m-%d-%H-%M-%S"), &localNow);
+
     snprintf_P(filename, maxSizeFilename, PSTR("%s_%s_%s.json"), networkSettings.hostname, localNowValue, type);
   }
 };
