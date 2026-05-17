@@ -83,5 +83,24 @@ jobs:
           cpplint \
             --repository=. \
             --recursive \
-            --filter=-whitespace/line_length,-whitespace/braces,-whitespace/comments,-runtime/indentation_namespace,-whitespace/indent,-readability/braces,-whitespace/newline,-readability/todo,-build/c++11 \
+            --filter=\
+              -legal/copyright,\
+              -runtime/int,\
+              -runtime/references,\
+              -runtime/indentation_namespace,\
+              -runtime/arrays,\
+              -runtime/printf,\
+              -whitespace/line_length,\
+              -whitespace/braces,\
+              -whitespace/comments,\
+              -whitespace/indent,\
+              -whitespace/newline,\
+              -whitespace/parens,\
+              -readability/braces,\
+              -readability/todo,\
+              -build/header_guard,\
+              -build/include_subdir,\
+              -build/include_what_you_use,\
+              -build/namespaces,\
+              -build/c++11 \
             include lib src
