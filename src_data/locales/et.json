@@ -1,0 +1,523 @@
+{
+  "values": {
+    "logo": "",
+    "nav": {
+      "license": "",
+      "source": "",
+      "help": "",
+      "issues": "",
+      "releases": ""
+    },
+    "units": {
+      "days": "",
+      "hours": "",
+      "min": "",
+      "sec": "",
+      "dbm": "",
+      "mhz": "",
+      "kw": "",
+      "rpm": "",
+      "ppm": "",
+      "byte": "",
+      "mbyte": ""
+    },
+    "button": {
+      "upgrade": "",
+      "restart": "",
+      "save": "",
+      "saved": "",
+      "refresh": "",
+      "restore": "",
+      "restored": "",
+      "backup": "",
+      "wait": "",
+      "uploading": "",
+      "success": "",
+      "error": ""
+    },
+    "index": {
+      "title": "",
+      "section": {
+        "network": "",
+        "system": ""
+      },
+      "system": {
+        "build": {
+          "title": "",
+          "version": "",
+          "commit": "",
+          "date": "",
+          "core": "",
+          "sdk": ""
+        },
+        "uptime": "",
+        "memory": {
+          "heap": "",
+          "psram": "",
+          "maxFreeBlock": "",
+          "min": ""
+        },
+        "board": "",
+        "chip": {
+          "model": "",
+          "cores": "",
+          "freq": ""
+        },
+        "flash": {
+          "size": "",
+          "realSize": ""
+        },
+        "lastResetReason": ""
+      }
+    },
+    "dashboard": {
+      "name": "",
+      "title": "",
+      "section": {
+        "control": "",
+        "states": "",
+        "sensors": "",
+        "diag": ""
+      },
+      "thermostat": {
+        "heating": "",
+        "dhw": "",
+        "currentTemp": "",
+        "enable": "",
+        "turbo": ""
+      },
+      "notify": {
+        "fault": {
+          "title": "",
+          "note": ""
+        },
+        "diag": {
+          "title": "",
+          "note": ""
+        },
+        "reset": ""
+      },
+      "states": {
+        "mNetworkConnected": "",
+        "mMqttConnected": "",
+        "mEmergencyState": "",
+        "mExtPumpState": "",
+        "mCascadeControlInput": "",
+        "mCascadeControlOutput": "",
+        "sConnected": "",
+        "sFlame": "",
+        "sCoolingActive": "",
+        "sCoolingSetpoint": "",
+        "sFaultActive": "",
+        "sFaultCode": "",
+        "sDiagActive": "",
+        "sDiagCode": "",
+        "mHeatEnabled": "",
+        "mHeatBlocking": "",
+        "mHeatOverheat": "",
+        "mHeatFreezing": "",
+        "sHeatActive": "",
+        "mHeatSetpointTemp": "",
+        "mHeatTargetTemp": "",
+        "mHeatCurrTemp": "",
+        "mHeatRetTemp": "",
+        "mHeatIndoorTemp": "",
+        "mHeatOutdoorTemp": "",
+        "mDhwEnabled": "",
+        "mDhwOverheat": "",
+        "sDhwActive": "",
+        "mDhwTargetTemp": "",
+        "mDhwCurrTemp": "",
+        "mDhwRetTemp": ""
+      },
+      "sensors": {
+        "values": {
+          "temp": "",
+          "humidity": "",
+          "battery": "",
+          "rssi": ""
+        }
+      }
+    },
+    "network": {
+      "title": "",
+      "name": "",
+      "section": {
+        "static": "",
+        "availableNetworks": "",
+        "staSettings": "",
+        "apSettings": ""
+      },
+      "scan": {
+        "pos": "",
+        "info": ""
+      },
+      "wifi": {
+        "ssid": "",
+        "password": "",
+        "channel": "",
+        "signal": "",
+        "connected": ""
+      },
+      "params": {
+        "hostname": "",
+        "dhcp": "",
+        "mac": "",
+        "ip": "",
+        "subnet": "",
+        "gateway": "",
+        "dns": ""
+      },
+      "sta": {
+        "channel": {
+          "note": ""
+        }
+      }
+    },
+    "sensors": {
+      "title": "",
+      "name": "",
+      "enabled": "",
+      "sensorName": {
+        "title": "",
+        "note": ""
+      },
+      "purpose": "",
+      "purposes": {
+        "outdoorTemp": "",
+        "indoorTemp": "",
+        "heatTemp": "",
+        "heatRetTemp": "",
+        "dhwTemp": "",
+        "dhwRetTemp": "",
+        "dhwFlowRate": "",
+        "exhaustTemp": "",
+        "modLevel": "",
+        "number": "",
+        "powerFactor": "",
+        "power": "",
+        "fanSpeed": "",
+        "co2": "",
+        "pressure": "",
+        "humidity": "",
+        "temperature": "",
+        "notConfigured": ""
+      },
+      "type": "",
+      "types": {
+        "otOutdoorTemp": "",
+        "otHeatTemp": "",
+        "otHeatRetTemp": "",
+        "otDhwTemp": "",
+        "otDhwTemp2": "",
+        "otDhwFlowRate": "",
+        "otCh2Temp": "",
+        "otExhaustTemp": "",
+        "otHeatExchangerTemp": "",
+        "otPressure": "",
+        "otModLevel": "",
+        "otCurrentPower": "",
+        "otExhaustCo2": "",
+        "otExhaustFanSpeed": "",
+        "otSupplyFanSpeed": "",
+        "otSolarStorageTemp": "",
+        "otSolarCollectorTemp": "",
+        "otFanSpeedSetpoint": "",
+        "otFanSpeedCurrent": "",
+        "otBurnerStarts": "",
+        "otDhwBurnerStarts": "",
+        "otHeatingPumpStarts": "",
+        "otDhwPumpStarts": "",
+        "otBurnerHours": "",
+        "otDhwBurnerHours": "",
+        "otHeatingPumpHours": "",
+        "otDhwPumpHours": "",
+        "otCoolingHours": "",
+        "ntcTemp": "",
+        "dallasTemp": "",
+        "bluetooth": "",
+        "dht11": "",
+        "dht22": "",
+        "heatSetpointTemp": "",
+        "manual": "",
+        "notConfigured": ""
+      },
+      "gpio": "",
+      "address": {
+        "title": "",
+        "note": ""
+      },
+      "correction": {
+        "desc": "",
+        "offset": "",
+        "factor": ""
+      },
+      "filtering": {
+        "desc": "",
+        "enabled": {
+          "title": "",
+          "note": ""
+        },
+        "factor": {
+          "title": "",
+          "note": ""
+        }
+      }
+    },
+    "settings": {
+      "title": "",
+      "name": "",
+      "section": {
+        "portal": "",
+        "system": "",
+        "diag": "",
+        "heating": "",
+        "dhw": "",
+        "emergency": "",
+        "equitherm": "",
+        "pid": "",
+        "ot": "",
+        "mqtt": "",
+        "extPump": "",
+        "cascadeControl": ""
+      },
+      "enable": "",
+      "note": {
+        "restart": "",
+        "blankNotUse": "",
+        "bleDevice": ""
+      },
+      "temp": {
+        "min": "",
+        "max": ""
+      },
+      "avgType": {
+        "mean": "",
+        "min": "",
+        "max": ""
+      },
+      "maxModulation": "",
+      "ohProtection": {
+        "title": "",
+        "desc": "",
+        "highTemp": {
+          "title": "",
+          "note": ""
+        },
+        "lowTemp": {
+          "title": "",
+          "note": ""
+        }
+      },
+      "freezeProtection": {
+        "title": "",
+        "desc": "",
+        "highTemp": {
+          "title": "",
+          "note": ""
+        },
+        "lowTemp": {
+          "title": "",
+          "note": ""
+        }
+      },
+      "portal": {
+        "login": "",
+        "password": "",
+        "auth": "",
+        "mdns": ""
+      },
+      "system": {
+        "unit": "",
+        "metric": "",
+        "imperial": "",
+        "statusLedGpio": "",
+        "logLevel": "",
+        "serial": {
+          "enable": "",
+          "baud": ""
+        },
+        "webSerial": {
+          "enable": ""
+        },
+        "ntp": {
+          "server": "",
+          "timezone": "",
+          "timezonePresets": ""
+        }
+      },
+      "heating": {
+        "hyst": {
+          "title": "",
+          "desc": "",
+          "value": "",
+          "action": {
+            "title": "",
+            "disableHeating": "",
+            "set0target": ""
+          }
+        },
+        "turboFactor": "",
+        "indoorTempAvgType": {
+          "title": "",
+          "desc": ""
+        },
+        "outdoorTempAvgType": {
+          "title": "",
+          "desc": ""
+        }
+      },
+      "emergency": {
+        "desc": "",
+        "target": {
+          "title": "",
+          "note": ""
+        },
+        "treshold": ""
+      },
+      "equitherm": {
+        "slope": {
+          "title": "",
+          "note": ""
+        },
+        "exponent": {
+          "title": "",
+          "note": ""
+        },
+        "shift": {
+          "title": "",
+          "note": ""
+        },
+        "targetDiffFactor": {
+          "title": "",
+          "note": ""
+        },
+        "chart": {
+          "targetTemp": "",
+          "setpointTemp": "",
+          "outdoorTemp": ""
+        }
+      },
+      "pid": {
+        "p": "",
+        "i": "",
+        "d": "",
+        "dt": "",
+        "limits": {
+          "title": "",
+          "note": ""
+        },
+        "deadband": {
+          "title": "",
+          "note": "",
+          "p_multiplier": "",
+          "i_multiplier": "",
+          "d_multiplier": "",
+          "thresholdHigh": "",
+          "thresholdLow": ""
+        }
+      },
+      "ot": {
+        "advanced": "",
+        "inGpio": "",
+        "outGpio": "",
+        "ledGpio": "",
+        "memberId": "",
+        "flags": "",
+        "minPower": {
+          "title": "",
+          "note": ""
+        },
+        "maxPower": {
+          "title": "",
+          "note": ""
+        },
+        "options": {
+          "title": "",
+          "desc": "",
+          "dhwSupport": "",
+          "coolingSupport": "",
+          "summerWinterMode": "",
+          "heatingStateToSummerWinterMode": "",
+          "ch2AlwaysEnabled": "",
+          "heatingToCh2": "",
+          "dhwToCh2": "",
+          "dhwBlocking": "",
+          "dhwStateAsDhwBlocking": "",
+          "maxTempSyncWithTargetTemp": "",
+          "getMinMaxTemp": "",
+          "ignoreDiagState": "",
+          "autoFaultReset": "",
+          "autoDiagReset": "",
+          "setDateAndTime": "",
+          "immergasFix": "",
+          "alwaysSendIndoorTemp": ""
+        },
+        "nativeOTC": {
+          "title": "",
+          "note": ""
+        }
+      },
+      "mqtt": {
+        "homeAssistantDiscovery": "",
+        "server": "",
+        "port": "",
+        "user": "",
+        "password": "",
+        "prefix": "",
+        "interval": ""
+      },
+      "extPump": {
+        "use": "",
+        "gpio": "",
+        "invertState": "",
+        "postCirculationTime": "",
+        "antiStuckInterval": "",
+        "antiStuckTime": ""
+      },
+      "cascadeControl": {
+        "input": {
+          "desc": "",
+          "enable": "",
+          "gpio": "",
+          "invertState": "",
+          "thresholdTime": ""
+        },
+        "output": {
+          "desc": "",
+          "enable": "",
+          "gpio": "",
+          "invertState": "",
+          "thresholdTime": "",
+          "events": {
+            "desc": "",
+            "onFault": "",
+            "onLossConnection": "",
+            "onEnabledHeating": ""
+          }
+        }
+      }
+    },
+    "upgrade": {
+      "title": "",
+      "name": "",
+      "section": {
+        "backupAndRestore": {
+          "title": "",
+          "desc": ""
+        },
+        "upgrade": {
+          "title": "",
+          "desc": ""
+        }
+      },
+      "note": {
+        "disclaimer1": "",
+        "disclaimer2": ""
+      },
+      "settingsFile": "",
+      "fw": "",
+      "fs": ""
+    }
+  }
+}
