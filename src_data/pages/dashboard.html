@@ -351,9 +351,14 @@
                   value = -(step);
                 }
 
-                newSettings[purpose].target = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
-                modifiedTime = Date.now();
-                setValue('.targetTemp', newSettings[purpose].target, tContainer);
+                const newValue = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
+                if (newSettings[purpose].target != newValue) {
+                  newSettings[purpose].target = newValue;
+                  modifiedTime = Date.now();
+
+                  setValue('.targetTemp', newValue, tContainer);
+                  tContainer.querySelector('.thermostat-header').setAttribute("aria-busy", "true");
+                }
               }
             });
           }
@@ -383,27 +388,46 @@
                 value = -(bigStep);
               }
 
-              newSettings[purpose].target = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
-              modifiedTime = Date.now();
+              const newValue = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
+              if (newSettings[purpose].target != newValue) {
+                newSettings[purpose].target = newValue;
+                modifiedTime = Date.now();
 
-              setValue('.targetTemp', newSettings[purpose].target, tContainer);
+                setValue('.targetTemp', newSettings[purpose].target, tContainer);
+                tContainer.querySelector('.thermostat-header').setAttribute("aria-busy", "true");
+              }
             }, 500);
           });
         });
 
         document.querySelector('#tHeatEnabled').addEventListener('change', (event) => {
+          if (newSettings.heating.enabled == event.currentTarget.checked) {
+            return;
+          }
+
           modifiedTime = Date.now();
           newSettings.heating.enabled = event.currentTarget.checked;
+          document.querySelector('.tHeat .thermostat-header').setAttribute("aria-busy", "true");
         });
 
         document.querySelector('#tHeatTurbo').addEventListener('change', (event) => {
+          if (newSettings.heating.turbo == event.currentTarget.checked) {
+            return;
+          }
+
           modifiedTime = Date.now();
           newSettings.heating.turbo = event.currentTarget.checked;
+          document.querySelector('.tHeat .thermostat-header').setAttribute("aria-busy", "true");
         });
 
         document.querySelector('#tDhwEnabled').addEventListener('change', (event) => {
+          if (newSettings.dhw.enabled == event.currentTarget.checked) {
+            return;
+          }
+
           modifiedTime = Date.now();
           newSettings.dhw.enabled = event.currentTarget.checked;
+          document.querySelector('.tDhw .thermostat-header').setAttribute("aria-busy", "true");
         });
 
         document.querySelector('.notify-fault .reset').addEventListener('click', async (event) => {
@@ -530,6 +554,10 @@
             setValue('.tempUnit', temperatureUnit(unitSystem));
             setValue('.pressureUnit', pressureUnit(unitSystem));
             setValue('.volumeUnit', volumeUnit(unitSystem));
+
+            document.querySelectorAll('.thermostat-header').forEach((item) => {
+              item.setAttribute("aria-busy", "false");
+            });
 
           } catch (error) {
             console.log(error);

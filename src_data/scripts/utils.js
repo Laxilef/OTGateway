@@ -318,7 +318,7 @@ const setupRestoreBackupForm = (formSelector) => {
         console.log("Backup: ", data);
 
         if (data.settings != undefined) {
-          for (var key in data.settings) {
+          for (const key in data.settings) {
             let response = await fetch(url, {
               method: "POST",
               cache: "no-cache",
@@ -330,6 +330,41 @@ const setupRestoreBackupForm = (formSelector) => {
                 "settings": {
                   [key]: data.settings[key]
                 }
+              })
+            });
+
+            if (!response.ok) {
+              onFailed();
+              return;
+            }
+          }
+
+          let finalPayload = {};
+          if (data.settings.emergency?.target !== undefined) {
+            finalPayload.emergency ??= {};
+            finalPayload.emergency.target = data.settings.emergency.target;
+          }
+
+          if (data.settings.heating?.target !== undefined) {
+            finalPayload.heating ??= {};
+            finalPayload.heating.target = data.settings.heating.target;
+          }
+
+          if (data.settings.dhw?.target !== undefined) {
+            finalPayload.dhw ??= {};
+            finalPayload.dhw.target = data.settings.dhw.target;
+          }
+
+          if (Object.keys(finalPayload).length) {
+            let response = await fetch(url, {
+              method: "POST",
+              cache: "no-cache",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "settings": finalPayload
               })
             });
 
