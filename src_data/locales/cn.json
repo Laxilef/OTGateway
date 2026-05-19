@@ -19,7 +19,9 @@
       "rpm": "RPM",
       "ppm": "ppm",
       "byte": "byte",
-      "mbyte": "MB"
+      "mbyte": "MB",
+      "liter": "升",
+      "gallon": "加仑"
     },
     "button": {
       "upgrade": "固件升级",

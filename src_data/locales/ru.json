@@ -19,7 +19,9 @@
       "rpm": "RPM",
       "ppm": "ppm",
       "byte": "байт",
-      "mbyte": "мбайт"
+      "mbyte": "мбайт",
+      "liter": "Л.",
+      "gallon": "гал."
     },
     "button": {
       "upgrade": "Обновить",
