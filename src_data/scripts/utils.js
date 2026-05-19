@@ -765,8 +765,8 @@ const pressureUnit = (unitSystem) => {
 
 const volumeUnit = (unitSystem) => {
   return unit2str(unitSystem, {
-    0: "L",
-    1: "gal"
+    0: i18n('units.liter'),
+    1: i18n('units.gallon')
   });
 }
 
@@ -780,7 +780,7 @@ const purposeUnit = (purpose, unitSystem) => {
     3:    tUnit,
     4:    tUnit,
     5:    tUnit,
-    6:    `${volumeUnit(unitSystem)}/${i18n('time.min')}`,
+    6:    `${volumeUnit(unitSystem)}/${i18n('units.min')}`,
     7:    tUnit,
     8:    "%",
     248:  "%",
