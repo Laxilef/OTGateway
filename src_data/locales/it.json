@@ -19,7 +19,9 @@
       "rpm": "RPM",
       "ppm": "ppm",
       "byte": "byte",
-      "mbyte": "MB"
+      "mbyte": "MB",
+      "liter": "litro",
+      "gallon": "gal"
     },
     "button": {
       "upgrade": "Aggiorna",
