@@ -147,6 +147,7 @@ jobs:
           prerelease: true
           make_latest: false
           generate_release_notes: true
+          append_body: false
           files: |
             artifacts/*.bin
             artifacts/*.elf
