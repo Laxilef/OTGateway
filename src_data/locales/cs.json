@@ -1,0 +1,148 @@
+{
+    "values": {
+        "logo": "OpenTherm Gateway",
+        "nav": {
+            "license": "Licence",
+            "source": "Zdrojový kód",
+            "help": "Nápověda",
+            "issues": "Problémy a dotazy",
+            "releases": "Vydání"
+        },
+        "dbm": "dBm",
+        "kw": "kW",
+        "time": {
+            "days": "d.",
+            "hours": "h.",
+            "min": "min.",
+            "sec": "s."
+        },
+
+        "button": {
+            "upgrade": "Aktualizovat",
+            "restart": "Restartovat",
+            "save": "Uložit",
+            "saved": "Uloženo",
+            "refresh": "Obnovit",
+            "restore": "Obnovit",
+            "restored": "Obnoveno",
+            "backup": "Záloha",
+            "wait": "Čekejte prosím…",
+            "uploading": "Nahrávání…",
+            "success": "Úspěch",
+            "error": "Chyba"
+        },
+
+        "index": {
+            "title": "OpenTherm Gateway",
+
+            "section": {
+                "network": "Síť",
+                "system": "Systém"
+            },
+
+            "system": {
+                "build": {
+                    "title": "Sestavení",
+                    "version": "Verze",
+                    "date": "Datum",
+                    "core": "Jádro",
+                    "sdk": "SDK"
+                },
+                "uptime": "Doba běhu",
+                "memory": {
+                    "title": "Volná paměť",
+                    "maxFreeBlock": "max. volný blok",
+                    "min": "min"
+                },
+                "board": "Deska",
+                "chip": {
+                    "model": "Čip",
+                    "cores": "Jádra",
+                    "freq": "Frekvence"
+                },
+                "flash": {
+                    "size": "Velikost flash",
+                    "realSize": "skutečná velikost"
+                },
+                "lastResetReason": "Důvod posledního restartu"
+            }
+        },
+
+        "dashboard": {
+            "name": "Přehled",
+            "title": "Přehled – OpenTherm Gateway",
+
+            "section": {
+                "control": "Ovládání",
+                "states": "Stavy",
+                "sensors": "Senzory",
+                "diag": "Diagnostika OpenTherm"
+            },
+
+            "thermostat": {
+                "heating": "Topení",
+                "dhw": "TUV",
+                "temp.current": "Aktuální",
+                "enable": "Povolit",
+                "turbo": "Turbo režim"
+            },
+
+            "notify": {
+                "fault": {
+                    "title": "Aktivní poruchový stav kotle!",
+                    "note": "Doporučuje se zkontrolovat kotel a nahlédnout do dokumentace pro interpretaci chybového kódu:"
+                },
+                "diag": {
+                    "title": "Aktivní diagnostický stav kotle!",
+                    "note": "Možná je potřeba kontrola kotle. Doporučuje se prostudovat dokumentaci pro interpretaci diagnostického kódu:"
+                },
+                "reset": "Zkusit reset"
+            },
+
+            "states": {
+                "mNetworkConnected": "Síťové připojení",
+                "mMqttConnected": "MQTT připojení",
+                "mEmergencyState": "Nouzový režim",
+                "mExtPumpState": "Externí čerpadlo",
+                "mCascadeControlInput": "Kaskádové řízení (vstup)",
+                "mCascadeControlOutput": "Kaskádové řízení (výstup)",
+
+                "sConnected": "OpenTherm připojení",
+                "sFlame": "Plamen",
+                "sCoolingActive": "Chlazení",
+                "sCoolingSetpoint": "Požadavek chlazení",
+                "sFaultActive": "Porucha",
+                "sFaultCode": "Kód poruchy",
+                "sDiagActive": "Diagnostika",
+                "sDiagCode": "Diagnostický kód",
+
+                "mHeatEnabled": "Topení povoleno",
+                "mHeatBlocking": "Topení blokováno",
+                "mHeatOverheat": "Přehřátí topení",
+                "sHeatActive": "Topení aktivní",
+                "mHeatSetpointTemp": "Požadovaná teplota topení",
+                "mHeatTargetTemp": "Cílová teplota topení",
+                "mHeatCurrTemp": "Aktuální teplota topení",
+                "mHeatRetTemp": "Zpátečka topení",
+                "mHeatIndoorTemp": "Vnitřní teplota",
+                "mHeatOutdoorTemp": "Venkovní teplota",
+
+                "mDhwEnabled": "TUV povolena",
+                "mDhwOverheat": "Přehřátí TUV",
+                "sDhwActive": "TUV aktivní",
+                "mDhwTargetTemp": "Cílová teplota TUV",
+                "mDhwCurrTemp": "Aktuální teplota TUV",
+                "mDhwRetTemp": "Zpátečka TUV"
+            },
+
+            "sensors": {
+                "values": {
+                    "temp": "Teplota",
+                    "humidity": "Vlhkost",
+                    "battery": "Baterie",
+                    "rssi": "Síla signálu"
+                }
+            }
+        }
+    }
+}
