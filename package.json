@@ -4,7 +4,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "cssnano": "^8.0.0",
+    "cssnano": "^9.0.2",
     "cssnano-preset-advanced": "^8.0.0",
     "gulp": "^5.0.0",
     "gulp-concat": "^2.6.1",
