@@ -661,8 +661,11 @@ protected:
         continue;
       }
 
+      // .to<JsonObject>() pre-creates the member: sensorResultToJson() takes
+      // JsonVariant by value, and a non-existent member converts to a null
+      // variant (writes would be silently dropped)
       String objId = Sensors::makeObjectId(sSettings.name);
-      sensorResultToJson(sensorId, doc[objId]);
+      sensorResultToJson(sensorId, doc[objId].to<JsonObject>());
       any = true;
     }
 
