@@ -14,6 +14,19 @@ public:
     this->setStateTopic = this->getDeviceTopic(F("state/set"));
     this->settingsTopic = this->getDeviceTopic(F("settings"));
     this->setSettingsTopic = this->getDeviceTopic(F("settings/set"));
+    this->sensorsTopic = this->getDeviceTopic(F("sensors"));
+  }
+
+  // "{{ value_json['<key>'].<field>|float(0)|round(<decimals>) }}"
+  String makeBatchTemplate(const String& key, const String& field, uint8_t decimals) {
+    String tmpl = F("{{ value_json['");
+    tmpl += key;
+    tmpl += F("'].");
+    tmpl += field;
+    tmpl += F("|float(0)|round(");
+    tmpl += decimals;
+    tmpl += F(") }}");
+    return tmpl;
   }
 
   void setExpireAfter(unsigned short value) {
@@ -22,6 +35,14 @@ public:
 
   auto getExpireAfter() {
     return this->expireAfter;
+  }
+
+  void setExpireAfterSensors(unsigned short value) {
+    this->expireAfterSensors = value;
+  }
+
+  auto getExpireAfterSensors() {
+    return this->expireAfterSensors;
   }
 
   bool publishDynamicSensor(Sensors::Settings& sSensor, Sensors::ValueType vType = Sensors::ValueType::PRIMARY, UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
@@ -169,19 +190,22 @@ public:
     }
 
     String objId = Sensors::makeObjectId(sSensor.name);
+    String valueKey = objId; // json key inside batched sensors payload
 
-    // state topic
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
-      F("sensors"),
-      objId.c_str()
-    );
+    // batched state topic
+    doc[FPSTR(HA_STATE_TOPIC)] = this->sensorsTopic.c_str();
+
+    // availability template for this sensor in batched payload
+    String availabilityTmpl = F("{{ iif(value_json['");
+    availabilityTmpl += valueKey;
+    availabilityTmpl += F("'].connected, 'online', 'offline') }}");
 
     // set device class, name, value template for bluetooth sensors
     // or name & value template for another sensors
     if (sSensor.type == Sensors::Type::BLUETOOTH) {
       // available state topic
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
-      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_SENSOR_CONN, true);
+      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(availabilityTmpl.c_str(), true);
 
       String sName = sSensor.name;
       switch (vType) {
@@ -197,7 +221,7 @@ public:
             doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
           }
           doc[FPSTR(HA_NAME)] = sName;
-          doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.temperature|float(0)|round(2) }}");
+          doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, F("temperature"), 2);
           break;
 
         case Sensors::ValueType::HUMIDITY:
@@ -207,7 +231,7 @@ public:
           doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_HUMIDITY);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
           doc[FPSTR(HA_NAME)] = sName;
-          doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.humidity|float(0)|round(2) }}");
+          doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, FPSTR(S_HUMIDITY), 2);
           break;
 
         case Sensors::ValueType::BATTERY:
@@ -218,7 +242,7 @@ public:
           doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
           doc[FPSTR(HA_NAME)] = sName;
-          doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.battery|float(0)|round(2) }}");
+          doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, FPSTR(S_BATTERY), 2);
           break;
 
         case Sensors::ValueType::RSSI:
@@ -229,7 +253,7 @@ public:
           doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("dBm");
           doc[FPSTR(HA_NAME)] = sName;
-          doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.rssi|float(0)|round(2) }}");
+          doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, FPSTR(S_RSSI), 2);
           break;
 
         default:
@@ -249,15 +273,15 @@ public:
       doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"value\": {{ value }}}");
 
       doc[FPSTR(HA_NAME)] = sSensor.name;
-      doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.value|float(0)|round(2) }}");
+      doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, FPSTR(S_VALUE), 2);
 
     } else {
       // available state topic
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
-      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_SENSOR_CONN, true);
+      doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(availabilityTmpl.c_str(), true);
 
       doc[FPSTR(HA_NAME)] = sSensor.name;
-      doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.value|float(0)|round(2) }}");
+      doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, FPSTR(S_VALUE), 2);
     }
 
     // object id's
@@ -279,7 +303,7 @@ public:
     doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_STATE_CLASS)] = FPSTR(HA_STATE_CLASS_MEASUREMENT);
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
-    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfterSensors;
     doc.shrinkToFit();
 
     return this->publish(configTopic.c_str(), doc);
@@ -326,16 +350,14 @@ public:
   bool publishConnectionDynamicSensor(Sensors::Settings& sSensor, bool enabledByDefault = true) {
     JsonDocument doc;
     String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("connected"));
+    String valueKey = Sensors::makeObjectId(sSensor.name);
 
     // object id's
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(objId.c_str());
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), objId.c_str());
 
-    // state topic
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
-      F("sensors"),
-      Sensors::makeObjectId(sSensor.name).c_str()
-    );
+    // batched state topic
+    doc[FPSTR(HA_STATE_TOPIC)] = this->sensorsTopic.c_str();
 
     // sensor name
     {
@@ -354,8 +376,13 @@ public:
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("connectivity");
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.connected, 'ON', 'OFF') }}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    {
+      String tmpl = F("{{ iif(value_json['");
+      tmpl += valueKey;
+      tmpl += F("'].connected, 'ON', 'OFF') }}");
+      doc[FPSTR(HA_VALUE_TEMPLATE)] = tmpl;
+    }
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfterSensors;
     doc.shrinkToFit();
 
     return this->publish(configTopic.c_str(), doc);
@@ -373,16 +400,14 @@ public:
   bool publishSignalQualityDynamicSensor(Sensors::Settings& sSensor, bool enabledByDefault = true) {
     JsonDocument doc;
     String objId = Sensors::makeObjectIdWithSuffix(sSensor.name, F("signal_quality"));
+    String valueKey = Sensors::makeObjectId(sSensor.name);
 
     // object id's
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(objId.c_str());
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), objId.c_str());
 
-    // state topic
-    doc[FPSTR(HA_STATE_TOPIC)] = this->getDeviceTopic(
-      F("sensors"),
-      Sensors::makeObjectId(sSensor.name).c_str()
-    );
+    // batched state topic
+    doc[FPSTR(HA_STATE_TOPIC)] = this->sensorsTopic.c_str();
 
     // sensor name
     {
@@ -404,8 +429,8 @@ public:
     doc[FPSTR(HA_STATE_CLASS)] = FPSTR(HA_STATE_CLASS_MEASUREMENT);
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
     doc[FPSTR(HA_ICON)] = F("mdi:signal");
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.signalQuality|float(0)|round(0) }}");
-    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = makeBatchTemplate(valueKey, F("signalQuality"), 0);
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfterSensors;
     doc.shrinkToFit();
 
     return this->publish(configTopic.c_str(), doc);
@@ -1403,7 +1428,8 @@ public:
 
   protected:
     unsigned short expireAfter = 300u;
-    String statusTopic, stateTopic, setStateTopic, settingsTopic, setSettingsTopic;
+    unsigned short expireAfterSensors = 150u;
+    String statusTopic, stateTopic, setStateTopic, settingsTopic, setSettingsTopic, sensorsTopic;
 };
 
 const char HaHelper::AVAILABILITY_OT_CONN[] = "{{ iif(value_json.slave.connected, 'online', 'offline') }}";

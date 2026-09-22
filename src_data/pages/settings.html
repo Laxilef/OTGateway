@@ -769,6 +769,11 @@
                   <span data-i18n>settings.mqtt.interval</span>
                   <input type="number" inputmode="numeric" name="mqtt[interval]" min="3" max="60" step="1" required>
                 </label>
+
+                <label>
+                  <span data-i18n>settings.mqtt.sensorsInterval</span>
+                  <input type="number" inputmode="numeric" name="mqtt[sensorsInterval]" min="5" max="600" step="1" required>
+                </label>
               </div>
 
               <button type="submit" data-i18n>button.save</button>
@@ -1138,6 +1143,7 @@
           setInputValue("[name='mqtt[password]']", data.mqtt.password);
           setInputValue("[name='mqtt[prefix]']", data.mqtt.prefix);
           setInputValue("[name='mqtt[interval]']", data.mqtt.interval);
+          setInputValue("[name='mqtt[sensorsInterval]']", data.mqtt.sensorsInterval);
           setBusy('#mqtt-settings-busy', '#mqtt-settings', false);
 
           // Extpump

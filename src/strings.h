@@ -180,6 +180,7 @@ const char S_RSSI[]                                 PROGMEM = "rssi";
 const char S_RX_LED_GPIO[]                          PROGMEM = "rxLedGpio";
 const char S_SDK[]                                  PROGMEM = "sdk";
 const char S_SENSORS[]                              PROGMEM = "sensors";
+const char S_SENSORS_INTERVAL[]                     PROGMEM = "sensorsInterval";
 const char S_SERIAL[]                               PROGMEM = "serial";
 const char S_SERVER[]                               PROGMEM = "server";
 const char S_SETTINGS[]                             PROGMEM = "settings";

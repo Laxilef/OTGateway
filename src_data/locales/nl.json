@@ -447,7 +447,8 @@
         "user": "Gebruiker",
         "password": "Wachtwoord",
         "prefix": "Prefix",
-        "interval": "Publicatie-interval <small>(sec)</small>"
+        "interval": "Publicatie-interval <small>(sec)</small>",
+        "sensorsInterval": "Sensors publicatie-interval <small>(sec)</small>"
       },
       "extPump": {
         "use": "Gebruik externe pomp",

@@ -129,6 +129,7 @@ void setup() {
 
   //
   // Settings
+  fsSettings.addWithoutWipe(true); // keep old settings when structure grows
   switch (fsSettings.read()) {
     case FD_FS_ERR:
       Log.swarningln(FPSTR(L_SETTINGS), F("Filesystem error, load default"));

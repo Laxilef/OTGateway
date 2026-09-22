@@ -482,7 +482,8 @@
         "user": "User",
         "password": "Password",
         "prefix": "Prefix",
-        "interval": "Publish interval <small>(sec)</small>"
+        "interval": "Publish interval <small>(sec)</small>",
+        "sensorsInterval": "Sensors publish interval <small>(sec)</small>"
       },
 
       "extPump": {

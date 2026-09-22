@@ -481,6 +481,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     mqtt[FPSTR(S_PASSWORD)] = src.mqtt.password;
     mqtt[FPSTR(S_PREFIX)] = src.mqtt.prefix;
     mqtt[FPSTR(S_INTERVAL)] = src.mqtt.interval;
+    mqtt[FPSTR(S_SENSORS_INTERVAL)] = src.mqttSensorsInterval;
     mqtt[FPSTR(S_HOME_ASSISTANT_DISCOVERY)] = src.mqtt.homeAssistantDiscovery;
 
     auto emergency = dst[FPSTR(S_EMERGENCY)].to<JsonObject>();
@@ -1098,6 +1099,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value >= 3 && value <= 60 && value != dst.mqtt.interval) {
         dst.mqtt.interval = value;
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_MQTT)][FPSTR(S_SENSORS_INTERVAL)].isNull()) {
+      unsigned short value = src[FPSTR(S_MQTT)][FPSTR(S_SENSORS_INTERVAL)].as<unsigned short>();
+
+      if (value >= 5 && value <= 600 && value != dst.mqttSensorsInterval) {
+        dst.mqttSensorsInterval = value;
         changed = true;
       }
     }
