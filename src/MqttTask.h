@@ -669,7 +669,10 @@ protected:
       any = true;
     }
 
-    if (!any) {
+    // never publish an empty retained payload: if JsonDocument allocation
+    // failed under heap pressure, doc stays null and HA templates
+    // value_json['<id>'] would break — skip instead, next interval retries
+    if (!any || !doc.size()) {
       return false;
     }
 
