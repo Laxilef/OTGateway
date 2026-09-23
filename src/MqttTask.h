@@ -665,7 +665,14 @@ protected:
       // JsonVariant by value, and a non-existent member converts to a null
       // variant (writes would be silently dropped)
       String objId = Sensors::makeObjectId(sSettings.name);
-      sensorResultToJson(sensorId, doc[objId].to<JsonObject>());
+
+      // signalQuality is consumed by the <id>_signal_quality entity, which is
+      // published only for BLUETOOTH/DALLAS_TEMP types; for the rest it is a
+      // constant 100 — skip it to shrink the batch (~21 bytes per sensor).
+      // The portal API still requests the full payload (default argument).
+      bool withSignalQuality = sSettings.type == Sensors::Type::BLUETOOTH
+        || sSettings.type == Sensors::Type::DALLAS_TEMP;
+      sensorResultToJson(sensorId, doc[objId].to<JsonObject>(), withSignalQuality);
       any = true;
     }
 

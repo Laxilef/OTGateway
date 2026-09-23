@@ -2089,7 +2089,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
   return changed;
 }
 
-void sensorResultToJson(const uint8_t sensorId, JsonVariant dst) {
+void sensorResultToJson(const uint8_t sensorId, JsonVariant dst, bool includeSignalQuality = true) {
   if (!Sensors::isValidSensorId(sensorId)) {
     return;
   }
@@ -2099,7 +2099,10 @@ void sensorResultToJson(const uint8_t sensorId, JsonVariant dst) {
 
   //dst[FPSTR(S_ID)] = sensorId;
   dst[FPSTR(S_CONNECTED)] = rSensor.connected;
-  dst[FPSTR(S_SIGNAL_QUALITY)] = rSensor.signalQuality;
+
+  if (includeSignalQuality) {
+    dst[FPSTR(S_SIGNAL_QUALITY)] = rSensor.signalQuality;
+  }
 
   if (sSensor.type == Sensors::Type::BLUETOOTH) {
     dst[FPSTR(S_TEMPERATURE)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::TEMPERATURE)], 3);
