@@ -1940,6 +1940,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
       case static_cast<uint8_t>(Sensors::Type::NTC_10K_TEMP):
       case static_cast<uint8_t>(Sensors::Type::DALLAS_TEMP):
       case static_cast<uint8_t>(Sensors::Type::BLUETOOTH):
+      case static_cast<uint8_t>(Sensors::Type::API_ENDPOINT):
       case static_cast<uint8_t>(Sensors::Type::HEATING_SETPOINT_TEMP):
       case static_cast<uint8_t>(Sensors::Type::MANUAL):
       case static_cast<uint8_t>(Sensors::Type::NOT_CONFIGURED):

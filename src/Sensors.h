@@ -39,6 +39,7 @@ public:
     NTC_10K_TEMP            = 50,
     DALLAS_TEMP             = 51,
     BLUETOOTH               = 52,
+    API_ENDPOINT            = 53,
 
     HEATING_SETPOINT_TEMP   = 253,
     MANUAL                  = 254,

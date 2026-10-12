@@ -634,6 +634,86 @@ protected:
     });
 
 
+    // sensor value push (API endpoint sensors)
+    auto pushSensorValue = [this](const String& name, const float value) {
+      if (vars.states.restarting) {
+        this->webServer->send(503);
+        return;
+      }
+
+      if (!name.length()) {
+        this->webServer->send(400);
+        return;
+      }
+
+      int16_t sensorId = Sensors::getIdByObjectId(name.c_str());
+      if (sensorId == -1) {
+        sensorId = Sensors::getIdByName(name.c_str());
+      }
+
+      if (sensorId == -1) {
+        this->webServer->send(404);
+        return;
+      }
+
+      auto& sSensor = Sensors::settings[sensorId];
+      if (!sSensor.enabled || sSensor.type != Sensors::Type::API_ENDPOINT || sSensor.purpose == Sensors::Purpose::NOT_CONFIGURED) {
+        this->webServer->send(404);
+        return;
+      }
+
+      if (!Sensors::setValueById(sensorId, value, Sensors::ValueType::PRIMARY, true, true)) {
+        this->webServer->send(400);
+        return;
+      }
+
+      tMqtt->resetPublishedSensorTime(sensorId);
+
+      Log.straceln(
+        FPSTR(L_SENSORS_API), F("Sensor #%hhu '%s', value via API: %.2f"),
+        static_cast<uint8_t>(sensorId), sSensor.name, value
+      );
+
+      this->webServer->send(200, F("text/plain"), F("OK"));
+    };
+
+    this->webServer->on(F("/api/sensor/push"), HTTP_GET, [this, pushSensorValue]() {
+      const String& value = this->webServer->arg(F("value"));
+      char* endPtr = nullptr;
+      float sensorValue = strtof(value.c_str(), &endPtr);
+
+      if (!value.length() || endPtr == value.c_str() || *endPtr != '\0') {
+        this->webServer->send(400);
+        return;
+      }
+
+      pushSensorValue(this->webServer->arg(F("name")), sensorValue);
+    });
+
+    this->webServer->on(F("/api/sensor/push"), HTTP_POST, [this, pushSensorValue]() {
+      if (vars.states.restarting) {
+        this->webServer->send(503);
+        return;
+      }
+
+      const String& plain = this->webServer->arg(0);
+      if (plain.length() < 5 || plain.length() > 512) {
+        this->webServer->send(400);
+        return;
+      }
+
+      JsonDocument doc;
+      DeserializationError dErr = deserializeJson(doc, plain);
+
+      if (dErr != DeserializationError::Ok || doc.isNull() || !doc.size() || !doc[FPSTR(S_VALUE)].is<float>()) {
+        this->webServer->send(400);
+        return;
+      }
+
+      pushSensorValue(doc[FPSTR(S_NAME)].as<String>(), doc[FPSTR(S_VALUE)].as<float>());
+    });
+
+
     // vars
     this->webServer->on(F("/api/vars"), HTTP_GET, [this]() {
       JsonDocument doc;
