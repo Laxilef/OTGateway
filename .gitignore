@@ -1,6 +1,7 @@
 .pio
 .vscode
 .PVS-Studio
+.DS_Store
 build/*
 data/*
 managed_components/*
