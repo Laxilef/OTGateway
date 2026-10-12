@@ -734,6 +734,18 @@ protected:
 
     } else if (vars.slave.dhw.active) {
       targetMaxModulation = settings.dhw.maxModulation;
+
+    } else {
+      // This fixes the inability to enable channels if
+      // the maximum modulation level has become zero for some reason.
+
+      if (vars.master.heating.enabled && targetMaxModulation < settings.heating.maxModulation) {
+        targetMaxModulation = settings.heating.maxModulation;
+      }
+
+      if (vars.master.dhw.enabled && targetMaxModulation < settings.dhw.maxModulation) {
+        targetMaxModulation = settings.dhw.maxModulation;
+      }
     }
 
     if (this->setMaxModulationLevel(targetMaxModulation)) {
