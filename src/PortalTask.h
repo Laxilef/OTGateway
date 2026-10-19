@@ -227,12 +227,8 @@ protected:
       // restore sensors settings
       if (!requestDoc[FPSTR(S_SENSORS)].isNull()) {
         for (auto sensor : requestDoc[FPSTR(S_SENSORS)].as<JsonObject>()) {
-          if (!isDigit(sensor.key().c_str())) {
-            continue;
-          }
-
-          int sensorId = atoi(sensor.key().c_str());
-          if (sensorId < 0 || sensorId > 255 || !Sensors::isValidSensorId(sensorId)) {
+          uint8_t sensorId;
+          if (!Sensors::parseId(sensor.key().c_str(), sensorId)) {
             continue;
           }
 
@@ -420,12 +416,8 @@ protected:
       }
 
       const auto& id = request->getParam("id")->value();
-      if (!isDigit(id.c_str())) {
-        return request->send(400);
-      }
-
-      uint8_t sensorId = id.toInt();
-      if (!Sensors::isValidSensorId(sensorId)) {
+      uint8_t sensorId;
+      if (!Sensors::parseId(id.c_str(), sensorId)) {
         return request->send(404);
       }
 
@@ -451,12 +443,8 @@ protected:
       }
 
       auto& id = request->getParam("id")->value();
-      if (!isDigit(id.c_str())) {
-        return request->send(400);
-      }
-
-      uint8_t sensorId = id.toInt();
-      if (!Sensors::isValidSensorId(sensorId)) {
+      uint8_t sensorId;
+      if (!Sensors::parseId(id.c_str(), sensorId)) {
         return request->send(404);
       }
 

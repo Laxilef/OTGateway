@@ -1,4 +1,6 @@
 #pragma once
+#include <errno.h>
+#include <stdlib.h>
 
 class Sensors {
 protected:
@@ -121,8 +123,24 @@ public:
     return maxSensors > 1 ? (maxSensors - 1) : 0;
   }
 
-  static inline bool isValidSensorId(const uint8_t id) {
+  template <class T>
+  static bool isValidSensorId(const T id) {
     return id >= 0 && id <= getMaxSensorId();
+  }
+
+  static bool parseId(const char* value, uint8_t& sensorId) {
+    if (!isDigit(value)) {
+      return false;
+    }
+
+    errno = 0;
+    const unsigned long parsed = strtoul(value, nullptr, 10);
+    if (errno == ERANGE || !isValidSensorId(parsed)) {
+      return false;
+    }
+
+    sensorId = static_cast<uint8_t>(parsed);
+    return true;
   }
 
   static inline bool isValidValueId(const uint8_t id) {
@@ -498,6 +516,22 @@ public:
 
   static uint8_t bluetoothRssiToQuality(int rssi) {
     return constrain(map(rssi, -110, -50, 0, 100), 0, 100);;
+  }
+
+private:
+  static constexpr bool isDigit(const char* value) {
+    if (value == nullptr || *value == '\0') {
+      return false;
+    }
+
+    while (*value != '\0') {
+      if (*value < '0' || *value > '9') {
+        return false;
+      }
+      value++;
+    }
+
+    return true;
   }
 };
 

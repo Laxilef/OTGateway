@@ -70,12 +70,6 @@ time_t mkgmtime(const struct tm *ptm) {
   return secs;
 }
 
-inline bool isDigit(const char* ptr) {
-  char* endPtr;
-  auto tmp = strtol(ptr, &endPtr, 10);
-  return *endPtr == 0;
-}
-
 inline float liter2gallon(float value) {
   return value / 4.546091879f;
 }
