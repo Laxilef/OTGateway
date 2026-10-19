@@ -226,7 +226,7 @@
             sensorNode.dataset.id = sensorId;
             setValue(".id", sensorId, sensorNode);
             setValue(".pos", parseInt(sensorId) + 1, sensorNode);
-            setValue(".name", result[sensorId], sensorNode);
+            setTextValue(".name", result[sensorId], sensorNode);
             
             container.appendChild(sensorNode);
             container.appendChild(document.createElement("hr"));

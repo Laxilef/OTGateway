@@ -649,6 +649,21 @@ const setValue = (selector, value, parent = undefined) => {
   }
 }
 
+const setTextValue = (selector, value, parent = undefined) => {
+  if (parent === undefined) {
+    parent = document;
+  }
+
+  let items = parent.querySelectorAll(selector);
+  if (!items.length) {
+    return;
+  }
+
+  for (let item of items) {
+    item.textContent = value;
+  }
+}
+
 const appendValue = (selector, value, nl = null, parent = undefined) => {
   if (parent === undefined) {
     parent = document;

@@ -770,7 +770,7 @@
                 sData.connected ? "green" : "red",
                 sensorNode
               );
-              setValue(".sName", sData.name, sensorNode);
+              setTextValue(".sName", sData.name, sensorNode);
               setValue(".sValue", "", sensorNode);
 
               const statusNode = sensorNode.querySelector(`.sStatusContainer`);

@@ -191,34 +191,34 @@
             }
 
             const result = await response.json();
-            setValue('#reset-reason', result.system.resetReason);
+            setTextValue('#reset-reason', result.system.resetReason);
             setValue('#uptime', result.system.uptime);
             setValue('#uptime-days', Math.floor(result.system.uptime / 86400));
             setValue('#uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
             setValue('#uptime-min', Math.floor(result.system.uptime % 3600 / 60));
             setValue('#uptime-sec', Math.floor(result.system.uptime % 60));
 
-            setValue('#network-hostname', result.network.hostname);
-            setValue('#network-mac', result.network.mac);
+            setTextValue('#network-hostname', result.network.hostname);
+            setTextValue('#network-mac', result.network.mac);
             setStatus(
               '#network-connected',
               result.network.connected ? "success" : "error",
               result.network.connected ? "green" : "red"
             );
-            setValue('#network-ssid', result.network.ssid);
+            setTextValue('#network-ssid', result.network.ssid);
             setValue('#network-signal', result.network.signalQuality);
-            setValue('#network-ip', result.network.ip);
-            setValue('#network-subnet', result.network.subnet);
-            setValue('#network-gateway', result.network.gateway);
-            setValue('#network-dns', result.network.dns);
+            setTextValue('#network-ip', result.network.ip);
+            setTextValue('#network-subnet', result.network.subnet);
+            setTextValue('#network-gateway', result.network.gateway);
+            setTextValue('#network-dns', result.network.dns);
             setBusy('#main-busy', '#main-table', false);
 
-            setValue('#build-version', result.build.version);
-            setValue('#build-commit', result.build.commit);
-            setValue('#build-date', result.build.date);
-            setValue('#build-env', result.build.env);
-            setValue('#build-core', result.build.core);
-            setValue('#build-sdk', result.build.sdk);
+            setTextValue('#build-version', result.build.version);
+            setTextValue('#build-commit', result.build.commit);
+            setTextValue('#build-date', result.build.date);
+            setTextValue('#build-env', result.build.env);
+            setTextValue('#build-core', result.build.core);
+            setTextValue('#build-sdk', result.build.sdk);
 
             setValue('#heap-total', result.heap.total);
             setValue('#heap-free', result.heap.free);
@@ -231,7 +231,7 @@
             setValue('#psram-min-free', result.psram.minFree);
             setValue('#psram-max-free-block', result.psram.maxFreeBlock);
 
-            setValue('#chip-model', result.chip.model);
+            setTextValue('#chip-model', result.chip.model);
             setValue('#chip-rev', result.chip.rev);
             setValue('#chip-cores', result.chip.cores);
             setValue('#chip-freq', result.chip.freq);
