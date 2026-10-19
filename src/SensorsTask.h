@@ -874,14 +874,19 @@ protected:
     }
 
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
-      Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
-      NimBLEDevice::init("");
+      if (NimBLEDevice::init(PROJECT_NAME)) {
+        Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
 
-      #ifdef ESP_PWR_LVL_P20
-      NimBLEDevice::setPower(ESP_PWR_LVL_P20);
-      #elifdef ESP_PWR_LVL_P9
-      NimBLEDevice::setPower(ESP_PWR_LVL_P9);
-      #endif
+        #ifdef ESP_PWR_LVL_P20
+        NimBLEDevice::setPower(ESP_PWR_LVL_P20);
+        #elifdef ESP_PWR_LVL_P9
+        NimBLEDevice::setPower(ESP_PWR_LVL_P9);
+        #endif
+
+      } else {
+        Log.swarningln(FPSTR(L_SENSORS_BLE), F("Unable to initialize!"));
+        return;
+      }
     }
 
     if (this->pBLEScan == nullptr) {
