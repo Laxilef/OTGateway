@@ -2468,7 +2468,7 @@ protected:
       return false;
     }
 
-    const float value = CustomOpenTherm::getInt(response);
+    const float value = CustomOpenTherm::getFloat(response);
     if (value <= 0) {
       return false;
     }
