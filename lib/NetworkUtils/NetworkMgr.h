@@ -381,6 +381,46 @@ namespace NetworkUtils {
       return constrain(map(rssi, -100, -50, 0, 100), 0, 100);
     }
 
+    static bool isHostnameValid(const char* value) {
+      if (value == nullptr) {
+        return false;
+      }
+
+      size_t len = strlen(value);
+      if (len == 0 || len > 24 || value[0] == '-' || value[len - 1] == '-') {
+        return false;
+      }
+
+      for (size_t i = 0; i < len; i++) {
+        const char symbol = value[i];
+
+        // Lowercase ASCII letters.
+        if (symbol >= 'a' && symbol <= 'z') {
+          continue;
+        }
+
+        // Uppercase ASCII letters.
+        if (symbol >= 'A' && symbol <= 'Z') {
+          continue;
+        }
+
+        // Decimal digits.
+        if (symbol >= '0' && symbol <= '9') {
+          continue;
+        }
+
+        // Hyphens are allowed inside the hostname.
+        if (symbol == '-') {
+          continue;
+        }
+
+        // All other characters are invalid.
+        return false;
+      }
+
+      return true;
+    }
+
   protected:
     const unsigned int reconnectInterval = 15000;
     const unsigned int failedConnectTimeout = 185000;
@@ -449,28 +489,5 @@ namespace NetworkUtils {
     }
     #endif
 
-    /**
-     * @brief check RFC compliance
-     *
-     * @param value
-     * @return true
-     * @return false
-     */
-    static bool isHostnameValid(const char* value) {
-      size_t len = strlen(value);
-      if (len > 24) {
-        return false;
-      } else if (value[len - 1] == '-') {
-        return false;
-      }
-
-      for (size_t i = 0; i < len; i++) {
-        if (!isalnum(value[i]) && value[i] != '-') {
-          return false;
-        }
-      }
-
-      return true;
-    }
   };
 }

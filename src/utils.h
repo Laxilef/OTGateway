@@ -296,12 +296,14 @@ bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
   bool changed = false;
 
   // hostname
-  if (!src[FPSTR(S_HOSTNAME)].isNull()) {
-    String value = src[FPSTR(S_HOSTNAME)].as<String>();
+  if (src[FPSTR(S_HOSTNAME)].is<JsonString>()) {
+    const JsonString value = src[FPSTR(S_HOSTNAME)].as<JsonString>();
 
-    if (value.length() < sizeof(dst.hostname) && !value.equals(dst.hostname)) {
-      strcpy(dst.hostname, value.c_str());
-      changed = true;
+    if (value.size() < sizeof(dst.hostname) && NetworkUtils::NetworkMgr::isHostnameValid(value.c_str())) {
+      if (strcmp(value.c_str(), dst.hostname) != 0) {
+        strcpy(dst.hostname, value.c_str());
+        changed = true;
+      }
     }
   }
 
