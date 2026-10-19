@@ -1885,7 +1885,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
   }
 
   // name
-  if (!src[FPSTR(S_NAME)].isNull()) {
+  if (src[FPSTR(S_NAME)].is<JsonString>() && src[FPSTR(S_NAME)].as<JsonString>().size() < sizeof(dst.name)) {
     auto value = src[FPSTR(S_NAME)].as<String>();
     Sensors::cleanName(value);
 

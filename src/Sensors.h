@@ -409,7 +409,7 @@ public:
 
   static String& cleanName(String& value, char space = ' ') {
     // only valid symbols
-    for (uint8_t pos = 0; pos < value.length(); pos++) {
+    for (size_t pos = 0; pos < value.length(); pos++) {
       char symbol = value.charAt(pos);
 
       // 0..9
