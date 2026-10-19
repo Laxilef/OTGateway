@@ -1641,7 +1641,7 @@ protected:
   }
 
   bool setTime(const struct tm *ptm) {
-    const uint8_t dayOfWeek = ptm->tm_wday == 0 ? 6 : ptm->tm_wday - 1;
+    const uint8_t dayOfWeek = ptm->tm_wday == 0 ? 7 : ptm->tm_wday;
     const unsigned int request = ((dayOfWeek & 0x07) << 13)
       | ((ptm->tm_hour & 0x1F) << 8)
       | (ptm->tm_min & 0x3F);
