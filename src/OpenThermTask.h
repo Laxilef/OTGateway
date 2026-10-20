@@ -31,6 +31,8 @@ protected:
   unsigned long heatingSetTempTime = 0;
   unsigned long dhwSetTempTime = 0;
   unsigned long ch2SetTempTime = 0;
+  unsigned long roomSetTempTime = 0;
+  unsigned long roomSetTempCh2Time = 0;
   uint8_t configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
 
   #if defined(ARDUINO_ARCH_ESP32)
@@ -91,6 +93,8 @@ protected:
     this->instanceOutGpio = settings.opentherm.outGpio;
     this->resetBusTime = millis();
     this->initialized = false;
+    this->roomSetTempTime = 0;
+    this->roomSetTempCh2Time = 0;
 
     Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
 
@@ -1291,13 +1295,13 @@ protected:
       );
 
       // Set target indoor temp
-      if (this->needSetHeatingTemp(convertedTemp)) {
+      if (this->needSetRoomSetpoint(convertedTemp)) {
         if (this->setRoomSetpoint(convertedTemp)) {
-          this->heatingSetTempTime = millis();
+          this->roomSetTempTime = millis();
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set target indoor temp: %.2f (converted: %.2f, response: %.2f)"),
-            targetTemp, convertedTemp, vars.slave.heating.targetTemp
+            targetTemp, convertedTemp, vars.slave.heating.roomTargetTemp
           );
 
         } else {
@@ -1306,13 +1310,13 @@ protected:
       }
 
       // Set target CH2 temp
-      if (settings.opentherm.options.heatingToCh2 && this->needSetCh2Temp(convertedTemp)) {
+      if (settings.opentherm.options.heatingToCh2 && this->needSetRoomSetpointCh2(convertedTemp)) {
         if (this->setRoomSetpointCh2(convertedTemp)) {
-          this->ch2SetTempTime = millis();
+          this->roomSetTempCh2Time = millis();
 
           Log.sinfoln(
             FPSTR(L_OT_HEATING), F("Set target CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)"),
-            targetTemp, convertedTemp, vars.slave.ch2.targetTemp
+            targetTemp, convertedTemp, vars.slave.ch2.roomTargetTemp
           );
 
         } else {
@@ -1552,6 +1556,18 @@ protected:
     return millis() - this->instanceCreatedTime > this->readyTime;
   }
 
+  bool needSetRoomSetpoint(const float target) {
+    return !this->roomSetTempTime
+      || millis() - this->roomSetTempTime > this->heatingSetTempInterval
+      || fabsf(target - vars.slave.heating.roomTargetTemp) > 0.05f;
+  }
+
+  bool needSetRoomSetpointCh2(const float target) {
+    return !this->roomSetTempCh2Time
+      || millis() - this->roomSetTempCh2Time > this->ch2SetTempInterval
+      || fabsf(target - vars.slave.ch2.roomTargetTemp) > 0.05f;
+  }
+
   bool needSetDhwTemp(const float target) {
     return millis() - this->dhwSetTempTime > this->dhwSetTempInterval
       || fabsf(target - vars.slave.dhw.targetTemp) > 0.05f;
@@ -1778,7 +1794,7 @@ protected:
       return false;
     }
 
-    vars.slave.heating.targetTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.heating.roomTargetTemp = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }
@@ -1798,7 +1814,7 @@ protected:
       return false;
     }
 
-    vars.slave.ch2.targetTemp = CustomOpenTherm::getFloat(response);
+    vars.slave.ch2.roomTargetTemp = CustomOpenTherm::getFloat(response);
 
     return CustomOpenTherm::getUInt(response) == request;
   }

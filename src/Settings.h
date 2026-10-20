@@ -402,6 +402,7 @@ struct Variables {
       bool active = false;
       bool enabled = false;
       float targetTemp = 0.0f;
+      float roomTargetTemp = 0.0f;
       float currentTemp = 0.0f;
       float returnTemp = 0.0f;
       float indoorTemp = 0.0f;
@@ -426,6 +427,7 @@ struct Variables {
       bool active = false;
       bool enabled = false;
       float targetTemp = 0.0f;
+      float roomTargetTemp = 0.0f;
       float currentTemp = 0.0f;
       float indoorTemp = 0.0f;
     } ch2;
