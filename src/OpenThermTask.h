@@ -93,6 +93,9 @@ protected:
     this->instanceOutGpio = settings.opentherm.outGpio;
     this->resetBusTime = millis();
     this->initialized = false;
+    this->heatingSetTempTime = 0;
+    this->dhwSetTempTime = 0;
+    this->ch2SetTempTime = 0;
     this->roomSetTempTime = 0;
     this->roomSetTempCh2Time = 0;
 
@@ -1584,17 +1587,20 @@ protected:
   }
 
   bool needSetDhwTemp(const float target) {
-    return millis() - this->dhwSetTempTime > this->dhwSetTempInterval
+    return !this->dhwSetTempTime
+      || millis() - this->dhwSetTempTime > this->dhwSetTempInterval
       || fabsf(target - vars.slave.dhw.targetTemp) > 0.05f;
   }
 
   bool needSetHeatingTemp(const float target) {
-    return millis() - this->heatingSetTempTime > this->heatingSetTempInterval
+    return !this->heatingSetTempTime
+      || millis() - this->heatingSetTempTime > this->heatingSetTempInterval
       || fabsf(target - vars.slave.heating.targetTemp) > 0.05f;
   }
 
   bool needSetCh2Temp(const float target) {
-    return millis() - this->ch2SetTempTime > this->ch2SetTempInterval
+    return !this->ch2SetTempTime
+      || millis() - this->ch2SetTempTime > this->ch2SetTempInterval
       || fabsf(target - vars.slave.ch2.targetTemp) > 0.05f;
   }
 
