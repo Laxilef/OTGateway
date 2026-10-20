@@ -23,6 +23,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Keep Python within the versions supported by pioarduino.
+  PYTHON_VERSION: "3.13"
+
 jobs:
   prepare:
     name: Prepare (get envs)
@@ -37,7 +41,7 @@ jobs:
       - name: Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.x"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install PlatformIO Core
         run: |
@@ -80,7 +84,7 @@ jobs:
       - name: Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.x"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Node.js
         uses: actions/setup-node@v5
