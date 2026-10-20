@@ -165,7 +165,7 @@ namespace NetworkUtils {
       #ifdef ARDUINO_ARCH_ESP8266
       WiFi.setSleepMode(WIFI_NONE_SLEEP);
       #elif defined(ARDUINO_ARCH_ESP32)
-      WiFi.setSleep(USE_BLE ? WIFI_PS_MIN_MODEM : WIFI_PS_NONE);
+      WiFi.setSleep(WIFI_PS_NONE);
       #endif
 
       WiFi.softAPdisconnect();
