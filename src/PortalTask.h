@@ -66,7 +66,7 @@ protected:
 
     // auth middleware
     static AsyncMiddlewareFunction authMiddleware([](AsyncWebServerRequest *request, ArMiddlewareNext next) {
-      if (network->isApEnabled() || !settings.portal.auth || !strlen(settings.portal.password)) {
+      if (!isAuthenticationRequired()) {
         return next();
       }
 
@@ -79,7 +79,20 @@ protected:
 
     // web serial
     if (webSerial != nullptr) {
-      webSerial->begin(this->webServer);
+      webSerial->begin(this->webServer, nullptr, "/webserial");
+
+      // Refresh credentials before each handshake to use the current portal settings.
+      this->webServer->addMiddleware([](AsyncWebServerRequest *request, ArMiddlewareNext next) {
+        if (request->url().equals("/webserial")) {
+          if (isAuthenticationRequired()) {
+            webSerial->setAuthentication(settings.portal.login, settings.portal.password);
+          } else {
+            webSerial->setAuthentication("", "");
+          }
+        }
+
+        return next();
+      });
     }
 
     // index page
@@ -112,6 +125,10 @@ protected:
 
     // upgrade page
     this->webServer->serveStatic("/upgrade.html", LittleFS, "/pages/upgrade.html", PORTAL_CACHE)
+      .addMiddleware(&authMiddleware);
+
+    // logs page
+    this->webServer->serveStatic("/logs.html", LittleFS, "/pages/logs.html", PORTAL_CACHE)
       .addMiddleware(&authMiddleware);
 
     // OTA
@@ -794,6 +811,10 @@ protected:
     //this->dnsServer->processNextRequest();
     this->dnsServer->stop();
     this->dnsServerEnabled = false;
+  }
+
+  static bool isAuthenticationRequired() {
+    return !network->isApEnabled() && settings.portal.auth && strlen(settings.portal.password);
   }
 
   static void getFilename(char* filename, size_t maxSizeFilename, const char* type) {

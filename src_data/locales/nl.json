@@ -505,6 +505,32 @@
         }
       }
     },
+    "logs": {
+      "title": "Logboek - OpenTherm Gateway",
+      "name": "Logboek",
+      "desc": "Apparaatlogboek in realtime.",
+      "status": {
+        "connecting": "Verbinden...",
+        "connected": "Verbonden",
+        "disconnected": "Verbinding verbroken"
+      },
+      "autoscroll": "Automatisch scrollen",
+      "limitHistory": "Bewaar maximaal 1000 regels",
+      "historyNote": "Onbeperkte geschiedenis gebruikt meer browsergeheugen. Downloads bevatten alle bewaarde regels, ook de regels die door het filter zijn verborgen.",
+      "filter": "Filter",
+      "search": {
+        "title": "Zoeken",
+        "previous": "Vorige",
+        "next": "Volgende"
+      },
+      "level": {
+        "note": "Het niveau geldt voor het apparaatlogboek (Serial en WebSerial). Het onderstaande filter wijzigt alleen de weergave.",
+        "loadError": "Het logniveau kon niet worden geladen. Probeer opnieuw.",
+        "saveError": "Het logniveau kon niet worden opgeslagen. Controleer de verbinding en probeer opnieuw."
+      },
+      "clear": "Wissen",
+      "download": "Logboek downloaden"
+    },
     "upgrade": {
       "title": "Upgrade - OpenTherm Gateway",
       "name": "Upgrade",

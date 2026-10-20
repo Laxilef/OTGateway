@@ -505,6 +505,32 @@
         }
       }
     },
+    "logs": {
+      "title": "Registro - OpenTherm Gateway",
+      "name": "Registro",
+      "desc": "Registro del dispositivo in tempo reale.",
+      "status": {
+        "connecting": "Connessione in corso...",
+        "connected": "Connesso",
+        "disconnected": "Disconnesso"
+      },
+      "autoscroll": "Scorrimento automatico",
+      "limitHistory": "Conserva al massimo 1000 voci",
+      "historyNote": "La cronologia illimitata usa più memoria del browser. Il download include tutte le voci conservate, anche quelle nascoste dal filtro.",
+      "filter": "Filtro",
+      "search": {
+        "title": "Cerca",
+        "previous": "Precedente",
+        "next": "Successivo"
+      },
+      "level": {
+        "note": "Il livello si applica al registro del dispositivo (Serial e WebSerial). Il filtro sottostante cambia solo la visualizzazione.",
+        "loadError": "Impossibile caricare il livello del registro. Riprovare la richiesta.",
+        "saveError": "Impossibile salvare il livello del registro. Controllare la connessione e riprovare."
+      },
+      "clear": "Cancella",
+      "download": "Scarica il registro"
+    },
     "upgrade": {
       "title": "Aggiornamenti - OpenTherm Gateway",
       "name": "Aggiornamenti",

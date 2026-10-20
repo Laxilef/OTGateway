@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-i18n>logs.title</title>
+    <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}" />
+    <style>
+      #log-console {
+        background: #15191e;
+        color: #e5e7eb;
+        border-radius: var(--pico-border-radius);
+        margin-bottom: 1rem;
+      }
+
+      #log-console-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+      }
+
+      #connection-status {
+        display: inline-block;
+        width: 0.65rem;
+        height: 0.65rem;
+        border: 0;
+        border-radius: 50%;
+        background: var(--pico-form-element-invalid-border-color);
+      }
+
+      #connection-status[data-state="connected"] {
+        background: var(--pico-form-element-valid-border-color);
+      }
+
+      #log-output {
+        position: relative;
+        height: 55vh;
+        min-height: 10rem;
+        resize: vertical;
+        overflow: auto;
+        padding: 0.5rem;
+        font: 0.6rem/1.4 monospace;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      #log-output > .search-match {
+        background: var(--pico-primary-focus);
+        outline: 1px solid var(--pico-primary);
+        outline-offset: -1px;
+      }
+
+      #log-output > div {
+        min-height: 1.4em;
+      }
+
+      #search-count {
+        white-space: nowrap;
+      }
+
+      #search-logs {
+        min-width: 0;
+      }
+
+      #log-controls label {
+        margin-bottom: 0.5rem;
+      }
+
+      #log-search-controls > button {
+        flex: 0 0 auto;
+        width: auto;
+        padding-inline: 0.75rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="container">
+      <nav>
+        <ul>
+          <li>
+            <a href="/">
+              <div class="logo" data-i18n>logo</div>
+            </a>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <select id="lang" aria-label="Lang">
+              <option value="en" selected>EN</option>
+              <option value="cn">CN</option>
+              <option value="it">IT</option>
+              <option value="nl">NL</option>
+              <option value="ru">RU</option>
+            </select>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="container">
+      <article>
+        <hgroup>
+          <h2 data-i18n>logs.name</h2>
+          <p data-i18n>logs.desc</p>
+        </hgroup>
+
+        <form action="/api/settings" method="post" id="log-level-form">
+          <label for="log-level" data-i18n>settings.system.logLevel</label>
+          <div role="group">
+            <select name="system[logLevel]" id="log-level" disabled>
+              <option value="0">SILENT</option>
+              <option value="1">FATAL</option>
+              <option value="2">ERROR</option>
+              <option value="3">WARNING</option>
+              <option value="4">INFO</option>
+              <option value="5">NOTICE</option>
+              <option value="6">TRACE</option>
+              <option value="7">VERBOSE</option>
+            </select>
+            <button type="submit" disabled data-i18n>button.save</button>
+          </div>
+          <small data-i18n>logs.level.note</small>
+          <div id="log-level-load-error" hidden>
+            <small id="log-level-error" data-i18n="logs.level.loadError"></small>
+            <button type="button" id="retry-log-level" class="secondary" data-i18n>button.refresh</button>
+          </div>
+        </form>
+
+        <hr />
+
+        <div id="log-controls" class="grid">
+          <label>
+            <input type="checkbox" id="autoscroll" checked />
+            <span data-i18n>logs.autoscroll</span>
+          </label>
+          <label>
+            <input type="checkbox" id="limit-history" checked />
+            <span data-i18n>logs.limitHistory</span>
+          </label>
+        </div>
+        <small data-i18n>logs.historyNote</small>
+
+        <div class="grid">
+          <label for="filter-logs">
+            <span data-i18n>logs.filter</span>
+            <input type="search" id="filter-logs" />
+          </label>
+          <div>
+            <label for="search-logs" data-i18n>logs.search.title</label>
+            <div role="group" id="log-search-controls">
+              <input type="search" id="search-logs" />
+              <button type="button" id="search-prev" class="secondary" disabled>
+                <span aria-hidden="true">↑</span>
+                <span hidden data-i18n>logs.search.previous</span>
+              </button>
+              <button type="button" id="search-next" class="secondary" disabled>
+                <span aria-hidden="true">↓</span>
+                <span hidden data-i18n>logs.search.next</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="log-console">
+          <div id="log-console-header">
+            <small id="search-count" aria-live="polite">0 / 0</small>
+            <span id="connection-status" role="img" tabindex="0" data-state="connecting" data-placement="left">
+              <span id="connection-text" hidden data-i18n="logs.status.connecting"></span>
+            </span>
+          </div>
+          <div id="log-output" role="log" aria-live="off" tabindex="0"></div>
+        </div>
+
+        <div role="group" id="log-actions">
+          <button type="button" id="clear-logs" class="secondary" data-i18n>logs.clear</button>
+          <button type="button" id="download-logs" data-i18n>logs.download</button>
+        </div>
+      </article>
+    </main>
+
+    <footer class="container">
+      <small>
+        <b>Made by Laxilef</b>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/LICENSE" target="_blank" class="secondary" data-i18n>nav.license</a>
+        • <a href="https://github.com/Laxilef/OTGateway/blob/master/" target="_blank" class="secondary" data-i18n>nav.source</a>
+        • <a href="https://github.com/Laxilef/OTGateway/wiki" target="_blank" class="secondary" data-i18n>nav.help</a>
+        • <a href="https://github.com/Laxilef/OTGateway/issues" target="_blank" class="secondary" data-i18n>nav.issues</a>
+        • <a href="https://github.com/Laxilef/OTGateway/releases" target="_blank" class="secondary" data-i18n>nav.releases</a>
+      </small>
+    </footer>
+
+    <script src="/static/app.js?{BUILD_TIME}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const lang = new Lang(document.getElementById('lang'));
+        await lang.build();
+
+        const output = document.getElementById('log-output');
+        const autoscroll = document.getElementById('autoscroll');
+        const limitHistory = document.getElementById('limit-history');
+        const filterInput = document.getElementById('filter-logs');
+        const searchInput = document.getElementById('search-logs');
+        const searchPrevious = document.getElementById('search-prev');
+        const searchNext = document.getElementById('search-next');
+        const searchCount = document.getElementById('search-count');
+        const status = document.getElementById('connection-status');
+        const statusText = document.getElementById('connection-text');
+        const colors = [
+          '#000000', '#cd3131', '#0dbc79', '#e5e510',
+          '#2472c8', '#bc3fbc', '#11a8cd', '#e5e5e5',
+          '#666666', '#f14c4c', '#23d18b', '#f5f543',
+          '#3b8eea', '#d670d6', '#29b8db', '#ffffff'
+        ];
+        let escapeState = 'text';
+        let escapeParams = '';
+        let foreground = null;
+        let background = null;
+        let bold = false;
+        let socket = null;
+        let reconnectTimer = null;
+        let heartbeatTimer = null;
+        let waitingForPong = false;
+        let active = true;
+        let viewTimer = null;
+        let filterText = '';
+        let searchText = '';
+        let matches = [];
+        let selectedIndex = -1;
+        let selectedRecord = null;
+
+        const updateLabels = () => {
+          status.setAttribute('data-tooltip', statusText.textContent);
+          status.setAttribute('aria-label', statusText.textContent);
+          for (const button of [searchPrevious, searchNext]) {
+            const text = button.querySelector('[data-i18n]').textContent;
+            button.setAttribute('data-tooltip', text);
+            button.setAttribute('aria-label', text);
+          }
+        };
+        const labelObserver = new MutationObserver(updateLabels);
+        for (const label of [statusText, ...document.querySelectorAll('#log-search-controls [data-i18n]')]) {
+          labelObserver.observe(label, {childList: true, subtree: true, characterData: true});
+        }
+
+        const setConnectionStatus = (state) => {
+          status.dataset.state = state;
+          statusText.setAttribute('data-i18n', `logs.status.${state}`);
+          lang.translateElement(statusText);
+          updateLabels();
+        };
+
+        const updateSelection = (scroll = false) => {
+          const nextRecord = matches[selectedIndex] || null;
+          if (selectedRecord !== nextRecord) {
+            if (selectedRecord) {
+              selectedRecord.classList.remove('search-match');
+            }
+            selectedRecord = nextRecord;
+            if (selectedRecord) {
+              selectedRecord.classList.add('search-match');
+            }
+          }
+          searchCount.textContent = `${selectedRecord ? selectedIndex + 1 : 0} / ${matches.length}`;
+          searchPrevious.disabled = matches.length === 0;
+          searchNext.disabled = matches.length === 0;
+          if (scroll && selectedRecord) {
+            autoscroll.checked = false;
+            output.scrollTop = selectedRecord.offsetTop - (output.clientHeight - selectedRecord.offsetHeight) / 2;
+          }
+        };
+
+        const pruneHistory = () => {
+          let removedMatches = 0;
+          while (limitHistory.checked && output.childElementCount > 1000) {
+            const record = output.firstElementChild;
+            if (matches[removedMatches] === record) {
+              removedMatches++;
+            }
+            record.remove();
+          }
+          if (removedMatches) {
+            matches.splice(0, removedMatches);
+            selectedIndex = matches.length ? Math.max(0, selectedIndex - removedMatches) : -1;
+          }
+        };
+
+        const applyView = (scrollToSelection = false) => {
+          clearTimeout(viewTimer);
+          viewTimer = null;
+          filterText = filterInput.value.toLowerCase();
+          searchText = searchInput.value.toLowerCase();
+          matches = [];
+          for (const record of output.children) {
+            const text = record.textContent.toLowerCase();
+            record.hidden = !text.includes(filterText);
+            if (!record.hidden && searchText && text.includes(searchText)) {
+              matches.push(record);
+            }
+          }
+          selectedIndex = matches.indexOf(selectedRecord);
+          if (selectedIndex < 0 && matches.length) {
+            selectedIndex = 0;
+          }
+          updateSelection(scrollToSelection);
+          if (autoscroll.checked) {
+            output.scrollTop = output.scrollHeight;
+          }
+        };
+
+        const scheduleView = (event) => {
+          clearTimeout(viewTimer);
+          const scrollToSelection = event.target === searchInput;
+          viewTimer = setTimeout(() => applyView(scrollToSelection), 150);
+        };
+
+        filterInput.addEventListener('input', scheduleView);
+        searchInput.addEventListener('input', scheduleView);
+        const moveSearch = (direction) => {
+          if (viewTimer !== null) {
+            applyView(true);
+            return;
+          }
+          if (!matches.length) {
+            return;
+          }
+          selectedIndex = (selectedIndex + direction + matches.length) % matches.length;
+          updateSelection(true);
+        };
+        searchPrevious.addEventListener('click', () => moveSearch(-1));
+        searchNext.addEventListener('click', () => moveSearch(1));
+        searchInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            moveSearch(event.shiftKey ? -1 : 1);
+          }
+        });
+        limitHistory.addEventListener('change', () => {
+          pruneHistory();
+          updateSelection();
+        });
+
+        const levelForm = document.getElementById('log-level-form');
+        const levelSelect = document.getElementById('log-level');
+        const levelSave = levelForm.querySelector('button[type="submit"]');
+        const levelError = document.getElementById('log-level-load-error');
+        const levelErrorText = document.getElementById('log-level-error');
+        const levelRetry = document.getElementById('retry-log-level');
+        let confirmedLevel = null;
+        let levelBusy = false;
+
+        const setSaveLabel = (key) => {
+          levelSave.setAttribute('data-i18n', key);
+          lang.translateElement(levelSave);
+        };
+        const updateLevelControls = () => {
+          levelSelect.disabled = levelBusy || confirmedLevel === null;
+          levelSave.disabled = levelSelect.disabled;
+          levelRetry.disabled = levelBusy;
+          if (levelBusy) {
+            levelSave.setAttribute('aria-busy', 'true');
+          } else {
+            levelSave.removeAttribute('aria-busy');
+          }
+        };
+        const updateLogLevel = async (save = false) => {
+          if (levelBusy) {
+            return;
+          }
+          const level = Number(levelSelect.value);
+          if (save && (!Number.isInteger(level) || level < 0 || level > 7)) {
+            return;
+          }
+          levelBusy = true;
+          levelError.hidden = true;
+          setSaveLabel(save ? 'button.wait' : 'button.save');
+          updateLevelControls();
+          try {
+            const options = {cache: 'no-cache', credentials: 'include'};
+            if (save) {
+              options.method = 'POST';
+              options.headers = {'Content-Type': 'application/json'};
+              options.body = JSON.stringify({system: {logLevel: level}});
+            }
+            const response = await fetch(levelForm.action, options);
+            if (!response.ok) {
+              throw new Error('Response not valid');
+            }
+            const result = await response.json();
+            const value = result.system && result.system.logLevel;
+            if (!Number.isInteger(value) || value < 0 || value > 7) {
+              throw new Error('Invalid log level');
+            }
+            confirmedLevel = value;
+            levelSelect.value = String(value);
+            setSaveLabel(save ? 'button.saved' : 'button.save');
+          } catch (err) {
+            if (confirmedLevel !== null) {
+              levelSelect.value = String(confirmedLevel);
+            }
+            levelErrorText.setAttribute('data-i18n', save ? 'logs.level.saveError' : 'logs.level.loadError');
+            lang.translateElement(levelErrorText);
+            levelError.hidden = false;
+            setSaveLabel('button.save');
+          } finally {
+            levelBusy = false;
+            updateLevelControls();
+          }
+        };
+        levelForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          updateLogLevel(true);
+        });
+        levelRetry.addEventListener('click', () => updateLogLevel());
+        levelSelect.addEventListener('change', () => setSaveLabel('button.save'));
+        updateLogLevel();
+
+        const resetFormatting = () => {
+          escapeState = 'text';
+          escapeParams = '';
+          foreground = null;
+          background = null;
+          bold = false;
+        };
+
+        const applyFormatting = () => {
+          const codes = escapeParams.split(';').map(Number);
+          for (let i = 0; i < codes.length; i++) {
+            const code = codes[i];
+            if (code === 0) {
+              foreground = null;
+              background = null;
+              bold = false;
+            } else if (code === 1) {
+              bold = true;
+            } else if (code === 22) {
+              bold = false;
+            } else if (code === 39) {
+              foreground = null;
+            } else if (code === 49) {
+              background = null;
+            } else if (code >= 30 && code <= 37) {
+              foreground = colors[code - 30];
+            } else if (code >= 90 && code <= 97) {
+              foreground = colors[code - 90 + 8];
+            } else if (code >= 40 && code <= 47) {
+              background = colors[code - 40];
+            } else if (code >= 100 && code <= 107) {
+              background = colors[code - 100 + 8];
+            } else if (code === 38 || code === 48) {
+              // Skip unsupported extended colors, including their parameters.
+              if (codes[i + 1] === 5) {
+                i += 2;
+              } else if (codes[i + 1] === 2) {
+                i += 4;
+              }
+            }
+          }
+        };
+
+        const appendLog = (message) => {
+          const record = document.createElement('div');
+          let text = '';
+          const flushText = () => {
+            if (!text) {
+              return;
+            }
+
+            if (bold || foreground || background) {
+              const span = document.createElement('span');
+              span.textContent = text;
+              if (bold) {
+                span.style.fontWeight = 'bold';
+              }
+              if (foreground) {
+                span.style.color = foreground;
+              }
+              if (background) {
+                span.style.backgroundColor = background;
+              }
+              record.appendChild(span);
+            } else {
+              record.appendChild(document.createTextNode(text));
+            }
+            text = '';
+          };
+
+          // Retain parser state when an escape sequence crosses frame boundaries.
+          for (const symbol of message) {
+            const code = symbol.charCodeAt(0);
+            if (escapeState === 'string' || escapeState === 'stringEscape') {
+              if (symbol === '\x07' || (escapeState === 'stringEscape' && symbol === '\\')) {
+                escapeState = 'text';
+              } else {
+                escapeState = symbol === '\x1b' ? 'stringEscape' : 'string';
+              }
+              continue;
+            }
+
+            if (symbol === '\x1b') {
+              flushText();
+              escapeState = 'escape';
+              continue;
+            }
+
+            if (escapeState === 'escape') {
+              if (symbol === '[') {
+                escapeState = 'csi';
+                escapeParams = '';
+              } else if (']P^_'.includes(symbol)) {
+                escapeState = 'string';
+              } else {
+                escapeState = code >= 0x20 && code <= 0x2f ? 'intermediate' : 'text';
+              }
+              continue;
+            }
+
+            if (escapeState === 'intermediate') {
+              if (code >= 0x30 && code <= 0x7e) {
+                escapeState = 'text';
+              }
+              continue;
+            }
+
+            if (escapeState === 'csi') {
+              if (code >= 0x40 && code <= 0x7e) {
+                if (symbol === 'm') {
+                  applyFormatting();
+                }
+                escapeState = 'text';
+              } else if (escapeParams.length < 128) {
+                escapeParams += symbol;
+              }
+              continue;
+            }
+
+            if (symbol === '\n' || symbol === '\t' || (code >= 0x20 && (code < 0x7f || code > 0x9f))) {
+              text += symbol;
+            }
+          }
+          flushText();
+
+          const plainText = record.textContent.toLowerCase();
+          record.hidden = !plainText.includes(filterText);
+          output.appendChild(record);
+          if (!record.hidden && searchText && plainText.includes(searchText)) {
+            matches.push(record);
+            if (selectedIndex < 0) {
+              selectedIndex = 0;
+            }
+          }
+          pruneHistory();
+          updateSelection();
+          if (autoscroll.checked) {
+            output.scrollTop = output.scrollHeight;
+          }
+        };
+
+        const scheduleReconnect = () => {
+          setConnectionStatus('disconnected');
+          if (active && reconnectTimer === null) {
+            reconnectTimer = setTimeout(() => {
+              reconnectTimer = null;
+              connect();
+            }, 3000);
+          }
+        };
+
+        const connect = () => {
+          if (!active || socket) {
+            return;
+          }
+          setConnectionStatus('connecting');
+          resetFormatting();
+          try {
+            socket = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/webserial`);
+          } catch (err) {
+            scheduleReconnect();
+            return;
+          }
+
+          socket.onopen = () => {
+            setConnectionStatus('connected');
+            waitingForPong = false;
+            heartbeatTimer = setInterval(() => {
+              if (socket.readyState !== WebSocket.OPEN) {
+                return;
+              }
+              if (waitingForPong) {
+                socket.close();
+                return;
+              }
+              waitingForPong = true;
+              socket.send('ping');
+            }, 10000);
+          };
+          socket.onmessage = (event) => {
+            if (event.data === 'pong') {
+              waitingForPong = false;
+            } else if (typeof event.data === 'string') {
+              appendLog(event.data);
+            }
+          };
+          socket.onerror = () => socket.close();
+          socket.onclose = () => {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+            socket = null;
+            scheduleReconnect();
+          };
+        };
+
+        document.getElementById('clear-logs').addEventListener('click', () => {
+          output.replaceChildren();
+          applyView();
+          resetFormatting();
+        });
+        document.getElementById('download-logs').addEventListener('click', () => {
+          const text = Array.from(output.children, (record) => record.textContent).join('\n');
+          const url = URL.createObjectURL(new Blob([text], {type: 'text/plain;charset=utf-8'}));
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `otgateway-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+        autoscroll.addEventListener('change', () => {
+          if (autoscroll.checked) {
+            output.scrollTop = output.scrollHeight;
+          }
+        });
+
+        window.addEventListener('pagehide', () => {
+          active = false;
+          clearTimeout(reconnectTimer);
+          clearInterval(heartbeatTimer);
+          clearTimeout(viewTimer);
+          reconnectTimer = null;
+          heartbeatTimer = null;
+          viewTimer = null;
+          if (socket) {
+            socket.onopen = null;
+            socket.onmessage = null;
+            socket.onerror = null;
+            socket.onclose = null;
+            socket.close();
+            socket = null;
+          }
+        });
+        window.addEventListener('pageshow', (event) => {
+          if (event.persisted) {
+            active = true;
+            applyView();
+            connect();
+          }
+        });
+
+        connect();
+      });
+    </script>
+  </body>
+</html>

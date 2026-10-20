@@ -505,6 +505,32 @@
         }
       }
     },
+    "logs": {
+      "title": "日志 - OpenTherm Gateway",
+      "name": "日志",
+      "desc": "实时设备日志。",
+      "status": {
+        "connecting": "正在连接...",
+        "connected": "已连接",
+        "disconnected": "已断开连接"
+      },
+      "autoscroll": "自动滚动",
+      "limitHistory": "最多保留 1000 条日志",
+      "historyNote": "不限制历史记录会占用更多浏览器内存。下载包含所有保留的日志，包括被筛选器隐藏的日志。",
+      "filter": "筛选",
+      "search": {
+        "title": "搜索",
+        "previous": "上一个",
+        "next": "下一个"
+      },
+      "level": {
+        "note": "此级别适用于设备日志（Serial 和 WebSerial）。下方的筛选器仅影响显示。",
+        "loadError": "无法加载日志级别，请重试。",
+        "saveError": "无法保存日志级别，请检查连接后重试。"
+      },
+      "clear": "清空",
+      "download": "下载日志"
+    },
     "upgrade": {
       "title": "固件升级 - OpenTherm Gateway",
       "name": "固件升级",

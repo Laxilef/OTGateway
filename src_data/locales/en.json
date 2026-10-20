@@ -505,6 +505,32 @@
         }
       }
     },
+    "logs": {
+      "title": "Logs - OpenTherm Gateway",
+      "name": "Logs",
+      "desc": "Device logs in real time.",
+      "status": {
+        "connecting": "Connecting...",
+        "connected": "Connected",
+        "disconnected": "Disconnected"
+      },
+      "autoscroll": "Autoscroll",
+      "limitHistory": "Keep at most 1000 entries",
+      "historyNote": "Unlimited history uses more browser memory. Downloads include all retained entries, including those hidden by the filter.",
+      "filter": "Filter",
+      "search": {
+        "title": "Search",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "level": {
+        "note": "The level applies to device logging (Serial and WebSerial). The filter below only changes the display.",
+        "loadError": "Could not load the log level. Retry the request.",
+        "saveError": "Could not save the log level. Check the connection and try again."
+      },
+      "clear": "Clear",
+      "download": "Download logs"
+    },
     "upgrade": {
       "title": "Upgrade - OpenTherm Gateway",
       "name": "Upgrade",
