@@ -163,9 +163,10 @@ enum class UnitSystem : uint8_t {
   IMPERIAL  = 1
 };
 
-enum class HysteresisAction : uint8_t {
-  DISABLE_HEATING = 0,
-  SET_ZERO_TARGET = 1
+enum class ChannelDisablingAction : uint8_t {
+  OFF                   = 0,
+  ZERO_SETPOINT         = 1,
+  OFF_AND_ZERO_SETPOINT = 2
 };
 
 char buffer[255];

@@ -182,7 +182,8 @@ protected:
       && !vars.master.heating.overheat;
 
     // DHW settings
-    vars.master.dhw.enabled = settings.opentherm.options.dhwSupport
+    vars.master.dhw.enabled = this->isReady()
+      && settings.opentherm.options.dhwSupport
       && settings.dhw.enabled
       && !vars.master.dhw.overheat;
     vars.master.dhw.targetTemp = settings.dhw.target;
@@ -190,7 +191,7 @@ protected:
     // CH2 settings
     vars.master.ch2.enabled = settings.opentherm.options.ch2AlwaysEnabled
       || (settings.opentherm.options.heatingToCh2 && vars.master.heating.enabled)
-      || (settings.opentherm.options.dhwToCh2 && settings.opentherm.options.dhwSupport && settings.dhw.enabled);
+      || (settings.opentherm.options.dhwToCh2 && vars.master.dhw.enabled);
 
     if (settings.opentherm.options.heatingToCh2) {
       vars.master.ch2.targetTemp = !settings.opentherm.options.nativeOTC
@@ -211,6 +212,7 @@ protected:
       statusLb = 0xCA;
     }
 
+    // Mode flags follow the channel request, before applying its disabling action.
     // Summer/winter mode
     bool summerWinterMode = settings.opentherm.options.summerWinterMode;
     if (settings.opentherm.options.heatingStateToSummerWinterMode) {
@@ -224,11 +226,11 @@ protected:
     }
 
     unsigned long response = this->instance->setBoilerStatus(
-      vars.master.heating.enabled,
-      vars.master.dhw.enabled,
+      this->getSlaveChannelEnabled(vars.master.heating.enabled, settings.opentherm.heatingDisablingAction),
+      settings.opentherm.options.dhwSupport && this->getSlaveChannelEnabled(vars.master.dhw.enabled, settings.opentherm.dhwDisablingAction),
       settings.opentherm.options.coolingSupport,
       settings.opentherm.options.nativeOTC,
-      vars.master.ch2.enabled,
+      this->getSlaveChannelEnabled(vars.master.ch2.enabled, settings.opentherm.ch2DisablingAction),
       summerWinterMode,
       dhwBlocking,
       statusLb
@@ -1222,16 +1224,14 @@ protected:
 
 
     // Update DHW temp
-    if (vars.master.dhw.enabled) {
+    if (settings.opentherm.options.dhwSupport) {
       // Target dhw temp
-      const float& targetTemp = vars.master.dhw.targetTemp;
+      const float targetTemp = this->getSlaveChannelSetpoint(
+        vars.master.dhw.enabled, vars.master.dhw.targetTemp, settings.opentherm.dhwDisablingAction
+      );
 
       // Converted target dhw temp
-      const float convertedTemp = convertTemp(
-        targetTemp,
-        settings.system.unitSystem,
-        settings.opentherm.unitSystem
-      );
+      const float convertedTemp = this->convertSetpointTemp(targetTemp);
 
       // Set DHW temp
       if (this->needSetDhwTemp(convertedTemp)) {
@@ -1328,19 +1328,16 @@ protected:
     // Set heating temp
     {
       // Target heating temp
-      float targetTemp = 0.0f;
-      if (vars.master.heating.enabled) {
-        targetTemp = !settings.opentherm.options.nativeOTC
-          ? vars.master.heating.setpointTemp
-          : vars.master.heating.targetTemp;
-      }
+      const float targetTemp = this->getSlaveChannelSetpoint(
+        vars.master.heating.enabled,
+        settings.opentherm.options.nativeOTC
+          ? vars.master.heating.targetTemp
+          : vars.master.heating.setpointTemp,
+        settings.opentherm.heatingDisablingAction
+      );
 
       // Converted target heating temp
-      const float convertedTemp = convertTemp(
-        targetTemp,
-        settings.system.unitSystem,
-        settings.opentherm.unitSystem
-      );
+      const float convertedTemp = this->convertSetpointTemp(targetTemp);
 
       if (this->needSetHeatingTemp(convertedTemp)) {
         // Set max heating temp
@@ -1375,18 +1372,15 @@ protected:
     }
 
     // Set CH2 temp
-    if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2) {
+    if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2
+      || (!vars.master.ch2.enabled && settings.opentherm.ch2DisablingAction != ChannelDisablingAction::OFF)) {
       // Target CH2 heating temp
-      const float targetTemp = vars.master.ch2.enabled
-        ? vars.master.ch2.targetTemp
-        : 0.0f;
+      const float targetTemp = this->getSlaveChannelSetpoint(
+        vars.master.ch2.enabled, vars.master.ch2.targetTemp, settings.opentherm.ch2DisablingAction
+      );
 
       // Converted target CH2 temp
-      const float convertedTemp = convertTemp(
-        targetTemp,
-        settings.system.unitSystem,
-        settings.opentherm.unitSystem
-      );
+      const float convertedTemp = this->convertSetpointTemp(targetTemp);
 
       if (this->needSetCh2Temp(convertedTemp)) {
         if (this->setCh2Temp(convertedTemp)) {
@@ -1554,6 +1548,27 @@ protected:
 
   bool isReady() {
     return millis() - this->instanceCreatedTime > this->readyTime;
+  }
+
+  bool getSlaveChannelEnabled(const bool enabled, const ChannelDisablingAction action) {
+    return enabled || action == ChannelDisablingAction::ZERO_SETPOINT;
+  }
+
+  float getSlaveChannelSetpoint(const bool enabled, const float temperature, const ChannelDisablingAction action) {
+    if (!enabled && action != ChannelDisablingAction::OFF) {
+      return 0.0f;
+    }
+
+    return temperature;
+  }
+
+  float convertSetpointTemp(const float temperature) {
+    // Preserve the no-demand zero for TSet/TsetCH2 when converting units.
+    if (temperature == 0.0f) {
+      return 0.0f;
+    }
+
+    return convertTemp(temperature, settings.system.unitSystem, settings.opentherm.unitSystem);
   }
 
   bool needSetRoomSetpoint(const float target) {

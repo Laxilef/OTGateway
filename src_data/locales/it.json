@@ -352,12 +352,7 @@
         "hyst": {
           "title": "Isteresi",
           "desc": "L'isteresi è utile per mantenere una temperatura interna impostata (quando si utilizza «Equitherm» e/o «PID»). Forza la disabilitazione del riscaldamento quando <code>current indoor > target + value</code> e abilita il riscaldamento quando <code>current indoor < (target - value)</code>.",
-          "value": "Valore <small>(in gradi)</small>",
-          "action": {
-            "title": "Azione",
-            "disableHeating": "Disabilita riscaldamento",
-            "set0target": "Imposta target nullo"
-          }
+          "value": "Valore <small>(in gradi)</small>"
         },
         "turboFactor": "Turbo mode coeff.",
         "indoorTempAvgType": {
@@ -420,6 +415,16 @@
         }
       },
       "ot": {
+        "disablingAction": {
+          "title": "Azione di disattivazione dei circuiti",
+          "desc": "L'azione selezionata si applica a ogni disattivazione del circuito, anche in caso di surriscaldamento.<br />Alcune caldaie arrestano la pompa di circolazione quando il circuito viene disattivato; in questo caso si può provare a impostare la temperatura desiderata a <b>0</b>, affinché la post-circolazione della pompa funzioni correttamente.",
+          "heating": "Circuito di riscaldamento",
+          "dhw": "Circuito ACS",
+          "ch2": "Circuito 2",
+          "off": "Disattiva solo il circuito",
+          "zeroSetpoint": "Imposta la temperatura desiderata a <b>0</b>",
+          "offAndZeroSetpoint": "Disattiva il circuito e imposta la temperatura desiderata a <b>0</b>"
+        },
         "advanced": "Impostazioni avanzate",
         "inGpio": "In GPIO",
         "outGpio": "Out GPIO",

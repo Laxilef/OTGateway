@@ -239,13 +239,6 @@
                       <input type="number" inputmode="decimal" name="heating[hysteresis][value]" min="0" max="5" step="0.05" required>
                     </label>
 
-                    <label>
-                      <span data-i18n>settings.heating.hyst.action.title</span>
-                      <select name="heating[hysteresis][action]">
-                        <option value="0" data-i18n>settings.heating.hyst.action.disableHeating</option>
-                        <option value="1" data-i18n>settings.heating.hyst.action.set0target</option>
-                      </select>
-                    </label>
                   </div>
                 </div>
 
@@ -620,6 +613,81 @@
                   <small data-i18n>settings.ot.maxPower.note</small>
                 </label>
               </div>
+
+              <hr />
+
+              <details>
+                <summary><b data-i18n>settings.ot.disablingAction.title</b></summary>
+
+                <div>
+                  <fieldset>
+                    <small data-i18n>settings.ot.disablingAction.desc</small>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend><b data-i18n>settings.ot.disablingAction.heating</b></legend>
+
+                    <label>
+                      <input type="radio" name="opentherm[heatingDisablingAction]" value="0" />
+                      <span data-i18n>settings.ot.disablingAction.off</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="opentherm[heatingDisablingAction]" value="1" />
+                      <span data-i18n>settings.ot.disablingAction.zeroSetpoint</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="opentherm[heatingDisablingAction]" value="2" />
+                      <span data-i18n>settings.ot.disablingAction.offAndZeroSetpoint</span>
+                    </label>
+                  </fieldset>
+
+                  <hr />
+
+                  <fieldset>
+                    <legend><b data-i18n>settings.ot.disablingAction.dhw</b></legend>
+
+                    <label>
+                      <input type="radio" name="opentherm[dhwDisablingAction]" value="0" />
+                      <span data-i18n>settings.ot.disablingAction.off</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="opentherm[dhwDisablingAction]" value="1" />
+                      <span data-i18n>settings.ot.disablingAction.zeroSetpoint</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="opentherm[dhwDisablingAction]" value="2" />
+                      <span data-i18n>settings.ot.disablingAction.offAndZeroSetpoint</span>
+                    </label>
+                  </fieldset>
+
+                  <hr />
+
+                  <fieldset>
+                    <legend><b data-i18n>settings.ot.disablingAction.ch2</b></legend>
+
+                    <label>
+                      <input type="radio" name="opentherm[ch2DisablingAction]" value="0" />
+                      <span data-i18n>settings.ot.disablingAction.off</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="opentherm[ch2DisablingAction]" value="1" />
+                      <span data-i18n>settings.ot.disablingAction.zeroSetpoint</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="opentherm[ch2DisablingAction]" value="2" />
+                      <span data-i18n>settings.ot.disablingAction.offAndZeroSetpoint</span>
+                    </label>
+                  </fieldset>
+                </div>
+              </details>
+
+              <hr />
 
               <details>
                 <summary><b data-i18n>settings.ot.options.title</b></summary>
@@ -1124,6 +1192,9 @@
           setInputValue("[name='opentherm[flags]']", data.opentherm.flags);
           setInputValue("[name='opentherm[minPower]']", data.opentherm.minPower);
           setInputValue("[name='opentherm[maxPower]']", data.opentherm.maxPower);
+          setRadioValue("[name='opentherm[heatingDisablingAction]']", data.opentherm.heatingDisablingAction);
+          setRadioValue("[name='opentherm[dhwDisablingAction]']", data.opentherm.dhwDisablingAction);
+          setRadioValue("[name='opentherm[ch2DisablingAction]']", data.opentherm.ch2DisablingAction);
           setCheckboxValue("[name='opentherm[options][dhwSupport]']", data.opentherm.options.dhwSupport);
           setCheckboxValue("[name='opentherm[options][coolingSupport]']", data.opentherm.options.coolingSupport);
           setCheckboxValue("[name='opentherm[options][summerWinterMode]']", data.opentherm.options.summerWinterMode);
@@ -1190,7 +1261,6 @@
           });
           setCheckboxValue("[name='heating[hysteresis][enabled]']", data.heating.hysteresis.enabled);
           setInputValue("[name='heating[hysteresis][value]']", data.heating.hysteresis.value);
-          setSelectValue("[name='heating[hysteresis][action]']", data.heating.hysteresis.action);
           setInputValue("[name='heating[turboFactor]']", data.heating.turboFactor);
           setInputValue("[name='heating[maxModulation]']", data.heating.maxModulation);
           setSelectValue("[name='heating[indoorTempAvgType]']", data.heating.indoorTempAvgType);

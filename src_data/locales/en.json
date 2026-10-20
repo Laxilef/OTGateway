@@ -352,12 +352,7 @@
         "hyst": {
           "title": "Hysteresis",
           "desc": "Hysteresis is useful for maintaining a set indoor temp (when using «Equitherm» and/or «PID»). Forces disable heating when <code>current indoor > target + value</code> and enable heating when <code>current indoor < (target - value)</code>.",
-          "value": "Value <small>(in degrees)</small>",
-          "action": {
-            "title": "Action",
-            "disableHeating": "Disable heating",
-            "set0target": "Set null target"
-          }
+          "value": "Value <small>(in degrees)</small>"
         },
         "turboFactor": "Turbo mode coeff.",
         "indoorTempAvgType": {
@@ -420,6 +415,16 @@
         }
       },
       "ot": {
+        "disablingAction": {
+          "title": "Circuit disabling action",
+          "desc": "The selected action applies whenever the circuit is disabled, including overheating.<br />Some boilers stop the circulation pump when the circuit is disabled. In this case, you can try setting the target temperature to <b>0</b> so that the pump overrun works correctly.",
+          "heating": "Heating circuit",
+          "dhw": "DHW circuit",
+          "ch2": "Circuit 2",
+          "off": "Disable circuit only",
+          "zeroSetpoint": "Set the target temperature to <b>0</b>",
+          "offAndZeroSetpoint": "Disable circuit and set the target temperature to <b>0</b>"
+        },
         "advanced": "Advanced Settings",
         "inGpio": "In GPIO",
         "outGpio": "Out GPIO",

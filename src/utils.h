@@ -444,6 +444,9 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     opentherm[FPSTR(S_RX_LED_GPIO)] = src.opentherm.rxLedGpio;
     opentherm[FPSTR(S_MEMBER_ID)] = src.opentherm.memberId;
     opentherm[FPSTR(S_FLAGS)] = src.opentherm.flags;
+    opentherm[FPSTR(S_HEATING_DISABLING_ACTION)] = static_cast<uint8_t>(src.opentherm.heatingDisablingAction);
+    opentherm[FPSTR(S_DHW_DISABLING_ACTION)] = static_cast<uint8_t>(src.opentherm.dhwDisablingAction);
+    opentherm[FPSTR(S_CH2_DISABLING_ACTION)] = static_cast<uint8_t>(src.opentherm.ch2DisablingAction);
     opentherm[FPSTR(S_MIN_POWER)] = roundf(src.opentherm.minPower, 2);
     opentherm[FPSTR(S_MAX_POWER)] = roundf(src.opentherm.maxPower, 2);
 
@@ -489,7 +492,6 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
   heating[FPSTR(S_TARGET)] = roundf(src.heating.target, 2);
   heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ENABLED)] = src.heating.hysteresis.enabled;
   heating[FPSTR(S_HYSTERESIS)][FPSTR(S_VALUE)] = roundf(src.heating.hysteresis.value, 3);
-  heating[FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)] = static_cast<uint8_t>(src.heating.hysteresis.action);
   heating[FPSTR(S_TURBO_FACTOR)] = roundf(src.heating.turboFactor, 3);
   heating[FPSTR(S_MIN_TEMP)] = src.heating.minTemp;
   heating[FPSTR(S_MAX_TEMP)] = src.heating.maxTemp;
@@ -568,6 +570,29 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
 
 inline void safeSettingsToJson(const Settings& src, JsonVariant dst) {
   settingsToJson(src, dst, true);
+}
+
+bool jsonToChannelDisablingAction(const JsonVariantConst src, ChannelDisablingAction& dst) {
+  if (!src.is<uint8_t>()) {
+    return false;
+  }
+
+  const uint8_t value = src.as<uint8_t>();
+  switch (value) {
+    case static_cast<uint8_t>(ChannelDisablingAction::OFF):
+    case static_cast<uint8_t>(ChannelDisablingAction::ZERO_SETPOINT):
+    case static_cast<uint8_t>(ChannelDisablingAction::OFF_AND_ZERO_SETPOINT):
+      if (static_cast<uint8_t>(dst) != value) {
+        dst = static_cast<ChannelDisablingAction>(value);
+        return true;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return false;
 }
 
 bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false) {
@@ -820,6 +845,18 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         dst.opentherm.flags = value;
         changed = true;
       }
+    }
+
+    if (jsonToChannelDisablingAction(src[FPSTR(S_OPENTHERM)][FPSTR(S_HEATING_DISABLING_ACTION)], dst.opentherm.heatingDisablingAction)) {
+      changed = true;
+    }
+
+    if (jsonToChannelDisablingAction(src[FPSTR(S_OPENTHERM)][FPSTR(S_DHW_DISABLING_ACTION)], dst.opentherm.dhwDisablingAction)) {
+      changed = true;
+    }
+
+    if (jsonToChannelDisablingAction(src[FPSTR(S_OPENTHERM)][FPSTR(S_CH2_DISABLING_ACTION)], dst.opentherm.ch2DisablingAction)) {
+      changed = true;
     }
 
     if (!src[FPSTR(S_OPENTHERM)][FPSTR(S_MIN_POWER)].isNull()) {
@@ -1329,23 +1366,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
     if (value >= 0.0f && value <= 15.0f && fabsf(value - dst.heating.hysteresis.value) > 0.0001f) {
       dst.heating.hysteresis.value = roundf(value, 2);
       changed = true;
-    }
-  }
-
-  if (!src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].isNull()) {
-    uint8_t value = src[FPSTR(S_HEATING)][FPSTR(S_HYSTERESIS)][FPSTR(S_ACTION)].as<uint8_t>();
-
-    switch (value) {
-      case static_cast<uint8_t>(HysteresisAction::DISABLE_HEATING):
-      case static_cast<uint8_t>(HysteresisAction::SET_ZERO_TARGET):
-        if (static_cast<uint8_t>(dst.heating.hysteresis.action) != value) {
-         dst.heating.hysteresis.action = static_cast<HysteresisAction>(value);
-          changed = true;
-        }
-        break;
-
-      default:
-        break;
     }
   }
 

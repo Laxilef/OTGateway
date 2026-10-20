@@ -352,12 +352,7 @@
         "hyst": {
           "title": "Hysterese",
           "desc": "Hysterese is nuttig voor het handhaven van een ingestelde binnentemperatuur (bij gebruik van «Equitherm» en/of «PID»). Forceert uitschakelen van verwarming wanneer <code>current indoor > target + value</code> en inschakelen van verwarming wanneer <code>current indoor < (target - value)</code>.",
-          "value": "Waarde <small>(in graden)</small>",
-          "action": {
-            "title": "Actie",
-            "disableHeating": "Verwarming uitschakelen",
-            "set0target": "Stel null target in"
-          }
+          "value": "Waarde <small>(in graden)</small>"
         },
         "turboFactor": "Turbomodus coëff.",
         "indoorTempAvgType": {
@@ -420,6 +415,16 @@
         }
       },
       "ot": {
+        "disablingAction": {
+          "title": "Actie bij uitschakelen van circuits",
+          "desc": "De gekozen actie geldt bij elke uitschakeling van het circuit, ook bij oververhitting.<br />Sommige ketels schakelen de circulatiepomp uit wanneer het circuit wordt uitgeschakeld. In dat geval kunt u proberen de doeltemperatuur op <b>0</b> in te stellen, zodat de pompnaloop correct werkt.",
+          "heating": "Verwarmingscircuit",
+          "dhw": "Warmtapwatercircuit",
+          "ch2": "Circuit 2",
+          "off": "Alleen het circuit uitschakelen",
+          "zeroSetpoint": "Doeltemperatuur op <b>0</b> instellen",
+          "offAndZeroSetpoint": "Circuit uitschakelen en doeltemperatuur op <b>0</b> instellen"
+        },
         "advanced": "Geavanceerde instellingen",
         "inGpio": "In GPIO",
         "outGpio": "Uit GPIO",

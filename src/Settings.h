@@ -58,6 +58,9 @@ struct Settings {
     uint8_t rxLedGpio = DEFAULT_OT_RX_LED_GPIO;
     uint8_t memberId = 0;
     uint8_t flags = 0;
+    ChannelDisablingAction heatingDisablingAction = ChannelDisablingAction::OFF_AND_ZERO_SETPOINT;
+    ChannelDisablingAction dhwDisablingAction = ChannelDisablingAction::OFF_AND_ZERO_SETPOINT;
+    ChannelDisablingAction ch2DisablingAction = ChannelDisablingAction::OFF_AND_ZERO_SETPOINT;
     float minPower = 0.0f;
     float maxPower = 0.0f;
 
@@ -113,7 +116,6 @@ struct Settings {
     struct {
       bool enabled = true;
       float value = 0.5f;
-      HysteresisAction action = HysteresisAction::DISABLE_HEATING;
     } hysteresis;
 
     struct {
