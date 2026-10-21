@@ -1,9 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <MqttClient.h>
-#ifdef ARDUINO_ARCH_ESP32
 #include <mutex>
-#endif
 
 
 class MqttWriter {
@@ -17,17 +15,13 @@ public:
     this->bufferSize = bufferSize;
     this->buffer = static_cast<uint8_t*>(malloc(bufferSize * sizeof(*this->buffer)));
 
-#ifdef ARDUINO_ARCH_ESP32
     this->mutex = new std::mutex();
-#endif
   }
 
   ~MqttWriter() {
     free(this->buffer);
 
-#ifdef ARDUINO_ARCH_ESP32
     delete this->mutex;
-#endif
   }
 
   MqttWriter* setYieldCallback(YieldCallback callback = nullptr) {
@@ -49,15 +43,9 @@ public:
   }
 
   bool lock() {
-#ifdef ARDUINO_ARCH_ESP32
     if (!this->mutex->try_lock()) {
       return false;
     }
-#else
-    if (this->isLocked()) {
-      return false;
-    }
-#endif
 
     this->locked = true;
     this->writeAfterLock = 0;
@@ -72,9 +60,7 @@ public:
 
   void unlock() {
     this->locked = false;
-#if defined(ARDUINO_ARCH_ESP32)
     this->mutex->unlock();
-#endif
   }
 
   bool publish(const char* topic, const JsonVariantConst doc, bool retained = false) {
@@ -212,9 +198,7 @@ protected:
   size_t bufferSize = 64;
   size_t bufferPos = 0;
   bool locked = false;
-#ifdef ARDUINO_ARCH_ESP32
   mutable std::mutex* mutex;
-#endif
   unsigned long lockedTime = 0;
   size_t writeAfterLock = 0;
 };

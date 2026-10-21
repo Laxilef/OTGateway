@@ -1,6 +1,6 @@
 #include <unordered_map>
 #include <MqttClient.h>
-#include <MqttWiFiClient.h>
+#include <WiFiClient.h>
 #include <MqttWriter.h>
 #include "HaHelper.h"
 
@@ -9,7 +9,7 @@ extern FileData fsSettings;
 class MqttTask : public Task {
 public:
   explicit MqttTask(bool _enabled = false, unsigned long _interval = 0) : Task(_enabled, _interval) {
-    this->wifiClient = new MqttWiFiClient();
+    this->wifiClient = new WiFiClient();
     this->client = new MqttClient(this->wifiClient);
     this->writer = new MqttWriter(this->client, 256);
     this->haHelper = new HaHelper();
@@ -45,13 +45,13 @@ public:
 
     Task::disable();
 
-    Log.sinfoln(FPSTR(L_MQTT), F("Disabled"));
+    Log.sinfoln(L_MQTT, "Disabled");
   }
 
   void enable() {
     Task::enable();
 
-    Log.sinfoln(FPSTR(L_MQTT), F("Enabled"));
+    Log.sinfoln(L_MQTT, "Enabled");
   }
 
   inline bool isConnected() {
@@ -75,7 +75,7 @@ public:
   }
 
 protected:
-  MqttWiFiClient* wifiClient = nullptr;
+  WiFiClient* wifiClient = nullptr;
   MqttClient* client = nullptr;
   HaHelper* haHelper = nullptr;
   MqttWriter* writer = nullptr;
@@ -92,7 +92,6 @@ protected:
   bool connected = false;
   bool newConnection = false;
 
-  #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
     return "Mqtt";
   }
@@ -104,28 +103,17 @@ protected:
   int getTaskPriority() override {
     return 2;
   }
-  #endif
 
   inline bool isReadyForSend() {
     return millis() - this->connectedTime > this->readyForSendTime;
   }
 
   void setup() {
-    Log.sinfoln(FPSTR(L_MQTT), F("Started"));
-
-    // wificlient settings
-    #ifdef ARDUINO_ARCH_ESP8266
-    this->wifiClient->setSync(true);
-    this->wifiClient->setNoDelay(true);
-    #endif
+    Log.sinfoln(L_MQTT, "Started");
 
     // client settings
     this->client->setTxPayloadSize(256);
-    #ifdef ARDUINO_ARCH_ESP8266
-    this->client->setConnectionTimeout(1000);
-    #else
     this->client->setConnectionTimeout(3000);
-    #endif
 
     this->client->onMessage([this] (void*, size_t length) {
       const String& topic = this->client->messageTopic();
@@ -142,34 +130,16 @@ protected:
     });
 
     // writer settings
-    #ifdef ARDUINO_ARCH_ESP32
     this->writer->setYieldCallback([this] {
       this->delay(10);
     });
-    #endif
 
     this->writer->setPublishEventCallback([this] (const char* topic, size_t written, size_t length, bool result) {
-      Log.straceln(FPSTR(L_MQTT), F("%s publish %u of %u bytes to topic: %s"), result ? F("Successfully") : F("Failed"), written, length, topic);
-
-      #ifdef ARDUINO_ARCH_ESP8266
-      ::optimistic_yield(1000);
-      #endif
+      Log.straceln(L_MQTT, "%s publish %u of %u bytes to topic: %s", result ? "Successfully" : "Failed", written, length, topic);
 
       //this->client->poll();
       this->delay(250);
     });
-
-    #ifdef ARDUINO_ARCH_ESP8266
-    this->writer->setFlushEventCallback([this] (size_t, size_t) {
-      ::optimistic_yield(1000);
-
-      if (this->wifiClient->connected()) {
-        this->wifiClient->flush();
-      }
-
-      ::optimistic_yield(1000);
-    });
-    #endif
 
     // ha helper settings
     this->haHelper->setDevicePrefix(settings.mqtt.prefix);
@@ -192,7 +162,7 @@ protected:
       this->onDisconnect();
 
     } else if (!this->connected && millis() - this->lastReconnectTime >= MQTT_RECONNECT_INTERVAL) {
-      Log.sinfoln(FPSTR(L_MQTT), F("Connecting to %s:%u..."), settings.mqtt.server, settings.mqtt.port);
+      Log.sinfoln(L_MQTT, "Connecting to %s:%u...", settings.mqtt.server, settings.mqtt.port);
 
       this->haHelper->setDevicePrefix(settings.mqtt.prefix);
       this->haHelper->updateCachedTopics();
@@ -201,8 +171,8 @@ protected:
       this->client->setKeepAliveInterval(settings.mqtt.interval * 10000);
       this->client->setId(networkSettings.hostname);
       this->client->setUsernamePassword(settings.mqtt.user, settings.mqtt.password);
-      this->client->beginWill(this->haHelper->getDeviceTopic(F("status")).c_str(), 7, true, 1);
-      this->client->print(F("offline"));
+      this->client->beginWill(this->haHelper->getDeviceTopic("status").c_str(), 7, true, 1);
+      this->client->print("offline");
       this->client->endWill();
       this->client->connect(settings.mqtt.server, settings.mqtt.port);
       this->lastReconnectTime = millis();
@@ -224,20 +194,16 @@ protected:
       return;
     }
 
-    #ifdef ARDUINO_ARCH_ESP8266
-    ::optimistic_yield(1000);
-    #endif
-
     // publish variables and status
     if (this->newConnection || millis() - this->prevPubVarsTime > (settings.mqtt.interval * 1000u)) {
-      this->writer->publish(this->haHelper->getDeviceTopic(F("status")).c_str(), "online", false);
-      this->publishVariables(this->haHelper->getDeviceTopic(F("state")).c_str());
+      this->writer->publish(this->haHelper->getDeviceTopic("status").c_str(), "online", false);
+      this->publishVariables(this->haHelper->getDeviceTopic("state").c_str());
       this->prevPubVarsTime = millis();
     }
 
     // publish settings
     if (this->newConnection || millis() - this->prevPubSettingsTime > (settings.mqtt.interval * 10000u)) {
-      this->publishSettings(this->haHelper->getDeviceTopic(F("settings")).c_str());
+      this->publishSettings(this->haHelper->getDeviceTopic("settings").c_str());
       this->prevPubSettingsTime = millis();
     }
 
@@ -278,7 +244,7 @@ protected:
 
       // rebuilding ha configs
       for (auto& [sensorId, prevSettings] : this->queueReconfigureSensors) {
-        Log.sinfoln(FPSTR(L_MQTT_HA), F("Rebuilding config for sensor #%hhu '%s'"), sensorId, prevSettings.name);
+        Log.sinfoln(L_MQTT_HA, "Rebuilding config for sensor #%hhu '%s'", sensorId, prevSettings.name);
 
         // delete old config
         if (strlen(prevSettings.name) && prevSettings.enabled) {
@@ -357,9 +323,9 @@ protected:
         if (prevSettings.type == Sensors::Type::MANUAL) {
           this->client->unsubscribe(
             this->haHelper->getDeviceTopic(
-              F("sensors"),
+              "sensors",
               Sensors::makeObjectId(prevSettings.name).c_str(),
-              F("set")
+              "set"
             ).c_str()
           );
         }
@@ -374,9 +340,9 @@ protected:
       if (sSettings.type == Sensors::Type::MANUAL) {
         this->client->subscribe(
           this->haHelper->getDeviceTopic(
-            F("sensors"),
+            "sensors",
             Sensors::makeObjectId(sSettings.name).c_str(),
-            F("set")
+            "set"
           ).c_str()
         );
       }
@@ -394,10 +360,10 @@ protected:
     this->connectedTime = millis();
     this->newConnection = true;
     unsigned long downtime = (millis() - this->disconnectedTime) / 1000;
-    Log.sinfoln(FPSTR(L_MQTT), F("Connected (downtime: %u s.)"), downtime);
+    Log.sinfoln(L_MQTT, "Connected (downtime: %u s.)", downtime);
 
-    this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
-    this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
+    this->client->subscribe(this->haHelper->getDeviceTopic("settings/set").c_str());
+    this->client->subscribe(this->haHelper->getDeviceTopic("state/set").c_str());
 
     // subscribe to manual sensors
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
@@ -412,9 +378,9 @@ protected:
 
       this->client->subscribe(
         this->haHelper->getDeviceTopic(
-          F("sensors"),
+          "sensors",
           Sensors::makeObjectId(sSettings.name).c_str(),
-          F("set")
+          "set"
         ).c_str()
       );
     }
@@ -424,7 +390,7 @@ protected:
     this->disconnectedTime = millis();
 
     unsigned long uptime = (millis() - this->connectedTime) / 1000;
-    Log.swarningln(FPSTR(L_MQTT), F("Disconnected (reason: %d uptime: %lu s.)"), this->client->connectError(), uptime);
+    Log.swarningln(L_MQTT, "Disconnected (reason: %d uptime: %lu s.)", this->client->connectError(), uptime);
   }
 
   void onMessage(const String& topic, uint8_t* payload, size_t length) {
@@ -433,7 +399,7 @@ protected:
     }
 
     if (settings.system.logLevel >= TinyLoggerLevel::TRACE) {
-      Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
+      Log.strace(L_MQTT_MSG, "Topic: %s\r\n>  ", topic.c_str());
       if (Log.lock()) {
         for (size_t i = 0; i < length; i++) {
           if (payload[i] == 0) {
@@ -441,12 +407,12 @@ protected:
           } else if (payload[i] == 13) {
             continue;
           } else if (payload[i] == 10) {
-            Log.print(F("\r\n>  "));
+            Log.print("\r\n>  ");
           } else {
             Log.print(static_cast<char>(payload[i]));
           }
         }
-        Log.print(F("\r\n\n"));
+        Log.print("\r\n\n");
         Log.flush();
         Log.unlock();
       }
@@ -455,11 +421,11 @@ protected:
     JsonDocument doc;
     DeserializationError dErr = deserializeJson(doc, payload, length);
     if (dErr != DeserializationError::Ok) {
-      Log.swarningln(FPSTR(L_MQTT_MSG), F("Error on deserialization: %s"), dErr.f_str());
+      Log.swarningln(L_MQTT_MSG, "Error on deserialization: %s", dErr.c_str());
       return;
 
     } else if (doc.isNull() || !doc.size()) {
-      Log.swarningln(FPSTR(L_MQTT_MSG), F("Not valid json"));
+      Log.swarningln(L_MQTT_MSG, "Not valid json");
       return;
     }
     doc.shrinkToFit();
@@ -467,22 +433,22 @@ protected:
     // delete topic
     this->writer->publish(topic.c_str(), nullptr, 0, true);
 
-    if (this->haHelper->getDeviceTopic(F("state/set")).equals(topic)) {
+    if (this->haHelper->getDeviceTopic("state/set").equals(topic)) {
       if (jsonToVars(doc, vars)) {
         this->resetPublishedVarsTime();
       }
 
-    } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
+    } else if (this->haHelper->getDeviceTopic("settings/set").equals(topic)) {
       if (safeJsonToSettings(doc, settings)) {
         this->resetPublishedSettingsTime();
         fsSettings.update();
       }
 
     } else {
-      const String& sensorsTopic = this->haHelper->getDeviceTopic(F("sensors/"));
+      const String& sensorsTopic = this->haHelper->getDeviceTopic("sensors/");
       auto stLength = sensorsTopic.length();
 
-      if (topic.startsWith(sensorsTopic) && topic.endsWith(F("/set"))) {
+      if (topic.startsWith(sensorsTopic) && topic.endsWith("/set")) {
         if (topic.length() > stLength + 4) {
           const String& name = topic.substring(stLength, topic.indexOf('/', stLength));
           int16_t id = Sensors::getIdByObjectId(name.c_str());
@@ -649,7 +615,7 @@ protected:
 
     return this->writer->publish(
       this->haHelper->getDeviceTopic(
-        F("sensors"),
+        "sensors",
         Sensors::makeObjectId(sSettings.name).c_str()
       ).c_str(),
       doc,

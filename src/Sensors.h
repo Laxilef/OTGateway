@@ -253,13 +253,13 @@ public:
       rSensor.connected = true;
 
       Log.snoticeln(
-        FPSTR(L_SENSORS), F("#%hhu '%s' new status: CONNECTED"),
+        L_SENSORS, "#%hhu '%s' new status: CONNECTED",
         sensorId, sSensor.name
       );
     }
 
     Log.snoticeln(
-      FPSTR(L_SENSORS), F("#%hhu '%s' new value %hhu: %.2f, compensated: %.2f, raw: %.2f"),
+      L_SENSORS, "#%hhu '%s' new value %hhu: %.2f, compensated: %.2f, raw: %.2f",
       sensorId, sSensor.name, valueId, rSensor.values[valueId], compensatedValue, value
     );
 
@@ -316,8 +316,8 @@ public:
 
     if (rSensor.connected != status) {
       Log.snoticeln(
-        FPSTR(L_SENSORS), F("#%hhu '%s' new status: %s"),
-        sensorId, sSensor.name, status ? F("CONNECTED") : F("DISCONNECTED")
+        L_SENSORS, "#%hhu '%s' new status: %s",
+        sensorId, sSensor.name, status ? "CONNECTED" : "DISCONNECTED"
       );
 
       rSensor.connected = status;

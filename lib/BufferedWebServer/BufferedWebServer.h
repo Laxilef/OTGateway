@@ -14,17 +14,8 @@ public:
   void send(int code, T contentType, const JsonVariantConst content, bool pretty = false) {
     auto contentLength = pretty ? measureJsonPretty(content) : measureJson(content);
 
-    #ifdef ARDUINO_ARCH_ESP8266
-    if (!this->webServer->chunkedResponseModeStart(code, contentType)) {
-      this->webServer->send(505, F("text/html"), F("HTTP1.1 required"));
-      return;
-    }
-
-    this->webServer->setContentLength(contentLength);
-    #else
     this->webServer->setContentLength(contentLength);
     this->webServer->send(code, contentType, emptyString);
-    #endif
 
     if (pretty) {
       serializeJsonPretty(content, *this);
@@ -35,11 +26,7 @@ public:
 
     this->flush();
 
-    #ifdef ARDUINO_ARCH_ESP8266
-    this->webServer->chunkedResponseFinalize();
-    #else
     this->webServer->sendContent(emptyString);
-    #endif
   }
 
   size_t write(uint8_t c) {
@@ -78,10 +65,6 @@ public:
       return;
     }
 
-    #ifdef ARDUINO_ARCH_ESP8266
-    ::optimistic_yield(1000);
-    #endif
-
     auto& client = this->webServer->client();
     if (client.connected()) {
       this->webServer->sendContent((const char*)this->buffer, this->bufferPos);
@@ -89,9 +72,6 @@ public:
 
     this->bufferPos = 0;
 
-    #ifdef ARDUINO_ARCH_ESP8266
-    ::optimistic_yield(1000);
-    #endif
   }
 
 protected:

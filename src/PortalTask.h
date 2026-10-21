@@ -46,7 +46,6 @@ protected:
   unsigned long webServerChangeState = 0;
   bool mDnsState = false;
 
-  #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
     return "Portal";
   }
@@ -58,7 +57,6 @@ protected:
   int getTaskPriority() override {
     return 1;
   }
-  #endif
 
   void setup() {
     this->dnsServer->setTTL(0);
@@ -176,16 +174,16 @@ protected:
       auto& doc = response->getRoot();
 
       // add network settings
-      auto networkDoc = doc[FPSTR(S_NETWORK)].to<JsonObject>();
+      auto networkDoc = doc[S_NETWORK].to<JsonObject>();
       networkSettingsToJson(networkSettings, networkDoc);
 
       // add main settings
-      auto settingsDoc = doc[FPSTR(S_SETTINGS)].to<JsonObject>();
+      auto settingsDoc = doc[S_SETTINGS].to<JsonObject>();
       settingsToJson(settings, settingsDoc);
 
       // add sensors settings
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-        auto sensorsettingsDoc = doc[FPSTR(S_SENSORS)][sensorId].to<JsonObject>();
+        auto sensorsettingsDoc = doc[S_SENSORS][sensorId].to<JsonObject>();
         sensorSettingsToJson(sensorId, Sensors::settings[sensorId], sensorsettingsDoc);
       }
 
@@ -193,10 +191,10 @@ protected:
       getFilename(filename, sizeof(filename), "backup");
 
       char contentDispositionValue[128];
-      snprintf_P(
+      snprintf(
         contentDispositionValue,
         sizeof(contentDispositionValue),
-        PSTR("attachment; filename=\"%s\""),
+        "attachment; filename=\"%s\"",
         filename
       );
 
@@ -220,7 +218,7 @@ protected:
       bool changed = false;
 
       // restore network settings
-      if (!requestDoc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(requestDoc[FPSTR(S_NETWORK)], networkSettings)) {
+      if (!requestDoc[S_NETWORK].isNull() && jsonToNetworkSettings(requestDoc[S_NETWORK], networkSettings)) {
         fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
@@ -236,14 +234,14 @@ protected:
       }
 
       // restore main settings
-      if (!requestDoc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(requestDoc[FPSTR(S_SETTINGS)], settings)) {
+      if (!requestDoc[S_SETTINGS].isNull() && jsonToSettings(requestDoc[S_SETTINGS], settings)) {
         fsSettings.update();
         changed = true;
       }
 
       // restore sensors settings
-      if (!requestDoc[FPSTR(S_SENSORS)].isNull()) {
-        for (auto sensor : requestDoc[FPSTR(S_SENSORS)].as<JsonObject>()) {
+      if (!requestDoc[S_SENSORS].isNull()) {
+        for (auto sensor : requestDoc[S_SENSORS].as<JsonObject>()) {
           uint8_t sensorId;
           if (!Sensors::parseId(sensor.key().c_str(), sensorId)) {
             continue;
@@ -338,12 +336,12 @@ protected:
           auto *response = new AsyncJsonResponse(true);
           auto& doc = response->getRoot();
           for (short int i = 0; i < apCount; i++) {
-            doc[i][FPSTR(S_SSID)] = WiFi.SSID(i);
-            doc[i][FPSTR(S_BSSID)] = WiFi.BSSIDstr(i);
-            doc[i][FPSTR(S_SIGNAL_QUALITY)] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
-            doc[i][FPSTR(S_CHANNEL)] = WiFi.channel(i);
-            doc[i][FPSTR(S_HIDDEN)] = !WiFi.SSID(i).length();
-            doc[i][FPSTR(S_AUTH)] = WiFi.encryptionType(i);
+            doc[i][S_SSID] = WiFi.SSID(i);
+            doc[i][S_BSSID] = WiFi.BSSIDstr(i);
+            doc[i][S_SIGNAL_QUALITY] = NetworkMgr::rssiToSignalQuality(WiFi.RSSI(i));
+            doc[i][S_CHANNEL] = WiFi.channel(i);
+            doc[i][S_HIDDEN] = !WiFi.SSID(i).length();
+            doc[i][S_AUTH] = WiFi.encryptionType(i);
           }
 
           // send response
@@ -411,9 +409,9 @@ protected:
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         if (detailed) {
           auto& sSensor = Sensors::settings[sensorId];
-          responseDoc[sensorId][FPSTR(S_ENABLED)] = sSensor.enabled;
-          responseDoc[sensorId][FPSTR(S_NAME)] = sSensor.name;
-          responseDoc[sensorId][FPSTR(S_PURPOSE)] = static_cast<uint8_t>(sSensor.purpose);
+          responseDoc[sensorId][S_ENABLED] = sSensor.enabled;
+          responseDoc[sensorId][S_NAME] = sSensor.name;
+          responseDoc[sensorId][S_PURPOSE] = static_cast<uint8_t>(sSensor.purpose);
           sensorResultToJson(sensorId, responseDoc[sensorId]);
 
         } else {
@@ -538,53 +536,53 @@ protected:
       auto *response = new AsyncJsonResponse();
       auto& doc = response->getRoot();
 
-      auto docSystem = doc[FPSTR(S_SYSTEM)].to<JsonObject>();
-      docSystem[FPSTR(S_RESET_REASON)] = getResetReason();
-      docSystem[FPSTR(S_UPTIME)] = millis() / 1000;
+      auto docSystem = doc[S_SYSTEM].to<JsonObject>();
+      docSystem[S_RESET_REASON] = getResetReason();
+      docSystem[S_UPTIME] = millis() / 1000;
 
       bool isConnected = network->isConnected();
-      auto docNetwork = doc[FPSTR(S_NETWORK)].to<JsonObject>();
-      docNetwork[FPSTR(S_HOSTNAME)] = networkSettings.hostname;
-      docNetwork[FPSTR(S_MAC)] = network->getStaMac();
-      docNetwork[FPSTR(S_CONNECTED)] = isConnected;
-      docNetwork[FPSTR(S_SSID)] = network->getStaSsid();
-      docNetwork[FPSTR(S_SIGNAL_QUALITY)] = isConnected ? NetworkMgr::rssiToSignalQuality(network->getRssi()) : 0;
-      docNetwork[FPSTR(S_CHANNEL)] = isConnected ? network->getStaChannel() : 0;
-      docNetwork[FPSTR(S_IP)] = isConnected ? network->getStaIp().toString() : "";
-      docNetwork[FPSTR(S_SUBNET)] = isConnected ? network->getStaSubnet().toString() : "";
-      docNetwork[FPSTR(S_GATEWAY)] = isConnected ? network->getStaGateway().toString() : "";
-      docNetwork[FPSTR(S_DNS)] = isConnected ? network->getStaDns().toString() : "";
+      auto docNetwork = doc[S_NETWORK].to<JsonObject>();
+      docNetwork[S_HOSTNAME] = networkSettings.hostname;
+      docNetwork[S_MAC] = network->getStaMac();
+      docNetwork[S_CONNECTED] = isConnected;
+      docNetwork[S_SSID] = network->getStaSsid();
+      docNetwork[S_SIGNAL_QUALITY] = isConnected ? NetworkMgr::rssiToSignalQuality(network->getRssi()) : 0;
+      docNetwork[S_CHANNEL] = isConnected ? network->getStaChannel() : 0;
+      docNetwork[S_IP] = isConnected ? network->getStaIp().toString() : "";
+      docNetwork[S_SUBNET] = isConnected ? network->getStaSubnet().toString() : "";
+      docNetwork[S_GATEWAY] = isConnected ? network->getStaGateway().toString() : "";
+      docNetwork[S_DNS] = isConnected ? network->getStaDns().toString() : "";
 
-      auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
-      docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
-      docBuild[FPSTR(S_COMMIT)] = BUILD_COMMIT;
-      docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
-      docBuild[FPSTR(S_ENV)] = BUILD_ENV;
-      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
-      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
+      auto docBuild = doc[S_BUILD].to<JsonObject>();
+      docBuild[S_VERSION] = BUILD_VERSION;
+      docBuild[S_COMMIT] = BUILD_COMMIT;
+      docBuild[S_DATE] = __DATE__ " " __TIME__;
+      docBuild[S_ENV] = BUILD_ENV;
+      docBuild[S_CORE] = ESP.getCoreVersion();
+      docBuild[S_SDK] = ESP.getSdkVersion();
 
-      auto docHeap = doc[FPSTR(S_HEAP)].to<JsonObject>();
-      docHeap[FPSTR(S_TOTAL)] = getTotalHeap();
-      docHeap[FPSTR(S_FREE)] = getFreeHeap();
-      docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
-      docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
-      docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
+      auto docHeap = doc[S_HEAP].to<JsonObject>();
+      docHeap[S_TOTAL] = getTotalHeap();
+      docHeap[S_FREE] = getFreeHeap();
+      docHeap[S_MIN_FREE] = getFreeHeap(true);
+      docHeap[S_MAX_FREE_BLOCK] = getMaxFreeBlockHeap();
+      docHeap[S_MIN_MAX_FREE_BLOCK] = getMaxFreeBlockHeap(true);
 
-      auto docPsram = doc[FPSTR(S_PSRAM)].to<JsonObject>();
-      docPsram[FPSTR(S_TOTAL)] = ESP.getPsramSize();
-      docPsram[FPSTR(S_FREE)] = ESP.getFreePsram();
-      docPsram[FPSTR(S_MIN_FREE)] = ESP.getMinFreePsram();
-      docPsram[FPSTR(S_MAX_FREE_BLOCK)] = ESP.getMaxAllocPsram();
+      auto docPsram = doc[S_PSRAM].to<JsonObject>();
+      docPsram[S_TOTAL] = ESP.getPsramSize();
+      docPsram[S_FREE] = ESP.getFreePsram();
+      docPsram[S_MIN_FREE] = ESP.getMinFreePsram();
+      docPsram[S_MAX_FREE_BLOCK] = ESP.getMaxAllocPsram();
 
-      auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
-      docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
-      docChip[FPSTR(S_REV)] = ESP.getChipRevision();
-      docChip[FPSTR(S_CORES)] = ESP.getChipCores();
-      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
+      auto docChip = doc[S_CHIP].to<JsonObject>();
+      docChip[S_MODEL] = ESP.getChipModel();
+      docChip[S_REV] = ESP.getChipRevision();
+      docChip[S_CORES] = ESP.getChipCores();
+      docChip[S_FREQ] = ESP.getCpuFreqMHz();
 
-      auto docFlash = doc[FPSTR(S_FLASH)].to<JsonObject>();
-      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
-      docFlash[FPSTR(S_REAL_SIZE)] = docFlash[FPSTR(S_SIZE)];
+      auto docFlash = doc[S_FLASH].to<JsonObject>();
+      docFlash[S_SIZE] = ESP.getFlashChipSize();
+      docFlash[S_REAL_SIZE] = docFlash[S_SIZE];
 
       // send response
       response->setLength();
@@ -596,60 +594,60 @@ protected:
       auto *response = new AsyncJsonResponse();
       auto& doc = response->getRoot();
 
-      auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
-      docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
-      docBuild[FPSTR(S_COMMIT)] = BUILD_COMMIT;
-      docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
-      docBuild[FPSTR(S_ENV)] = BUILD_ENV;
-      docBuild[FPSTR(S_CORE)] = ESP.getCoreVersion();
-      docBuild[FPSTR(S_SDK)] = ESP.getSdkVersion();
+      auto docBuild = doc[S_BUILD].to<JsonObject>();
+      docBuild[S_VERSION] = BUILD_VERSION;
+      docBuild[S_COMMIT] = BUILD_COMMIT;
+      docBuild[S_DATE] = __DATE__ " " __TIME__;
+      docBuild[S_ENV] = BUILD_ENV;
+      docBuild[S_CORE] = ESP.getCoreVersion();
+      docBuild[S_SDK] = ESP.getSdkVersion();
 
-      auto docHeap = doc[FPSTR(S_HEAP)].to<JsonObject>();
-      docHeap[FPSTR(S_TOTAL)] = getTotalHeap();
-      docHeap[FPSTR(S_FREE)] = getFreeHeap();
-      docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
-      docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
-      docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
+      auto docHeap = doc[S_HEAP].to<JsonObject>();
+      docHeap[S_TOTAL] = getTotalHeap();
+      docHeap[S_FREE] = getFreeHeap();
+      docHeap[S_MIN_FREE] = getFreeHeap(true);
+      docHeap[S_MAX_FREE_BLOCK] = getMaxFreeBlockHeap();
+      docHeap[S_MIN_MAX_FREE_BLOCK] = getMaxFreeBlockHeap(true);
 
-      auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
-      docChip[FPSTR(S_MODEL)] = ESP.getChipModel();
-      docChip[FPSTR(S_REV)] = ESP.getChipRevision();
-      docChip[FPSTR(S_CORES)] = ESP.getChipCores();
-      docChip[FPSTR(S_FREQ)] = ESP.getCpuFreqMHz();
+      auto docChip = doc[S_CHIP].to<JsonObject>();
+      docChip[S_MODEL] = ESP.getChipModel();
+      docChip[S_REV] = ESP.getChipRevision();
+      docChip[S_CORES] = ESP.getChipCores();
+      docChip[S_FREQ] = ESP.getCpuFreqMHz();
 
-      auto docFlash = doc[FPSTR(S_FLASH)].to<JsonObject>();
-      docFlash[FPSTR(S_SIZE)] = ESP.getFlashChipSize();
-      docFlash[FPSTR(S_REAL_SIZE)] = docFlash[FPSTR(S_SIZE)];
+      auto docFlash = doc[S_FLASH].to<JsonObject>();
+      docFlash[S_SIZE] = ESP.getFlashChipSize();
+      docFlash[S_REAL_SIZE] = docFlash[S_SIZE];
 
       auto reason = esp_reset_reason();
       if (reason != ESP_RST_UNKNOWN && reason != ESP_RST_POWERON && reason != ESP_RST_SW) {
-        auto docCrash = doc[FPSTR(S_CRASH)].to<JsonObject>();
-        docCrash[FPSTR(S_REASON)] = getResetReason();
-        docCrash[FPSTR(S_CORE)] = CrashRecorder::ext.core;
-        docCrash[FPSTR(S_HEAP)] = CrashRecorder::ext.heap;
-        docCrash[FPSTR(S_UPTIME)] = CrashRecorder::ext.uptime;
+        auto docCrash = doc[S_CRASH].to<JsonObject>();
+        docCrash[S_REASON] = getResetReason();
+        docCrash[S_CORE] = CrashRecorder::ext.core;
+        docCrash[S_HEAP] = CrashRecorder::ext.heap;
+        docCrash[S_UPTIME] = CrashRecorder::ext.uptime;
 
         if (CrashRecorder::backtrace.length > 0 && CrashRecorder::backtrace.length <= CrashRecorder::backtraceMaxLength) {
           String backtraceStr;
           arr2str(backtraceStr, CrashRecorder::backtrace.data, CrashRecorder::backtrace.length);
-          docCrash[FPSTR(S_BACKTRACE)][FPSTR(S_DATA)] = backtraceStr;
-          docCrash[FPSTR(S_BACKTRACE)][FPSTR(S_CONTINUES)] = CrashRecorder::backtrace.continues;
+          docCrash[S_BACKTRACE][S_DATA] = backtraceStr;
+          docCrash[S_BACKTRACE][S_CONTINUES] = CrashRecorder::backtrace.continues;
         }
 
         if (CrashRecorder::epc.length > 0 && CrashRecorder::epc.length <= CrashRecorder::epcMaxLength) {
           String epcStr;
           arr2str(epcStr, CrashRecorder::epc.data, CrashRecorder::epc.length);
-          docCrash[FPSTR(S_EPC)] = epcStr;
+          docCrash[S_EPC] = epcStr;
         }
       }
       char filename[64];
       getFilename(filename, sizeof(filename), "debug");
 
       char contentDispositionValue[128];
-      snprintf_P(
+      snprintf(
         contentDispositionValue,
         sizeof(contentDispositionValue),
-        PSTR("attachment; filename=\"%s\""),
+        "attachment; filename=\"%s\"",
         filename
       );
 
@@ -663,7 +661,7 @@ protected:
     // not found
     this->webServer->onNotFound([this](AsyncWebServerRequest *request) {
       const auto& url = request->url();
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Page not found, uri: %s"), url.c_str());
+      Log.straceln(L_PORTAL_WEBSERVER, "Page not found, uri: %s", url.c_str());
 
       if (url.equals("/")) {
         request->send(200, "text/plain", "The file system is not flashed!");
@@ -685,7 +683,7 @@ protected:
     // web server
     if (!this->stateWebServer() && (network->isApEnabled() || network->isConnected()) && millis() - this->webServerChangeState >= this->changeStateInterval) {
       this->startWebServer();
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
+      Log.straceln(L_PORTAL_WEBSERVER, "Started: AP up or STA connected");
 
       // Enabling mDNS
       if (!this->mDnsState && settings.portal.mdns) {
@@ -693,20 +691,20 @@ protected:
           MDNS.addService("http", "tcp", 80);
           this->mDnsState = true;
 
-          Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS enabled and service added"));
+          Log.straceln(L_PORTAL_WEBSERVER, "mDNS enabled and service added");
         }
       }
 
     } else if (this->stateWebServer() && !network->isApEnabled() && !network->isStaEnabled()) {
       this->stopWebServer();
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
+      Log.straceln(L_PORTAL_WEBSERVER, "Stopped: AP and STA down");
 
       // Disabling mDNS
       if (this->mDnsState) {
         MDNS.end();
         this->mDnsState = false;
 
-        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
+        Log.straceln(L_PORTAL_WEBSERVER, "mDNS disabled");
       }
     }
 
@@ -715,17 +713,17 @@ protected:
       MDNS.end();
       this->mDnsState = false;
 
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
+      Log.straceln(L_PORTAL_WEBSERVER, "mDNS disabled");
     }
 
     // dns server
     if (!this->stateDnsServer() && !network->isConnected() && network->isApEnabled() && this->stateWebServer()) {
       this->startDnsServer();
-      Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
+      Log.straceln(L_PORTAL_DNSSERVER, "Started: AP up");
 
     } else if (this->stateDnsServer() && (network->isConnected() || !network->isApEnabled() || !this->stateWebServer())) {
       this->stopDnsServer();
-      Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Stopped: AP down/STA connected"));
+      Log.straceln(L_PORTAL_DNSSERVER, "Stopped: AP down/STA connected");
     }
 
     if (this->stateDnsServer()) {
@@ -743,17 +741,17 @@ protected:
     if (url.equals("/connecttest.txt")) {
       request->redirect("http://logout.net", 302);
 
-      Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to http://logout.net with 302 code"));
+      Log.straceln(L_PORTAL_CAPTIVE, "Redirect to http://logout.net with 302 code");
 
-    } else if (url.equals(F("/wpad.dat"))) {
+    } else if (url.equals("/wpad.dat")) {
       request->send(404);
 
-      Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 404 code"));
+      Log.straceln(L_PORTAL_CAPTIVE, "Send empty page with 404 code");
 
-    } else if (url.equals(F("/success.txt"))) {
+    } else if (url.equals("/success.txt")) {
       request->send(200);
 
-      Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Send empty page with 200 code"));
+      Log.straceln(L_PORTAL_CAPTIVE, "Send empty page with 200 code");
 
     } else {
       String portalUrl = "http://";
@@ -762,7 +760,7 @@ protected:
 
       request->redirect(portalUrl, 302);
 
-      Log.straceln(FPSTR(L_PORTAL_CAPTIVE), F("Redirect to portal page with 302 code"));
+      Log.straceln(L_PORTAL_CAPTIVE, "Redirect to portal page with 302 code");
     }
   }
 
@@ -824,8 +822,8 @@ protected:
     localtime_r(&now, &localNow);
 
     char localNowValue[20];
-    strftime(localNowValue, sizeof(localNowValue), PSTR("%Y-%m-%d-%H-%M-%S"), &localNow);
+    strftime(localNowValue, sizeof(localNowValue), "%Y-%m-%d-%H-%M-%S", &localNow);
 
-    snprintf_P(filename, maxSizeFilename, PSTR("%s_%s_%s.json"), networkSettings.hostname, localNowValue, type);
+    snprintf(filename, maxSizeFilename, "%s_%s_%s.json", networkSettings.hostname, localNowValue, type);
   }
 };

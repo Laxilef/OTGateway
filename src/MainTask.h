@@ -42,7 +42,6 @@ protected:
   bool emergencyDetected = false;
   unsigned long emergencyFlipTime = 0;
 
-  #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
     return "Main";
   }
@@ -58,7 +57,6 @@ protected:
   int getTaskPriority() override {
     return 3;
   }
-  #endif
 
   void setup() {}
 
@@ -66,15 +64,15 @@ protected:
     network->loop();
 
     if (fsNetworkSettings.tick() == FD_WRITE) {
-      Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Updated"));
+      Log.sinfoln(L_NETWORK_SETTINGS, "Updated");
     }
 
     if (fsSettings.tick() == FD_WRITE) {
-      Log.sinfoln(FPSTR(L_SETTINGS), F("Updated"));
+      Log.sinfoln(L_SETTINGS, "Updated");
     }
 
     if (fsSensorsSettings.tick() == FD_WRITE) {
-      Log.sinfoln(FPSTR(L_SENSORS_SETTINGS), F("Updated"));
+      Log.sinfoln(L_SENSORS_SETTINGS, "Updated");
     }
 
     if (vars.actions.restart) {
@@ -82,7 +80,7 @@ protected:
       this->restartSignalReceived = true;
       vars.actions.restart = false;
 
-      Log.sinfoln(FPSTR(L_MAIN), F("Received restart signal"));
+      Log.sinfoln(L_MAIN, "Received restart signal");
     }
 
     if (!vars.states.restarting && this->restartSignalReceived && millis() - this->restartSignalReceivedTime > 5000) {
@@ -99,7 +97,7 @@ protected:
         fsNetworkSettings.write();
       }
 
-      Log.sinfoln(FPSTR(L_MAIN), F("Restart scheduled in 10 sec."));
+      Log.sinfoln(L_MAIN, "Restart scheduled in 10 sec.");
     }
 
     vars.mqtt.connected = tMqtt->isConnected();
@@ -210,8 +208,8 @@ protected:
 
     if (millis() - this->lastHeapInfo > 20000 || minFreeHeapDiff > 0 || minMaxFreeBlockHeapDiff > 0) {
       Log.sverboseln(
-        FPSTR(L_MAIN),
-        F("Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu%%)"),
+        L_MAIN,
+        "Free heap size: %u of %u bytes (min: %u, diff: %u), max free block: %u (min: %u, diff: %u, frag: %hhu%%)",
         freeHeap, getTotalHeap(), this->minFreeHeap, minFreeHeapDiff, maxFreeBlockHeap, this->minMaxFreeBlockHeap, minMaxFreeBlockHeapDiff, getHeapFrag()
       );
       this->lastHeapInfo = millis();
@@ -257,8 +255,8 @@ protected:
             vars.master.heating.freezing = false;
 
             Log.sinfoln(
-              FPSTR(L_MAIN),
-              F("No freezing detected. Current low temp: %.2f, threshold (high): %hhu"),
+              L_MAIN,
+              "No freezing detected. Current low temp: %.2f, threshold (high): %hhu",
               lowTemp, settings.heating.freezeProtection.highTemp
             );
           }
@@ -273,8 +271,8 @@ protected:
             }
 
             Log.sinfoln(
-              FPSTR(L_MAIN),
-              F("Freezing detected! Current low temp: %.2f, threshold (low): %hhu"),
+              L_MAIN,
+              "Freezing detected! Current low temp: %.2f, threshold (low): %hhu",
               lowTemp, settings.heating.freezeProtection.lowTemp
             );
           }
@@ -283,7 +281,7 @@ protected:
       } else if (vars.master.heating.freezing) {
         vars.master.heating.freezing = false;
 
-        Log.sinfoln(FPSTR(L_MAIN), F("No sensors available, freeze protection unavailable!"));
+        Log.sinfoln(L_MAIN, "No sensors available, freeze protection unavailable!");
       }
     }
   }
@@ -321,7 +319,7 @@ protected:
         // enable emergency
         if (millis() - this->emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
           vars.emergency.state = true;
-          Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode enabled (%hhu)"), emergencyFlags);
+          Log.sinfoln(L_MAIN, "Emergency mode enabled (%hhu)", emergencyFlags);
         }
       }
 
@@ -335,7 +333,7 @@ protected:
         // disable emergency
         if (millis() - this->emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
           vars.emergency.state = false;
-          Log.sinfoln(FPSTR(L_MAIN), F("Emergency mode disabled"));
+          Log.sinfoln(L_MAIN, "Emergency mode disabled");
         }
       }
     }
@@ -435,19 +433,19 @@ protected:
           pinMode(configuredInputGpio, OUTPUT);
           digitalWrite(configuredInputGpio, LOW);
 
-          Log.sinfoln(FPSTR(L_CASCADE_INPUT), F("Deinitialized on GPIO %hhu"), configuredInputGpio);
+          Log.sinfoln(L_CASCADE_INPUT, "Deinitialized on GPIO %hhu", configuredInputGpio);
         }
 
         if (GPIO_IS_VALID(settings.cascadeControl.input.gpio)) {
           configuredInputGpio = settings.cascadeControl.input.gpio;
           pinMode(configuredInputGpio, INPUT);
 
-          Log.sinfoln(FPSTR(L_CASCADE_INPUT), F("Initialized on GPIO %hhu"), configuredInputGpio);
+          Log.sinfoln(L_CASCADE_INPUT, "Initialized on GPIO %hhu", configuredInputGpio);
 
         } else if (configuredInputGpio != GPIO_IS_NOT_CONFIGURED) {
           configuredInputGpio = GPIO_IS_NOT_CONFIGURED;
 
-          Log.swarningln(FPSTR(L_CASCADE_INPUT), F("Failed initialize: GPIO %hhu is not valid!"), configuredInputGpio);
+          Log.swarningln(L_CASCADE_INPUT, "Failed initialize: GPIO %hhu is not valid!", configuredInputGpio);
         }
       }
 
@@ -468,9 +466,9 @@ protected:
             vars.cascadeControl.input = value;
 
             Log.sinfoln(
-              FPSTR(L_CASCADE_INPUT),
-              F("State changed to %s"),
-              value ? F("TRUE") : F("FALSE")
+              L_CASCADE_INPUT,
+              "State changed to %s",
+              value ? "TRUE" : "FALSE"
             );
           }
 
@@ -485,9 +483,9 @@ protected:
         vars.cascadeControl.input = true;
 
         Log.sinfoln(
-          FPSTR(L_CASCADE_INPUT),
-          F("Disabled, state changed to %s"),
-          vars.cascadeControl.input ? F("TRUE") : F("FALSE")
+          L_CASCADE_INPUT,
+          "Disabled, state changed to %s",
+          vars.cascadeControl.input ? "TRUE" : "FALSE"
         );
       }
     }
@@ -500,7 +498,7 @@ protected:
           pinMode(configuredOutputGpio, OUTPUT);
           digitalWrite(configuredOutputGpio, LOW);
 
-          Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Deinitialized on GPIO %hhu"), configuredOutputGpio);
+          Log.sinfoln(L_CASCADE_OUTPUT, "Deinitialized on GPIO %hhu", configuredOutputGpio);
         }
 
         if (GPIO_IS_VALID(settings.cascadeControl.output.gpio)) {
@@ -513,12 +511,12 @@ protected:
               : LOW
           );
 
-          Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Initialized on GPIO %hhu"), configuredOutputGpio);
+          Log.sinfoln(L_CASCADE_OUTPUT, "Initialized on GPIO %hhu", configuredOutputGpio);
 
         } else if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
           configuredOutputGpio = GPIO_IS_NOT_CONFIGURED;
 
-          Log.swarningln(FPSTR(L_CASCADE_OUTPUT), F("Failed initialize: GPIO %hhu is not valid!"), configuredOutputGpio);
+          Log.swarningln(L_CASCADE_OUTPUT, "Failed initialize: GPIO %hhu is not valid!", configuredOutputGpio);
         }
       }
 
@@ -550,9 +548,9 @@ protected:
             );
 
             Log.sinfoln(
-              FPSTR(L_CASCADE_OUTPUT),
-              F("State changed to %s"),
-              value ? F("TRUE") : F("FALSE")
+              L_CASCADE_OUTPUT,
+              "State changed to %s",
+              value ? "TRUE" : "FALSE"
             );
           }
 
@@ -576,9 +574,9 @@ protected:
         }
 
         Log.sinfoln(
-          FPSTR(L_CASCADE_OUTPUT),
-          F("Disabled, state changed to %s"),
-          vars.cascadeControl.output ? F("TRUE") : F("FALSE")
+          L_CASCADE_OUTPUT,
+          "Disabled, state changed to %s",
+          vars.cascadeControl.output ? "TRUE" : "FALSE"
         );
       }
     }
@@ -612,7 +610,7 @@ protected:
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
+        Log.sinfoln(L_EXTPUMP, "Disabled: use = off");
       }
 
       return;
@@ -638,7 +636,7 @@ protected:
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
+        Log.sinfoln(L_EXTPUMP, "Disabled: use = off");
       }
 
       return;
@@ -656,7 +654,7 @@ protected:
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired post circulation time"));
+        Log.sinfoln(L_EXTPUMP, "Disabled: expired post circulation time");
 
       } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
         digitalWrite(
@@ -669,7 +667,7 @@ protected:
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
 
-        Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired anti stuck time"));
+        Log.sinfoln(L_EXTPUMP, "Disabled: expired anti stuck time");
       }
 
     } else if (vars.externalPump.state && this->heatingEnabled && this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK) {
@@ -687,7 +685,7 @@ protected:
           : HIGH
       );
 
-      Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: heating on"));
+      Log.sinfoln(L_EXTPUMP, "Enabled: heating on");
 
     } else if (!vars.externalPump.state && (vars.externalPump.lastEnabledTime == 0 || millis() - vars.externalPump.lastEnabledTime >= (settings.externalPump.antiStuckInterval * 1000lu))) {
       vars.externalPump.state = true;
@@ -701,7 +699,7 @@ protected:
           : HIGH
       );
 
-      Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: anti stuck"));
+      Log.sinfoln(L_EXTPUMP, "Enabled: anti stuck");
     }
   }
 };

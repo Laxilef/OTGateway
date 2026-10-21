@@ -14,6 +14,8 @@
 ![Integration with HomeAssistant](/assets/poster-3.png)
 
 ## Features
+
+The current version targets ESP32-based boards.
 - DHW temperature control
 - Heating temperature control
 - Smart heating temperature control modes:
@@ -81,7 +83,7 @@ Anyone is welcome to add their native language as a [new localization](https://h
 </a>
 
 ## Gratitude
-* To the developers of the libraries used: [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library), [ESP8266Scheduler](https://github.com/nrwiersma/ESP8266Scheduler), [ArduinoJson](https://github.com/bblanchon/ArduinoJson), [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino), [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient), [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet), [FileData](https://github.com/GyverLibs/FileData), [GyverPID](https://github.com/GyverLibs/GyverPID), [GyverBlinker](https://github.com/GyverLibs/GyverBlinker), [OneWireNg](https://github.com/pstolarz/OneWireNg) & [OneWire](https://github.com/PaulStoffregen/OneWire)
+* To the developers of the libraries used: [OpenTherm Library](https://github.com/ihormelnyk/opentherm_library), [ESP32Scheduler](https://github.com/laxilef/ESP32Scheduler), [ArduinoJson](https://github.com/bblanchon/ArduinoJson), [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino), [ArduinoMqttClient](https://github.com/arduino-libraries/ArduinoMqttClient), [ESPTelnet](https://github.com/LennartHennigs/ESPTelnet), [FileData](https://github.com/GyverLibs/FileData), [GyverPID](https://github.com/GyverLibs/GyverPID), [GyverBlinker](https://github.com/GyverLibs/GyverBlinker), [OneWireNg](https://github.com/pstolarz/OneWireNg) & [OneWire](https://github.com/PaulStoffregen/OneWire)
 * To the [PlatformIO](https://platformio.org/) Team
 * To the team and contributors of the [pioarduino](https://github.com/pioarduino/platform-espressif32) project
 * To the [BrowserStack](https://www.browserstack.com/) team. This project is tested with BrowserStack.

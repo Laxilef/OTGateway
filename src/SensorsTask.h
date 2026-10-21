@@ -42,14 +42,14 @@ public:
     auto deviceRssi = device->getRSSI();
 
     Log.sinfoln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': discovered device %s, name: %s, RSSI: %hhd"),
+      L_SENSORS_BLE, "Sensor #%hhu '%s': discovered device %s, name: %s, RSSI: %hhd",
       sensorId, sSensor.name,
       deviceAddress.toString().c_str(), deviceName.c_str(), deviceRssi
     );
 
     if (!device->haveServiceData()) {
       Log.swarningln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': not found service data!"),
+        L_SENSORS_BLE, "Sensor #%hhu '%s': not found service data!",
         sensorId, sSensor.name
       );
       return;
@@ -57,7 +57,7 @@ public:
 
     auto serviceDataCount = device->getServiceDataCount();
     Log.straceln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': found %hhu service data"),
+      L_SENSORS_BLE, "Sensor #%hhu '%s': found %hhu service data",
       sensorId, sSensor.name, serviceDataCount
     );
 
@@ -67,7 +67,7 @@ public:
 
     } else {
       Log.swarningln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu '%s': unsupported data format!"),
+        L_SENSORS_BLE, "Sensor #%hhu '%s': unsupported data format!",
         sensorId, sSensor.name
       );
     }
@@ -79,21 +79,21 @@ public:
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not found ATC1441 data"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: not found ATC1441 data",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
 
     } else if (serviceData.size() != 13) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not in ATC1441 format"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: not in ATC1441 format",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
     }
 
     Log.snoticeln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found ATC1441 format"),
+      L_SENSORS_BLE, "Sensor #%hhu, service %s: found ATC1441 format",
       sensorId, serviceUuid.toString().c_str()
     );
 
@@ -116,8 +116,8 @@ public:
 
     // Log
     Log.snoticeln(
-      FPSTR(L_SENSORS_BLE),
-      F("Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
+      L_SENSORS_BLE,
+      "Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu",
       sensorId, temperature, humidity, batteryMv, batteryLevel
     );
 
@@ -130,21 +130,21 @@ public:
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not found PVVX data"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: not found PVVX data",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
 
     } else if (serviceData.size() != 15) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not in PVVX format"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: not in PVVX format",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
     }
 
     Log.snoticeln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found PVVX format"),
+      L_SENSORS_BLE, "Sensor #%hhu, service %s: found PVVX format",
       sensorId, serviceUuid.toString().c_str()
     );
 
@@ -169,8 +169,8 @@ public:
 
     // Log
     Log.snoticeln(
-      FPSTR(L_SENSORS_BLE),
-      F("Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu"),
+      L_SENSORS_BLE,
+      "Sensor #%hhu, received temp: %.2f; humidity: %.2f, battery voltage: %hu, battery level: %hhu",
       sensorId, temperature, humidity, batteryMv, batteryLevel
     );
 
@@ -183,28 +183,28 @@ public:
     auto serviceData = device->getServiceData(serviceUuid);
     if (!serviceData.size()) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: not found BTHome data"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: not found BTHome data",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
 
     } else if ((serviceData[0] & 0xE0) != 0x40) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: unsupported BTHome version"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: unsupported BTHome version",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
 
     } else if ((serviceData[0] & 0x01) != 0) {
       Log.straceln(
-        FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: unsupported BTHome encrypted data"),
+        L_SENSORS_BLE, "Sensor #%hhu, service %s: unsupported BTHome encrypted data",
         sensorId, serviceUuid.toString().c_str()
       );
       return false;
     }
 
     Log.snoticeln(
-      FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, service %s: found BTHome format"),
+      L_SENSORS_BLE, "Sensor #%hhu, service %s: found BTHome format",
       sensorId, serviceUuid.toString().c_str()
     );
 
@@ -231,7 +231,7 @@ public:
           foundData = true;
 
           Log.snoticeln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received battery level: %hhu"),
+            L_SENSORS_BLE, "Sensor #%hhu, received battery level: %hhu",
             sensorId, batteryLevel
           );
           break;
@@ -251,7 +251,7 @@ public:
           foundData = true;
 
           Log.snoticeln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received temp: %.2f"),
+            L_SENSORS_BLE, "Sensor #%hhu, received temp: %.2f",
             sensorId, temperature
           );
           break;
@@ -271,7 +271,7 @@ public:
           foundData = true;
 
           Log.snoticeln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received humidity: %.2f"),
+            L_SENSORS_BLE, "Sensor #%hhu, received humidity: %.2f",
             sensorId, humidity
           );
           break;
@@ -289,7 +289,7 @@ public:
           foundData = true;
 
           Log.snoticeln(
-            FPSTR(L_SENSORS_BLE), F("Sensor #%hhu, received battery voltage: %hu"),
+            L_SENSORS_BLE, "Sensor #%hhu, received battery voltage: %hu",
             sensorId, batteryMv
           );
           break;
@@ -359,7 +359,6 @@ protected:
   #endif
   unsigned long globalLastPollingTime = 0;
 
-  #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
     return "Sensors";
   }
@@ -380,7 +379,6 @@ protected:
   int getTaskPriority() override {
     return 4;
   }
-  #endif
 
   void loop() {
     if (vars.states.restarting || vars.states.upgrading) {
@@ -493,7 +491,7 @@ protected:
       instance.setOneWire(&owInstance);
       instance.setWaitForConversion(false);
 
-      Log.sinfoln(FPSTR(L_SENSORS_DALLAS), F("Started on GPIO %hhu"), sSensor.gpio);
+      Log.sinfoln(L_SENSORS_DALLAS, "Started on GPIO %hhu", sSensor.gpio);
     }
   }
 
@@ -524,7 +522,7 @@ protected:
         this->dallasPolling.erase(gpio);
         this->gpioLastPollingTime.erase(gpio);
 
-        Log.sinfoln(FPSTR(L_SENSORS_DALLAS), F("Stopped on GPIO %hhu"), gpio);
+        Log.sinfoln(L_SENSORS_DALLAS, "Stopped on GPIO %hhu", gpio);
         continue;
       }
 
@@ -549,8 +547,8 @@ protected:
       instance.begin();
 
       Log.straceln(
-        FPSTR(L_SENSORS_DALLAS),
-        F("GPIO %hhu, devices on bus: %hhu, DS18* devices: %hhu"),
+        L_SENSORS_DALLAS,
+        "GPIO %hhu, devices on bus: %hhu, DS18* devices: %hhu",
         gpio, instance.getDeviceCount(), instance.getDS18Count()
       );
     }
@@ -616,7 +614,7 @@ protected:
 
         fsSensorsSettings.update();
         Log.straceln(
-          FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', set address: %hhX:%hhX:%hhX:%hhX:%hhX:%hhX:%hhX:%hhX"),
+          L_SENSORS_DALLAS, "GPIO %hhu, sensor #%hhu '%s', set address: %hhX:%hhX:%hhX:%hhX:%hhX:%hhX:%hhX:%hhX",
           sSensor.gpio, sensorId, sSensor.name,
           sSensor.address[0], sSensor.address[1], sSensor.address[2], sSensor.address[3],
           sSensor.address[4], sSensor.address[5], sSensor.address[6], sSensor.address[7]
@@ -667,7 +665,7 @@ protected:
           float value = instance.getTempC(sSensor.address);
           if (value == DEVICE_DISCONNECTED_C) {
             Log.swarningln(
-              FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s': failed receiving data"),
+              L_SENSORS_DALLAS, "GPIO %hhu, sensor #%hhu '%s': failed receiving data",
               sSensor.gpio, sensorId, sSensor.name
             );
 
@@ -679,7 +677,7 @@ protected:
           }
 
           Log.straceln(
-            FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, sensor #%hhu '%s', received data: %.2f"),
+            L_SENSORS_DALLAS, "GPIO %hhu, sensor #%hhu '%s', received data: %.2f",
             sSensor.gpio, sensorId, sSensor.name, value
           );
 
@@ -708,7 +706,7 @@ protected:
         this->dallasPolling[gpio] = true;
         this->gpioLastPollingTime[gpio] = ts;
 
-        Log.straceln(FPSTR(L_SENSORS_DALLAS), F("GPIO %hhu, polling..."), gpio);
+        Log.straceln(L_SENSORS_DALLAS, "GPIO %hhu, polling...", gpio);
       }
     }
   }
@@ -741,7 +739,7 @@ protected:
           auto& sSensor = Sensors::settings[sensorId];
 
           Log.straceln(
-            FPSTR(L_SENSORS_DHT), F("GPIO %hhu, sensor #%hhu '%s', temp: %.2f, humidity: %.2f%%"),
+            L_SENSORS_DHT, "GPIO %hhu, sensor #%hhu '%s', temp: %.2f, humidity: %.2f%%",
             sSensor.gpio, sensorId, sSensor.name, temperature, humidity
           );
 
@@ -764,7 +762,7 @@ protected:
           auto& sSensor = Sensors::settings[sensorId];
 
           Log.swarningln(
-            FPSTR(L_SENSORS_DHT), F("GPIO %hhu, sensor #%hhu '%s': failed receiving data (err: %s)"),
+            L_SENSORS_DHT, "GPIO %hhu, sensor #%hhu '%s': failed receiving data (err: %s)",
             sSensor.gpio, sensorId, sSensor.name, DHT::statusToString(this->dhtInstance.getStatus())
           );
 
@@ -786,11 +784,11 @@ protected:
         }
 
         if (this->dhtInstance.setup(sensorGpio, sType)) {
-          Log.sinfoln(FPSTR(L_SENSORS_DHT), F("Started on GPIO %hhu"), sSensor.gpio);
+          Log.sinfoln(L_SENSORS_DHT, "Started on GPIO %hhu", sSensor.gpio);
 
         } else {
           Log.swarningln(
-            FPSTR(L_SENSORS_DHT), F("Failed to start on GPIO %hhu (err: %s)"),
+            L_SENSORS_DHT, "Failed to start on GPIO %hhu (err: %s)",
             sSensor.gpio, DHT::statusToString(this->dhtInstance.getStatus())
           );
         }
@@ -810,11 +808,7 @@ protected:
         continue;
       }
 
-      #ifdef ARDUINO_ARCH_ESP32
       const auto value = analogReadMilliVolts(sSensor.gpio);
-      #else
-      const auto value = analogRead(sSensor.gpio) / 1023 * DEFAULT_NTC_VREF;
-      #endif
 
       if (value < DEFAULT_NTC_VLOW_TRESHOLD || value > DEFAULT_NTC_VHIGH_TRESHOLD) {
         if (Sensors::getConnectionStatusById(sensorId)) {
@@ -822,7 +816,7 @@ protected:
         }
 
         Log.swarningln(
-          FPSTR(L_SENSORS_NTC), F("GPIO %hhu, sensor #%hhu '%s', voltage is out of threshold: %.3f"),
+          L_SENSORS_NTC, "GPIO %hhu, sensor #%hhu '%s', voltage is out of threshold: %.3f",
           sSensor.gpio, sensorId, sSensor.name, (value / 1000.0f)
         );
 
@@ -838,7 +832,7 @@ protected:
       ) - 273.15f;
 
       Log.straceln(
-        FPSTR(L_SENSORS_NTC), F("GPIO %hhu, sensor #%hhu '%s', raw temp: %.2f, raw voltage: %.3f, raw resistance: %.2f"),
+        L_SENSORS_NTC, "GPIO %hhu, sensor #%hhu '%s', raw temp: %.2f, raw voltage: %.3f, raw resistance: %.2f",
         sSensor.gpio, sensorId, sSensor.name, rawTemp, (value / 1000.0f), sensorResistance
       );
 
@@ -862,10 +856,10 @@ protected:
 
         if (this->pBLEScan == nullptr) {
           if (NimBLEDevice::deinit(true)) {
-            Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Deinitialized"));
+            Log.sinfoln(L_SENSORS_BLE, "Deinitialized");
 
           } else {
-            Log.swarningln(FPSTR(L_SENSORS_BLE), F("Unable to deinitialize!"));
+            Log.swarningln(L_SENSORS_BLE, "Unable to deinitialize!");
           }
         }
       }
@@ -875,7 +869,7 @@ protected:
 
     if (!NimBLEDevice::isInitialized() && millis() > 5000) {
       if (NimBLEDevice::init(PROJECT_NAME)) {
-        Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Initialized"));
+        Log.sinfoln(L_SENSORS_BLE, "Initialized");
 
         #ifdef ESP_PWR_LVL_P20
         NimBLEDevice::setPower(ESP_PWR_LVL_P20);
@@ -884,7 +878,7 @@ protected:
         #endif
 
       } else {
-        Log.swarningln(FPSTR(L_SENSORS_BLE), F("Unable to initialize!"));
+        Log.swarningln(L_SENSORS_BLE, "Unable to initialize!");
         return;
       }
     }
@@ -900,7 +894,7 @@ protected:
       this->pBLEScan->setInterval(10000);
       this->pBLEScan->setWindow(10000);
 
-      Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Scanning initialized"));
+      Log.sinfoln(L_SENSORS_BLE, "Scanning initialized");
     }
 
     if (!this->pBLEScan->isScanning()) {
@@ -909,13 +903,13 @@ protected:
 
       if (this->pBLEScan->start(30000, false, false)) {
         Log.sinfoln(
-          FPSTR(L_SENSORS_BLE),
-          F("%s scanning started"),
+          L_SENSORS_BLE,
+          "%s scanning started",
           this->activeScanBle ? "Active" : "Passive"
         );
 
       } else {
-        Log.sinfoln(FPSTR(L_SENSORS_BLE), F("Unable to start scanning"));
+        Log.sinfoln(L_SENSORS_BLE, "Unable to start scanning");
       }
     }
   }

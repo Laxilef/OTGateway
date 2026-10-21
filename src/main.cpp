@@ -1,4 +1,9 @@
 #include <Arduino.h>
+
+#if !defined(ARDUINO_ARCH_ESP32)
+  #error Only ESP32 boards are supported
+#endif
+
 #include <ArduinoJson.h>
 #include <FileData.h>
 #include <LittleFS.h>
@@ -14,13 +19,7 @@
 #include "Settings.h"
 #include "utils.h"
 
-#if defined(ARDUINO_ARCH_ESP32)
-  #include <ESP32Scheduler.h>
-#elif defined(ARDUINO_ARCH_ESP8266)
-  #include <Scheduler.h>
-#else
-  #error Wrong board. Supported boards: esp8266, esp32
-#endif
+#include <ESP32Scheduler.h>
 
 #include <Task.h>
 #include <LeanTask.h>
@@ -83,17 +82,17 @@ void setup() {
   // Network settings
   switch (fsNetworkSettings.read()) {
     case FD_FS_ERR:
-      Log.swarningln(FPSTR(L_NETWORK_SETTINGS), F("Filesystem error, load default"));
+      Log.swarningln(L_NETWORK_SETTINGS, "Filesystem error, load default");
       break;
     case FD_FILE_ERR:
-      Log.swarningln(FPSTR(L_NETWORK_SETTINGS), F("Bad data, load default"));
+      Log.swarningln(L_NETWORK_SETTINGS, "Bad data, load default");
       break;
     case FD_WRITE:
-      Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Not found, load default"));
+      Log.sinfoln(L_NETWORK_SETTINGS, "Not found, load default");
       break;
     case FD_ADD:
     case FD_READ:
-      Log.sinfoln(FPSTR(L_NETWORK_SETTINGS), F("Loaded"));
+      Log.sinfoln(L_NETWORK_SETTINGS, "Loaded");
       break;
     default:
       break;
@@ -128,20 +127,20 @@ void setup() {
   // Settings
   switch (fsSettings.read()) {
     case FD_FS_ERR:
-      Log.swarningln(FPSTR(L_SETTINGS), F("Filesystem error, load default"));
+      Log.swarningln(L_SETTINGS, "Filesystem error, load default");
       break;
     case FD_FILE_ERR:
-      Log.swarningln(FPSTR(L_SETTINGS), F("Bad data, load default"));
+      Log.swarningln(L_SETTINGS, "Bad data, load default");
       break;
     case FD_WRITE:
-      Log.sinfoln(FPSTR(L_SETTINGS), F("Not found, load default"));
+      Log.sinfoln(L_SETTINGS, "Not found, load default");
       break;
     case FD_ADD:
     case FD_READ:
-      Log.sinfoln(FPSTR(L_SETTINGS), F("Loaded"));
+      Log.sinfoln(L_SETTINGS, "Loaded");
 
       if (strcmp(SETTINGS_VALID_VALUE, settings.validationValue) != 0) {
-        Log.swarningln(FPSTR(L_SETTINGS), F("Not valid, set default and restart..."));
+        Log.swarningln(L_SETTINGS, "Not valid, set default and restart...");
         fsSettings.reset();
         ::delay(5000);
         ESP.restart();
@@ -184,17 +183,17 @@ void setup() {
   // Sensors settings
   switch (fsSensorsSettings.read()) {
     case FD_FS_ERR:
-      Log.swarningln(FPSTR(L_SENSORS), F("Filesystem error, load default"));
+      Log.swarningln(L_SENSORS, "Filesystem error, load default");
       break;
     case FD_FILE_ERR:
-      Log.swarningln(FPSTR(L_SENSORS), F("Bad data, load default"));
+      Log.swarningln(L_SENSORS, "Bad data, load default");
       break;
     case FD_WRITE:
-      Log.sinfoln(FPSTR(L_SENSORS), F("Not found, load default"));
+      Log.sinfoln(L_SENSORS, "Not found, load default");
       break;
     case FD_ADD:
     case FD_READ:
-      Log.sinfoln(FPSTR(L_SENSORS), F("Loaded"));
+      Log.sinfoln(L_SENSORS, "Loaded");
     default:
       break;
   }
@@ -223,7 +222,5 @@ void setup() {
 }
 
 void loop() {
-#if defined(ARDUINO_ARCH_ESP32)
   vTaskDelete(NULL);
-#endif
 }

@@ -35,7 +35,6 @@ protected:
   unsigned long roomSetTempCh2Time = 0;
   uint8_t configuredRxLedGpio = GPIO_IS_NOT_CONFIGURED;
 
-  #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
     return "OpenTherm";
   }
@@ -51,7 +50,6 @@ protected:
   int getTaskPriority() override {
     return 5;
   }
-  #endif
 
   void setup() {
     // Convert defaults at start
@@ -66,13 +64,13 @@ protected:
     if (this->instance != nullptr) {
       delete this->instance;
       this->instance = nullptr;
-      Log.sinfoln(FPSTR(L_OT), F("Stopped"));
+      Log.sinfoln(L_OT, "Stopped");
     }
 
     if (!GPIO_IS_VALID(settings.opentherm.inGpio) || !GPIO_IS_VALID(settings.opentherm.outGpio)) {
       Log.swarningln(
-        FPSTR(L_OT),
-        F("Not started. GPIO IN: %hhu or GPIO OUT: %hhu is not valid"),
+        L_OT,
+        "Not started. GPIO IN: %hhu or GPIO OUT: %hhu is not valid",
         settings.opentherm.inGpio,
         settings.opentherm.outGpio
       );
@@ -99,12 +97,12 @@ protected:
     this->roomSetTempTime = 0;
     this->roomSetTempCh2Time = 0;
 
-    Log.sinfoln(FPSTR(L_OT), F("Started. GPIO IN: %hhu, GPIO OUT: %hhu"), settings.opentherm.inGpio, settings.opentherm.outGpio);
+    Log.sinfoln(L_OT, "Started. GPIO IN: %hhu, GPIO OUT: %hhu", settings.opentherm.inGpio, settings.opentherm.outGpio);
 
     this->instance->setAfterSendRequestCallback([this](unsigned long request, unsigned long response, OpenThermResponseStatus status, uint8_t attempt) {
       Log.sverboseln(
-        FPSTR(L_OT),
-        F("ID: %4d   Request: %8lx   Response: %8lx   Msg type: %s   Attempt: %2d   Status: %s"),
+        L_OT,
+        "ID: %4d   Request: %8lx   Response: %8lx   Msg type: %s   Attempt: %2d   Status: %s",
         CustomOpenTherm::getDataID(request),
         request,
         response,
@@ -155,7 +153,7 @@ protected:
 
     } else if (this->instance->status == OpenThermStatus::NOT_INITIALIZED) {
       if (!this->instance->begin()) {
-        Log.swarningln(FPSTR(L_OT), F("Failed begin"));
+        Log.swarningln(L_OT, "Failed begin");
 
         this->delay(5000);
         return;
@@ -241,8 +239,8 @@ protected:
 
     if (!CustomOpenTherm::isValidResponse(response) || !CustomOpenTherm::isValidResponseId(response, OpenThermMessageID::Status)) {
       Log.swarningln(
-        FPSTR(L_OT),
-        F("Failed receive boiler status: %s"),
+        L_OT,
+        "Failed receive boiler status: %s",
         CustomOpenTherm::statusToString(this->instance->getLastResponseStatus())
       );
 
@@ -262,7 +260,7 @@ protected:
       }
 
       Log.snoticeln(
-        FPSTR(L_OT), F("Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; channel 2: %hhu; fault: %hhu; diag: %hhu"),
+        L_OT, "Received boiler status. Heating: %hhu; DHW: %hhu; flame: %hhu; cooling: %hhu; channel 2: %hhu; fault: %hhu; diag: %hhu",
         vars.slave.heating.active, vars.slave.dhw.active,
         vars.slave.flame, vars.slave.cooling.active, vars.slave.ch2.active, vars.slave.fault.active, vars.slave.diag.active
       );
@@ -275,8 +273,8 @@ protected:
     // 5 * (1000 + 100) * 1.15 = 6325 ms
     if (!vars.slave.connected && millis() - this->lastSuccessResponse < 6325) {
       Log.sinfoln(
-        FPSTR(L_OT),
-        F("Connected, downtime: %lu s."),
+        L_OT,
+        "Connected, downtime: %lu s.",
         (millis() - this->disconnectedTime) / 1000
       );
 
@@ -285,8 +283,8 @@ protected:
 
     } else if (vars.slave.connected && millis() - this->lastSuccessResponse > 6325) {
       Log.swarningln(
-        FPSTR(L_OT),
-        F("Disconnected, uptime: %lu s."),
+        L_OT,
+        "Disconnected, uptime: %lu s.",
         (millis() - this->connectedTime) / 1000
       );
 
@@ -343,7 +341,7 @@ protected:
       // reset bus
       if (millis() - this->disconnectedTime > this->resetBusInterval) {
         if (millis() - this->resetBusTime > this->resetBusInterval) {
-          Log.sinfoln(FPSTR(L_OT), F("Reset bus..."));
+          Log.sinfoln(L_OT, "Reset bus...");
 
           this->instance->end();
           this->instance->status = OpenThermStatus::NOT_INITIALIZED;
@@ -358,7 +356,7 @@ protected:
     }
 
     if (!this->initialized) {
-      Log.sinfoln(FPSTR(L_OT), F("Initializing..."));
+      Log.sinfoln(L_OT, "Initializing...");
       this->initialized = true;
       this->initializedTime = millis();
       this->initialize();
@@ -367,13 +365,13 @@ protected:
     if (vars.master.heating.enabled != vars.slave.heating.enabled) {
       this->prevUpdateNonEssentialVars = 0;
       vars.slave.heating.enabled = vars.master.heating.enabled;
-      Log.sinfoln(FPSTR(L_OT_HEATING), vars.master.heating.enabled ? F("Enabled") : F("Disabled"));
+      Log.sinfoln(L_OT_HEATING, vars.master.heating.enabled ? "Enabled" : "Disabled");
     }
 
     if (vars.master.dhw.enabled != vars.slave.dhw.enabled) {
       this->prevUpdateNonEssentialVars = 0;
       vars.slave.dhw.enabled = vars.master.dhw.enabled;
-      Log.sinfoln(FPSTR(L_OT_DHW), vars.master.dhw.enabled ? F("Enabled") : F("Disabled"));
+      Log.sinfoln(L_OT_DHW, vars.master.dhw.enabled ? "Enabled" : "Disabled");
     }
 
     // These parameters will be updated every minute
@@ -384,24 +382,24 @@ protected:
 
         if (getLocalTime(&ti)) {
           if (this->setYear(&ti)) {
-            Log.sinfoln(FPSTR(L_OT), F("Year of date set successfully"));
+            Log.sinfoln(L_OT, "Year of date set successfully");
 
           } else {
-            Log.sinfoln(FPSTR(L_OT), F("Failed set year of date"));
+            Log.sinfoln(L_OT, "Failed set year of date");
           }
 
           if (this->setDayAndMonth(&ti)) {
-            Log.sinfoln(FPSTR(L_OT), F("Day and month of date set successfully"));
+            Log.sinfoln(L_OT, "Day and month of date set successfully");
 
           } else {
-            Log.sinfoln(FPSTR(L_OT), F("Failed set day and month of date"));
+            Log.sinfoln(L_OT, "Failed set day and month of date");
           }
 
           if (this->setTime(&ti)) {
-            Log.sinfoln(FPSTR(L_OT), F("Time set successfully"));
+            Log.sinfoln(L_OT, "Time set successfully");
 
           } else {
-            Log.sinfoln(FPSTR(L_OT), F("Failed set time"));
+            Log.sinfoln(L_OT, "Failed set time");
           }
         }
       }
@@ -409,7 +407,7 @@ protected:
       // Get min modulation level & max power
       if (this->updateMinModulationLevel()) {
         Log.snoticeln(
-          FPSTR(L_OT), F("Received min modulation: %hhu%%, max power: %.2f kW"),
+          L_OT, "Received min modulation: %hhu%%, max power: %.2f kW",
           vars.slave.modulation.min, vars.slave.power.max
         );
 
@@ -418,7 +416,7 @@ protected:
           fsSettings.update();
 
           Log.swarningln(
-            FPSTR(L_SETTINGS_HEATING), F("Updated min modulation: %hhu%%"),
+            L_SETTINGS_HEATING, "Updated min modulation: %hhu%%",
             settings.heating.maxModulation
           );
         }
@@ -428,7 +426,7 @@ protected:
           fsSettings.update();
 
           Log.swarningln(
-            FPSTR(L_SETTINGS_DHW), F("Updated min modulation: %hhu%%"),
+            L_SETTINGS_DHW, "Updated min modulation: %hhu%%",
             settings.dhw.maxModulation
           );
         }
@@ -439,13 +437,13 @@ protected:
 
           fsSettings.update();
           Log.swarningln(
-            FPSTR(L_SETTINGS_OT), F("Updated power, min: %.2f kW, max: %.2f kW"),
+            L_SETTINGS_OT, "Updated power, min: %.2f kW, max: %.2f kW",
             settings.opentherm.minPower, settings.opentherm.maxPower
           );
         }
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive min modulation and max power"));
+        Log.swarningln(L_OT, "Failed receive min modulation and max power");
       }
 
 
@@ -465,7 +463,7 @@ protected:
           );
 
           Log.snoticeln(
-            FPSTR(L_OT_DHW), F("Received min temp: %hhu (converted: %hhu), max temp: %hhu (converted: %hhu)"),
+            L_OT_DHW, "Received min temp: %hhu (converted: %hhu), max temp: %hhu (converted: %hhu)",
             vars.slave.dhw.minTemp, convertedMinTemp, vars.slave.dhw.maxTemp, convertedMaxTemp
           );
 
@@ -473,18 +471,18 @@ protected:
             settings.dhw.minTemp = convertedMinTemp;
             fsSettings.update();
 
-            Log.swarningln(FPSTR(L_SETTINGS_DHW), F("Updated min temp: %hhu"), settings.dhw.minTemp);
+            Log.swarningln(L_SETTINGS_DHW, "Updated min temp: %hhu", settings.dhw.minTemp);
           }
 
           if (settings.dhw.maxTemp > convertedMaxTemp) {
             settings.dhw.maxTemp = convertedMaxTemp;
             fsSettings.update();
 
-            Log.swarningln(FPSTR(L_SETTINGS_DHW), F("Updated max temp: %hhu"), settings.dhw.maxTemp);
+            Log.swarningln(L_SETTINGS_DHW, "Updated max temp: %hhu", settings.dhw.maxTemp);
           }
 
         } else {
-          Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive min/max temp"));
+          Log.swarningln(L_OT_DHW, "Failed receive min/max temp");
         }
       }
 
@@ -511,7 +509,7 @@ protected:
           );
 
           Log.snoticeln(
-            FPSTR(L_OT_HEATING), F("Received min temp: %hhu (converted: %hhu), max temp: %hhu (converted: %hhu)"),
+            L_OT_HEATING, "Received min temp: %hhu (converted: %hhu), max temp: %hhu (converted: %hhu)",
             vars.slave.heating.minTemp, convertedMinTemp, vars.slave.heating.maxTemp, convertedMaxTemp
           );
 
@@ -519,18 +517,18 @@ protected:
             settings.heating.minTemp = convertedMinTemp;
             fsSettings.update();
 
-            Log.swarningln(FPSTR(L_SETTINGS_HEATING), F("Updated min temp: %hhu"), settings.heating.minTemp);
+            Log.swarningln(L_SETTINGS_HEATING, "Updated min temp: %hhu", settings.heating.minTemp);
           }
 
           if (settings.heating.maxTemp > convertedMaxTemp) {
             settings.heating.maxTemp = convertedMaxTemp;
             fsSettings.update();
 
-            Log.swarningln(FPSTR(L_SETTINGS_HEATING), F("Updated max temp: %hhu"), settings.heating.maxTemp);
+            Log.swarningln(L_SETTINGS_HEATING, "Updated max temp: %hhu", settings.heating.maxTemp);
           }
 
         } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive min/max temp"));
+          Log.swarningln(L_OT_HEATING, "Failed receive min/max temp");
         }
       }
 
@@ -544,12 +542,12 @@ protected:
       if (vars.slave.fault.active) {
         if (this->updateFaultCode()) {
           Log.snoticeln(
-            FPSTR(L_OT), F("Received fault code: %hhu (0x%02X)"),
+            L_OT, "Received fault code: %hhu (0x%02X)",
             vars.slave.fault.code, vars.slave.fault.code
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive fault code"));
+          Log.swarningln(L_OT, "Failed receive fault code");
         }
 
       } else if (vars.slave.fault.code != 0) {
@@ -560,12 +558,12 @@ protected:
       if (vars.slave.fault.active || vars.slave.diag.active) {
         if (this->updateDiagCode()) {
           Log.snoticeln(
-            FPSTR(L_OT), F("Received diag code: %hu (0x%02X)"),
+            L_OT, "Received diag code: %hu (0x%02X)",
             vars.slave.diag.code, vars.slave.diag.code
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive diag code"));
+          Log.swarningln(L_OT, "Failed receive diag code");
         }
 
       } else if (vars.slave.diag.code != 0) {
@@ -575,7 +573,7 @@ protected:
       // Update burner starts
       if (Sensors::getAmountByType(Sensors::Type::OT_BURNER_STARTS, true)) {
         if (this->updateBurnerStarts()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received burner starts: %hu"), vars.slave.stats.burnerStarts);
+          Log.snoticeln(L_OT, "Received burner starts: %hu", vars.slave.stats.burnerStarts);
 
           Sensors::setValueByType(
             Sensors::Type::OT_BURNER_STARTS, vars.slave.stats.burnerStarts,
@@ -583,14 +581,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive burner starts"));
+          Log.swarningln(L_OT, "Failed receive burner starts");
         }
       }
 
       // Update DHW burner starts
       if (Sensors::getAmountByType(Sensors::Type::OT_DHW_BURNER_STARTS, true)) {
         if (this->updateDhwBurnerStarts()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received DHW burner starts: %hu"), vars.slave.stats.dhwBurnerStarts);
+          Log.snoticeln(L_OT, "Received DHW burner starts: %hu", vars.slave.stats.dhwBurnerStarts);
 
           Sensors::setValueByType(
             Sensors::Type::OT_DHW_BURNER_STARTS, vars.slave.stats.dhwBurnerStarts,
@@ -598,14 +596,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW burner starts"));
+          Log.swarningln(L_OT, "Failed receive DHW burner starts");
         }
       }
 
       // Update heating pump starts
       if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_PUMP_STARTS, true)) {
         if (this->updateHeatingPumpStarts()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received heating pump starts: %hu"), vars.slave.stats.heatingPumpStarts);
+          Log.snoticeln(L_OT, "Received heating pump starts: %hu", vars.slave.stats.heatingPumpStarts);
 
           Sensors::setValueByType(
             Sensors::Type::OT_HEATING_PUMP_STARTS, vars.slave.stats.heatingPumpStarts,
@@ -613,14 +611,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive heating pump starts"));
+          Log.swarningln(L_OT, "Failed receive heating pump starts");
         }
       }
 
       // Update DHW pump starts
       if (Sensors::getAmountByType(Sensors::Type::OT_DHW_PUMP_STARTS, true)) {
         if (this->updateDhwPumpStarts()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received DHW pump starts: %hu"), vars.slave.stats.dhwPumpStarts);
+          Log.snoticeln(L_OT, "Received DHW pump starts: %hu", vars.slave.stats.dhwPumpStarts);
 
           Sensors::setValueByType(
             Sensors::Type::OT_DHW_PUMP_STARTS, vars.slave.stats.dhwPumpStarts,
@@ -628,14 +626,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW pump starts"));
+          Log.swarningln(L_OT, "Failed receive DHW pump starts");
         }
       }
 
       // Update burner hours
       if (Sensors::getAmountByType(Sensors::Type::OT_BURNER_HOURS, true)) {
         if (this->updateBurnerHours()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received burner hours: %hu"), vars.slave.stats.burnerHours);
+          Log.snoticeln(L_OT, "Received burner hours: %hu", vars.slave.stats.burnerHours);
 
           Sensors::setValueByType(
             Sensors::Type::OT_BURNER_HOURS, vars.slave.stats.burnerHours,
@@ -643,14 +641,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive burner hours"));
+          Log.swarningln(L_OT, "Failed receive burner hours");
         }
       }
 
       // Update DHW burner hours
       if (Sensors::getAmountByType(Sensors::Type::OT_DHW_BURNER_HOURS, true)) {
         if (this->updateDhwBurnerHours()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received DHW burner hours: %hu"), vars.slave.stats.dhwBurnerHours);
+          Log.snoticeln(L_OT, "Received DHW burner hours: %hu", vars.slave.stats.dhwBurnerHours);
 
           Sensors::setValueByType(
             Sensors::Type::OT_DHW_BURNER_HOURS, vars.slave.stats.dhwBurnerHours,
@@ -658,14 +656,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW burner hours"));
+          Log.swarningln(L_OT, "Failed receive DHW burner hours");
         }
       }
 
       // Update heating pump hours
       if (Sensors::getAmountByType(Sensors::Type::OT_HEATING_PUMP_HOURS, true)) {
         if (this->updateHeatingPumpHours()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received heating pump hours: %hu"), vars.slave.stats.heatingPumpHours);
+          Log.snoticeln(L_OT, "Received heating pump hours: %hu", vars.slave.stats.heatingPumpHours);
 
           Sensors::setValueByType(
             Sensors::Type::OT_HEATING_PUMP_HOURS, vars.slave.stats.heatingPumpHours,
@@ -673,14 +671,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive heating pump hours"));
+          Log.swarningln(L_OT, "Failed receive heating pump hours");
         }
       }
 
       // Update DHW pump hours
       if (Sensors::getAmountByType(Sensors::Type::OT_DHW_PUMP_HOURS, true)) {
         if (this->updateDhwPumpHours()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received DHW pump hours: %hu"), vars.slave.stats.dhwPumpHours);
+          Log.snoticeln(L_OT, "Received DHW pump hours: %hu", vars.slave.stats.dhwPumpHours);
 
           Sensors::setValueByType(
             Sensors::Type::OT_DHW_PUMP_HOURS, vars.slave.stats.dhwPumpHours,
@@ -688,14 +686,14 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive DHW pump hours"));
+          Log.swarningln(L_OT, "Failed receive DHW pump hours");
         }
       }
 
       // Update cooling hours
       if (Sensors::getAmountByType(Sensors::Type::OT_COOLING_HOURS, true)) {
         if (this->updateCoolingHours()) {
-          Log.snoticeln(FPSTR(L_OT), F("Received cooling hours: %hu"), vars.slave.stats.coolingHours);
+          Log.snoticeln(L_OT, "Received cooling hours: %hu", vars.slave.stats.coolingHours);
 
           Sensors::setValueByType(
             Sensors::Type::OT_COOLING_HOURS, vars.slave.stats.coolingHours,
@@ -703,7 +701,7 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive cooling hours"));
+          Log.swarningln(L_OT, "Failed receive cooling hours");
         }
       }
 
@@ -724,13 +722,13 @@ protected:
     if (settings.opentherm.options.coolingSupport) {
       if (this->setCoolingSetpoint(settings.heating.maxModulation)) {
         Log.snoticeln(
-          FPSTR(L_OT), F("Set cooling setpoint: %hhu%% (response: %hhu%%)"),
+          L_OT, "Set cooling setpoint: %hhu%% (response: %hhu%%)",
           settings.heating.maxModulation, vars.slave.cooling.setpoint
         );
 
       } else {
         Log.swarningln(
-          FPSTR(L_OT), F("Failed set cooling setpoint: %hhu%% (response: %hhu%%)"),
+          L_OT, "Failed set cooling setpoint: %hhu%% (response: %hhu%%)",
           settings.heating.maxModulation, vars.slave.cooling.setpoint
         );
       }
@@ -759,13 +757,13 @@ protected:
 
     if (this->setMaxModulationLevel(targetMaxModulation)) {
       Log.snoticeln(
-        FPSTR(L_OT), F("Set max modulation: %hhu%% (response: %hhu%%)"),
+        L_OT, "Set max modulation: %hhu%% (response: %hhu%%)",
         targetMaxModulation, vars.slave.modulation.max
       );
 
     } else {
       Log.swarningln(
-        FPSTR(L_OT), F("Failed set max modulation: %hhu%% (response: %hhu%%)"),
+        L_OT, "Failed set max modulation: %hhu%% (response: %hhu%%)",
         targetMaxModulation, vars.slave.modulation.max
       );
     }
@@ -790,7 +788,7 @@ protected:
           vars.slave.power.current = power;
 
           Log.snoticeln(
-            FPSTR(L_OT), F("Received modulation level: %hhu%%, power: %.2f of %.2f kW (min: %.2f kW)"),
+            L_OT, "Received modulation level: %hhu%%, power: %.2f of %.2f kW (min: %.2f kW)",
             vars.slave.modulation.current, vars.slave.power.current,
             settings.opentherm.maxPower, settings.opentherm.minPower
           );
@@ -808,7 +806,7 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT), F("Failed receive modulation level"));
+          Log.swarningln(L_OT, "Failed receive modulation level");
         }
 
       } else {
@@ -841,7 +839,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT_DHW), F("Received temp: %.2f (converted: %.2f)"),
+          L_OT_DHW, "Received temp: %.2f (converted: %.2f)",
           vars.slave.dhw.currentTemp, convertedDhwTemp
         );
 
@@ -851,7 +849,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp"));
+        Log.swarningln(L_OT_DHW, "Failed receive temp");
       }
     }
 
@@ -865,7 +863,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT_DHW), F("Received temp 2: %.2f (converted: %.2f)"),
+          L_OT_DHW, "Received temp 2: %.2f (converted: %.2f)",
           vars.slave.dhw.currentTemp2, convertedDhwTemp2
         );
 
@@ -875,7 +873,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive temp 2"));
+        Log.swarningln(L_OT_DHW, "Failed receive temp 2");
       }
     }
 
@@ -889,7 +887,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT_DHW), F("Received flow rate: %.2f (converted: %.2f)"),
+          L_OT_DHW, "Received flow rate: %.2f (converted: %.2f)",
           vars.slave.dhw.flowRate, convertedDhwFlowRate
         );
 
@@ -899,7 +897,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT_DHW), F("Failed receive flow rate"));
+        Log.swarningln(L_OT_DHW, "Failed receive flow rate");
       }
     }
 
@@ -913,7 +911,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT_HEATING), F("Received temp: %.2f"),
+          L_OT_HEATING, "Received temp: %.2f",
           vars.slave.heating.currentTemp, convertedHeatingTemp
         );
 
@@ -923,7 +921,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive temp"));
+        Log.swarningln(L_OT_HEATING, "Failed receive temp");
       }
     }
 
@@ -937,7 +935,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT_HEATING), F("Received return temp: %.2f (converted: %.2f)"),
+          L_OT_HEATING, "Received return temp: %.2f (converted: %.2f)",
           vars.slave.heating.returnTemp, convertedHeatingReturnTemp
         );
 
@@ -947,7 +945,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed receive return temp"));
+        Log.swarningln(L_OT_HEATING, "Failed receive return temp");
       }
     }
 
@@ -962,7 +960,7 @@ protected:
           );
 
           Log.snoticeln(
-            FPSTR(L_OT_CH2), F("Received temp: %.2f (converted: %.2f)"),
+            L_OT_CH2, "Received temp: %.2f (converted: %.2f)",
             vars.slave.ch2.currentTemp, convertedCh2Temp
           );
 
@@ -972,7 +970,7 @@ protected:
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_CH2), F("Failed receive temp"));
+          Log.swarningln(L_OT_CH2, "Failed receive temp");
         }
       }
     }
@@ -987,7 +985,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT), F("Received exhaust temp: %.2f (converted: %.2f)"),
+          L_OT, "Received exhaust temp: %.2f (converted: %.2f)",
           vars.slave.exhaust.temp, convertedExhaustTemp
         );
 
@@ -997,7 +995,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive exhaust temp"));
+        Log.swarningln(L_OT, "Failed receive exhaust temp");
       }
     }
 
@@ -1011,7 +1009,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT), F("Received heat exchanger temp: %.2f (converted: %.2f)"),
+          L_OT, "Received heat exchanger temp: %.2f (converted: %.2f)",
           vars.slave.heatExchangerTemp, convertedHeatExchTemp
         );
 
@@ -1021,7 +1019,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive heat exchanger temp"));
+        Log.swarningln(L_OT, "Failed receive heat exchanger temp");
       }
     }
 
@@ -1035,7 +1033,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT), F("Received outdoor temp: %.2f (converted: %.2f)"),
+          L_OT, "Received outdoor temp: %.2f (converted: %.2f)",
           vars.slave.heating.outdoorTemp, convertedOutdoorTemp
         );
 
@@ -1045,7 +1043,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive outdoor temp"));
+        Log.swarningln(L_OT, "Failed receive outdoor temp");
       }
     }
 
@@ -1059,7 +1057,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT), F("Received solar storage temp: %.2f (converted: %.2f)"),
+          L_OT, "Received solar storage temp: %.2f (converted: %.2f)",
           vars.slave.solar.storage, convertedSolarStorageTemp
         );
 
@@ -1069,7 +1067,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive solar storage temp"));
+        Log.swarningln(L_OT, "Failed receive solar storage temp");
       }
     }
 
@@ -1083,7 +1081,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT), F("Received solar collector temp: %.2f (converted: %.2f)"),
+          L_OT, "Received solar collector temp: %.2f (converted: %.2f)",
           vars.slave.solar.collector, convertedSolarCollectorTemp
         );
 
@@ -1093,7 +1091,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive solar collector temp"));
+        Log.swarningln(L_OT, "Failed receive solar collector temp");
       }
     }
 
@@ -1104,7 +1102,7 @@ protected:
     ) {
       if (this->updateFanSpeed()) {
         Log.snoticeln(
-          FPSTR(L_OT), F("Received fan speed, setpoint: %hhu%%, current: %hhu%%"),
+          L_OT, "Received fan speed, setpoint: %hhu%%, current: %hhu%%",
           vars.slave.fanSpeed.setpoint, vars.slave.fanSpeed.current
         );
 
@@ -1129,7 +1127,7 @@ protected:
         );
 
         Log.snoticeln(
-          FPSTR(L_OT), F("Received pressure: %.2f (converted: %.2f)"),
+          L_OT, "Received pressure: %.2f (converted: %.2f)",
           vars.slave.pressure, convertedPressure
         );
 
@@ -1139,7 +1137,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive pressure"));
+        Log.swarningln(L_OT, "Failed receive pressure");
       }
     }
 
@@ -1147,7 +1145,7 @@ protected:
     if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_CO2, true)) {
       if (this->updateExhaustCo2()) {
         Log.snoticeln(
-          FPSTR(L_OT), F("Received exhaust CO2: %hu ppm"),
+          L_OT, "Received exhaust CO2: %hu ppm",
           vars.slave.exhaust.co2
         );
 
@@ -1157,7 +1155,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive exhaust CO2"));
+        Log.swarningln(L_OT, "Failed receive exhaust CO2");
       }
     }
 
@@ -1165,7 +1163,7 @@ protected:
     if (Sensors::getAmountByType(Sensors::Type::OT_EXHAUST_FAN_SPEED, true)) {
       if (this->updateExhaustFanSpeed()) {
         Log.snoticeln(
-          FPSTR(L_OT), F("Received exhaust fan speed: %hu rpm"),
+          L_OT, "Received exhaust fan speed: %hu rpm",
           vars.slave.exhaust.fanSpeed
         );
 
@@ -1175,7 +1173,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive exhaust fan speed"));
+        Log.swarningln(L_OT, "Failed receive exhaust fan speed");
       }
     }
 
@@ -1183,7 +1181,7 @@ protected:
     if (Sensors::getAmountByType(Sensors::Type::OT_SUPPLY_FAN_SPEED, true)) {
       if (this->updateSupplyFanSpeed()) {
         Log.snoticeln(
-          FPSTR(L_OT), F("Received supply fan speed: %hu rpm"),
+          L_OT, "Received supply fan speed: %hu rpm",
           vars.slave.fanSpeed.supply
         );
 
@@ -1193,7 +1191,7 @@ protected:
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT), F("Failed receive supply fan speed"));
+        Log.swarningln(L_OT, "Failed receive supply fan speed");
       }
     }
 
@@ -1201,10 +1199,10 @@ protected:
     if (vars.actions.resetFault) {
       if (vars.slave.fault.active) {
         if (this->instance->sendBoilerReset()) {
-          Log.sinfoln(FPSTR(L_OT), F("Boiler fault reset successfully"));
+          Log.sinfoln(L_OT, "Boiler fault reset successfully");
 
         } else {
-          Log.serrorln(FPSTR(L_OT), F("Boiler fault reset failed"));
+          Log.serrorln(L_OT, "Boiler fault reset failed");
         }
       }
 
@@ -1215,10 +1213,10 @@ protected:
     if (vars.actions.resetDiagnostic) {
       if (vars.slave.diag.active) {
         if (this->instance->sendServiceReset()) {
-          Log.sinfoln(FPSTR(L_OT), F("Boiler diagnostic reset successfully"));
+          Log.sinfoln(L_OT, "Boiler diagnostic reset successfully");
 
         } else {
-          Log.serrorln(FPSTR(L_OT), F("Boiler diagnostic reset failed"));
+          Log.serrorln(L_OT, "Boiler diagnostic reset failed");
         }
       }
 
@@ -1242,12 +1240,12 @@ protected:
           this->dhwSetTempTime = millis();
 
           Log.sinfoln(
-            FPSTR(L_OT_DHW), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
+            L_OT_DHW, "Set temp: %.2f (converted: %.2f, response: %.2f)",
             targetTemp, convertedTemp, vars.slave.dhw.targetTemp
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_DHW), F("Failed set temp"));
+          Log.swarningln(L_OT_DHW, "Failed set temp");
         }
       }
     }
@@ -1263,24 +1261,24 @@ protected:
       // Set current indoor temp
       if (this->setRoomTemp(convertedTemp)) {
         Log.sinfoln(
-          FPSTR(L_OT_HEATING), F("Set current indoor temp: %.2f (converted: %.2f, response: %.2f)"),
+          L_OT_HEATING, "Set current indoor temp: %.2f (converted: %.2f, response: %.2f)",
           indoorTemp, convertedTemp, vars.slave.heating.indoorTemp
         );
 
       } else {
-        Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current indoor temp"));
+        Log.swarningln(L_OT_HEATING, "Failed set current indoor temp");
       }
 
       // Set current CH2 indoor temp
       if (settings.opentherm.options.heatingToCh2) {
         if (this->setRoomTempCh2(convertedTemp)) {
           Log.sinfoln(
-            FPSTR(L_OT_HEATING), F("Set current CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)"),
+            L_OT_HEATING, "Set current CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)",
             indoorTemp, convertedTemp, vars.slave.ch2.indoorTemp
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set current CH2 indoor temp"));
+          Log.swarningln(L_OT_HEATING, "Failed set current CH2 indoor temp");
         }
       }
     }
@@ -1303,12 +1301,12 @@ protected:
           this->roomSetTempTime = millis();
 
           Log.sinfoln(
-            FPSTR(L_OT_HEATING), F("Set target indoor temp: %.2f (converted: %.2f, response: %.2f)"),
+            L_OT_HEATING, "Set target indoor temp: %.2f (converted: %.2f, response: %.2f)",
             targetTemp, convertedTemp, vars.slave.heating.roomTargetTemp
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target indoor temp"));
+          Log.swarningln(L_OT_HEATING, "Failed set target indoor temp");
         }
       }
 
@@ -1318,12 +1316,12 @@ protected:
           this->roomSetTempCh2Time = millis();
 
           Log.sinfoln(
-            FPSTR(L_OT_HEATING), F("Set target CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)"),
+            L_OT_HEATING, "Set target CH2 indoor temp: %.2f (converted: %.2f, response: %.2f)",
             targetTemp, convertedTemp, vars.slave.ch2.roomTargetTemp
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target CH2 indoor temp"));
+          Log.swarningln(L_OT_HEATING, "Failed set target CH2 indoor temp");
         }
       }
     }
@@ -1347,13 +1345,13 @@ protected:
         if (settings.opentherm.options.maxTempSyncWithTargetTemp) {
           if (this->setMaxHeatingTemp(convertedTemp)) {
             Log.sinfoln(
-              FPSTR(L_OT_HEATING), F("Set max heating temp: %.2f (converted: %.2f)"),
+              L_OT_HEATING, "Set max heating temp: %.2f (converted: %.2f)",
               targetTemp, convertedTemp
             );
 
           } else {
             Log.swarningln(
-              FPSTR(L_OT_HEATING), F("Failed set max heating temp: %.2f (converted: %.2f)"),
+              L_OT_HEATING, "Failed set max heating temp: %.2f (converted: %.2f)",
               targetTemp, convertedTemp
             );
           }
@@ -1364,12 +1362,12 @@ protected:
           this->heatingSetTempTime = millis();
 
           Log.sinfoln(
-            FPSTR(L_OT_HEATING), F("Set target temp: %.2f (converted: %.2f, response: %.2f)"),
+            L_OT_HEATING, "Set target temp: %.2f (converted: %.2f, response: %.2f)",
             targetTemp, convertedTemp, vars.slave.heating.targetTemp
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_HEATING), F("Failed set target temp"));
+          Log.swarningln(L_OT_HEATING, "Failed set target temp");
         }
       }
     }
@@ -1390,12 +1388,12 @@ protected:
           this->ch2SetTempTime = millis();
 
           Log.sinfoln(
-            FPSTR(L_OT_CH2), F("Set temp: %.2f (converted: %.2f, response: %.2f)"),
+            L_OT_CH2, "Set temp: %.2f (converted: %.2f, response: %.2f)",
             targetTemp, convertedTemp, vars.slave.ch2.targetTemp
           );
 
         } else {
-          Log.swarningln(FPSTR(L_OT_CH2), F("Failed set temp"));
+          Log.swarningln(L_OT_CH2, "Failed set temp");
         }
       }
     }
@@ -1418,7 +1416,7 @@ protected:
           vars.master.heating.overheat = false;
 
           Log.sinfoln(
-            FPSTR(L_OT_HEATING), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
+            L_OT_HEATING, "Overheating not detected. Current high temp: %.2f, threshold (low): %hhu",
             highTemp, settings.heating.overheatProtection.lowTemp
           );
         }
@@ -1428,7 +1426,7 @@ protected:
           vars.master.heating.overheat = true;
 
           Log.swarningln(
-            FPSTR(L_OT_HEATING), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
+            L_OT_HEATING, "Overheating detected! Current high temp: %.2f, threshold (high): %hhu",
             highTemp, settings.heating.overheatProtection.highTemp
           );
         }
@@ -1458,7 +1456,7 @@ protected:
           vars.master.dhw.overheat = false;
 
           Log.sinfoln(
-            FPSTR(L_OT_DHW), F("Overheating not detected. Current high temp: %.2f, threshold (low): %hhu"),
+            L_OT_DHW, "Overheating not detected. Current high temp: %.2f, threshold (low): %hhu",
             highTemp, settings.dhw.overheatProtection.lowTemp
           );
         }
@@ -1468,7 +1466,7 @@ protected:
           vars.master.dhw.overheat = true;
 
           Log.swarningln(
-            FPSTR(L_OT_DHW), F("Overheating detected! Current high temp: %.2f, threshold (high): %hhu"),
+            L_OT_DHW, "Overheating detected! Current high temp: %.2f, threshold (high): %hhu",
             highTemp, settings.dhw.overheatProtection.highTemp
           );
         }
@@ -1483,69 +1481,69 @@ protected:
     // Not all boilers support these, only try once when the boiler becomes connected
     if (this->updateSlaveVersion()) {
       Log.snoticeln(
-        FPSTR(L_OT), F("Received slave app version: %u, type: %u"),
+        L_OT, "Received slave app version: %u, type: %u",
         vars.slave.appVersion, vars.slave.type
       );
 
     } else {
-      Log.swarningln(FPSTR(L_OT), F("Failed receive slave version"));
+      Log.swarningln(L_OT, "Failed receive slave version");
     }
 
     if (this->setMasterVersion(vars.master.appVersion, vars.master.type)) {
       Log.snoticeln(
-        FPSTR(L_OT), F("Set master version: %u, type: %u"),
+        L_OT, "Set master version: %u, type: %u",
         vars.master.appVersion, vars.master.type
       );
 
     } else {
-      Log.swarningln(FPSTR(L_OT), F("Failed set master version"));
+      Log.swarningln(L_OT, "Failed set master version");
     }
 
     if (this->updateSlaveOtVersion()) {
-      Log.snoticeln(FPSTR(L_OT), F("Received slave OT version: %f"), vars.slave.protocolVersion);
+      Log.snoticeln(L_OT, "Received slave OT version: %f", vars.slave.protocolVersion);
 
     } else {
-      Log.swarningln(FPSTR(L_OT), F("Failed receive slave OT version"));
+      Log.swarningln(L_OT, "Failed receive slave OT version");
     }
 
     if (this->setMasterOtVersion(vars.master.protocolVersion)) {
-      Log.snoticeln(FPSTR(L_OT), F("Set master OT version: %f"), vars.master.protocolVersion);
+      Log.snoticeln(L_OT, "Set master OT version: %f", vars.master.protocolVersion);
 
     } else {
-      Log.swarningln(FPSTR(L_OT), F("Failed set master OT version"));
+      Log.swarningln(L_OT, "Failed set master OT version");
     }
 
     if (this->updateSlaveConfig()) {
       Log.snoticeln(
-        FPSTR(L_OT), F("Received slave member id: %u, flags: %u"),
+        L_OT, "Received slave member id: %u, flags: %u",
         vars.slave.memberId, vars.slave.flags
       );
 
     } else {
-      Log.swarningln(FPSTR(L_OT), F("Failed receive slave config"));
+      Log.swarningln(L_OT, "Failed receive slave config");
     }
 
     if (this->setMasterConfig(vars.master.memberId, vars.master.flags)) {
       Log.snoticeln(
-        FPSTR(L_OT), F("Set master member id: %u, flags: %u"),
+        L_OT, "Set master member id: %u, flags: %u",
         vars.master.memberId, vars.master.flags
       );
 
     } else {
-      Log.swarningln(FPSTR(L_OT), F("Failed set master config"));
+      Log.swarningln(L_OT, "Failed set master config");
     }
 
     /*char buf[100];
     if (this->instance->getStr(OpenThermMessageID::Brand, buf, sizeof(buf) - 1)) {
-      Log.snoticeln(FPSTR(L_OT), F("Slave brand: %s"), buf);
+      Log.snoticeln(L_OT, "Slave brand: %s", buf);
     }
 
     if (this->instance->getStr(OpenThermMessageID::BrandVersion, buf, sizeof(buf) - 1)) {
-      Log.snoticeln(FPSTR(L_OT), F("Slave brand version: %s"), buf);
+      Log.snoticeln(L_OT, "Slave brand version: %s", buf);
     }
 
     if (this->instance->getStr(OpenThermMessageID::BrandSerialNumber, buf, sizeof(buf) - 1)) {
-      Log.snoticeln(FPSTR(L_OT), F("Slave brand s/n: %s"), buf);
+      Log.snoticeln(L_OT, "Slave brand s/n: %s", buf);
     }*/
   }
 
@@ -1624,7 +1622,7 @@ protected:
     /*uint8_t flags = (response & 0xFFFF) >> 8;
     Log.straceln(
       "OT",
-      F("MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n  Raw: %u"),
+      "MasterMemberIdCode:\r\n  DHW present: %u\r\n  Control type: %u\r\n  Cooling configuration: %u\r\n  DHW configuration: %u\r\n  Pump control: %u\r\n  CH2 present: %u\r\n  Remote water filling function: %u\r\n  Heat/cool mode control: %u\r\n  Slave MemberID Code: %u\r\n  Raw: %u",
       (bool) (flags & 0x01),
       (bool) (flags & 0x02),
       (bool) (flags & 0x04),

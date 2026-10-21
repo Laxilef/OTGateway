@@ -132,11 +132,11 @@ public:
         result->status = UpgradeStatus::ERROR_ON_START;
         result->error = Update.errorString();
 
-        Log.serrorln(FPSTR(L_PORTAL_OTA), "File '%s', on start: %s", fileName.c_str(), result->error.c_str());
+        Log.serrorln(L_PORTAL_OTA, "File '%s', on start: %s", fileName.c_str(), result->error.c_str());
         return;
       }
 
-      Log.sinfoln(FPSTR(L_PORTAL_OTA), "File '%s', started", fileName.c_str());
+      Log.sinfoln(L_PORTAL_OTA, "File '%s', started", fileName.c_str());
     }
 
     if (dataLength) {
@@ -146,7 +146,7 @@ public:
         result->error = Update.errorString();
 
         Log.serrorln(
-          FPSTR(L_PORTAL_OTA), "File '%s', on write %d bytes, %d of %d bytes",
+          L_PORTAL_OTA, "File '%s', on write %d bytes, %d of %d bytes",
           fileName.c_str(),
           dataLength,
           result->progress + dataLength,
@@ -157,7 +157,7 @@ public:
 
       result->progress += dataLength;
       Log.sinfoln(
-        FPSTR(L_PORTAL_OTA), "File '%s', write %d bytes, %d of %d bytes",
+        L_PORTAL_OTA, "File '%s', write %d bytes, %d of %d bytes",
         fileName.c_str(),
         dataLength,
         result->progress,
@@ -171,7 +171,7 @@ public:
         result->status = UpgradeStatus::SIZE_MISMATCH;
 
         Log.serrorln(
-          FPSTR(L_PORTAL_OTA), "File '%s', size mismatch: %d of %d bytes",
+          L_PORTAL_OTA, "File '%s', size mismatch: %d of %d bytes",
           fileName.c_str(),
           result->progress,
           result->size
@@ -185,12 +185,12 @@ public:
         result->status = UpgradeStatus::ERROR_ON_FINISH;
         result->error = Update.errorString();
 
-        Log.serrorln(FPSTR(L_PORTAL_OTA), "File '%s', on finish: %s", fileName.c_str(), result->error);
+        Log.serrorln(L_PORTAL_OTA, "File '%s', on finish: %s", fileName.c_str(), result->error.c_str());
         return;
       }
 
       result->status = UpgradeStatus::SUCCESS;
-      Log.sinfoln(FPSTR(L_PORTAL_OTA), "File '%s': finish", fileName.c_str());
+      Log.sinfoln(L_PORTAL_OTA, "File '%s': finish", fileName.c_str());
     }
   }
 

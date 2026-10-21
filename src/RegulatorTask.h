@@ -15,7 +15,6 @@ protected:
   bool indoorSensorsConnected = false;
   //bool outdoorSensorsConnected = false;
 
-  #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
     return "Regulator";
   }
@@ -31,7 +30,6 @@ protected:
   int getTaskPriority() override {
     return 4;
   }
-  #endif
 
   void loop() {
     if (vars.states.restarting || vars.states.upgrading) {
@@ -55,7 +53,7 @@ protected:
     if (!settings.pid.enabled && fabsf(pidRegulator.integral) > 0.01f) {
       pidRegulator.integral = 0.0f;
 
-      Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+      Log.sinfoln(L_REGULATOR_PID, "Integral sum has been reset");
     }
 
     this->turbo();
@@ -87,7 +85,7 @@ protected:
       }
 
       if (!settings.heating.turbo) {
-        Log.sinfoln(FPSTR(L_REGULATOR), F("Turbo mode auto disabled"));
+        Log.sinfoln(L_REGULATOR, "Turbo mode auto disabled");
       }
     }
   }
@@ -128,11 +126,11 @@ protected:
 
     if (fabsf(prevHeatingTarget - settings.heating.target) > 0.0001f) {
       prevHeatingTarget = settings.heating.target;
-      Log.sinfoln(FPSTR(L_REGULATOR), F("New target: %.2f"), settings.heating.target);
+      Log.sinfoln(L_REGULATOR, "New target: %.2f", settings.heating.target);
 
       /*if (settings.pid.enabled) {
         pidRegulator.integral = 0.0f;
-        Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+        Log.sinfoln(L_REGULATOR_PID, "Integral sum has been reset");
       }*/
     }
 
@@ -179,7 +177,7 @@ protected:
         prevEtResult = etResult;
         newTemp += etResult;
 
-        Log.sinfoln(FPSTR(L_REGULATOR_EQUITHERM), F("New result: %.2f"), etResult);
+        Log.sinfoln(L_REGULATOR_EQUITHERM, "New result: %.2f", etResult);
 
       } else {
         newTemp += prevEtResult;
@@ -204,7 +202,7 @@ protected:
           pidRegulator.integral = 0.0f;
           pidRegulator.getResultNow();
 
-          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("Integral sum has been reset"));
+          Log.sinfoln(L_REGULATOR_PID, "Integral sum has been reset");
         }*/
 
         float error = pidRegulator.setpoint - pidRegulator.input;
@@ -223,8 +221,8 @@ protected:
           prevPidResult = pidResult;
           newTemp += pidResult;
 
-          Log.sinfoln(FPSTR(L_REGULATOR_PID), F("New result: %.2f"), pidResult);
-          Log.straceln(FPSTR(L_REGULATOR_PID), F("Integral: %.2f"), pidRegulator.integral);
+          Log.sinfoln(L_REGULATOR_PID, "New result: %.2f", pidResult);
+          Log.straceln(L_REGULATOR_PID, "Integral: %.2f", pidRegulator.integral);
 
         } else {
           newTemp += prevPidResult;

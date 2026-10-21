@@ -28,11 +28,9 @@ public:
     return this;
   }
 
-  #if defined(ARDUINO_ARCH_ESP32)
   bool canHandle(WebServer &server, HTTPMethod method, const String &uri) override {
     return this->canHandle(method, uri);
   }
-  #endif
 
   bool canHandle(HTTPMethod method, const String& uri) override {
     return method == HTTP_GET && uri.equals(this->uri) && (!this->canHandleCallback || this->canHandleCallback(method, uri));
@@ -54,17 +52,17 @@ public:
         }
       }
 
-      if (!this->eTag.isEmpty() && server.header(F("If-None-Match")).equals(this->eTag.c_str())) {
+      if (!this->eTag.isEmpty() && server.header("If-None-Match").equals(this->eTag.c_str())) {
         server.send(304);
         return true;
       }
     }
 
-    if (!this->path.endsWith(FPSTR(mimeTable[gz].endsWith)) && !this->fs->exists(path))  {
-      String pathWithGz = this->path + FPSTR(mimeTable[gz].endsWith);
+    if (!this->path.endsWith(mimeTable[gz].endsWith) && !this->fs->exists(path))  {
+      String pathWithGz = this->path + mimeTable[gz].endsWith;
 
       if (this->fs->exists(pathWithGz)) {
-        this->path += FPSTR(mimeTable[gz].endsWith);
+        this->path += mimeTable[gz].endsWith;
       }
     }
 
@@ -78,18 +76,14 @@ public:
     }
 
     if (this->cacheHeader != nullptr) {
-      server.sendHeader(F("Cache-Control"), this->cacheHeader);
+      server.sendHeader("Cache-Control", this->cacheHeader);
     }
 
     if (server._eTagEnabled && !this->eTag.isEmpty()) {
-      server.sendHeader(F("ETag"), this->eTag);
+      server.sendHeader("ETag", this->eTag);
     }
 
-    #if defined(ARDUINO_ARCH_ESP8266)
-    server.streamFile(file, F("text/html"), method);
-    #else
-    server.streamFile(file, F("text/html"), 200);
-    #endif
+    server.streamFile(file, "text/html", 200);
 
     return true;
   }

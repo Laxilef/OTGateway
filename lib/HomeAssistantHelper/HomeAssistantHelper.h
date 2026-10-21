@@ -53,23 +53,23 @@ public:
       return false;
     }
 
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_IDENTIFIERS)][0] = this->devicePrefix;
-    doc[FPSTR(HA_DEVICE)][FPSTR(HA_SW_VERSION)] = this->deviceVersion;
+    doc[HA_DEVICE][HA_IDENTIFIERS][0] = this->devicePrefix;
+    doc[HA_DEVICE][HA_SW_VERSION] = this->deviceVersion;
 
     if (this->deviceManufacturer != nullptr) {
-      doc[FPSTR(HA_DEVICE)][FPSTR(HA_MANUFACTURER)] = this->deviceManufacturer;
+      doc[HA_DEVICE][HA_MANUFACTURER] = this->deviceManufacturer;
     }
 
     if (this->deviceModel != nullptr) {
-      doc[FPSTR(HA_DEVICE)][FPSTR(HA_MODEL)] = this->deviceModel;
+      doc[HA_DEVICE][HA_MODEL] = this->deviceModel;
     }
 
     if (this->deviceName != nullptr) {
-      doc[FPSTR(HA_DEVICE)][FPSTR(HA_NAME)] = this->deviceName;
+      doc[HA_DEVICE][HA_NAME] = this->deviceName;
     }
 
     if (this->deviceConfigUrl != nullptr) {
-      doc[FPSTR(HA_DEVICE)][FPSTR(HA_CONF_URL)] = this->deviceConfigUrl;
+      doc[HA_DEVICE][HA_CONF_URL] = this->deviceConfigUrl;
     }
 
     bool result = this->writer->publish(topic, doc, true);
@@ -110,7 +110,7 @@ public:
     topic.concat(this->devicePrefix);
     topic.concat(nameSeparator);
     topic.concat(name);
-    topic.concat(F("/config"));
+    topic.concat("/config");
     return topic;
   }
 
