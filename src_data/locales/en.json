@@ -249,6 +249,7 @@
         "ntcTemp": "NTC sensor",
         "dallasTemp": "DALLAS sensor",
         "bluetooth": "BLE sensor",
+        "apiEndpoint": "API endpoint",
         "heatSetpointTemp": "Heating, setpoint temp",
         "manual": "Manual via MQTT/API",
         "notConfigured": "Not configured"

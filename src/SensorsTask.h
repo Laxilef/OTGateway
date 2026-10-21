@@ -1006,7 +1006,7 @@ protected:
         Sensors::setConnectionStatusById(sensorId, false, false);
 
       } else if (rSensor.connected) {
-        if (sSensor.type == Sensors::Type::MANUAL || sSensor.type == Sensors::Type::BLUETOOTH) {
+        if (sSensor.type == Sensors::Type::MANUAL || sSensor.type == Sensors::Type::BLUETOOTH || sSensor.type == Sensors::Type::API_ENDPOINT) {
           if ((millis() - rSensor.activityTime) > this->wirelessDisconnectTimeout) {
             Sensors::setConnectionStatusById(sensorId, false, false);
           }
