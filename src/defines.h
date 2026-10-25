@@ -160,5 +160,3 @@ enum class ChannelDisablingAction : uint8_t {
   ZERO_SETPOINT         = 1,
   OFF_AND_ZERO_SETPOINT = 2
 };
-
-char buffer[255];

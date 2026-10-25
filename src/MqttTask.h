@@ -79,6 +79,7 @@ protected:
   MqttClient* client = nullptr;
   HaHelper* haHelper = nullptr;
   MqttWriter* writer = nullptr;
+  char configUrl[64] = {};
   UnitSystem currentUnitSystem = UnitSystem::METRIC;
   bool currentHomeAssistantDiscovery = false;
   std::unordered_map<uint8_t, Sensors::Settings> queueReconfigureSensors;
@@ -148,8 +149,8 @@ protected:
     this->haHelper->setDeviceName(PROJECT_NAME);
     this->haHelper->setWriter(this->writer);
 
-    sprintf(buffer, CONFIG_URL, WiFi.localIP().toString().c_str());
-    this->haHelper->setDeviceConfigUrl(buffer);
+    snprintf(this->configUrl, sizeof(this->configUrl), CONFIG_URL, WiFi.localIP().toString().c_str());
+    this->haHelper->setDeviceConfigUrl(this->configUrl);
   }
 
   void loop() {
