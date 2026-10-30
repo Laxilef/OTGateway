@@ -436,8 +436,8 @@ protected:
         return this->webServer->send(401);
       }
 
-      // the radio is parked while ethernet carries the uplink: scanning is not available
-      if (network->isWifiRadioParked()) {
+      // scanning needs WiFi, which is not the uplink while ethernet carries the traffic
+      if (network->getConnectionType() == "ethernet") {
         this->webServer->send(409);
         return;
       }
@@ -817,14 +817,8 @@ protected:
     this->webServer->on(F("/api/debug"), HTTP_GET, [this]() {
       JsonDocument doc;
 
-      #if USE_ETHERNET
-      auto docEth = doc[FPSTR(S_ETHERNET)].to<JsonObject>();
-      docEth[FPSTR(S_ENABLED)] = network->isEthernetEnabledState();
-      docEth[FPSTR(S_STARTED)] = network->isEthernetDriverStarted();
-      docEth[FPSTR(S_CONNECTED)] = network->isEthernetLinkUp();
-      docEth[FPSTR(S_ACTIVE)] = network->isEthernetActive();
-      docEth[FPSTR(S_STATE)] = network->isEthernetInitFailed();
-      #endif
+      auto docNetwork = doc[FPSTR(S_NETWORK)].to<JsonObject>();
+      docNetwork[FPSTR(S_CONNECTION_TYPE)] = network->getConnectionType();
 
       auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
       docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
