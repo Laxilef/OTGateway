@@ -323,14 +323,14 @@ protected:
           if (sensorId < 0 || sensorId > 255 || !Sensors::isValidSensorId(sensorId)) {
             continue;
           }
-          
+
           if (jsonToSensorSettings(sensorId, sensor.value(), Sensors::settings[sensorId])) {
             this->persistNow(fsSensorsSettings);
             changed = true;
           }
         }
       }
-      
+
       doc.clear();
       doc.shrinkToFit();
 
@@ -359,7 +359,7 @@ protected:
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (vars.states.restarting) {
         return this->webServer->send(503);
       }
@@ -406,7 +406,7 @@ protected:
       networkSettingsToJson(networkSettings, doc);
       this->ethernetToJson(doc);
       doc.shrinkToFit();
-      
+
       this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
@@ -445,11 +445,11 @@ protected:
           WiFi.scanNetworks(true, true, true);
           #endif
         }
-        
+
         this->webServer->send(404);
         return;
       }
-      
+
       JsonDocument doc;
       for (short int i = 0; i < apCount; i++) {
         const String& ssid = WiFi.SSID(i);
@@ -482,7 +482,7 @@ protected:
       JsonDocument doc;
       settingsToJson(settings, doc);
       doc.shrinkToFit();
-      
+
       this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
@@ -490,7 +490,7 @@ protected:
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (vars.states.restarting) {
         return this->webServer->send(503);
       }
@@ -545,7 +545,7 @@ protected:
       if (this->webServer->hasArg(F("detailed"))) {
         detailed = this->webServer->arg(F("detailed")).toInt() > 0;
       }
-      
+
       JsonDocument doc;
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         if (detailed) {
@@ -559,7 +559,7 @@ protected:
           doc[sensorId] = Sensors::settings[sensorId].name;
         }
       }
-      
+
       doc.shrinkToFit();
       this->bufferedWebServer->send(200, F("application/json"), doc);
     });
@@ -569,7 +569,7 @@ protected:
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (!this->webServer->hasArg(F("id"))) {
         return this->webServer->send(400);
       }
@@ -590,12 +590,12 @@ protected:
       doc.shrinkToFit();
       this->bufferedWebServer->send(200, F("application/json"), doc);
     });
-    
+
     this->webServer->on(F("/api/sensor"), HTTP_POST, [this]() {
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (vars.states.restarting) {
         return this->webServer->send(503);
       }
@@ -652,7 +652,7 @@ protected:
         auto& sSettings = Sensors::settings[sensorId];
         sensorSettingsToJson(sensorId, sSettings, doc);
         doc.shrinkToFit();
-        
+
         this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
       }
 
@@ -703,13 +703,13 @@ protected:
 
       varsToJson(vars, doc);
       doc.shrinkToFit();
-      
+
       this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
         doc.clear();
         doc.shrinkToFit();
-        
+
         tMqtt->resetPublishedVarsTime();
       }
     });
@@ -772,7 +772,7 @@ protected:
       docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
       docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
-      
+
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
       #ifdef ARDUINO_ARCH_ESP8266
       docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
@@ -841,7 +841,7 @@ protected:
       docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
       docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
-      
+
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
       #ifdef ARDUINO_ARCH_ESP8266
       docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
@@ -900,7 +900,7 @@ protected:
           docCrash[FPSTR(S_EPC)] = epcStr;
         }
       }
-      
+
       doc.shrinkToFit();
 
       char filename[64];
@@ -946,7 +946,7 @@ protected:
       #ifdef ARDUINO_ARCH_ESP32
       this->delay(250);
       #endif
-      
+
       this->startWebServer();
       Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or network connected"));
 
@@ -970,7 +970,7 @@ protected:
     if (!this->stateDnsServer() && !network->isConnected() && network->isApEnabled() && this->stateWebServer()) {
       this->startDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
-      
+
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
@@ -1015,11 +1015,8 @@ protected:
 
   /**
    * @brief Keep mDNS in sync with the active uplink
-   * @details The responder registers its records on the interface that is up when it
-   * starts, so switching between WiFi and ethernet requires a restart, otherwise the
-   * hostname stops resolving as soon as the WiFi radio is switched off. Without ethernet
-   * there is no uplink to switch: a WiFi reconnect already stops the portal, which ends
-   * the responder and lets the block below start it again on its own.
+   * @details The responder binds its records to the interface that is up when it starts, so when
+   * switching between interfaces, mDNS must be restarted
    */
   void loopMdns() {
     #if USE_ETHERNET

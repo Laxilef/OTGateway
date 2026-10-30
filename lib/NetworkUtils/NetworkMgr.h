@@ -121,6 +121,19 @@ namespace NetworkUtils {
      */
     NetworkMgr* setEthernet(bool enabled) {
       this->ethEnabled = enabled;
+
+      #ifdef NETWORK_HAS_ETHERNET
+      // The driver stays installed: stop() only takes the link and the netif down, while the
+      // SPI bus, the MAC and the netif itself stay allocated, so start() resumes without a restart
+      if (this->ethStarted && ETH.handle() != nullptr) {
+        esp_err_t ret = enabled ? esp_eth_start(ETH.handle()) : esp_eth_stop(ETH.handle());
+
+        if (ret != ESP_OK) {
+          Log.serrorln(FPSTR(L_NETWORK), F("Ethernet: driver %s failed"), enabled ? "start" : "stop");
+        }
+      }
+      #endif
+
       return this;
     }
 
