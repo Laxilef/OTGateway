@@ -136,6 +136,7 @@
       "name": "Netwerkinstellingen",
       "section": {
         "static": "Statische instellingen",
+        "ethernet": "Ethernet",
         "availableNetworks": "Beschikbare netwerken",
         "staSettings": "WiFi-instellingen",
         "apSettings": "AP-instellingen"
@@ -143,6 +144,18 @@
       "scan": {
         "pos": "#",
         "info": "Info"
+      },
+
+      "ethernet": {
+        "enable": "Ethernet inschakelen",
+        "notConfigured": "Vul alle zes GPIO-pinnen in om ethernet in te schakelen.",
+        "clk": "SPI-klok GPIO",
+        "mosi": "SPI MOSI GPIO",
+        "miso": "SPI MISO GPIO",
+        "cs": "SPI CS GPIO",
+        "irq": "Interrupt GPIO",
+        "rst": "Reset GPIO",
+        "note": "W5500 SPI-bedrading"
       },
       "wifi": {
         "ssid": "SSID",
@@ -158,7 +171,8 @@
         "ip": "IP",
         "subnet": "Subnet",
         "gateway": "Gateway",
-        "dns": "DNS"
+        "dns": "DNS",
+        "connection": "Verbinding"
       },
       "sta": {
         "channel.note": "zet op 0 voor automatische selectie"

@@ -38,6 +38,8 @@
           <p></p>
         </hgroup>
 
+        <small id="ble-not-supported" class="hidden" data-i18n>settings.note.bleDevice</small>
+
         <details id="template" class="sensor hidden" data-id="" data-preloaded="0">
           <summary><b>#<span class="pos"></span>: <span class="name"></span></b></summary>
 
@@ -117,7 +119,7 @@
 
                       <option value="50" data-i18n>sensors.types.ntcTemp</option>
                       <option value="51" data-i18n>sensors.types.dallasTemp</option>
-                      <option value="52" data-i18n>sensors.types.bluetooth</option>
+                      <option value="52" data-requires="ble" disabled data-i18n>sensors.types.bluetooth</option>
                       <option value="253" data-i18n>sensors.types.heatSetpointTemp</option>
                       <option value="254" data-i18n>sensors.types.manual</option>
                       <option value="255" data-i18n>sensors.types.notConfigured</option>
@@ -206,15 +208,35 @@
         const container = document.querySelector("article");
         const templateNode = container.querySelector("#template");
 
-        try {
-          const response = await fetch("/api/sensors", {
-            cache: "no-cache",
-            credentials: "include"
+        const applyCapabilities = (info, root) => {
+          // pages and firmware ship together: BLE stays disabled unless the build says it has the stack
+          const bleSupported = info?.features?.ble === true;
+
+          root.querySelectorAll('[data-requires="ble"]').forEach((option) => {
+            option.disabled = !bleSupported;
           });
+
+          document.getElementById("ble-not-supported")?.classList.toggle("hidden", bleSupported);
+        };
+
+        try {
+          const [response, infoResponse] = await Promise.all([
+            fetch("/api/sensors", {
+              cache: "no-cache",
+              credentials: "include"
+            }),
+            fetch("/api/info", {
+              cache: "no-cache",
+              credentials: "include"
+            })
+          ]);
 
           if (!response.ok) {
             throw new Error("Response not valid");
           }
+
+          const info = infoResponse.ok ? await infoResponse.json() : null;
+          applyCapabilities(info, templateNode);
 
           const result = await response.json();
           for (const sensorId in result) {

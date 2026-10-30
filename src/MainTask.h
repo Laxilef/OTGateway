@@ -102,7 +102,7 @@ protected:
 
     vars.mqtt.connected = tMqtt->isConnected();
     vars.network.connected = network->isConnected();
-    vars.network.rssi = network->isConnected() ? WiFi.RSSI() : 0;
+    vars.network.rssi = network->getRssi();
 
     if (settings.system.logLevel >= TinyLogger::Level::SILENT && settings.system.logLevel <= TinyLogger::Level::VERBOSE) {
       if (Log.getLevel() != settings.system.logLevel) {

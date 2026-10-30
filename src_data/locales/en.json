@@ -152,6 +152,7 @@
 
       "section": {
         "static": "Static settings",
+        "ethernet": "Ethernet",
         "availableNetworks": "Available networks",
         "staSettings": "WiFi settings",
         "apSettings": "AP settings"
@@ -160,6 +161,18 @@
       "scan": {
         "pos": "#",
         "info": "Info"
+      },
+
+      "ethernet": {
+        "enable": "Enable ethernet",
+        "notConfigured": "Fill in all six GPIO pins to enable ethernet.",
+        "clk": "SPI clock GPIO",
+        "mosi": "SPI MOSI GPIO",
+        "miso": "SPI MISO GPIO",
+        "cs": "SPI CS GPIO",
+        "irq": "Interrupt GPIO",
+        "rst": "Reset GPIO",
+        "note": "W5500 SPI wiring"
       },
 
       "wifi": {
@@ -177,7 +190,8 @@
         "ip": "IP",
         "subnet": "Subnet",
         "gateway": "Gateway",
-        "dns": "DNS"
+        "dns": "DNS",
+        "connection": "Connection"
       },
 
       "sta": {

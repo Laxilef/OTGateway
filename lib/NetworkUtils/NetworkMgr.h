@@ -4,6 +4,15 @@
 #elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
 #include <esp_wifi.h>
+  #if USE_ETHERNET
+    #include <ETH.h>
+  #endif
+#endif
+
+// W5500 support needs both the ESP32 core (for ETH.h) and the per-env USE_ETHERNET flag.
+// USE_ETHERNET defaults to false in defines.h, so this must be a value test, not #ifdef.
+#if USE_ETHERNET && defined(ARDUINO_ARCH_ESP32)
+  #define NETWORK_HAS_ETHERNET
 #endif
 #include <NetworkConnection.h>
 
@@ -76,12 +85,126 @@ namespace NetworkUtils {
       return this;
     }
 
+    /**
+     * @brief Enable/disable the ethernet interface (W5500 over SPI)
+     */
+    NetworkMgr* setEthernet(bool enabled) {
+      if (enabled != this->ethEnabled) {
+        this->ethRestartFlag = true;
+      }
+
+      this->ethEnabled = enabled;
+      return this;
+    }
+
+    /**
+     * @brief Configure W5500 wiring. Use GPIO_IS_NOT_CONFIGURED to disable
+     */
+    NetworkMgr* setEthernetPins(uint8_t clk, uint8_t mosi, uint8_t miso, uint8_t cs, uint8_t irq, uint8_t rst) {
+      if (
+        clk != this->ethClk || mosi != this->ethMosi || miso != this->ethMiso
+        || cs != this->ethCs || irq != this->ethIrq || rst != this->ethRst
+      ) {
+        this->ethRestartFlag = true;
+      }
+
+      this->ethClk = clk;
+      this->ethMosi = mosi;
+      this->ethMiso = miso;
+      this->ethCs = cs;
+      this->ethIrq = irq;
+      this->ethRst = rst;
+
+      return this;
+    }
+
     bool hasStaCredentials() {
       return this->staSsid != nullptr;
     }
 
     bool isConnected() {
+      if (this->isEthernetActive()) {
+        return true;
+      }
+
       return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED;
+    }
+
+    bool isEthernetEnabled() {
+      return this->ethEnabled;
+    }
+
+    /**
+     * @brief Ethernet is the active uplink: cable plugged in and DHCP lease obtained
+     */
+    bool isEthernetActive() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (!this->ethEnabled || !this->ethStarted) {
+        return false;
+      }
+
+      return ETH.linkUp() && ETH.connected();
+      #else
+      return false;
+      #endif
+    }
+
+    /**
+     * @brief WiFi carries the uplink: radio running, associated, no ethernet takeover
+     *
+     * False while ethernet is the uplink (the radio is parked and its RSSI/channel are stale),
+     * which is what the status API and MQTT publish on.
+     */
+    bool isWifiUplink() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->ethActive || this->wifiRadioOff) {
+        return false;
+      }
+      #endif
+
+      return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED;
+    }
+
+    /**
+     * @brief WiFi signal quality in percent, 0 when WiFi is not carrying the uplink
+     */
+    uint8_t getSignalQuality() {
+      return this->isWifiUplink() ? rssiToSignalQuality(WiFi.RSSI()) : 0;
+    }
+
+    bool isEthernetLinkUp() {
+      #ifdef NETWORK_HAS_ETHERNET
+      return this->ethStarted && ETH.linkUp();
+      #else
+      return false;
+      #endif
+    }
+
+    bool isEthernetEnabledState() {
+      return this->ethEnabled;
+    }
+
+    bool isEthernetDriverStarted() {
+      return this->ethStarted;
+    }
+
+    bool isEthernetInitFailed() {
+      return this->ethStartUnavailable;
+    }
+
+    /**
+     * @return "ethernet", "wifi" or "none"
+     */
+    const char* getConnectionType() {
+      if (this->isEthernetActive()) {
+        return "ethernet";
+      }
+
+      if (this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED) {
+        return "wifi";
+      }
+
+      return "none";
     }
 
     bool isConnecting() {
@@ -105,6 +228,12 @@ namespace NetworkUtils {
     }
 
     short int getRssi() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->isEthernetActive()) {
+        return 0;
+      }
+      #endif
+
       return WiFi.RSSI();
     }
 
@@ -113,22 +242,52 @@ namespace NetworkUtils {
     }
 
     IPAddress getStaIp() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->isEthernetActive()) {
+        return ETH.localIP();
+      }
+      #endif
+
       return WiFi.localIP();
     }
 
     IPAddress getStaSubnet() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->isEthernetActive()) {
+        return ETH.subnetMask();
+      }
+      #endif
+
       return WiFi.subnetMask();
     }
 
     IPAddress getStaGateway() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->isEthernetActive()) {
+        return ETH.gatewayIP();
+      }
+      #endif
+
       return WiFi.gatewayIP();
     }
 
     IPAddress getStaDns() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->isEthernetActive()) {
+        return ETH.dnsIP();
+      }
+      #endif
+
       return WiFi.dnsIP();
     }
 
     String getStaMac() {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->isEthernetActive()) {
+        return ETH.macAddress();
+      }
+      #endif
+
       return WiFi.macAddress();
     }
 
@@ -288,6 +447,15 @@ namespace NetworkUtils {
     }
 
     void loop() {
+      #ifdef NETWORK_HAS_ETHERNET
+      this->loopEthernet();
+
+      // Ethernet owns the uplink while a cable is connected and DHCP has completed
+      if (this->isEthernetActive()) {
+        return;
+      }
+      #endif
+
       if (this->reconnectFlag) {
         this->delayCallback(5000);
 
@@ -415,6 +583,245 @@ namespace NetworkUtils {
     unsigned long prevReconnectingTime = 0;
     unsigned long connectedTime = 0;
     unsigned long disconnectedTime = 0;
+
+    bool ethEnabled = false;
+    bool ethStarted = false;
+    bool ethActive = false;
+    bool ethLinkUp = false;
+    bool ethRestartFlag = false;
+    bool ethStartUnavailable = false;
+    uint8_t ethClk = GPIO_IS_NOT_CONFIGURED;
+    uint8_t ethMosi = GPIO_IS_NOT_CONFIGURED;
+    uint8_t ethMiso = GPIO_IS_NOT_CONFIGURED;
+    uint8_t ethCs = GPIO_IS_NOT_CONFIGURED;
+    uint8_t ethIrq = GPIO_IS_NOT_CONFIGURED;
+    uint8_t ethRst = GPIO_IS_NOT_CONFIGURED;
+    unsigned long ethPrevLinkCheck = 0;
+    const unsigned long ethLinkCheckInterval = 1000;
+
+    // WiFi and ethernet never share the uplink: the radio is parked while ethernet is active
+    bool wifiRadioOff = false;
+    unsigned long ethActiveSince = 0;
+    const unsigned long wifiRadioOffDelay = 5000;
+
+
+    #ifdef NETWORK_HAS_ETHERNET
+    /**
+     * @brief Park the WiFi radio while ethernet carries the uplink
+     *
+     * esp_wifi_stop() parks the radio without tearing the driver and its netifs down.
+     * WiFi.mode(WIFI_OFF) does the same job but also deinitialises, which panicked when it
+     * was called from this task with lwIP live — keep the driver allocated.
+     */
+    void suspendWifiRadio() {
+      if (this->wifiRadioOff || !this->hasStaCredentials()) {
+        return;
+      }
+
+      // nobody configuring over the fallback AP, and a driver that is actually running
+      if (this->isApEnabled() && this->hasApClients()) {
+        return;
+      }
+
+      if (WiFi.getMode() == WIFI_MODE_NULL) {
+        return;
+      }
+
+      Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: uplink active, switching the WiFi radio off"));
+
+      esp_wifi_stop();
+      this->wifiRadioOff = true;
+    }
+
+    /**
+     * @brief Bring the radio back when ethernet no longer carries the uplink
+     */
+    void resumeWifiRadio() {
+      if (!this->wifiRadioOff) {
+        return;
+      }
+
+      this->wifiRadioOff = false;
+
+      Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: uplink lost, switching the WiFi radio back on"));
+
+      esp_wifi_start();
+
+      this->connected = false;
+      this->disconnectedTime = millis();
+      this->prevReconnectingTime = 0;
+
+      NetworkConnection::reset();
+
+      if (this->hasStaCredentials()) {
+        WiFi.begin(this->staSsid, this->staPassword);
+
+        Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: reconnecting to WiFi \"%s\""), this->staSsid);
+      }
+    }
+
+    /**
+     * @brief Keep the radio state in step with the uplink
+     */
+    void updateWifiRadio() {
+      if (this->ethActive && this->ethLinkUp) {
+        if (!this->ethActiveSince) {
+          this->ethActiveSince = millis();
+          return;
+        }
+
+        if (millis() - this->ethActiveSince >= this->wifiRadioOffDelay) {
+          this->suspendWifiRadio();
+        }
+
+        return;
+      }
+
+      this->ethActiveSince = 0;
+      this->resumeWifiRadio();
+    }
+
+    /**
+     * @brief Start the W5500, watch the cable and hand the uplink to ethernet when it comes up
+     */
+    void loopEthernet() {
+      if (this->ethRestartFlag) {
+        this->ethRestartFlag = false;
+
+        // The W5500 driver cannot be re-initialized in place: Arduino's ETH.end() leaves
+        // the SPI bus allocated, so a wiring change only takes effect after a restart.
+        if (this->ethStarted) {
+          Log.swarningln(FPSTR(L_NETWORK), F("Ethernet: settings changed, restart required to apply them"));
+        }
+      }
+
+      if (!this->ethEnabled || !this->hasEthernetPins()) {
+        if (this->ethActive || this->ethLinkUp) {
+          this->ethActive = false;
+          this->ethLinkUp = false;
+
+          Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: disabled, handing the uplink back to WiFi"));
+
+          NetworkConnection::reset();
+          this->prevReconnectingTime = 0;
+          this->disconnectedTime = millis();
+          this->connected = false;
+        }
+
+        this->resumeWifiRadio();
+
+        return;
+      }
+
+      if (!this->ethStarted) {
+        if (this->ethStartUnavailable) {
+          this->resumeWifiRadio();
+
+          return;
+        }
+
+        Log.sinfoln(
+          FPSTR(L_NETWORK),
+          F("Ethernet: init W5500 (CS: %u, IRQ: %u, RST: %u, CLK: %u, MISO: %u, MOSI: %u)"),
+          this->ethCs,
+          this->ethIrq,
+          this->ethRst,
+          this->ethClk,
+          this->ethMiso,
+          this->ethMosi
+        );
+
+        if (!ETH.begin(ETH_PHY_W5500, 1, this->ethCs, this->ethIrq, this->ethRst, SPI2_HOST, this->ethClk, this->ethMiso, this->ethMosi, 12)) {
+          // A failed init leaves the SPI bus allocated, so retrying cannot succeed;
+          // wait for a restart instead of flapping.
+          this->ethStartUnavailable = true;
+
+          Log.serrorln(FPSTR(L_NETWORK), F("Ethernet: W5500 init failed, check the wiring and restart"));
+
+          return;
+        }
+
+        this->ethStarted = true;
+        this->ethPrevLinkCheck = 0;
+
+        if (!this->useDhcp) {
+          ETH.config(this->staticIp, this->staticGateway, this->staticSubnet, this->staticDns);
+        }
+
+        if (strlen(this->hostname) && this->isHostnameValid(this->hostname)) {
+          ETH.setHostname(this->hostname);
+        }
+
+        return;
+      }
+
+      if (millis() - this->ethPrevLinkCheck < this->ethLinkCheckInterval) {
+        return;
+      }
+
+      this->ethPrevLinkCheck = millis();
+
+      // one place that keeps the radio in step with the uplink, whatever the branch below decides
+      this->updateWifiRadio();
+
+      if (!ETH.linkUp()) {
+        if (this->ethLinkUp) {
+          this->ethLinkUp = false;
+
+          Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: cable disconnected"));
+        }
+
+        if (this->ethActive) {
+          this->ethActive = false;
+
+          Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: link lost, falling back to WiFi"));
+
+          NetworkConnection::reset();
+          this->prevReconnectingTime = 0;
+          this->disconnectedTime = millis();
+          this->connected = false;
+          this->delayCallback(250);
+        }
+
+        return;
+      }
+
+      if (!this->ethLinkUp) {
+        this->ethLinkUp = true;
+
+        Log.sinfoln(FPSTR(L_NETWORK), F("Ethernet: cable connected"));
+      }
+
+      if (!ETH.connected() || this->ethActive) {
+        return;
+      }
+
+      this->ethActive = true;
+      this->connected = false;
+      this->disconnectedTime = millis();
+
+      Log.sinfoln(
+        FPSTR(L_NETWORK),
+        F("Ethernet: using ethernet instead of WiFi, IP: %s, link: %u Mbps, duplex: %u"),
+        ETH.localIP().toString().c_str(),
+        ETH.linkSpeed(),
+        ETH.fullDuplex() ? 1 : 0
+      );
+
+      // Ethernet is the primary uplink. updateWifiRadio() parks the WiFi radio once the link
+      // has been stable for a few seconds, and brings it back when the link drops.
+      NetworkConnection::reset();
+    }
+
+    bool hasEthernetPins() {
+      return this->ethClk != GPIO_IS_NOT_CONFIGURED
+        && this->ethMosi != GPIO_IS_NOT_CONFIGURED
+        && this->ethMiso != GPIO_IS_NOT_CONFIGURED
+        && this->ethCs != GPIO_IS_NOT_CONFIGURED
+        && this->ethIrq != GPIO_IS_NOT_CONFIGURED
+        && this->ethRst != GPIO_IS_NOT_CONFIGURED;
+    }
+    #endif
 
 
     bool setWifiHostname(const char* hostname) {

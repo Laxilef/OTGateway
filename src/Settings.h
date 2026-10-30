@@ -20,6 +20,10 @@ struct NetworkSettings {
     char password[65] = DEFAULT_STA_PASSWORD;
     uint8_t channel = 0;
   } sta;
+
+  struct {
+    bool enabled = DEFAULT_ETHERNET_ENABLED;
+  } ethernet;
 } networkSettings;
 
 struct Settings {
@@ -43,6 +47,15 @@ struct Settings {
 
     UnitSystem unitSystem = UnitSystem::METRIC;
     uint8_t statusLedGpio = DEFAULT_STATUS_LED_GPIO;
+
+    struct {
+      uint8_t clk = DEFAULT_ETH_CLK_GPIO;
+      uint8_t mosi = DEFAULT_ETH_MOSI_GPIO;
+      uint8_t miso = DEFAULT_ETH_MISO_GPIO;
+      uint8_t cs = DEFAULT_ETH_CS_GPIO;
+      uint8_t irq = DEFAULT_ETH_IRQ_GPIO;
+      uint8_t rst = DEFAULT_ETH_RST_GPIO;
+    } ethernet;
   } system;
 
   struct {

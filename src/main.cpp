@@ -154,6 +154,18 @@ void setup() {
       break;
   }
 
+  // ethernet (W5500) is configured from the settings, after they are loaded
+  network
+    ->setEthernet(networkSettings.ethernet.enabled)
+    ->setEthernetPins(
+      settings.system.ethernet.clk,
+      settings.system.ethernet.mosi,
+      settings.system.ethernet.miso,
+      settings.system.ethernet.cs,
+      settings.system.ethernet.irq,
+      settings.system.ethernet.rst
+    );
+
   // generate mqtt prefix if it is empty
   if (!strlen(settings.mqtt.prefix)) {
     strcpy(settings.mqtt.prefix, getChipId("otgateway_").c_str());

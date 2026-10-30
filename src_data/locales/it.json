@@ -151,6 +151,7 @@
 
       "section": {
         "static": "Impostazioni statico",
+        "ethernet": "Ethernet",
         "availableNetworks": "Reti disponibili",
         "staSettings": "Impostazioni WiFi",
         "apSettings": "Impostazioni AP"
@@ -159,6 +160,18 @@
       "scan": {
         "pos": "#",
         "info": "Info"
+      },
+
+      "ethernet": {
+        "enable": "Abilita ethernet",
+        "notConfigured": "Compilare tutti e sei i pin GPIO per abilitare ethernet.",
+        "clk": "GPIO clock SPI",
+        "mosi": "GPIO MOSI SPI",
+        "miso": "GPIO MISO SPI",
+        "cs": "GPIO CS SPI",
+        "irq": "GPIO interrupt",
+        "rst": "GPIO reset",
+        "note": "Cablaggio SPI del W5500"
       },
 
       "wifi": {
@@ -176,7 +189,8 @@
         "ip": "IP",
         "subnet": "Subnet",
         "gateway": "Gateway",
-        "dns": "DNS"
+        "dns": "DNS",
+        "connection": "Connessione"
       },
 
       "sta": {

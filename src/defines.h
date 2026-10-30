@@ -54,6 +54,11 @@
   #define USE_BLE false
 #endif
 
+// ethernet (W5500 over SPI) is only validated on the esp32_c6 target: off everywhere else
+#ifndef USE_ETHERNET
+  #define USE_ETHERNET false
+#endif
+
 #ifndef DEFAULT_HOSTNAME
   #define DEFAULT_HOSTNAME ""
 #endif
@@ -80,6 +85,34 @@
 
 #ifndef DEFAULT_STATUS_LED_GPIO
   #define DEFAULT_STATUS_LED_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETHERNET_ENABLED
+  #define DEFAULT_ETHERNET_ENABLED false
+#endif
+
+#ifndef DEFAULT_ETH_CLK_GPIO
+  #define DEFAULT_ETH_CLK_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_MOSI_GPIO
+  #define DEFAULT_ETH_MOSI_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_MISO_GPIO
+  #define DEFAULT_ETH_MISO_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_CS_GPIO
+  #define DEFAULT_ETH_CS_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_IRQ_GPIO
+  #define DEFAULT_ETH_IRQ_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_RST_GPIO
+  #define DEFAULT_ETH_RST_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
 #ifndef DEFAULT_PORTAL_LOGIN
@@ -147,7 +180,7 @@
 #endif
 
 #ifndef PROGMEM
-  #define PROGMEM 
+  #define PROGMEM
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
