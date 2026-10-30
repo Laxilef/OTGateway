@@ -121,10 +121,6 @@ namespace NetworkUtils {
       return this;
     }
 
-    bool hasStaCredentials() {
-      return this->context.staSsid != nullptr;
-    }
-
     /**
      * @brief Uplinks in the order they are tried: ethernet, WiFi, fallback AP
      */
@@ -156,25 +152,11 @@ namespace NetworkUtils {
       return this->getUplink() >= Uplink::Wifi;
     }
 
-    bool isEthernetPending() {
-      return this->ethernet.isPending();
-    }
-
-    /**
-     * @brief WiFi carries the uplink: radio running, associated, no ethernet takeover
-     *
-     * False while ethernet is the uplink (the radio is parked and its RSSI/channel are stale),
-     * which is what the status API and MQTT publish on.
-     */
-    bool isWifiUplink() {
-      return this->getUplink() == Uplink::Wifi;
-    }
-
     /**
      * @brief WiFi signal quality in percent, 0 when WiFi is not carrying the uplink
      */
     uint8_t getSignalQuality() {
-      return this->isWifiUplink() ? rssiToSignalQuality(this->wifi.rssi()) : 0;
+      return this->getUplink() == Uplink::Wifi ? rssiToSignalQuality(this->wifi.rssi()) : 0;
     }
 
     /**
@@ -184,20 +166,12 @@ namespace NetworkUtils {
       return uplinkName(this->getUplink());
     }
 
-    bool isConnecting() {
-      return this->wifi.isConnecting();
-    }
-
-    bool isStaEnabled() {
-      return this->wifi.isStaEnabled();
-    }
-
     bool isApEnabled() {
       return this->ap.isEnabled();
     }
 
     short int getRssi() {
-      return this->getUplink() == Uplink::Ethernet ? 0 : this->wifi.rssi();
+      return this->station()->rssi();
     }
 
     IPAddress getApIp() {
@@ -205,51 +179,35 @@ namespace NetworkUtils {
     }
 
     IPAddress getStaIp() {
-      return this->getUplink() == Uplink::Ethernet ? this->ethernet.localIP() : this->wifi.localIP();
+      return this->station()->localIP();
     }
 
     IPAddress getStaSubnet() {
-      return this->getUplink() == Uplink::Ethernet ? this->ethernet.subnetMask() : this->wifi.subnetMask();
+      return this->station()->subnetMask();
     }
 
     IPAddress getStaGateway() {
-      return this->getUplink() == Uplink::Ethernet ? this->ethernet.gatewayIP() : this->wifi.gatewayIP();
+      return this->station()->gatewayIP();
     }
 
     IPAddress getStaDns() {
-      return this->getUplink() == Uplink::Ethernet ? this->ethernet.dnsIP() : this->wifi.dnsIP();
+      return this->station()->dnsIP();
     }
 
     String getStaMac() {
-      return this->getUplink() == Uplink::Ethernet ? this->ethernet.macAddress() : this->wifi.macAddress();
+      return this->station()->macAddress();
     }
 
     const char* getStaSsid() {
       return this->context.staSsid;
     }
 
-    const char* getStaPassword() {
-      return this->context.staPassword;
-    }
-
     uint8_t getStaChannel() {
       return this->context.staChannel;
     }
 
-    bool resetWifi() {
-      return this->wifi.resetWifi();
-    }
-
     void reconnect() {
       this->wifi.reconnect();
-    }
-
-    bool connect(bool force = false, unsigned int timeout = 1000u) {
-      return this->wifi.connect(force, timeout);
-    }
-
-    void disconnect() {
-      this->wifi.disconnect();
     }
 
     void loop() {
@@ -289,6 +247,18 @@ namespace NetworkUtils {
     EthernetUplink ethernet;
 
     Uplink uplink = Uplink::None;
+
+    /**
+     * @brief The interface holding the station address: the wired one while it carries the
+     * uplink, the station otherwise
+     */
+    NetworkUplink* station() {
+      if (this->getUplink() == Uplink::Ethernet) {
+        return &this->ethernet;
+      }
+
+      return &this->wifi;
+    }
 
     /**
      * @brief Notice an uplink change so the hierarchy is walked from the top again

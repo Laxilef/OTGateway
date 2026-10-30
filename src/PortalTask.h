@@ -746,7 +746,7 @@ protected:
       docNetwork[FPSTR(S_CONNECTION_TYPE)] = network->getConnectionType();
       // SSID, signal and channel describe the WiFi uplink only: with ethernet up the radio is
       // parked and those readings are stale, so report them as not applicable rather than 0 dBm
-      const bool wifiUplink = network->isWifiUplink();
+      const bool wifiUplink = network->getUplink() == NetworkMgr::Uplink::Wifi;
       const char* staSsid = network->getStaSsid();
 
       docNetwork[FPSTR(S_SSID)] = (wifiUplink && staSsid) ? staSsid : "";

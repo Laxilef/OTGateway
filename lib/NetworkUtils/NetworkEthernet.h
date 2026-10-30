@@ -204,14 +204,6 @@ namespace NetworkUtils {
         && this->rst != GPIO_IS_NOT_CONFIGURED;
     }
 
-    bool isLinkUp() {
-      #ifdef NETWORK_HAS_ETHERNET
-      return this->started && ETH.linkUp();
-      #else
-      return false;
-      #endif
-    }
-
     IPAddress localIP() override {
       #ifdef NETWORK_HAS_ETHERNET
       return ETH.localIP();

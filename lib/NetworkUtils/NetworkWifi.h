@@ -344,14 +344,6 @@ namespace NetworkUtils {
       return this->context->staSsid != nullptr;
     }
 
-    const char* ssid() {
-      return this->context->staSsid;
-    }
-
-    uint8_t channel() {
-      return this->context->staChannel;
-    }
-
     IPAddress localIP() override {
       return WiFi.localIP();
     }
