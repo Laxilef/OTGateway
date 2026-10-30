@@ -437,7 +437,7 @@ protected:
       }
 
       // scanning needs WiFi, which is not the uplink while ethernet carries the traffic
-      if (network->getConnectionType() == "ethernet") {
+      if (network->getUplink() == NetworkMgr::Uplink::Ethernet) {
         this->webServer->send(409);
         return;
       }
