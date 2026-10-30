@@ -101,6 +101,7 @@
               </table>
             </div>
 
+            <p id="scan-unavailable" class="hidden" data-i18n>network.scan.unavailable</p>
             <button type="submit" data-i18n>button.refresh</button>
           </form>
 
@@ -313,7 +314,12 @@
           fillData(result);
 
           setupForm('#network-settings', fillData, ['hostname']);
-          setupNetworkScanForm('#network-scan', '#networks');
+
+          // scanning needs the radio, which stays parked while ethernet carries the uplink
+          const radioParked = info?.network?.connectionType === 'ethernet';
+          setupNetworkScanForm('#network-scan', '#networks', !radioParked);
+          document.querySelector('#network-scan button[type="submit"]').disabled = radioParked;
+          document.querySelector('#scan-unavailable').classList.toggle('hidden', !radioParked);
 
           if (ethernetSupported) {
             setupForm('#ethernet-settings', fillData);

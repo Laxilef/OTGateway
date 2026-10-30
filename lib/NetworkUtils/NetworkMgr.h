@@ -171,6 +171,13 @@ namespace NetworkUtils {
     }
 
     /**
+     * @brief The WiFi radio is stopped while ethernet carries the uplink
+     */
+    bool isWifiRadioParked() {
+      return this->wifiRadioOff;
+    }
+
+    /**
      * @brief Ethernet is the active uplink: cable plugged in and DHCP lease obtained
      */
     bool isEthernetActive() {
@@ -664,6 +671,11 @@ namespace NetworkUtils {
       }
 
       if (WiFi.getMode() == WIFI_MODE_NULL) {
+        return;
+      }
+
+      // a scan holds the radio: parking it mid-scan leaves the driver half torn down
+      if (WiFi.scanComplete() == WIFI_SCAN_RUNNING) {
         return;
       }
 

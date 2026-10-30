@@ -143,7 +143,8 @@
       },
       "scan": {
         "pos": "#",
-        "info": "Info"
+        "info": "Info",
+        "unavailable": "Schakel WiFi in om naar netwerken te zoeken"
       },
 
       "ethernet": {

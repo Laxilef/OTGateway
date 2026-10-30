@@ -159,7 +159,8 @@
 
       "scan": {
         "pos": "#",
-        "info": "Info"
+        "info": "Info",
+        "unavailable": "请启用 WiFi 以扫描网络"
       },
 
       "ethernet": {

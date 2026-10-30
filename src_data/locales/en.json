@@ -160,7 +160,8 @@
 
       "scan": {
         "pos": "#",
-        "info": "Info"
+        "info": "Info",
+        "unavailable": "Please enable WiFi to scan for networks"
       },
 
       "ethernet": {

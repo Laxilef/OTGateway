@@ -436,6 +436,12 @@ protected:
         return this->webServer->send(401);
       }
 
+      // the radio is parked while ethernet carries the uplink: scanning is not available
+      if (network->isWifiRadioParked()) {
+        this->webServer->send(409);
+        return;
+      }
+
       auto apCount = WiFi.scanComplete();
       if (apCount <= 0) {
         if (apCount != WIFI_SCAN_RUNNING) {
