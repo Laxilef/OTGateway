@@ -196,7 +196,7 @@
 
             setValue('#network-hostname', result.network.hostname);
             setValue('#network-mac', result.network.mac);
-            setValue('#network-connection', result.network.connectionType);
+            setValue('#network-connection', i18n(`network.params.connectionType.${result.network.connectionType}`));
             setStatus(
               '#network-connected',
               result.network.connected ? "success" : "error",

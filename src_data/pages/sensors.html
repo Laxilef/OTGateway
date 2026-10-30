@@ -208,9 +208,11 @@
         const container = document.querySelector("article");
         const templateNode = container.querySelector("#template");
 
+        let bleSupported = false;
+
         const applyCapabilities = (info, root) => {
           // pages and firmware ship together: BLE stays disabled unless the build says it has the stack
-          const bleSupported = info?.features?.ble === true;
+          bleSupported = info?.features?.ble === true;
 
           root.querySelectorAll('[data-requires="ble"]').forEach((option) => {
             option.disabled = !bleSupported;
@@ -309,6 +311,12 @@
 
                 // ble
                 case 52:
+                  if (!bleSupported) {
+                    parentGpio.classList.add("hidden");
+                    parentAddress.classList.add("hidden");
+                    break;
+                  }
+
                   parentGpio.classList.add("hidden");
                   parentAddress.classList.remove("hidden");
                   address.setAttribute("pattern", "([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}");

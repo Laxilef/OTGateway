@@ -172,7 +172,13 @@
         "subnet": "Subnet",
         "gateway": "Gateway",
         "dns": "DNS",
-        "connection": "Verbinding"
+        "connection": "Verbinding",
+        "connectionType": {
+          "ethernet": "Ethernet",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi AP",
+          "none": "Geen"
+        }
       },
       "sta": {
         "channel.note": "zet op 0 voor automatische selectie"

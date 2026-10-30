@@ -190,7 +190,13 @@
         "subnet": "Адрес подсети",
         "gateway": "Адрес шлюза",
         "dns": "DNS адрес",
-        "connection": "Подключение"
+        "connection": "Подключение",
+        "connectionType": {
+          "ethernet": "Ethernet",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi AP",
+          "none": "Нет"
+        }
       },
 
       "sta": {

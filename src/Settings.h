@@ -285,6 +285,7 @@ struct Variables {
   struct {
     bool connected = false;
     int8_t rssi = 0;
+    const char* connectionType = "none";
   } network;
 
   struct {

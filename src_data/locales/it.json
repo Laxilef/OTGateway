@@ -190,7 +190,13 @@
         "subnet": "Subnet",
         "gateway": "Gateway",
         "dns": "DNS",
-        "connection": "Connessione"
+        "connection": "Connessione",
+        "connectionType": {
+          "ethernet": "Ethernet",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi AP",
+          "none": "Nessuno"
+        }
       },
 
       "sta": {

@@ -29,6 +29,7 @@ public:
     this->webServer = new WebServer(80);
     this->bufferedWebServer = new BufferedWebServer(this->webServer, 32u);
     this->dnsServer = new DNSServer();
+    this->mDnsRetryTime = millis() - this->mDnsRetryInterval;
   }
 
   ~PortalTask() {

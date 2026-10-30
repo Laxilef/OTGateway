@@ -297,7 +297,9 @@ void networkSettingsToJson(const NetworkSettings& src, JsonVariant dst) {
   dst[FPSTR(S_STA)][FPSTR(S_PASSWORD)] = src.sta.password;
   dst[FPSTR(S_STA)][FPSTR(S_CHANNEL)] = src.sta.channel;
 
+  #if USE_ETHERNET
   dst[FPSTR(S_ETHERNET)][FPSTR(S_ENABLED)] = src.ethernet.enabled;
+  #endif
 }
 
 bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
@@ -2267,6 +2269,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTED)] = src.network.connected;
   master[FPSTR(S_NETWORK)][FPSTR(S_RSSI)] = src.network.rssi;
+  master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTION_TYPE)] = src.network.connectionType;
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;

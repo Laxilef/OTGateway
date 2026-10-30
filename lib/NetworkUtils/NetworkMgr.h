@@ -61,6 +61,12 @@ namespace NetworkUtils {
     }
 
     NetworkMgr* setUseDhcp(bool value) {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->ethStarted && value != this->useDhcp) {
+        this->ethRestartFlag = true;
+      }
+      #endif
+
       this->useDhcp = value;
       NetworkConnection::setup(this->useDhcp);
 
@@ -68,15 +74,40 @@ namespace NetworkUtils {
     }
 
     NetworkMgr* setStaticConfig(const char* ip, const char* gateway, const char* subnet, const char* dns) {
-      this->staticIp.fromString(ip);
-      this->staticGateway.fromString(gateway);
-      this->staticSubnet.fromString(subnet);
-      this->staticDns.fromString(dns);
+      IPAddress valueIp, valueGateway, valueSubnet, valueDns;
+
+      valueIp.fromString(ip);
+      valueGateway.fromString(gateway);
+      valueSubnet.fromString(subnet);
+      valueDns.fromString(dns);
+
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->ethStarted && (
+        valueIp != this->staticIp || valueGateway != this->staticGateway
+        || valueSubnet != this->staticSubnet || valueDns != this->staticDns
+      )) {
+        this->ethRestartFlag = true;
+      }
+      #endif
+
+      this->staticIp = valueIp;
+      this->staticGateway = valueGateway;
+      this->staticSubnet = valueSubnet;
+      this->staticDns = valueDns;
 
       return this;
     }
 
     NetworkMgr* setStaticConfig(IPAddress& ip, IPAddress& gateway, IPAddress& subnet, IPAddress& dns) {
+      #ifdef NETWORK_HAS_ETHERNET
+      if (this->ethStarted && (
+        ip != this->staticIp || gateway != this->staticGateway
+        || subnet != this->staticSubnet || dns != this->staticDns
+      )) {
+        this->ethRestartFlag = true;
+      }
+      #endif
+
       this->staticIp = ip;
       this->staticGateway = gateway;
       this->staticSubnet = subnet;
@@ -89,10 +120,6 @@ namespace NetworkUtils {
      * @brief Enable/disable the ethernet interface (W5500 over SPI)
      */
     NetworkMgr* setEthernet(bool enabled) {
-      if (enabled != this->ethEnabled) {
-        this->ethRestartFlag = true;
-      }
-
       this->ethEnabled = enabled;
       return this;
     }
@@ -128,10 +155,6 @@ namespace NetworkUtils {
       }
 
       return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED;
-    }
-
-    bool isEthernetEnabled() {
-      return this->ethEnabled;
     }
 
     /**
@@ -193,7 +216,7 @@ namespace NetworkUtils {
     }
 
     /**
-     * @return "ethernet", "wifi" or "none"
+     * @return "ethernet", "wifi", "wifi-ap" or "none"
      */
     const char* getConnectionType() {
       if (this->isEthernetActive()) {
@@ -202,6 +225,10 @@ namespace NetworkUtils {
 
       if (this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED) {
         return "wifi";
+      }
+
+      if (this->isApEnabled()) {
+        return "wifi-ap";
       }
 
       return "none";

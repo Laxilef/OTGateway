@@ -190,7 +190,13 @@
         "subnet": "子网掩码",
         "gateway": "网关",
         "dns": "DNS 服务器",
-        "connection": "连接"
+        "connection": "连接",
+        "connectionType": {
+          "ethernet": "以太网",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi 接入点",
+          "none": "无"
+        }
       },
 
       "sta": {
