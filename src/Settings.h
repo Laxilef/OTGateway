@@ -1,3 +1,5 @@
+// NetworkSettings struct is append-only. The file is persisted across updates,
+// and removing/modifying existing keys will lead to file corruption.
 struct NetworkSettings {
   char hostname[25] = DEFAULT_HOSTNAME;
   bool useDhcp = true;
@@ -23,6 +25,18 @@ struct NetworkSettings {
 
   struct {
     bool enabled = DEFAULT_ETHERNET_ENABLED;
+
+    // nothing reads this yet: the W5500 is the only implementation the firmware can drive
+    EthernetImplementation implementation = EthernetImplementation::W5500;
+
+    struct {
+      uint8_t clk = DEFAULT_ETH_CLK_GPIO;
+      uint8_t mosi = DEFAULT_ETH_MOSI_GPIO;
+      uint8_t miso = DEFAULT_ETH_MISO_GPIO;
+      uint8_t cs = DEFAULT_ETH_CS_GPIO;
+      uint8_t irq = DEFAULT_ETH_IRQ_GPIO;
+      uint8_t rst = DEFAULT_ETH_RST_GPIO;
+    } w5500;
   } ethernet;
 } networkSettings;
 
@@ -47,15 +61,6 @@ struct Settings {
 
     UnitSystem unitSystem = UnitSystem::METRIC;
     uint8_t statusLedGpio = DEFAULT_STATUS_LED_GPIO;
-
-    struct {
-      uint8_t clk = DEFAULT_ETH_CLK_GPIO;
-      uint8_t mosi = DEFAULT_ETH_MOSI_GPIO;
-      uint8_t miso = DEFAULT_ETH_MISO_GPIO;
-      uint8_t cs = DEFAULT_ETH_CS_GPIO;
-      uint8_t irq = DEFAULT_ETH_IRQ_GPIO;
-      uint8_t rst = DEFAULT_ETH_RST_GPIO;
-    } ethernet;
   } system;
 
   struct {
@@ -145,7 +150,7 @@ struct Settings {
     uint8_t minTemp = DEFAULT_DHW_MIN_TEMP;
     uint8_t maxTemp = DEFAULT_DHW_MAX_TEMP;
     uint8_t maxModulation = 100;
-    
+
     struct {
       uint8_t highTemp = 95;
       uint8_t lowTemp = 90;

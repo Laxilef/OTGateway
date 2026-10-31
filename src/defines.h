@@ -201,4 +201,9 @@ enum class HysteresisAction : uint8_t {
   SET_ZERO_TARGET = 1
 };
 
+enum class EthernetImplementation : uint8_t {
+  NONE  = 0,
+  W5500 = 1
+};
+
 char buffer[255];

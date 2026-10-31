@@ -292,7 +292,7 @@ protected:
 
       bool changed = false;
       if (!doc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(doc[FPSTR(S_NETWORK)], networkSettings)) {
-        this->persistNow(fsNetworkSettings);
+        fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
           ->setApCredentials(networkSettings.ap.ssid, networkSettings.ap.password, networkSettings.ap.channel)
@@ -308,7 +308,7 @@ protected:
       }
 
       if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
-        this->persistNow(fsSettings);
+        fsSettings.update();
         applyEthernetSettings();
         changed = true;
       }
@@ -325,7 +325,7 @@ protected:
           }
 
           if (jsonToSensorSettings(sensorId, sensor.value(), Sensors::settings[sensorId])) {
-            this->persistNow(fsSensorsSettings);
+            fsSensorsSettings.update();
             changed = true;
           }
         }
@@ -386,14 +386,6 @@ protected:
 
       bool changed = jsonToNetworkSettings(doc, networkSettings);
 
-      // the W5500 pinout is stored in the system settings, but edited on the network page
-      bool pinsChanged = false;
-
-      if (jsonToEthernetPins(doc[FPSTR(S_ETHERNET)][FPSTR(S_PINS)], settings, pinsChanged) && pinsChanged) {
-        this->persistNow(fsSettings);
-        changed = true;
-      }
-
       // ethernet is only usable with a complete W5500 pin set
       if (!this->isEthernetConfigured() && networkSettings.ethernet.enabled) {
         networkSettings.ethernet.enabled = false;
@@ -413,7 +405,7 @@ protected:
         doc.clear();
         doc.shrinkToFit();
 
-        this->persistNow(fsNetworkSettings);
+        fsNetworkSettings.update();
         network->setHostname(networkSettings.hostname)
           ->setStaCredentials(networkSettings.sta.ssid, networkSettings.sta.password, networkSettings.sta.channel)
           ->setApCredentials(networkSettings.ap.ssid, networkSettings.ap.password, networkSettings.ap.channel)
@@ -534,7 +526,7 @@ protected:
         doc.clear();
         doc.shrinkToFit();
 
-        this->persistNow(fsSettings);
+        fsSettings.update();
         applyEthernetSettings();
         tMqtt->resetPublishedSettingsTime();
       }
@@ -664,7 +656,7 @@ protected:
 
       if (changed) {
         tMqtt->reconfigureSensor(sensorId, prevSettings);
-        this->persistNow(fsSensorsSettings);
+        fsSensorsSettings.update();
       }
     });
 
@@ -1061,36 +1053,14 @@ protected:
   }
 
   /**
-   * @brief Write a settings file immediately instead of waiting out the debounce
-   * @details FileData::update() only schedules the write, the actual flash write
-   * happens in tick() once the per-file timeout elapsed. Explicit saves must not
-   * depend on the device staying up for that long.
-   */
-  void persistNow(FileData& fileData) {
-    if (fileData.updateNow() == FD_FILE_ERR) {
-      fileData.write();
-    }
-  }
-
-  /**
-   * @brief Add the W5500 state (enabled flag, configured flag + pinout) to a network settings document
+   * @brief Add the computed W5500 state to a network settings document
    * @details The key is absent entirely on builds without ethernet, rather than an empty object:
-   * presence of the section is what tells a client the target can do it.
+   * presence of the section is what tells a client the target can do it. The stored fields
+   * (enabled flag, pinout) come from networkSettingsToJson, this adds only what is derived.
    */
   void ethernetToJson(JsonDocument& dst) {
     #if USE_ETHERNET
-    auto eth = dst[FPSTR(S_ETHERNET)].to<JsonObject>();
-
-    eth[FPSTR(S_ENABLED)] = networkSettings.ethernet.enabled;
-    eth[FPSTR(S_CONFIGURED)] = this->isEthernetConfigured();
-
-    auto pins = eth[FPSTR(S_PINS)].to<JsonObject>();
-    pins[FPSTR(S_CLK)] = settings.system.ethernet.clk;
-    pins[FPSTR(S_MOSI)] = settings.system.ethernet.mosi;
-    pins[FPSTR(S_MISO)] = settings.system.ethernet.miso;
-    pins[FPSTR(S_CS)] = settings.system.ethernet.cs;
-    pins[FPSTR(S_IRQ)] = settings.system.ethernet.irq;
-    pins[FPSTR(S_RST)] = settings.system.ethernet.rst;
+    dst[FPSTR(S_ETHERNET)][FPSTR(S_CONFIGURED)] = this->isEthernetConfigured();
     #endif
   }
 
@@ -1099,12 +1069,12 @@ protected:
    */
   bool isEthernetConfigured() {
     #if USE_ETHERNET
-    return settings.system.ethernet.clk != GPIO_IS_NOT_CONFIGURED
-      && settings.system.ethernet.mosi != GPIO_IS_NOT_CONFIGURED
-      && settings.system.ethernet.miso != GPIO_IS_NOT_CONFIGURED
-      && settings.system.ethernet.cs != GPIO_IS_NOT_CONFIGURED
-      && settings.system.ethernet.irq != GPIO_IS_NOT_CONFIGURED
-      && settings.system.ethernet.rst != GPIO_IS_NOT_CONFIGURED;
+    return networkSettings.ethernet.w5500.clk != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.mosi != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.miso != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.cs != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.irq != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.rst != GPIO_IS_NOT_CONFIGURED;
     #else
     // nothing to configure: the W5500 driver is not compiled into this target
     return false;
@@ -1119,12 +1089,12 @@ protected:
     network
       ->setEthernet(networkSettings.ethernet.enabled)
       ->setEthernetPins(
-        settings.system.ethernet.clk,
-        settings.system.ethernet.mosi,
-        settings.system.ethernet.miso,
-        settings.system.ethernet.cs,
-        settings.system.ethernet.irq,
-        settings.system.ethernet.rst
+        networkSettings.ethernet.w5500.clk,
+        networkSettings.ethernet.w5500.mosi,
+        networkSettings.ethernet.w5500.miso,
+        networkSettings.ethernet.w5500.cs,
+        networkSettings.ethernet.w5500.irq,
+        networkSettings.ethernet.w5500.rst
       );
     #endif
   }
