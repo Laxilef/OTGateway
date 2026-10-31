@@ -151,6 +151,7 @@
 
       "section": {
         "static": "Статические параметры",
+        "ethernet": "Ethernet",
         "availableNetworks": "Доступные сети",
         "staSettings": "Настройки подключения",
         "apSettings": "Настройки точки доступа"
@@ -158,7 +159,20 @@
 
       "scan": {
         "pos": "#",
-        "info": "Инфо"
+        "info": "Инфо",
+        "unavailable": "Включите WiFi, чтобы искать сети"
+      },
+
+      "ethernet": {
+        "enable": "Включить ethernet",
+        "notConfigured": "Заполните все шесть выводов GPIO, чтобы включить ethernet.",
+        "clk": "GPIO тактирования SPI",
+        "mosi": "GPIO MOSI SPI",
+        "miso": "GPIO MISO SPI",
+        "cs": "GPIO CS SPI",
+        "irq": "GPIO прерывания",
+        "rst": "GPIO сброса",
+        "note": "Подключение W5500 по SPI"
       },
 
       "wifi": {
@@ -176,7 +190,14 @@
         "ip": "IP адрес",
         "subnet": "Адрес подсети",
         "gateway": "Адрес шлюза",
-        "dns": "DNS адрес"
+        "dns": "DNS адрес",
+        "connection": "Подключение",
+        "connectionType": {
+          "ethernet": "Ethernet",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi AP",
+          "none": "Нет"
+        }
       },
 
       "sta": {

@@ -25,6 +25,12 @@ public:
   }
 
   bool publishDynamicSensor(Sensors::Settings& sSensor, Sensors::ValueType vType = Sensors::ValueType::PRIMARY, UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
+    #if !USE_BLE
+    if (sSensor.type == Sensors::Type::BLUETOOTH) {
+      return false;
+    }
+    #endif
+
     JsonDocument doc;
 
     // set device class & unit of measurement
@@ -1178,7 +1184,10 @@ public:
 
   bool publishNetworkRssi(bool enabledByDefault = true) {
     JsonDocument doc;
-    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.network.connectionType == 'wifi', 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(FPSTR(S_RSSI));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), FPSTR(S_RSSI));

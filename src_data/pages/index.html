@@ -51,14 +51,18 @@
                 <td><b id="network-mac"></b></td>
               </tr>
               <tr>
+                <th scope="row" data-i18n>network.params.connection</th>
+                <td><b id="network-connection"></b></td>
+              </tr>
+              <tr>
                 <th scope="row" data-i18n>network.wifi.connected</th>
                 <td><i id="network-connected"></i></td>
               </tr>
-              <tr>
+              <tr id="network-ssid-row">
                 <th scope="row" data-i18n>network.wifi.ssid</th>
                 <td><b id="network-ssid"></b></td>
               </tr>
-              <tr>
+              <tr id="network-signal-row">
                 <th scope="row" data-i18n>network.wifi.signal</th>
                 <td><b id="network-signal"></b> %</td>
               </tr>
@@ -192,6 +196,7 @@
 
             setValue('#network-hostname', result.network.hostname);
             setValue('#network-mac', result.network.mac);
+            setValue('#network-connection', i18n(`network.params.connectionType.${result.network.connectionType}`));
             setStatus(
               '#network-connected',
               result.network.connected ? "success" : "error",
@@ -199,6 +204,14 @@
             );
             setValue('#network-ssid', result.network.ssid);
             setValue('#network-signal', result.network.signalQuality);
+
+            // SSID and signal strength only describe the uplink when WiFi carries it; with
+            // ethernet up the radio is parked and both values are meaningless
+            const wifiUplink = result.network.connectionType === "wifi";
+
+            document.getElementById("network-ssid-row")?.classList.toggle("hidden", !wifiUplink);
+            document.getElementById("network-signal-row")?.classList.toggle("hidden", !wifiUplink);
+
             setValue('#network-ip', result.network.ip);
             setValue('#network-subnet', result.network.subnet);
             setValue('#network-gateway', result.network.gateway);

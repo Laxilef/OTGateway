@@ -296,7 +296,23 @@ void networkSettingsToJson(const NetworkSettings& src, JsonVariant dst) {
   dst[FPSTR(S_STA)][FPSTR(S_SSID)] = src.sta.ssid;
   dst[FPSTR(S_STA)][FPSTR(S_PASSWORD)] = src.sta.password;
   dst[FPSTR(S_STA)][FPSTR(S_CHANNEL)] = src.sta.channel;
+
+  #if USE_ETHERNET
+  auto ethernet = dst[FPSTR(S_ETHERNET)].to<JsonObject>();
+
+  ethernet[FPSTR(S_ENABLED)] = src.ethernet.enabled;
+
+  auto pins = ethernet[FPSTR(S_PINS)].to<JsonObject>();
+  pins[FPSTR(S_CLK)] = src.ethernet.w5500.clk;
+  pins[FPSTR(S_MOSI)] = src.ethernet.w5500.mosi;
+  pins[FPSTR(S_MISO)] = src.ethernet.w5500.miso;
+  pins[FPSTR(S_CS)] = src.ethernet.w5500.cs;
+  pins[FPSTR(S_IRQ)] = src.ethernet.w5500.irq;
+  pins[FPSTR(S_RST)] = src.ethernet.w5500.rst;
+  #endif
 }
+
+bool jsonToEthernetPins(const JsonVariantConst src, NetworkSettings& dst, bool& changed);
 
 bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
   bool changed = false;
@@ -412,6 +428,19 @@ bool jsonToNetworkSettings(const JsonVariantConst src, NetworkSettings& dst) {
       changed = true;
     }
   }
+
+
+  // ethernet
+  if (src[FPSTR(S_ETHERNET)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_ETHERNET)][FPSTR(S_ENABLED)].as<bool>();
+
+    if (value != dst.ethernet.enabled) {
+      dst.ethernet.enabled = value;
+      changed = true;
+    }
+  }
+
+  jsonToEthernetPins(src[FPSTR(S_ETHERNET)][FPSTR(S_PINS)], dst, changed);
 
   return changed;
 }
@@ -573,6 +602,55 @@ inline void safeSettingsToJson(const Settings& src, JsonVariant dst) {
   settingsToJson(src, dst, true);
 }
 
+/**
+ * @brief Parse a single GPIO value: an empty string means "not configured"
+ *
+ * @return true if the key existed in the source document
+ */
+bool jsonToGpioValue(const JsonVariantConst src, const __FlashStringHelper* key, uint8_t& dst, bool& changed) {
+  if (src[key].isNull()) {
+    return false;
+  }
+
+  if (src[key].is<JsonString>() && src[key].as<JsonString>().size() == 0) {
+    if (dst != GPIO_IS_NOT_CONFIGURED) {
+      dst = GPIO_IS_NOT_CONFIGURED;
+      changed = true;
+    }
+
+    return true;
+  }
+
+  unsigned char value = src[key].as<unsigned char>();
+
+  if (GPIO_IS_VALID(value) && value != dst) {
+    dst = value;
+    changed = true;
+  }
+
+  return true;
+}
+
+/**
+ * @brief Parse the W5500 pinout from an object holding clk/mosi/miso/cs/irq/rst
+ *
+ * @return true if the source object exists
+ */
+bool jsonToEthernetPins(const JsonVariantConst src, NetworkSettings& dst, bool& changed) {
+  if (src.isNull()) {
+    return false;
+  }
+
+  jsonToGpioValue(src, FPSTR(S_CLK), dst.ethernet.w5500.clk, changed);
+  jsonToGpioValue(src, FPSTR(S_MOSI), dst.ethernet.w5500.mosi, changed);
+  jsonToGpioValue(src, FPSTR(S_MISO), dst.ethernet.w5500.miso, changed);
+  jsonToGpioValue(src, FPSTR(S_CS), dst.ethernet.w5500.cs, changed);
+  jsonToGpioValue(src, FPSTR(S_IRQ), dst.ethernet.w5500.irq, changed);
+  jsonToGpioValue(src, FPSTR(S_RST), dst.ethernet.w5500.rst, changed);
+
+  return true;
+}
+
 bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false) {
   bool changed = false;
 
@@ -696,7 +774,6 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
         }
       }
     }
-
 
     // portal
     if (src[FPSTR(S_PORTAL)][FPSTR(S_AUTH)].is<bool>()) {
@@ -2194,6 +2271,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTED)] = src.network.connected;
   master[FPSTR(S_NETWORK)][FPSTR(S_RSSI)] = src.network.rssi;
+  master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTION_TYPE)] = src.network.connectionType;
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;

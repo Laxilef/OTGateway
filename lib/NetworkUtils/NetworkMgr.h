@@ -1,380 +1,239 @@
-#if defined(ARDUINO_ARCH_ESP8266)
-#include <ESP8266WiFi.h>
-#include "lwip/etharp.h"
-#elif defined(ARDUINO_ARCH_ESP32)
-#include <WiFi.h>
-#include <esp_wifi.h>
-#endif
+#pragma once
+#include <NetworkAp.h>
 #include <NetworkConnection.h>
+#include <NetworkEthernet.h>
+#include <NetworkUplink.h>
+#include <NetworkWifi.h>
 
 namespace NetworkUtils {
+  /**
+   * @brief Picks the uplink that carries the traffic and drives it
+   *
+   * The hierarchy is ethernet > WiFi > fallback AP: the first interface able to do it owns the
+   * pass, and every status getter reads that decision instead of re-testing the interfaces.
+   */
   class NetworkMgr {
   public:
-    typedef std::function<void()> YieldCallback;
-    typedef std::function<void(unsigned int)> DelayCallback;
-
-    NetworkMgr() {
-      NetworkConnection::setup(this->useDhcp);
-      this->resetWifi();
+    NetworkMgr() : wifi(&this->context), ap(&this->context, &this->wifi), ethernet(&this->context) {
+      NetworkConnection::setup(this->context.useDhcp);
+      this->wifi.resetWifi();
     }
 
     NetworkMgr* setYieldCallback(YieldCallback callback = nullptr) {
-      this->yieldCallback = callback;
+      this->context.yieldCallback = callback;
 
       return this;
     }
 
     NetworkMgr* setDelayCallback(DelayCallback callback = nullptr) {
-      this->delayCallback = callback;
+      this->context.delayCallback = callback;
 
       return this;
     }
 
     NetworkMgr* setHostname(const char* value) {
-      this->hostname = value;
+      this->context.hostname = value;
+
       return this;
     }
 
     NetworkMgr* setApCredentials(const char* ssid, const char* password = nullptr, uint8_t channel = 0) {
-      this->apName = ssid;
-      this->apPassword = password;
-      this->apChannel = channel;
+      this->context.apName = ssid;
+      this->context.apPassword = password;
+      this->context.apChannel = channel;
 
       return this;
     }
 
     NetworkMgr* setStaCredentials(const char* ssid = nullptr, const char* password = nullptr, uint8_t channel = 0) {
-      this->staSsid = ssid;
-      this->staPassword = password;
-      this->staChannel = channel;
+      this->context.staSsid = ssid;
+      this->context.staPassword = password;
+      this->context.staChannel = channel;
 
       return this;
     }
 
     NetworkMgr* setUseDhcp(bool value) {
-      this->useDhcp = value;
-      NetworkConnection::setup(this->useDhcp);
+      if (value != this->context.useDhcp) {
+        this->ethernet.markSettingsChanged();
+      }
+
+      this->context.useDhcp = value;
+      NetworkConnection::setup(this->context.useDhcp);
 
       return this;
     }
 
     NetworkMgr* setStaticConfig(const char* ip, const char* gateway, const char* subnet, const char* dns) {
-      this->staticIp.fromString(ip);
-      this->staticGateway.fromString(gateway);
-      this->staticSubnet.fromString(subnet);
-      this->staticDns.fromString(dns);
+      IPAddress valueIp, valueGateway, valueSubnet, valueDns;
+
+      valueIp.fromString(ip);
+      valueGateway.fromString(gateway);
+      valueSubnet.fromString(subnet);
+      valueDns.fromString(dns);
+
+      if (
+        valueIp != this->context.staticIp || valueGateway != this->context.staticGateway
+        || valueSubnet != this->context.staticSubnet || valueDns != this->context.staticDns
+      ) {
+        this->ethernet.markSettingsChanged();
+      }
+
+      this->context.staticIp = valueIp;
+      this->context.staticGateway = valueGateway;
+      this->context.staticSubnet = valueSubnet;
+      this->context.staticDns = valueDns;
 
       return this;
     }
 
     NetworkMgr* setStaticConfig(IPAddress& ip, IPAddress& gateway, IPAddress& subnet, IPAddress& dns) {
-      this->staticIp = ip;
-      this->staticGateway = gateway;
-      this->staticSubnet = subnet;
-      this->staticDns = dns;
+      if (
+        ip != this->context.staticIp || gateway != this->context.staticGateway
+        || subnet != this->context.staticSubnet || dns != this->context.staticDns
+      ) {
+        this->ethernet.markSettingsChanged();
+      }
+
+      this->context.staticIp = ip;
+      this->context.staticGateway = gateway;
+      this->context.staticSubnet = subnet;
+      this->context.staticDns = dns;
 
       return this;
     }
 
-    bool hasStaCredentials() {
-      return this->staSsid != nullptr;
+    /**
+     * @brief Enable/disable the ethernet interface (W5500 over SPI)
+     */
+    NetworkMgr* setEthernet(bool enabled) {
+      this->ethernet.setEnabled(enabled);
+
+      return this;
+    }
+
+    /**
+     * @brief Configure W5500 wiring. Use GPIO_IS_NOT_CONFIGURED to disable
+     */
+    NetworkMgr* setEthernetPins(uint8_t clk, uint8_t mosi, uint8_t miso, uint8_t cs, uint8_t irq, uint8_t rst) {
+      this->ethernet.setPins(clk, mosi, miso, cs, irq, rst);
+
+      return this;
+    }
+
+    /**
+     * @brief Uplinks in the order they are tried: ethernet, WiFi, fallback AP
+     */
+    enum class Uplink : uint8_t { None = 0, Ap, Wifi, Ethernet };
+
+    /**
+     * @brief The uplink that currently carries traffic
+     *
+     * Always the first interface in the hierarchy that can do it, so every consumer reads the
+     * same decision instead of re-testing ethernet and overriding the WiFi answer.
+     */
+    Uplink getUplink() {
+      if (this->ethernet.isActive()) {
+        return Uplink::Ethernet;
+      }
+
+      if (this->wifi.isActive()) {
+        return Uplink::Wifi;
+      }
+
+      if (this->ap.isActive()) {
+        return Uplink::Ap;
+      }
+
+      return Uplink::None;
     }
 
     bool isConnected() {
-      return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTED;
+      return this->getUplink() >= Uplink::Wifi;
     }
 
-    bool isConnecting() {
-      return this->isStaEnabled() && NetworkConnection::getStatus() == NetworkConnection::Status::CONNECTING;
+    /**
+     * @brief WiFi signal quality in percent, 0 when WiFi is not carrying the uplink
+     */
+    uint8_t getSignalQuality() {
+      return this->getUplink() == Uplink::Wifi ? rssiToSignalQuality(this->wifi.rssi()) : 0;
     }
 
-    bool isStaEnabled() {
-      return (WiFi.getMode() & WIFI_STA) != 0;
+    /**
+     * @return "ethernet", "wifi", "wifi-ap" or "none"
+     */
+    const char* getConnectionType() {
+      return uplinkName(this->getUplink());
     }
 
     bool isApEnabled() {
-      return (WiFi.getMode() & WIFI_AP) != 0;
-    }
-
-    bool hasApClients() {
-      if (!this->isApEnabled()) {
-        return false;
-      }
-
-      return WiFi.softAPgetStationNum() > 0;
+      return this->ap.isEnabled();
     }
 
     short int getRssi() {
-      return WiFi.RSSI();
+      return this->station()->rssi();
     }
 
     IPAddress getApIp() {
-      return WiFi.softAPIP();
+      return this->ap.localIP();
     }
 
     IPAddress getStaIp() {
-      return WiFi.localIP();
+      return this->station()->localIP();
     }
 
     IPAddress getStaSubnet() {
-      return WiFi.subnetMask();
+      return this->station()->subnetMask();
     }
 
     IPAddress getStaGateway() {
-      return WiFi.gatewayIP();
+      return this->station()->gatewayIP();
     }
 
     IPAddress getStaDns() {
-      return WiFi.dnsIP();
+      return this->station()->dnsIP();
     }
 
     String getStaMac() {
-      return WiFi.macAddress();
+      return this->station()->macAddress();
     }
 
     const char* getStaSsid() {
-      return this->staSsid;
-    }
-
-    const char* getStaPassword() {
-      return this->staPassword;
+      return this->context.staSsid;
     }
 
     uint8_t getStaChannel() {
-      return this->staChannel;
-    }
-
-    bool resetWifi() {
-      // set policy manual for work 13 ch
-      {
-        #ifdef ARDUINO_ARCH_ESP8266
-        wifi_country_t country = {"JP", 1, 14, WIFI_COUNTRY_POLICY_MANUAL};
-        wifi_set_country(&country);
-        #elif defined(ARDUINO_ARCH_ESP32)
-        const wifi_country_t country = {"JP", 1, 14, CONFIG_ESP32_PHY_MAX_WIFI_TX_POWER, WIFI_COUNTRY_POLICY_MANUAL};
-        esp_wifi_set_country(&country);
-        #endif
-      }
-
-      WiFi.persistent(false);
-      #if !defined(ESP_ARDUINO_VERSION_MAJOR) || ESP_ARDUINO_VERSION_MAJOR < 3
-      WiFi.setAutoConnect(false);
-      #endif
-      WiFi.setAutoReconnect(false);
-
-      #ifdef ARDUINO_ARCH_ESP8266
-      WiFi.setSleepMode(WIFI_NONE_SLEEP);
-      #elif defined(ARDUINO_ARCH_ESP32)
-      WiFi.setSleep(USE_BLE ? WIFI_PS_MIN_MODEM : WIFI_PS_NONE);
-      #endif
-
-      WiFi.softAPdisconnect();
-      #ifdef ARDUINO_ARCH_ESP8266
-      /*if (wifi_softap_dhcps_status() == DHCP_STARTED) {
-        wifi_softap_dhcps_stop();
-      }*/
-      #endif
-
-      WiFi.disconnect(false, true);
-      #ifdef ARDUINO_ARCH_ESP8266
-      /*if (wifi_station_dhcpc_status() == DHCP_STARTED) {
-        wifi_station_dhcpc_stop();
-      }*/
-
-      wifi_station_dhcpc_set_maxtry(5);
-      #endif
-      
-      #if defined(ARDUINO_ARCH_ESP32) && ESP_ARDUINO_VERSION_MAJOR < 3
-      // Nothing. Because memory leaks when turn off WiFi on ESP32 SDK < 3.0.0
-      return true;
-      #else
-      return WiFi.mode(WIFI_OFF);
-      #endif
+      return this->context.staChannel;
     }
 
     void reconnect() {
-      this->reconnectFlag = true;
-    }
-
-    bool connect(bool force = false, unsigned int timeout = 1000u) {
-      if (this->isConnected() && !force) {
-        return true;
-      }
-
-      if (force && !this->isApEnabled()) {
-        this->resetWifi();
-        NetworkConnection::reset();
-
-      } else {
-        /*#ifdef ARDUINO_ARCH_ESP8266
-        if (wifi_station_dhcpc_status() == DHCP_STARTED) {
-          wifi_station_dhcpc_stop();
-        }
-        #endif*/
-
-        this->disconnect();
-      }
-
-      if (!this->hasStaCredentials()) {
-        return false;
-      }
-
-      this->delayCallback(250);
-
-      #ifdef ARDUINO_ARCH_ESP32
-      if (this->setWifiHostname(this->hostname)) {
-        Log.straceln(FPSTR(L_NETWORK), F("Set hostname '%s': success"), this->hostname);
-
-      } else {
-        Log.serrorln(FPSTR(L_NETWORK), F("Set hostname '%s': fail"), this->hostname);
-      }
-      #endif
-
-      if (!WiFi.mode((WiFiMode_t)(WiFi.getMode() | WIFI_STA))) {
-        return false;
-      }
-
-      this->delayCallback(250);
-
-      #ifdef ARDUINO_ARCH_ESP8266
-      if (this->setWifiHostname(this->hostname)) {
-        Log.straceln(FPSTR(L_NETWORK), F("Set hostname '%s': success"), this->hostname);
-
-      } else {
-        Log.serrorln(FPSTR(L_NETWORK), F("Set hostname '%s': fail"), this->hostname);
-      }
-
-      this->delayCallback(250);
-      #endif
-
-      #ifdef ARDUINO_ARCH_ESP32
-      WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
-      WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
-      #endif
-
-      if (!this->useDhcp) {
-        WiFi.begin(this->staSsid, this->staPassword, this->staChannel, nullptr, false);
-        WiFi.config(this->staticIp, this->staticGateway, this->staticSubnet, this->staticDns);
-        WiFi.reconnect();
-
-      } else {
-        WiFi.begin(this->staSsid, this->staPassword, this->staChannel, nullptr, true);
-      }
-
-      unsigned long beginConnectionTime = millis();
-      while (millis() - beginConnectionTime < timeout) {
-        this->delayCallback(100);
-
-        NetworkConnection::Status status = NetworkConnection::getStatus();
-        if (status != NetworkConnection::Status::CONNECTING && status != NetworkConnection::Status::NONE) {
-          return status == NetworkConnection::Status::CONNECTED;
-        }
-      }
-
-      return false;
-    }
-
-    void disconnect() {
-      #ifdef ARDUINO_ARCH_ESP32
-      WiFi.disconnectAsync(false, true);
-
-      const unsigned long start = millis();
-      while (WiFi.isConnected() && (millis() - start) < 5000) {
-        this->delayCallback(100);
-      }
-      #else
-      WiFi.disconnect(false, true);
-      #endif
+      this->wifi.reconnect();
     }
 
     void loop() {
-      if (this->reconnectFlag) {
-        this->delayCallback(5000);
+      // The top of the hierarchy polls every pass so it can take the uplink whenever it can
+      this->ethernet.loop();
 
-        Log.sinfoln(FPSTR(L_NETWORK), F("Reconnecting..."));
-        this->reconnectFlag = false;
-        this->disconnect();
-        NetworkConnection::reset();
-        this->delayCallback(1000);
+      this->trackUplink();
+      this->updateWifiRadio();
 
-      } else if (this->isConnected() && !this->hasStaCredentials()) {
-        Log.sinfoln(FPSTR(L_NETWORK), F("Reset"));
-        this->resetWifi();
-        NetworkConnection::reset();
-        this->delayCallback(1000);
-
-      } else if (this->isConnected()) {
-        if (!this->connected) {
-          this->connectedTime = millis();
-          this->connected = true;
-
-          Log.sinfoln(
-            FPSTR(L_NETWORK),
-            F("Connected, downtime: %lu s., IP: %s, RSSI: %hhd"),
-            (millis() - this->disconnectedTime) / 1000,
-            WiFi.localIP().toString().c_str(),
-            WiFi.RSSI()
-          );
-        }
-
-        if (this->isApEnabled() && millis() - this->connectedTime > this->reconnectInterval && !this->hasApClients()) {
-          Log.sinfoln(FPSTR(L_NETWORK), F("Stop AP because STA connected"));
-
-          WiFi.mode(WIFI_STA);
-          return;
-        }
-
-        #ifdef ARDUINO_ARCH_ESP8266
-        if (millis() - this->prevArpGratuitous > 60000) {
-          this->stationKeepAliveNow();
-          this->prevArpGratuitous = millis();
-        }
-        #endif
-
-      } else {
-        if (this->connected) {
-          this->disconnectedTime = millis();
-          this->connected = false;
-
-          Log.sinfoln(
-            FPSTR(L_NETWORK),
-            F("Disconnected, reason: %d, uptime: %lu s."),
-            NetworkConnection::getDisconnectReason(),
-            (millis() - this->connectedTime) / 1000
-          );
-        }
-
-        if (!this->hasStaCredentials() && !this->isApEnabled()) {
-          Log.sinfoln(FPSTR(L_NETWORK), F("No STA credentials, start AP"));
-
-          WiFi.mode(WIFI_AP_STA);
-          this->delayCallback(250);
-          WiFi.softAP(this->apName, this->apPassword, this->apChannel);
-
-        } else if (!this->isApEnabled() && millis() - this->disconnectedTime > this->failedConnectTimeout) {
-          Log.sinfoln(FPSTR(L_NETWORK), F("Disconnected for a long time, start AP"));
-
-          WiFi.mode(WIFI_AP_STA);
-          this->delayCallback(250);
-          WiFi.softAP(this->apName, this->apPassword, this->apChannel);
-
-        } else if (this->isConnecting() && millis() - this->prevReconnectingTime > this->resetConnectionTimeout) {
-          Log.swarningln(FPSTR(L_NETWORK), F("Connection timeout, reset wifi..."));
-          this->resetWifi();
-          NetworkConnection::reset();
-          this->delayCallback(250);
-
-        } else if (!this->isConnecting() && this->hasStaCredentials() && (!this->prevReconnectingTime || millis() - this->prevReconnectingTime > this->reconnectInterval)) {
-          Log.sinfoln(FPSTR(L_NETWORK), F("Try connect..."));
-
-          NetworkConnection::reset();
-          if (!this->connect(true, this->connectionTimeout)) {
-            Log.straceln(FPSTR(L_NETWORK), F("Connection failed. Status: %d, reason: %d, raw reason: %d"), NetworkConnection::getStatus(), NetworkConnection::getDisconnectReason(), NetworkConnection::rawDisconnectReason);
-          }
-
-          this->prevReconnectingTime = millis();
-        }
+      if (this->getUplink() == Uplink::Ethernet) {
+        return;
       }
+
+      // a pending ethernet attempt holds the hierarchy: nothing below it starts until it resolves
+      if (this->ethernet.isPending() && !this->wifi.isActive() && !this->ap.isActive()) {
+        return;
+      }
+
+      this->wifi.loop();
+
+      // the ladder only reaches the AP once the station is out of the running
+      if (!this->wifi.isActive() && this->wifi.isPending()) {
+        return;
+      }
+
+      this->ap.loop();
     }
 
     static uint8_t rssiToSignalQuality(short int rssi) {
@@ -382,95 +241,74 @@ namespace NetworkUtils {
     }
 
   protected:
-    const unsigned int reconnectInterval = 15000;
-    const unsigned int failedConnectTimeout = 185000;
-    const unsigned int connectionTimeout = 10000;
-    const unsigned int resetConnectionTimeout = 90000;
+    UplinkContext context;
+    WifiUplink wifi;
+    ApUplink ap;
+    EthernetUplink ethernet;
 
-    YieldCallback yieldCallback = []() {
-      ::yield();
-    };
-    DelayCallback delayCallback = [](unsigned int time) {
-      ::delay(time);
-    };
+    Uplink uplink = Uplink::None;
 
-    const char* hostname = "esp";
-    const char* apName = "ESP";
-    const char* apPassword = nullptr;
-    uint8_t apChannel = 1;
-
-    const char* staSsid = nullptr;
-    const char* staPassword = nullptr;
-    uint8_t staChannel = 0;
-
-    bool useDhcp = true;
-    IPAddress staticIp;
-    IPAddress staticGateway;
-    IPAddress staticSubnet;
-    IPAddress staticDns;
-
-    bool connected = false;
-    bool reconnectFlag = false;
-    unsigned long prevArpGratuitous = 0;
-    unsigned long prevReconnectingTime = 0;
-    unsigned long connectedTime = 0;
-    unsigned long disconnectedTime = 0;
-
-
-    bool setWifiHostname(const char* hostname) {
-      if (!this->isHostnameValid(hostname)) {
-        return false;
-      }
-
-      if (strcmp(WiFi.getHostname(), hostname) == 0) {
-        return true;
-      }
-
-      return WiFi.setHostname(hostname);
-    }
-
-    #ifdef ARDUINO_ARCH_ESP8266
     /**
-     * @brief
-     * https://github.com/arendst/Tasmota/blob/e6515883f0ee5451931b6280ff847b117de5a231/tasmota/tasmota_support/support_wifi.ino#L1196
+     * @brief The interface holding the station address: the wired one while it carries the
+     * uplink, the station otherwise
      */
-    static void stationKeepAliveNow(void) {
-      for (netif* interface = netif_list; interface != nullptr; interface = interface->next) {
-        if (
-          (interface->flags & NETIF_FLAG_LINK_UP)
-          && (interface->flags & NETIF_FLAG_UP)
-          && interface->num == STATION_IF
-          && (!ip4_addr_isany_val(*netif_ip4_addr(interface)))
-          ) {
-          etharp_gratuitous(interface);
-          break;
-        }
+    NetworkUplink* station() {
+      if (this->getUplink() == Uplink::Ethernet) {
+        return &this->ethernet;
       }
+
+      return &this->wifi;
     }
-    #endif
 
     /**
-     * @brief check RFC compliance
+     * @brief Notice an uplink change so the hierarchy is walked from the top again
+     */
+    void trackUplink() {
+      const Uplink current = this->getUplink();
+
+      if (current == this->uplink) {
+        return;
+      }
+
+      Log.sinfoln(FPSTR(L_NETWORK), F("Uplink: %s -> %s"), uplinkName(this->uplink), uplinkName(current));
+
+      this->uplink = current;
+    }
+
+    /**
+     * @brief Keep the WiFi radio in step with the uplink
      *
-     * @param value
-     * @return true
-     * @return false
+     * WiFi is only in service while it carries the traffic. The AP is for first configuration:
+     * once a cable carries the uplink the radio goes off, and if that uplink never comes up the
+     * ladder falls back to the AP again on its own.
      */
-    static bool isHostnameValid(const char* value) {
-      size_t len = strlen(value);
-      if (len > 24) {
-        return false;
-      } else if (value[len - 1] == '-') {
-        return false;
+    void updateWifiRadio() {
+      if (this->ethernet.isActive()) {
+        this->wifi.suspend();
+
+        return;
       }
 
-      for (size_t i = 0; i < len; i++) {
-        if (!isalnum(value[i]) && value[i] != '-') {
-          return false;
-        }
-      }
+      this->wifi.resume();
+    }
 
-      return true;
+    /**
+     * @brief Uplink token, already in locale-key shape
+     */
+    static const char* uplinkName(Uplink uplink) {
+      switch (uplink) {
+        case Uplink::Ethernet:
+          return "ethernet";
+
+        case Uplink::Wifi:
+          return "wifi";
+
+        case Uplink::Ap:
+          return "wifi-ap";
+
+        default:
+          return "none";
+      }
     }
   };
 }

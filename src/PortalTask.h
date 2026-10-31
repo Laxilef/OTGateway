@@ -29,6 +29,7 @@ public:
     this->webServer = new WebServer(80);
     this->bufferedWebServer = new BufferedWebServer(this->webServer, 32u);
     this->dnsServer = new DNSServer();
+    this->mDnsRetryTime = millis() - this->mDnsRetryInterval;
   }
 
   ~PortalTask() {
@@ -56,6 +57,11 @@ protected:
   bool dnsServerEnabled = false;
   unsigned long webServerChangeState = 0;
   bool mDnsState = false;
+  #if USE_ETHERNET
+  char mdnsConnectionType[12] = "";
+  #endif
+  unsigned long mDnsRetryTime = 0;
+  const unsigned long mDnsRetryInterval = 5000;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -296,12 +302,14 @@ protected:
             networkSettings.staticConfig.gateway,
             networkSettings.staticConfig.subnet,
             networkSettings.staticConfig.dns
-          );
+          )
+          ->setEthernet(networkSettings.ethernet.enabled);
         changed = true;
       }
 
       if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
         fsSettings.update();
+        applyEthernetSettings();
         changed = true;
       }
 
@@ -315,14 +323,14 @@ protected:
           if (sensorId < 0 || sensorId > 255 || !Sensors::isValidSensorId(sensorId)) {
             continue;
           }
-          
+
           if (jsonToSensorSettings(sensorId, sensor.value(), Sensors::settings[sensorId])) {
             fsSensorsSettings.update();
             changed = true;
           }
         }
       }
-      
+
       doc.clear();
       doc.shrinkToFit();
 
@@ -341,6 +349,7 @@ protected:
 
       JsonDocument doc;
       networkSettingsToJson(networkSettings, doc);
+      this->ethernetToJson(doc);
       doc.shrinkToFit();
 
       this->bufferedWebServer->send(200, F("application/json"), doc);
@@ -350,7 +359,7 @@ protected:
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (vars.states.restarting) {
         return this->webServer->send(503);
       }
@@ -376,12 +385,20 @@ protected:
       }
 
       bool changed = jsonToNetworkSettings(doc, networkSettings);
+
+      // ethernet is only usable with a complete W5500 pin set
+      if (!this->isEthernetConfigured() && networkSettings.ethernet.enabled) {
+        networkSettings.ethernet.enabled = false;
+        changed = true;
+      }
+
       doc.clear();
       doc.shrinkToFit();
 
       networkSettingsToJson(networkSettings, doc);
+      this->ethernetToJson(doc);
       doc.shrinkToFit();
-      
+
       this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
@@ -399,13 +416,22 @@ protected:
             networkSettings.staticConfig.subnet,
             networkSettings.staticConfig.dns
           )
+          ->setEthernet(networkSettings.ethernet.enabled)
           ->reconnect();
+
+        this->applyEthernetSettings();
       }
     });
 
     this->webServer->on(F("/api/network/scan"), HTTP_GET, [this]() {
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
+      }
+
+      // scanning needs WiFi, which is not the uplink while ethernet carries the traffic
+      if (network->getUplink() == NetworkMgr::Uplink::Ethernet) {
+        this->webServer->send(409);
+        return;
       }
 
       auto apCount = WiFi.scanComplete();
@@ -417,11 +443,11 @@ protected:
           WiFi.scanNetworks(true, true, true);
           #endif
         }
-        
+
         this->webServer->send(404);
         return;
       }
-      
+
       JsonDocument doc;
       for (short int i = 0; i < apCount; i++) {
         const String& ssid = WiFi.SSID(i);
@@ -454,7 +480,7 @@ protected:
       JsonDocument doc;
       settingsToJson(settings, doc);
       doc.shrinkToFit();
-      
+
       this->bufferedWebServer->send(200, F("application/json"), doc);
     });
 
@@ -462,7 +488,7 @@ protected:
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (vars.states.restarting) {
         return this->webServer->send(503);
       }
@@ -501,6 +527,7 @@ protected:
         doc.shrinkToFit();
 
         fsSettings.update();
+        applyEthernetSettings();
         tMqtt->resetPublishedSettingsTime();
       }
     });
@@ -516,7 +543,7 @@ protected:
       if (this->webServer->hasArg(F("detailed"))) {
         detailed = this->webServer->arg(F("detailed")).toInt() > 0;
       }
-      
+
       JsonDocument doc;
       for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
         if (detailed) {
@@ -530,7 +557,7 @@ protected:
           doc[sensorId] = Sensors::settings[sensorId].name;
         }
       }
-      
+
       doc.shrinkToFit();
       this->bufferedWebServer->send(200, F("application/json"), doc);
     });
@@ -540,7 +567,7 @@ protected:
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (!this->webServer->hasArg(F("id"))) {
         return this->webServer->send(400);
       }
@@ -561,12 +588,12 @@ protected:
       doc.shrinkToFit();
       this->bufferedWebServer->send(200, F("application/json"), doc);
     });
-    
+
     this->webServer->on(F("/api/sensor"), HTTP_POST, [this]() {
       if (this->isAuthRequired() && !this->isValidCredentials()) {
         return this->webServer->send(401);
       }
-      
+
       if (vars.states.restarting) {
         return this->webServer->send(503);
       }
@@ -623,7 +650,7 @@ protected:
         auto& sSettings = Sensors::settings[sensorId];
         sensorSettingsToJson(sensorId, sSettings, doc);
         doc.shrinkToFit();
-        
+
         this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
       }
 
@@ -674,13 +701,13 @@ protected:
 
       varsToJson(vars, doc);
       doc.shrinkToFit();
-      
+
       this->bufferedWebServer->send(changed ? 201 : 200, F("application/json"), doc);
 
       if (changed) {
         doc.clear();
         doc.shrinkToFit();
-        
+
         tMqtt->resetPublishedVarsTime();
       }
     });
@@ -690,6 +717,16 @@ protected:
 
       JsonDocument doc;
 
+      // capabilities: only the flags this build actually has; the UI shows features on an explicit true
+      auto docFeatures = doc[FPSTR(S_FEATURES)].to<JsonObject>();
+      #if USE_ETHERNET
+      docFeatures[FPSTR(S_ETHERNET)] = true;
+      #endif
+
+      #if USE_BLE
+      docFeatures[FPSTR(S_BLE)] = true;
+      #endif
+
       auto docSystem = doc[FPSTR(S_SYSTEM)].to<JsonObject>();
       docSystem[FPSTR(S_RESET_REASON)] = getResetReason();
       docSystem[FPSTR(S_UPTIME)] = millis() / 1000;
@@ -698,9 +735,15 @@ protected:
       docNetwork[FPSTR(S_HOSTNAME)] = networkSettings.hostname;
       docNetwork[FPSTR(S_MAC)] = network->getStaMac();
       docNetwork[FPSTR(S_CONNECTED)] = isConnected;
-      docNetwork[FPSTR(S_SSID)] = network->getStaSsid();
-      docNetwork[FPSTR(S_SIGNAL_QUALITY)] = isConnected ? NetworkMgr::rssiToSignalQuality(network->getRssi()) : 0;
-      docNetwork[FPSTR(S_CHANNEL)] = isConnected ? network->getStaChannel() : 0;
+      docNetwork[FPSTR(S_CONNECTION_TYPE)] = network->getConnectionType();
+      // SSID, signal and channel describe the WiFi uplink only: with ethernet up the radio is
+      // parked and those readings are stale, so report them as not applicable rather than 0 dBm
+      const bool wifiUplink = network->getUplink() == NetworkMgr::Uplink::Wifi;
+      const char* staSsid = network->getStaSsid();
+
+      docNetwork[FPSTR(S_SSID)] = (wifiUplink && staSsid) ? staSsid : "";
+      docNetwork[FPSTR(S_SIGNAL_QUALITY)] = network->getSignalQuality();
+      docNetwork[FPSTR(S_CHANNEL)] = wifiUplink ? network->getStaChannel() : 0;
       docNetwork[FPSTR(S_IP)] = isConnected ? network->getStaIp().toString() : "";
       docNetwork[FPSTR(S_SUBNET)] = isConnected ? network->getStaSubnet().toString() : "";
       docNetwork[FPSTR(S_GATEWAY)] = isConnected ? network->getStaGateway().toString() : "";
@@ -727,7 +770,7 @@ protected:
       docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
       docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
-      
+
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
       #ifdef ARDUINO_ARCH_ESP8266
       docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
@@ -766,6 +809,9 @@ protected:
     this->webServer->on(F("/api/debug"), HTTP_GET, [this]() {
       JsonDocument doc;
 
+      auto docNetwork = doc[FPSTR(S_NETWORK)].to<JsonObject>();
+      docNetwork[FPSTR(S_CONNECTION_TYPE)] = network->getConnectionType();
+
       auto docBuild = doc[FPSTR(S_BUILD)].to<JsonObject>();
       docBuild[FPSTR(S_VERSION)] = BUILD_VERSION;
       docBuild[FPSTR(S_DATE)] = __DATE__ " " __TIME__;
@@ -787,7 +833,7 @@ protected:
       docHeap[FPSTR(S_MIN_FREE)] = getFreeHeap(true);
       docHeap[FPSTR(S_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap();
       docHeap[FPSTR(S_MIN_MAX_FREE_BLOCK)] = getMaxFreeBlockHeap(true);
-      
+
       auto docChip = doc[FPSTR(S_CHIP)].to<JsonObject>();
       #ifdef ARDUINO_ARCH_ESP8266
       docChip[FPSTR(S_MODEL)] = esp_is_8285() ? F("ESP8285") : F("ESP8266");
@@ -846,7 +892,7 @@ protected:
           docCrash[FPSTR(S_EPC)] = epcStr;
         }
       }
-      
+
       doc.shrinkToFit();
 
       char filename[64];
@@ -892,54 +938,31 @@ protected:
       #ifdef ARDUINO_ARCH_ESP32
       this->delay(250);
       #endif
-      
+
       this->startWebServer();
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or STA connected"));
-
-      // Enabling mDNS
-      if (!this->mDnsState && settings.portal.mdns) {
-        if (MDNS.begin(networkSettings.hostname)) {
-          MDNS.addService("http", "tcp", 80);
-          this->mDnsState = true;
-
-          Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS enabled and service added"));
-        }
-      }
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Started: AP up or network connected"));
 
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
 
-    } else if (this->stateWebServer() && !network->isApEnabled() && !network->isStaEnabled()) {
+    } else if (this->stateWebServer() && !network->isApEnabled() && !network->isConnected()) {
       this->stopWebServer();
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: AP and STA down"));
-
-      // Disabling mDNS
-      if (this->mDnsState) {
-        MDNS.end();
-        this->mDnsState = false;
-
-        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
-      }
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("Stopped: no network"));
 
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
     }
 
-    // Disabling mDNS if disabled in settings
-    if (this->mDnsState && !settings.portal.mdns) {
-      MDNS.end();
-      this->mDnsState = false;
-
-      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
-    }
+    // mDNS
+    this->loopMdns();
 
     // dns server
     if (!this->stateDnsServer() && !network->isConnected() && network->isApEnabled() && this->stateWebServer()) {
       this->startDnsServer();
       Log.straceln(FPSTR(L_PORTAL_DNSSERVER), F("Started: AP up"));
-      
+
       #ifdef ARDUINO_ARCH_ESP8266
       ::optimistic_yield(1000);
       #endif
@@ -980,6 +1003,100 @@ protected:
 
   bool isAuthRequired() {
     return !network->isApEnabled() && settings.portal.auth && strlen(settings.portal.password);
+  }
+
+  /**
+   * @brief Keep mDNS in sync with the active uplink
+   * @details The responder binds its records to the interface that is up when it starts, so when
+   * switching between interfaces, mDNS must be restarted
+   */
+  void loopMdns() {
+    #if USE_ETHERNET
+    const char* connectionType = network->getConnectionType();
+
+    if (strcmp(connectionType, this->mdnsConnectionType) != 0) {
+      strncpy(this->mdnsConnectionType, connectionType, sizeof(this->mdnsConnectionType) - 1);
+      this->mdnsConnectionType[sizeof(this->mdnsConnectionType) - 1] = 0;
+
+      if (this->mDnsState) {
+        MDNS.end();
+        this->mDnsState = false;
+
+        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS restarting: connection is now %s"), connectionType);
+      }
+    }
+    #endif
+
+    if (!settings.portal.mdns || !this->stateWebServer()) {
+      if (this->mDnsState) {
+        MDNS.end();
+        this->mDnsState = false;
+
+        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS disabled"));
+      }
+
+      return;
+    }
+
+    if (this->mDnsState || millis() - this->mDnsRetryTime < this->mDnsRetryInterval) {
+      return;
+    }
+
+    this->mDnsRetryTime = millis();
+
+    if (MDNS.begin(networkSettings.hostname)) {
+      MDNS.addService("http", "tcp", 80);
+      this->mDnsState = true;
+
+      Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS enabled and service added"));
+    }
+  }
+
+  /**
+   * @brief Add the computed W5500 state to a network settings document
+   * @details The key is absent entirely on builds without ethernet, rather than an empty object:
+   * presence of the section is what tells a client the target can do it. The stored fields
+   * (enabled flag, pinout) come from networkSettingsToJson, this adds only what is derived.
+   */
+  void ethernetToJson(JsonDocument& dst) {
+    #if USE_ETHERNET
+    dst[FPSTR(S_ETHERNET)][FPSTR(S_CONFIGURED)] = this->isEthernetConfigured();
+    #endif
+  }
+
+  /**
+   * @brief Ethernet can only be used when all six W5500 pins are configured
+   */
+  bool isEthernetConfigured() {
+    #if USE_ETHERNET
+    return networkSettings.ethernet.w5500.clk != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.mosi != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.miso != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.cs != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.irq != GPIO_IS_NOT_CONFIGURED
+      && networkSettings.ethernet.w5500.rst != GPIO_IS_NOT_CONFIGURED;
+    #else
+    // nothing to configure: the W5500 driver is not compiled into this target
+    return false;
+    #endif
+  }
+
+  /**
+   * @brief Push the W5500 wiring from the settings into the network manager
+   */
+  void applyEthernetSettings() {
+    #if USE_ETHERNET
+    network
+      ->setEthernet(networkSettings.ethernet.enabled)
+      ->setEthernetPins(
+        networkSettings.ethernet.w5500.clk,
+        networkSettings.ethernet.w5500.mosi,
+        networkSettings.ethernet.w5500.miso,
+        networkSettings.ethernet.w5500.cs,
+        networkSettings.ethernet.w5500.irq,
+        networkSettings.ethernet.w5500.rst
+      );
+    #endif
   }
 
   bool isValidCredentials() {
