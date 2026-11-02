@@ -2271,7 +2271,7 @@ void varsToJson(const Variables& src, JsonVariant dst) {
 
   master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTED)] = src.network.connected;
   master[FPSTR(S_NETWORK)][FPSTR(S_RSSI)] = src.network.rssi;
-  master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTION_TYPE)] = src.network.connectionType;
+  master[FPSTR(S_NETWORK)][FPSTR(S_CONNECTION_TYPE)] = NetworkUtils::NetworkMgr::uplinkName(src.network.connectionType);
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;

@@ -290,7 +290,7 @@ struct Variables {
   struct {
     bool connected = false;
     int8_t rssi = 0;
-    const char* connectionType = "none";
+    NetworkUtils::NetworkMgr::Uplink connectionType = NetworkUtils::NetworkMgr::Uplink::None;
   } network;
 
   struct {

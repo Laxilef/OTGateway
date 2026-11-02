@@ -166,6 +166,25 @@ namespace NetworkUtils {
       return uplinkName(this->getUplink());
     }
 
+    /**
+     * @brief Uplink token, already in locale-key shape
+     */
+    static const char* uplinkName(Uplink uplink) {
+      switch (uplink) {
+        case Uplink::Ethernet:
+          return "ethernet";
+
+        case Uplink::Wifi:
+          return "wifi";
+
+        case Uplink::Ap:
+          return "wifi-ap";
+
+        default:
+          return "none";
+      }
+    }
+
     bool isApEnabled() {
       return this->ap.isEnabled();
     }
@@ -290,25 +309,6 @@ namespace NetworkUtils {
       }
 
       this->wifi.resume();
-    }
-
-    /**
-     * @brief Uplink token, already in locale-key shape
-     */
-    static const char* uplinkName(Uplink uplink) {
-      switch (uplink) {
-        case Uplink::Ethernet:
-          return "ethernet";
-
-        case Uplink::Wifi:
-          return "wifi";
-
-        case Uplink::Ap:
-          return "wifi-ap";
-
-        default:
-          return "none";
-      }
     }
   };
 }

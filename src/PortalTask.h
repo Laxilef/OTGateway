@@ -58,7 +58,7 @@ protected:
   unsigned long webServerChangeState = 0;
   bool mDnsState = false;
   #if USE_ETHERNET
-  char mdnsConnectionType[12] = "";
+  NetworkMgr::Uplink mdnsConnectionType = NetworkMgr::Uplink::None;
   #endif
   unsigned long mDnsRetryTime = 0;
   const unsigned long mDnsRetryInterval = 5000;
@@ -1012,17 +1012,16 @@ protected:
    */
   void loopMdns() {
     #if USE_ETHERNET
-    const char* connectionType = network->getConnectionType();
+    const NetworkMgr::Uplink connectionType = network->getUplink();
 
-    if (strcmp(connectionType, this->mdnsConnectionType) != 0) {
-      strncpy(this->mdnsConnectionType, connectionType, sizeof(this->mdnsConnectionType) - 1);
-      this->mdnsConnectionType[sizeof(this->mdnsConnectionType) - 1] = 0;
+    if (connectionType != this->mdnsConnectionType) {
+      this->mdnsConnectionType = connectionType;
 
       if (this->mDnsState) {
         MDNS.end();
         this->mDnsState = false;
 
-        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS restarting: connection is now %s"), connectionType);
+        Log.straceln(FPSTR(L_PORTAL_WEBSERVER), F("mDNS restarting: connection is now %s"), NetworkMgr::uplinkName(connectionType));
       }
     }
     #endif
