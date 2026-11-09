@@ -222,14 +222,6 @@ protected:
       float lowTemp = 255.0f;
       uint8_t availableSensors = 0;
 
-      if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
-        auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY, settings.heating.indoorTempAvgType);
-        if (value < lowTemp) {
-          lowTemp = value;
-        }
-
-        availableSensors++;
-      }
 
       if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::HEATING_TEMP)) {
         auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::HEATING_TEMP, Sensors::ValueType::PRIMARY);
@@ -247,6 +239,19 @@ protected:
         }
 
         availableSensors++;
+      }
+
+      // Proof of concept: water sensors take priority over indoor for frost protection.
+      // Keep indoor as fallback if neither flow nor return is available.
+      if (!availableSensors) {
+        if (Sensors::existsConnectedSensorsByPurpose(Sensors::Purpose::INDOOR_TEMP)) {
+          auto value = Sensors::getMeanValueByPurpose(Sensors::Purpose::INDOOR_TEMP, Sensors::ValueType::PRIMARY, settings.heating.indoorTempAvgType);
+          if (value < lowTemp) {
+            lowTemp = value;
+          }
+
+          availableSensors++;
+        }
       }
 
       if (availableSensors) {
