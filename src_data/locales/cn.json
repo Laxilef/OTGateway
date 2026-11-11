@@ -151,6 +151,7 @@
 
       "section": {
         "static": "静态设置",
+        "ethernet": "以太网",
         "availableNetworks": "可用网络",
         "staSettings": "WiFi 设置",
         "apSettings": "AP 设置"
@@ -158,7 +159,20 @@
 
       "scan": {
         "pos": "#",
-        "info": "Info"
+        "info": "Info",
+        "unavailable": "请启用 WiFi 以扫描网络"
+      },
+
+      "ethernet": {
+        "enable": "启用以太网",
+        "notConfigured": "填写全部六个 GPIO 引脚后才能启用以太网。",
+        "clk": "SPI 时钟 GPIO",
+        "mosi": "SPI MOSI GPIO",
+        "miso": "SPI MISO GPIO",
+        "cs": "SPI CS GPIO",
+        "irq": "中断 GPIO",
+        "rst": "复位 GPIO",
+        "note": "W5500 SPI 接线"
       },
 
       "wifi": {
@@ -176,7 +190,14 @@
         "ip": "IP",
         "subnet": "子网掩码",
         "gateway": "网关",
-        "dns": "DNS 服务器"
+        "dns": "DNS 服务器",
+        "connection": "连接",
+        "connectionType": {
+          "ethernet": "以太网",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi 接入点",
+          "none": "无"
+        }
       },
 
       "sta": {

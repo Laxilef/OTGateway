@@ -92,7 +92,7 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
   });
 }
 
-const setupNetworkScanForm = (formSelector, tableSelector) => {
+const setupNetworkScanForm = (formSelector, tableSelector, autorun = true) => {
   const form = document.querySelector(formSelector);
   if (!form) {
     console.error("form not found");
@@ -253,7 +253,9 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
   };
 
   form.addEventListener('submit', onSubmitFn);
-  onSubmitFn();
+  if (autorun) {
+    onSubmitFn();
+  }
 }
 
 const setupRestoreBackupForm = (formSelector) => {

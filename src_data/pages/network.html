@@ -79,6 +79,7 @@
         </div>
       </article>
 
+
       <article>
         <div>
           <hgroup>
@@ -100,6 +101,7 @@
               </table>
             </div>
 
+            <p id="scan-unavailable" class="hidden" data-i18n>network.scan.unavailable</p>
             <button type="submit" data-i18n>button.refresh</button>
           </form>
 
@@ -162,6 +164,62 @@
           </form>
         </div>
       </article>
+
+      <article id="ethernet-section" class="hidden">
+        <div>
+          <hgroup>
+            <h3 data-i18n>network.section.ethernet</h3>
+            <p></p>
+          </hgroup>
+
+          <div id="ethernet-settings-busy" aria-busy="true"></div>
+          <form action="/api/network/settings" id="ethernet-settings" class="hidden">
+            <label>
+              <input type="checkbox" name="ethernet[enabled]" value="true">
+              <span data-i18n>network.ethernet.enable</span>
+            </label>
+            <small id="ethernet-not-configured" class="hidden" data-i18n>network.ethernet.notConfigured</small>
+
+            <div class="grid">
+              <label>
+                <span data-i18n>network.ethernet.clk</span>
+                <input type="number" inputmode="numeric" name="ethernet[pins][clk]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.mosi</span>
+                <input type="number" inputmode="numeric" name="ethernet[pins][mosi]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.miso</span>
+                <input type="number" inputmode="numeric" name="ethernet[pins][miso]" min="0" max="254" step="1">
+              </label>
+            </div>
+
+            <div class="grid">
+              <label>
+                <span data-i18n>network.ethernet.cs</span>
+                <input type="number" inputmode="numeric" name="ethernet[pins][cs]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.irq</span>
+                <input type="number" inputmode="numeric" name="ethernet[pins][irq]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.rst</span>
+                <input type="number" inputmode="numeric" name="ethernet[pins][rst]" min="0" max="254" step="1">
+              </label>
+            </div>
+
+            <small data-i18n>network.ethernet.note</small>
+
+            <button type="submit" data-i18n>button.save</button>
+          </form>
+        </div>
+      </article>
     </main>
 
     <footer class="container">
@@ -190,6 +248,29 @@
           setInputValue("[name='staticConfig[dns]']", data.staticConfig.dns);
           setBusy('#network-settings-busy', '#network-settings', false);
 
+          const ethernet = data.ethernet || {};
+          const ethernetConfigured = !!ethernet.configured;
+          const ethernetPins = ethernet.pins || {};
+          const pinValue = (value) => (value ?? 255) < 255 ? value : '';
+
+          setInputValue("[name='ethernet[pins][clk]']", pinValue(ethernetPins.clk));
+          setInputValue("[name='ethernet[pins][mosi]']", pinValue(ethernetPins.mosi));
+          setInputValue("[name='ethernet[pins][miso]']", pinValue(ethernetPins.miso));
+          setInputValue("[name='ethernet[pins][cs]']", pinValue(ethernetPins.cs));
+          setInputValue("[name='ethernet[pins][irq]']", pinValue(ethernetPins.irq));
+          setInputValue("[name='ethernet[pins][rst]']", pinValue(ethernetPins.rst));
+
+          setCheckboxValue("[name='ethernet[enabled]']", ethernetConfigured ? !!ethernet.enabled : false);
+
+          const ethernetCheckbox = document.querySelector("[name='ethernet[enabled]']");
+          if (ethernetCheckbox) {
+            ethernetCheckbox.disabled = !ethernetConfigured;
+          }
+
+          document.getElementById('ethernet-not-configured')?.classList.toggle('hidden', ethernetConfigured);
+
+          setBusy('#ethernet-settings-busy', '#ethernet-settings', false);
+
           setInputValue("[name='sta[ssid]']", data.sta.ssid);
           setInputValue("[name='sta[password]']", data.sta.password);
           setInputValue("[name='sta[channel]']", data.sta.channel);
@@ -201,21 +282,49 @@
           setBusy('#ap-settings-busy', '#ap-settings', false);
         };
 
+        const applyCapabilities = (info) => {
+          // pages and firmware ship together: the section stays hidden unless the build says it can do ethernet
+          const supported = info?.features?.ethernet === true;
+
+          document.getElementById('ethernet-section')?.classList.toggle('hidden', !supported);
+
+          return supported;
+        };
+
         try {
-          const response = await fetch("/api/network/settings", {
-            cache: "no-cache",
-            credentials: "include"
-          });
-          
+          const [response, infoResponse] = await Promise.all([
+            fetch("/api/network/settings", {
+              cache: "no-cache",
+              credentials: "include"
+            }),
+            fetch("/api/info", {
+              cache: "no-cache",
+              credentials: "include"
+            })
+          ]);
+
           if (!response.ok) {
             throw new Error('Response not valid');
           }
+
+          const info = infoResponse.ok ? await infoResponse.json() : null;
+          const ethernetSupported = applyCapabilities(info);
 
           const result = await response.json();
           fillData(result);
 
           setupForm('#network-settings', fillData, ['hostname']);
-          setupNetworkScanForm('#network-scan', '#networks');
+
+          // scanning needs the radio, which stays parked while ethernet carries the uplink
+          const radioParked = info?.network?.connectionType === 'ethernet';
+          setupNetworkScanForm('#network-scan', '#networks', !radioParked);
+          document.querySelector('#network-scan button[type="submit"]').disabled = radioParked;
+          document.querySelector('#scan-unavailable').classList.toggle('hidden', !radioParked);
+
+          if (ethernetSupported) {
+            setupForm('#ethernet-settings', fillData);
+          }
+
           setupForm('#sta-settings', fillData, ['sta.ssid', 'sta.password']);
           setupForm('#ap-settings', fillData, ['ap.ssid', 'ap.password']);
 

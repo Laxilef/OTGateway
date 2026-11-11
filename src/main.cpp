@@ -74,7 +74,7 @@ void setup() {
 
     return tm{sec, min, hour};
   });
-  
+
   Serial.begin(115200);
   #if ARDUINO_USB_MODE
   Serial.setTxBufferSize(512);
@@ -84,6 +84,9 @@ void setup() {
 
   //
   // Network settings
+  // The network file has to survive updates, this ensures it doesn't get wiped when the structure is modified
+  fsNetworkSettings.addWithoutWipe(true);
+
   switch (fsNetworkSettings.read()) {
     case FD_FS_ERR:
       Log.swarningln(FPSTR(L_NETWORK_SETTINGS), F("Filesystem error, load default"));
@@ -153,6 +156,18 @@ void setup() {
     default:
       break;
   }
+
+  // ethernet (W5500) is configured from the network settings, after they are loaded
+  network
+    ->setEthernet(networkSettings.ethernet.enabled)
+    ->setEthernetPins(
+      networkSettings.ethernet.w5500.clk,
+      networkSettings.ethernet.w5500.mosi,
+      networkSettings.ethernet.w5500.miso,
+      networkSettings.ethernet.w5500.cs,
+      networkSettings.ethernet.w5500.irq,
+      networkSettings.ethernet.w5500.rst
+    );
 
   // generate mqtt prefix if it is empty
   if (!strlen(settings.mqtt.prefix)) {
