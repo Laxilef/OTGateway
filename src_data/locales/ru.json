@@ -502,7 +502,8 @@
         "user": "Имя пользователя",
         "password": "Пароль",
         "prefix": "Префикс",
-        "interval": "Интервал публикации <small>(сек)</small>"
+        "interval": "Интервал публикации <small>(сек)</small>",
+        "sensorsInterval": "Интервал публикации сенсоров <small>(сек)</small>"
       },
 
       "extPump": {

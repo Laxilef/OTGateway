@@ -213,6 +213,11 @@ struct Settings {
   } cascadeControl;
 
   char validationValue[8] = SETTINGS_VALID_VALUE;
+
+  // WARNING: new fields must be appended here, at the end of the structure.
+  // FileData stores Settings as a raw binary blob, inserting fields in the
+  // middle will corrupt old settings files on upgrade.
+  unsigned short mqttSensorsInterval = 60; // batched sensors publish interval, sec
 } settings;
 
 Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {

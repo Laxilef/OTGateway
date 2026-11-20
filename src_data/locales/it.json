@@ -502,7 +502,8 @@
         "user": "Utente",
         "password": "Password",
         "prefix": "Prefisso",
-        "interval": "Intervallo invio <small>(sec)</small>"
+        "interval": "Intervallo invio <small>(sec)</small>",
+        "sensorsInterval": "Intervallo invio sensori <small>(sec)</small>"
       },
 
       "extPump": {

@@ -502,7 +502,8 @@
         "user": "用户名",
         "password": "密码",
         "prefix": "Prefix 前缀",
-        "interval": "发布间隔 <small>(秒)</small>"
+        "interval": "发布间隔 <small>(秒)</small>",
+        "sensorsInterval": "传感器发布间隔 <small>(秒)</small>"
       },
 
       "extPump": {

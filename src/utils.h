@@ -510,6 +510,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     mqtt[FPSTR(S_PASSWORD)] = src.mqtt.password;
     mqtt[FPSTR(S_PREFIX)] = src.mqtt.prefix;
     mqtt[FPSTR(S_INTERVAL)] = src.mqtt.interval;
+    mqtt[FPSTR(S_SENSORS_INTERVAL)] = src.mqttSensorsInterval;
     mqtt[FPSTR(S_HOME_ASSISTANT_DISCOVERY)] = src.mqtt.homeAssistantDiscovery;
 
     auto emergency = dst[FPSTR(S_EMERGENCY)].to<JsonObject>();
@@ -1175,6 +1176,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value >= 3 && value <= 60 && value != dst.mqtt.interval) {
         dst.mqtt.interval = value;
+        changed = true;
+      }
+    }
+
+    if (!src[FPSTR(S_MQTT)][FPSTR(S_SENSORS_INTERVAL)].isNull()) {
+      unsigned short value = src[FPSTR(S_MQTT)][FPSTR(S_SENSORS_INTERVAL)].as<unsigned short>();
+
+      if (value >= 5 && value <= 600 && value != dst.mqttSensorsInterval) {
+        dst.mqttSensorsInterval = value;
         changed = true;
       }
     }
@@ -2156,7 +2166,7 @@ bool jsonToSensorSettings(const uint8_t sensorId, const JsonVariantConst src, Se
   return changed;
 }
 
-void sensorResultToJson(const uint8_t sensorId, JsonVariant dst) {
+void sensorResultToJson(const uint8_t sensorId, JsonVariant dst, bool includeSignalQuality = true) {
   if (!Sensors::isValidSensorId(sensorId)) {
     return;
   }
@@ -2166,7 +2176,10 @@ void sensorResultToJson(const uint8_t sensorId, JsonVariant dst) {
 
   //dst[FPSTR(S_ID)] = sensorId;
   dst[FPSTR(S_CONNECTED)] = rSensor.connected;
-  dst[FPSTR(S_SIGNAL_QUALITY)] = rSensor.signalQuality;
+
+  if (includeSignalQuality) {
+    dst[FPSTR(S_SIGNAL_QUALITY)] = rSensor.signalQuality;
+  }
 
   if (sSensor.type == Sensors::Type::BLUETOOTH) {
     dst[FPSTR(S_TEMPERATURE)] = roundf(rSensor.values[static_cast<uint8_t>(Sensors::ValueType::TEMPERATURE)], 3);

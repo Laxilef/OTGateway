@@ -63,7 +63,12 @@ public:
   }
 
   inline void resetPublishedSensorTime(uint8_t sensorId) {
-    this->prevPubSensorTime[sensorId] = 0;
+    this->forceSensorsPublish = true;
+  }
+
+  inline void resetPublishedSensorsTime() {
+    this->prevPubSensorsTime = 0;
+    this->forceSensorsPublish = true;
   }
 
   inline void resetPublishedVarsTime() {
@@ -72,6 +77,7 @@ public:
 
   inline void reconfigureSensor(uint8_t sensorId, Sensors::Settings& prevSettings) {
     this->queueReconfigureSensors[sensorId] = prevSettings;
+    this->forceSensorsPublish = true;
   }
 
 protected:
@@ -81,6 +87,7 @@ protected:
   MqttWriter* writer = nullptr;
   UnitSystem currentUnitSystem = UnitSystem::METRIC;
   bool currentHomeAssistantDiscovery = false;
+  unsigned short currentSensorsInterval = 0;
   std::unordered_map<uint8_t, Sensors::Settings> queueReconfigureSensors;
   unsigned short readyForSendTime = 30000;
   unsigned long lastReconnectTime = 0;
@@ -88,9 +95,12 @@ protected:
   unsigned long disconnectedTime = 0;
   unsigned long prevPubVarsTime = 0;
   unsigned long prevPubSettingsTime = 0;
-  std::unordered_map<uint8_t, unsigned long> prevPubSensorTime;
+  unsigned long prevPubSensorsTime = 0;
+  bool forceSensorsPublish = false;
+  bool prevSensorConnected[SENSORS_AMOUNT] = {};
   bool connected = false;
   bool newConnection = false;
+  bool legacyTopicsCleaned = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -110,6 +120,13 @@ protected:
     return millis() - this->connectedTime > this->readyForSendTime;
   }
 
+  // expire_after must be strictly greater than publish interval
+  inline unsigned short makeSensorsExpireAfter() {
+    unsigned long value = (unsigned long) settings.mqttSensorsInterval * 2ul + 30ul;
+
+    return value > 65535ul ? 65535u : (unsigned short) value;
+  }
+
   void setup() {
     Log.sinfoln(FPSTR(L_MQTT), F("Started"));
 
@@ -120,7 +137,7 @@ protected:
     #endif
 
     // client settings
-    this->client->setTxPayloadSize(256);
+    this->client->setTxPayloadSize(2048);
     #ifdef ARDUINO_ARCH_ESP8266
     this->client->setConnectionTimeout(1000);
     #else
@@ -177,6 +194,7 @@ protected:
     this->haHelper->setDeviceModel(PROJECT_NAME);
     this->haHelper->setDeviceName(PROJECT_NAME);
     this->haHelper->setWriter(this->writer);
+    this->haHelper->setExpireAfterSensors(this->makeSensorsExpireAfter());
 
     sprintf(buffer, CONFIG_URL, WiFi.localIP().toString().c_str());
     this->haHelper->setDeviceConfigUrl(buffer);
@@ -196,6 +214,7 @@ protected:
 
       this->haHelper->setDevicePrefix(settings.mqtt.prefix);
       this->haHelper->updateCachedTopics();
+      this->haHelper->setExpireAfterSensors(this->makeSensorsExpireAfter());
 
       this->client->stop();
       this->client->setKeepAliveInterval(settings.mqtt.interval * 10000);
@@ -241,35 +260,41 @@ protected:
       this->prevPubSettingsTime = millis();
     }
 
-    // publish sensors
+    // publish sensors (batched, one message for all sensors)
+    bool connectedChanged = false;
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
-      if (!Sensors::hasEnabledAndValid(sensorId)) {
-        continue;
+      bool connected = Sensors::hasEnabledAndValid(sensorId) && Sensors::results[sensorId].connected;
+      if (this->prevSensorConnected[sensorId] != connected) {
+        this->prevSensorConnected[sensorId] = connected;
+        connectedChanged = true;
       }
+    }
 
-      auto& rSensor = Sensors::results[sensorId];
-      bool needUpdate = false;
-      if (millis() - this->prevPubSensorTime[sensorId] > ((this->haHelper->getExpireAfter() - 10) * 1000u)) {
-        needUpdate = true;
-
-      } else if (rSensor.activityTime >= this->prevPubSensorTime[sensorId]) {
-        auto estimated = rSensor.activityTime - this->prevPubSensorTime[sensorId];
-        needUpdate = estimated > 1000u;
-      }
-
-      if (this->newConnection || needUpdate) {
-        this->publishSensor(sensorId);
-        this->prevPubSensorTime[sensorId] = millis();
-      }
+    if (
+      this->newConnection
+      || this->forceSensorsPublish
+      || connectedChanged
+      || millis() - this->prevPubSensorsTime > ((unsigned long) settings.mqttSensorsInterval * 1000u)
+    ) {
+      this->publishSensors(this->haHelper->getDeviceTopic(F("sensors")).c_str());
+      this->prevPubSensorsTime = millis();
+      this->forceSensorsPublish = false;
     }
 
     // publish ha entities if not published
     if (settings.mqtt.homeAssistantDiscovery) {
-      if (this->newConnection || !this->currentHomeAssistantDiscovery || this->currentUnitSystem != settings.system.unitSystem) {
+      if (
+        this->newConnection
+        || !this->currentHomeAssistantDiscovery
+        || this->currentUnitSystem != settings.system.unitSystem
+        || this->currentSensorsInterval != settings.mqttSensorsInterval
+      ) {
+        this->haHelper->setExpireAfterSensors(this->makeSensorsExpireAfter());
         this->publishHaEntities();
         this->publishNonStaticHaEntities(true);
         this->currentHomeAssistantDiscovery = true;
         this->currentUnitSystem = settings.system.unitSystem;
+        this->currentSensorsInterval = settings.mqttSensorsInterval;
 
       } else {
         // publish non static ha entities
@@ -379,6 +404,11 @@ protected:
     this->newConnection = true;
     unsigned long downtime = (millis() - this->disconnectedTime) / 1000;
     Log.sinfoln(FPSTR(L_MQTT), F("Connected (downtime: %u s.)"), downtime);
+
+    if (!this->legacyTopicsCleaned) {
+      this->cleanupLegacySensorTopics();
+      this->legacyTopicsCleaned = true;
+    }
 
     this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
@@ -617,28 +647,67 @@ protected:
     return this->writer->publish(topic, doc, true);
   }
 
-  bool publishSensor(uint8_t sensorId) {
-    auto& sSettings = Sensors::settings[sensorId];
+  bool publishSensors(const char* topic) {
+    JsonDocument doc;
+    bool any = false;
 
-    if (!Sensors::isValidSensorId(sensorId)) {
-      return false;
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      if (!Sensors::hasEnabledAndValid(sensorId)) {
+        continue;
+      }
 
-    } else if (!strlen(sSettings.name)) {
+      auto& sSettings = Sensors::settings[sensorId];
+      if (!strlen(sSettings.name)) {
+        continue;
+      }
+
+      // .to<JsonObject>() pre-creates the member: sensorResultToJson() takes
+      // JsonVariant by value, and a non-existent member converts to a null
+      // variant (writes would be silently dropped)
+      String objId = Sensors::makeObjectId(sSettings.name);
+
+      // signalQuality is consumed by the <id>_signal_quality entity, which is
+      // published only for BLUETOOTH/DALLAS_TEMP types; for the rest it is a
+      // constant 100 — skip it to shrink the batch (~21 bytes per sensor).
+      // The portal API still requests the full payload (default argument).
+      bool withSignalQuality = sSettings.type == Sensors::Type::BLUETOOTH
+        || sSettings.type == Sensors::Type::DALLAS_TEMP;
+      sensorResultToJson(sensorId, doc[objId].to<JsonObject>(), withSignalQuality);
+      any = true;
+    }
+
+    // never publish an empty retained payload: if JsonDocument allocation
+    // failed under heap pressure, doc stays null and HA templates
+    // value_json['<id>'] would break — skip instead, next interval retries
+    if (!any || !doc.size()) {
       return false;
     }
 
-    JsonDocument doc;
-    sensorResultToJson(sensorId, doc);
     doc.shrinkToFit();
 
-    return this->writer->publish(
-      this->haHelper->getDeviceTopic(
-        F("sensors"),
-        Sensors::makeObjectId(sSettings.name).c_str()
-      ).c_str(),
-      doc,
-      true
-    );
+    return this->writer->publish(topic, doc, true);
+  }
+
+  // cleanup legacy per-sensor retained topics (old format <prefix>/sensors/<objId>)
+  void cleanupLegacySensorTopics() {
+    for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
+      if (!Sensors::hasEnabledAndValid(sensorId)) {
+        continue;
+      }
+
+      auto& sSettings = Sensors::settings[sensorId];
+      if (!strlen(sSettings.name)) {
+        continue;
+      }
+
+      this->writer->publish(
+        this->haHelper->getDeviceTopic(
+          F("sensors"),
+          Sensors::makeObjectId(sSettings.name).c_str()
+        ).c_str(),
+        (const uint8_t*) nullptr, 0, true
+      );
+    }
   }
 
   bool publishVariables(const char* topic) {
