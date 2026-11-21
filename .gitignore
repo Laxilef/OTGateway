@@ -6,6 +6,7 @@ build/*
 data/*
 managed_components/*
 node_modules/*
+agent-notes/*
 secrets.ini
 package-lock.json
 *.lock
