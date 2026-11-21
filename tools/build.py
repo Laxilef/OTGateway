@@ -6,17 +6,19 @@ Import("env")
 
 def post_build(source, target, env):
   copy_to_build_dir({
-    source[0].get_abspath():                          "firmware_%s_%s.bin" % (env["PIOENV"], env.GetProjectOption("version")),
-    env.subst("$BUILD_DIR/${PROGNAME}.factory.bin"):  "firmware_%s_%s.factory.bin" % (env["PIOENV"], env.GetProjectOption("version")),
-    env.subst("$BUILD_DIR/${PROGNAME}.elf"):          "firmware_%s_%s.elf" % (env["PIOENV"], env.GetProjectOption("version"))
+    source[0].get_abspath():                          "firmware_%s_%s.bin" % (env["PIOENV"], env.GetProjectOption("custom_version")),
+    env.subst("$BUILD_DIR/${PROGNAME}.factory.bin"):  "firmware_%s_%s.factory.bin" % (env["PIOENV"], env.GetProjectOption("custom_version")),
+    env.subst("$BUILD_DIR/${PROGNAME}.elf"):          "firmware_%s_%s.elf" % (env["PIOENV"], env.GetProjectOption("custom_version"))
   }, os.path.join(env["PROJECT_DIR"], "build"));
   
-  env.Execute("pio run --target buildfs --environment %s" % env["PIOENV"]);
+  return env.Execute('"$PYTHONEXE" -m platformio run --target buildfs --environment "$PIOENV"')
 
 
 def before_buildfs(source, target, env):
-  env.Execute("npm install --silent")
-  env.Execute("npx gulp build_all --no-deprecation")
+  result = env.Execute("npm install --silent")
+  if result:
+    return result
+  return env.Execute("npx gulp build_all --no-deprecation")
 """
   src = os.path.join(env["PROJECT_DIR"], "src_data")
   dst = os.path.join(env["PROJECT_DIR"], "data")
@@ -40,7 +42,7 @@ def before_buildfs(source, target, env):
 
 def after_buildfs(source, target, env):
   copy_to_build_dir({
-    source[0].get_abspath(): "filesystem_%s_%s.bin" % (env["PIOENV"], env.GetProjectOption("version")),
+    source[0].get_abspath(): "filesystem_%s_%s.bin" % (env["PIOENV"], env.GetProjectOption("custom_version")),
   }, os.path.join(env["PROJECT_DIR"], "build"));
 
 

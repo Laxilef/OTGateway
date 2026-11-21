@@ -1,7 +1,13 @@
+#pragma once
+
+#include <Arduino.h>
+#include <driver/gpio.h>
+
 #define PROJECT_NAME                    "OpenTherm Gateway"
 #define PROJECT_REPO                    "https://github.com/Laxilef/OTGateway"
 
 #define MQTT_RECONNECT_INTERVAL         15000
+#define MQTT_SENSOR_REPUBLISH_INTERVAL  300000u
 #define CONFIG_URL                      "http://%s/"
 #define SETTINGS_VALID_VALUE            "stvalid" // only 8 chars!
 #define GPIO_IS_NOT_CONFIGURED          0xff
@@ -36,6 +42,10 @@
 
 #ifndef BUILD_ENV
   #define BUILD_ENV                     "undefined"
+#endif
+
+#ifndef LOGGING_QUEUE_SIZE
+  #define LOGGING_QUEUE_SIZE 4096
 #endif
 
 #ifndef DEFAULT_SERIAL_ENABLED
@@ -75,7 +85,7 @@
 #endif
 
 #ifndef DEFAULT_LOG_LEVEL
-  #define DEFAULT_LOG_LEVEL TinyLoggerLevel::VERBOSE
+  #define DEFAULT_LOG_LEVEL ESP_LOG_VERBOSE
 #endif
 
 #ifndef DEFAULT_STATUS_LED_GPIO
@@ -146,17 +156,16 @@
   #define DEFAULT_EXT_PUMP_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
-#include <driver/gpio.h>
+#ifndef GPIO_IS_VALID_OUTPUT_GPIO
+  #define GPIO_IS_VALID_OUTPUT_GPIO(gpio_num) ((gpio_num) >= 0 && (gpio_num) < SOC_GPIO_PIN_COUNT && \
+                                               (((1ULL << (gpio_num)) & SOC_GPIO_VALID_OUTPUT_GPIO_MASK) != 0))
+#endif
 
-#define GPIO_IS_VALID(gpioNum) (gpioNum != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_GPIO(gpioNum))
+#ifndef GPIO_IS_VALID_INPUT_GPIO
+  // ESP-IDF uses the general GPIO mask for digital input capability.
+  #define GPIO_IS_VALID_INPUT_GPIO(gpio_num) GPIO_IS_VALID_GPIO(gpio_num)
+#endif
 
-enum class UnitSystem : uint8_t {
-  METRIC    = 0,
-  IMPERIAL  = 1
-};
-
-enum class ChannelDisablingAction : uint8_t {
-  OFF                   = 0,
-  ZERO_SETPOINT         = 1,
-  OFF_AND_ZERO_SETPOINT = 2
-};
+#define GPIO_IS_VALID(gpioNum) ((gpioNum) != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_GPIO(gpioNum))
+#define GPIO_IS_VALID_INPUT(gpioNum) ((gpioNum) != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_INPUT_GPIO(gpioNum))
+#define GPIO_IS_VALID_OUTPUT(gpioNum) ((gpioNum) != GPIO_IS_NOT_CONFIGURED && GPIO_IS_VALID_OUTPUT_GPIO(gpioNum))
