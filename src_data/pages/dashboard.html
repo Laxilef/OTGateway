@@ -312,12 +312,12 @@
       let prevSettings;
       let newSettings = {
         heating: {
-          enable: false,
+          enabled: false,
           turbo: false,
           target: 0
         },
         dhw: {
-          enable: false,
+          enabled: false,
           target: 0
         }
       };
@@ -326,78 +326,89 @@
         const lang = new Lang(document.getElementById('lang'));
         await lang.build();
 
-        let actionTimer = null;
-        let actionLongPress = false;
+        let activePress = null;
+        const stopPress = () => {
+          if (!activePress) {
+            return;
+          }
+
+          const press = activePress;
+          activePress = null;
+          clearInterval(press.timer);
+          if (press.button.hasPointerCapture(press.pointerId)) {
+            press.button.releasePointerCapture(press.pointerId);
+          }
+        };
+
         document.querySelectorAll('.tAction').forEach((item) => {
           const action = item.dataset.action;
           const tContainer = item.parentNode.parentNode;
+          const changeTarget = (step, minTemp, maxTemp) => {
+            const purpose = tContainer.dataset.purpose;
+            let value = 0;
+            if (action == 'increment') {
+              value = step;
 
-          for (const eName of ['pointerup', 'pointercancel']) {
-            item.addEventListener(eName, (event) => {
-              clearInterval(actionTimer);
+            } else if (action == 'decrement') {
+              value = -(step);
+            }
 
-              const purpose = tContainer.dataset.purpose;
-              const minTemp = parseFloat(tContainer.dataset.min);
-              const maxTemp = parseFloat(tContainer.dataset.max);
-              const step = parseFloat(tContainer.dataset.step);
-              const bigStep = parseFloat(tContainer.dataset.bigStep);
+            const newValue = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
+            if (newSettings[purpose].target != newValue) {
+              newSettings[purpose].target = newValue;
+              modifiedTime = Date.now();
 
-              if (!actionLongPress && prevSettings) {
-                let value = 0;
-                if (action == 'increment') {
-                  value = step;
-
-                } else if (action == 'decrement') {
-                  value = -(step);
-                }
-
-                const newValue = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
-                if (newSettings[purpose].target != newValue) {
-                  newSettings[purpose].target = newValue;
-                  modifiedTime = Date.now();
-
-                  setValue('.targetTemp', newValue, tContainer);
-                  tContainer.querySelector('.thermostat-header').setAttribute("aria-busy", "true");
-                }
-              }
-            });
-          }
+              setValue('.targetTemp', newValue, tContainer);
+              tContainer.querySelector('.thermostat-header').setAttribute("aria-busy", "true");
+            }
+          };
 
           item.addEventListener('pointerdown', (event) => {
-            if (!prevSettings) {
+            if (!prevSettings || activePress || event.button !== 0) {
               return;
             }
 
-            const purpose = tContainer.dataset.purpose;
             const minTemp = parseFloat(tContainer.dataset.min);
             const maxTemp = parseFloat(tContainer.dataset.max);
-            const step = parseFloat(tContainer.dataset.step);
             const bigStep = parseFloat(tContainer.dataset.bigStep);
-
-            actionLongPress = false;
-            actionTimer = setInterval(() => {
-              if (!actionLongPress) {
-                actionLongPress = true;
-              }
-
-              let value = 0;
-              if (action == 'increment') {
-                value = bigStep;
-
-              } else if (action == 'decrement') {
-                value = -(bigStep);
-              }
-
-              const newValue = parseFloat(constrain(newSettings[purpose].target + value, minTemp, maxTemp).toFixed(2));
-              if (newSettings[purpose].target != newValue) {
-                newSettings[purpose].target = newValue;
-                modifiedTime = Date.now();
-
-                setValue('.targetTemp', newSettings[purpose].target, tContainer);
-                tContainer.querySelector('.thermostat-header').setAttribute("aria-busy", "true");
-              }
+            const press = {button: item, pointerId: event.pointerId, timer: null, longPress: false};
+            activePress = press;
+            item.setPointerCapture(event.pointerId);
+            press.timer = setInterval(() => {
+              press.longPress = true;
+              changeTarget(bigStep, minTemp, maxTemp);
             }, 500);
           });
+
+          item.addEventListener('pointerup', (event) => {
+            if (!activePress || activePress.button !== item || activePress.pointerId !== event.pointerId) {
+              return;
+            }
+
+            const longPress = activePress.longPress;
+            stopPress();
+            if (!longPress) {
+              changeTarget(
+                parseFloat(tContainer.dataset.step),
+                parseFloat(tContainer.dataset.min), parseFloat(tContainer.dataset.max)
+              );
+            }
+          });
+
+          for (const eName of ['pointercancel', 'lostpointercapture']) {
+            item.addEventListener(eName, (event) => {
+              if (activePress && activePress.button === item && activePress.pointerId === event.pointerId) {
+                stopPress();
+              }
+            });
+          }
+        });
+
+        window.addEventListener('blur', stopPress);
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            stopPress();
+          }
         });
 
         document.querySelector('#tHeatEnabled').addEventListener('change', (event) => {
@@ -445,7 +456,7 @@
             },
             body: JSON.stringify({
               "actions": {
-                "resetFault": true
+                "reset_fault": true
               }
             })
           });
@@ -472,7 +483,7 @@
             },
             body: JSON.stringify({
               "actions": {
-                "resetDiagnostic": true
+                "reset_diagnostic": true
               }
             })
           });
@@ -483,6 +494,27 @@
             }
           }, 10000);
         });
+
+        const requestSettingsSection = async (section, values = null) => {
+          const parameters = {
+            method: "GET",
+            cache: "no-cache",
+            credentials: "include"
+          };
+
+          if (values !== null) {
+            parameters.method = "POST";
+            parameters.headers = {"Content-Type": "application/json"};
+            parameters.body = JSON.stringify(values);
+          }
+
+          const response = await fetch(`/api/settings/${section}`, parameters);
+          if (!response.ok) {
+            throw new Error('Response not valid');
+          }
+
+          return response.json();
+        };
 
         setTimeout(async function onLoadPage() {
           let unitSystem = null;
@@ -498,66 +530,55 @@
 
           // settings
           try {
-            let modified = prevSettings && (
-              (prevSettings.heating.enabled != newSettings.heating.enabled)
-              || (prevSettings.heating.turbo != newSettings.heating.turbo)
-              || (prevSettings.heating.target != newSettings.heating.target)
-              || (prevSettings.opentherm.options.dhwSupport && prevSettings.dhw.enabled != newSettings.dhw.enabled)
-              || (prevSettings.opentherm.options.dhwSupport && prevSettings.dhw.target != newSettings.dhw.target)
+            const heatingSettings = {...newSettings.heating};
+            const dhwSettings = {...newSettings.dhw};
+            const heatingModified = prevSettings && (
+              (prevSettings.heating.enabled != heatingSettings.enabled)
+              || (prevSettings.heating.turbo != heatingSettings.turbo)
+              || (prevSettings.heating.target != heatingSettings.target)
+            );
+            const dhwModified = prevSettings && prevSettings.opentherm.options.dhw_support && (
+              (prevSettings.dhw.enabled != dhwSettings.enabled)
+              || (prevSettings.dhw.target != dhwSettings.target)
             );
 
-            if (modified) {
-              console.log(newSettings);
-            }
-
-            let parameters = {
-              method: "GET",
-              cache: "no-cache",
-              credentials: "include"
-            };
-
-            if (modified) {
-              parameters.method = "POST";
-              parameters.body = JSON.stringify(newSettings);
-              parameters.headers = {
-                "Content-Type": "application/json"
-              };
-            }
-
-            const response = await fetch("/api/settings", parameters);
-            if (!response.ok) {
-              throw new Error('Response not valid');
-            }
-
-            const result = await response.json();
+            const system = await requestSettingsSection('system');
+            const opentherm = await requestSettingsSection('opentherm');
+            const heating = await requestSettingsSection('heating', heatingModified ? heatingSettings : null);
+            const dhw = await requestSettingsSection('dhw', dhwModified ? dhwSettings : null);
+            const result = {system, opentherm, heating, dhw};
             prevSettings = result;
-            unitSystem = result.system.unitSystem;
-            newSettings.heating.enabled = result.heating.enabled;
-            newSettings.heating.turbo = result.heating.turbo;
-            newSettings.heating.target = result.heating.target;
-            newSettings.dhw.enabled = result.dhw.enabled;
-            newSettings.dhw.target = result.dhw.target;
+            unitSystem = result.system.unit_system;
 
-            if (result.opentherm.options.dhwSupport) {
+            if (result.opentherm.options.dhw_support) {
               show('.tDhw');
             } else {
               hide('.tDhw');
             }
 
-            setCheckboxValue('#tHeatEnabled', result.heating.enabled);
-            setCheckboxValue('#tHeatTurbo', result.heating.turbo);
-            setValue('.tHeat .targetTemp', result.heating.target);
-
-            setCheckboxValue('#tDhwEnabled', result.dhw.enabled);
-            setValue('.tDhw .targetTemp', result.dhw.target);
-
             setValue('.tempUnit', temperatureUnit(unitSystem));
             setValue('.pressureUnit', pressureUnit(unitSystem));
             setValue('.volumeUnit', volumeUnit(unitSystem));
 
-            document.querySelectorAll('.thermostat-header').forEach((item) => {
-              item.setAttribute("aria-busy", "false");
-            });
+            // An edit made while these requests were in flight is still waiting to be sent.
+            if (modifiedTime === null) {
+              newSettings.heating.enabled = result.heating.enabled;
+              newSettings.heating.turbo = result.heating.turbo;
+              newSettings.heating.target = result.heating.target;
+              newSettings.dhw.enabled = result.dhw.enabled;
+              newSettings.dhw.target = result.dhw.target;
+
+              setCheckboxValue('#tHeatEnabled', result.heating.enabled);
+              setCheckboxValue('#tHeatTurbo', result.heating.turbo);
+              setValue('.tHeat .targetTemp', result.heating.target);
+
+              setCheckboxValue('#tDhwEnabled', result.dhw.enabled);
+              setValue('.tDhw .targetTemp', result.dhw.target);
+
+              document.querySelectorAll('.thermostat-header').forEach((item) => {
+                item.setAttribute("aria-busy", "false");
+              });
+            }
 
           } catch (error) {
             console.log(error);
@@ -577,20 +598,20 @@
             const result = await response.json();
 
             // Graph
-            setValue('#tHeatCurrentTemp', result.master.heating.indoorTempControl
-              ? result.master.heating.indoorTemp
-              : result.master.heating.currentTemp
+            setValue('#tHeatCurrentTemp', result.master.heating.indoor_temp_control
+              ? result.master.heating.indoor_temp
+              : result.master.heating.current_temp
             );
-            setValue('#tDhwCurrentTemp', result.master.dhw.currentTemp);
+            setValue('#tDhwCurrentTemp', result.master.dhw.current_temp);
 
 
             // SLAVE
-            setValue('.sMemberId', result.slave.memberId);
-            setValue('.sVendor', memberIdToVendor(result.slave.memberId));
+            setValue('.sMemberId', result.slave.member_id);
+            setValue('.sVendor', memberIdToVendor(result.slave.member_id));
             setValue('.sFlags', result.slave.flags);
             setValue('.sType', result.slave.type);
-            setValue('.sAppVersion', result.slave.appVersion);
-            setValue('.sProtocolVersion', result.slave.protocolVersion);
+            setValue('.sAppVersion', result.slave.app_version);
+            setValue('.sProtocolVersion', result.slave.protocol_version);
 
             setStatus(
               '.sConnected',
@@ -609,12 +630,12 @@
             setValue('.sPowerMax', result.slave.power.max);
 
             setState('.sHeatActive', result.slave.heating.active);
-            setValue('.sHeatMinTemp', result.slave.heating.minTemp);
-            setValue('.sHeatMaxTemp', result.slave.heating.maxTemp);
+            setValue('.sHeatMinTemp', result.slave.heating.min_temp);
+            setValue('.sHeatMaxTemp', result.slave.heating.max_temp);
 
             setState('.sDhwActive', result.slave.dhw.active);
-            setValue('.sDhwMinTemp', result.slave.dhw.minTemp);
-            setValue('.sDhwMaxTemp', result.slave.dhw.maxTemp);
+            setValue('.sDhwMinTemp', result.slave.dhw.min_temp);
+            setValue('.sDhwMaxTemp', result.slave.dhw.max_temp);
 
             setStatus(
               '.sFaultActive',
@@ -662,7 +683,7 @@
               result.master.heating.blocking ? "success" : "error",
               result.master.heating.blocking ? "red" : "green"
             );
-            setState('.mHeatIndoorTempControl', result.master.heating.indoorTempControl);
+            setState('.mHeatIndoorTempControl', result.master.heating.indoor_temp_control);
             setStatus(
               '.mHeatOverheat',
               result.master.heating.overheat ? "success" : "error",
@@ -673,14 +694,14 @@
               result.master.heating.freezing ? "success" : "error",
               result.master.heating.freezing ? "red" : "green"
             );
-            setValue('.mHeatSetpointTemp', result.master.heating.setpointTemp);
-            setValue('.mHeatTargetTemp', result.master.heating.targetTemp);
-            setValue('.mHeatCurrTemp', result.master.heating.currentTemp);
-            setValue('.mHeatRetTemp', result.master.heating.returnTemp);
-            setValue('.mHeatIndoorTemp', result.master.heating.indoorTemp);
-            setValue('.mHeatOutdoorTemp', result.master.heating.outdoorTemp);
-            setValue('.mHeatMinTemp', result.master.heating.minTemp);
-            setValue('.mHeatMaxTemp', result.master.heating.maxTemp);
+            setValue('.mHeatSetpointTemp', result.master.heating.setpoint_temp);
+            setValue('.mHeatTargetTemp', result.master.heating.target_temp);
+            setValue('.mHeatCurrTemp', result.master.heating.current_temp);
+            setValue('.mHeatRetTemp', result.master.heating.return_temp);
+            setValue('.mHeatIndoorTemp', result.master.heating.indoor_temp);
+            setValue('.mHeatOutdoorTemp', result.master.heating.outdoor_temp);
+            setValue('.mHeatMinTemp', result.master.heating.min_temp);
+            setValue('.mHeatMaxTemp', result.master.heating.max_temp);
 
             setState('.mDhwEnabled', result.master.dhw.enabled);
             setStatus(
@@ -688,11 +709,11 @@
               result.master.dhw.overheat ? "success" : "error",
               result.master.dhw.overheat ? "red" : "green"
             );
-            setValue('.mDhwTargetTemp', result.master.dhw.targetTemp);
-            setValue('.mDhwCurrTemp', result.master.dhw.currentTemp);
-            setValue('.mDhwRetTemp', result.master.dhw.returnTemp);
-            setValue('.mDhwMinTemp', result.master.dhw.minTemp);
-            setValue('.mDhwMaxTemp', result.master.dhw.maxTemp);
+            setValue('.mDhwTargetTemp', result.master.dhw.target_temp);
+            setValue('.mDhwCurrTemp', result.master.dhw.current_temp);
+            setValue('.mDhwRetTemp', result.master.dhw.return_temp);
+            setValue('.mDhwMinTemp', result.master.dhw.min_temp);
+            setValue('.mDhwMaxTemp', result.master.dhw.max_temp);
 
             setStatus(
               '.mNetworkConnected',
@@ -705,17 +726,17 @@
               result.master.emergency.state ? "success" : "error",
               result.master.emergency.state ? "red" : "green"
             );
-            setState('.mExtPumpState', result.master.externalPump.state);
-            setState('.mCascadeControlInput', result.master.cascadeControl.input);
-            setState('.mCascadeControlOutput', result.master.cascadeControl.output);
+            setState('.mExtPumpState', result.master.ext_pump.state);
+            setState('.mCascadeControlInput', result.master.cascade_control.input);
+            setState('.mCascadeControlOutput', result.master.cascade_control.output);
 
             const tHeat = document.querySelector('.tHeat');
-            tHeat.dataset.min = result.master.heating.minTemp;
-            tHeat.dataset.max = result.master.heating.maxTemp;
+            tHeat.dataset.min = result.master.heating.min_temp;
+            tHeat.dataset.max = result.master.heating.max_temp;
 
             const tDhw = document.querySelector('.tDhw');
-            tDhw.dataset.min = result.master.dhw.minTemp;
-            tDhw.dataset.max = result.master.dhw.maxTemp;
+            tDhw.dataset.min = result.master.dhw.min_temp;
+            tDhw.dataset.max = result.master.dhw.max_temp;
 
             setBusy('#dashboard-busy', '#dashboard-container', false);
 
@@ -775,7 +796,7 @@
 
               const statusNode = sensorNode.querySelector(`.sStatusContainer`);
               if (statusNode) {
-                statusNode.dataset.tooltip = `${sData.signalQuality}%`;
+                statusNode.dataset.tooltip = `${sData.signal_quality}%`;
               }
 
               if (sData.value !== undefined) {

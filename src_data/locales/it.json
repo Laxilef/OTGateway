@@ -66,10 +66,10 @@
           "freq": "frequenza"
         },
         "flash": {
-          "size": "Dimensioni del flash",
-          "realSize": "dimensione reale"
+          "size": "Dimensioni del flash"
         },
-        "lastResetReason": "Motivo ultimo Reset"
+        "lastResetReason": "Motivo ultimo Reset",
+        "coreDump": "Dump di memoria"
       }
     },
     "dashboard": {

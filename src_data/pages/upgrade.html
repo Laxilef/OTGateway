@@ -39,7 +39,7 @@
             <p data-i18n>upgrade.section.backupAndRestore.desc</p>
           </hgroup>
 
-          <form action="/api/backup/restore" id="restore">
+          <form id="restore">
             <label for="restore-file">
               <span data-i18n>upgrade.settingsFile</span>
               <input type="file" name="settings" id="restore-file" accept=".json">
@@ -102,7 +102,194 @@
     </footer>
 
     <script src="/static/app.js?{BUILD_TIME}"></script>
+    <script src="/static/settings-converter.js?{BUILD_TIME}"></script>
     <script>
+      const setupRestoreBackupForm = (formSelector) => {
+        const form = document.querySelector(formSelector);
+        if (!form) {
+          return;
+        }
+
+        const button = form.querySelector('button[type="submit"]');
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+
+          const defaultText = button ? button.textContent : '';
+          if (button) {
+            button.textContent = i18n('button.wait');
+            button.setAttribute('disabled', true);
+            button.setAttribute('aria-busy', true);
+          }
+
+          const onFinished = (success) => {
+            if (button) {
+              button.textContent = i18n(success ? 'button.restored' : 'button.error');
+              button.classList.add(success ? 'success' : 'failed');
+              button.removeAttribute('aria-busy');
+
+              setTimeout(() => {
+                button.removeAttribute('disabled');
+                button.classList.remove('success', 'failed');
+                button.textContent = defaultText;
+              }, 5000);
+            }
+          };
+
+          const files = form.querySelector('#restore-file').files;
+          if (files.length === 0) {
+            onFinished(false);
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            try {
+              const data = convertLegacyBackup(JSON.parse(event.target.result));
+
+              const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+              if (!isObject(data)) {
+                throw new Error('Backup not valid');
+              }
+
+              let hasData = false;
+              if (data.settings !== undefined) {
+                if (!isObject(data.settings)) {
+                  throw new Error('Backup settings not valid');
+                }
+                for (const section of Object.values(data.settings)) {
+                  if (!isObject(section) || Object.keys(section).length === 0) {
+                    throw new Error('Backup section not valid');
+                  }
+                  hasData = true;
+                }
+              }
+
+              if (data.sensors !== undefined) {
+                if (!isObject(data.sensors) && !Array.isArray(data.sensors)) {
+                  throw new Error('Backup sensors not valid');
+                }
+                for (const [sensorId, sensor] of Object.entries(data.sensors)) {
+                  if (!/^\d+$/.test(sensorId) || !isObject(sensor) || Object.keys(sensor).length === 0) {
+                    throw new Error('Backup sensor not valid');
+                  }
+                  hasData = true;
+                }
+              }
+
+              if (data.network !== undefined) {
+                if (!isObject(data.network) || Object.keys(data.network).length === 0) {
+                  throw new Error('Backup network not valid');
+                }
+                hasData = true;
+              }
+              if (!hasData) {
+                throw new Error('Backup is empty');
+              }
+
+              const headers = {
+                'Content-Type': 'application/json'
+              };
+              const post = async (url, payload) => {
+                const response = await fetch(url, {
+                  method: 'POST',
+                  cache: 'no-cache',
+                  credentials: 'include',
+                  headers,
+                  body: payload === undefined ? undefined : JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                  throw new Error('Restore request failed');
+                }
+                return response;
+              };
+
+              if (data.settings !== undefined) {
+                // Units and regulator modes must precede temperature limits and targets.
+                const prioritySections = ['system', 'opentherm', 'equitherm', 'pid'];
+                for (const sectionName of prioritySections) {
+                  if (data.settings[sectionName] === undefined) {
+                    continue;
+                  }
+                  await post(`/api/settings/${sectionName}?noresponse`, data.settings[sectionName]);
+                }
+
+                for (const [sectionName, section] of Object.entries(data.settings)) {
+                  if (sectionName === 'portal' || prioritySections.includes(sectionName)) {
+                    continue;
+                  }
+                  await post(`/api/settings/${encodeURIComponent(sectionName)}?noresponse`, section);
+                }
+
+                // Restore targets again after mode and limit normalization.
+                for (const sectionName of ['emergency', 'heating', 'dhw']) {
+                  const target = data.settings[sectionName]?.target;
+                  if (target !== undefined) {
+                    await post(`/api/settings/${sectionName}?noresponse`, {target});
+                  }
+                }
+              }
+
+              if (data.sensors !== undefined) {
+                for (const [sensorId, sensor] of Object.entries(data.sensors)) {
+                  await post(`/api/sensor?id=${encodeURIComponent(sensorId)}&noresponse`, sensor);
+                }
+              }
+
+              if (data.settings?.portal !== undefined) {
+                const response = await post('/api/settings/portal', data.settings.portal);
+                const portal = await response.json();
+                if (!isObject(portal) || typeof portal.auth !== 'boolean'
+                    || typeof portal.login !== 'string' || typeof portal.password !== 'string') {
+                  throw new Error('Portal response not valid');
+                }
+
+                if (portal.auth) {
+                  // Basic authentication encodes UTF-8 bytes, not UTF-16 code units.
+                  const bytes = new TextEncoder().encode(`${portal.login}:${portal.password}`);
+                  let credentials = '';
+                  for (const byte of bytes) {
+                    credentials += String.fromCharCode(byte);
+                  }
+                  headers.Authorization = `Basic ${btoa(credentials)}`;
+                }
+              }
+
+              if (data.network !== undefined) {
+                // Network requests are limited to 512 bytes, including escaped strings.
+                for (const [key, value] of Object.entries(data.network)) {
+                  if (isObject(value)) {
+                    for (const [field, fieldValue] of Object.entries(value)) {
+                      await post('/api/network/settings?noreconnect&noresponse', {[key]: {[field]: fieldValue}});
+                    }
+
+                  } else {
+                    await post('/api/network/settings?noreconnect&noresponse', {[key]: value});
+                  }
+                }
+              }
+
+              await post('/api/restart');
+              onFinished(true);
+
+            } catch {
+              onFinished(false);
+            }
+          };
+          reader.onerror = () => {
+            onFinished(false);
+          };
+          reader.onabort = () => {
+            onFinished(false);
+          };
+          try {
+            reader.readAsText(files[0]);
+
+          } catch {
+            onFinished(false);
+          }
+        });
+      };
+
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
         await lang.build();

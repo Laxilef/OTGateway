@@ -47,7 +47,7 @@
             </label>
 
             <label>
-              <input type="checkbox" name="useDhcp" value="true">
+              <input type="checkbox" name="use_dhcp" value="true">
               <span data-i18n>network.params.dhcp</span>
             </label>
             <br />
@@ -56,22 +56,22 @@
 
             <label>
               <span data-i18n>network.params.ip</span>
-              <input type="text" name="staticConfig[ip]" value="true" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="static_config[ip]" value="true" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
             <label>
               <span data-i18n>network.params.gateway</span>
-              <input type="text" name="staticConfig[gateway]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="static_config[gateway]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
             <label>
               <span data-i18n>network.params.subnet</span>
-              <input type="text" name="staticConfig[subnet]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="static_config[subnet]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
             <label>
               <span data-i18n>network.params.dns</span>
-              <input type="text" name="staticConfig[dns]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="static_config[dns]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
             <button type="submit" data-i18n>button.save</button>
@@ -183,11 +183,11 @@
 
         const fillData = (data) => {
           setInputValue("[name='hostname']", data.hostname);
-          setCheckboxValue("[name='useDhcp']", data.useDhcp);
-          setInputValue("[name='staticConfig[ip]']", data.staticConfig.ip);
-          setInputValue("[name='staticConfig[gateway]']", data.staticConfig.gateway);
-          setInputValue("[name='staticConfig[subnet]']", data.staticConfig.subnet);
-          setInputValue("[name='staticConfig[dns]']", data.staticConfig.dns);
+          setCheckboxValue("[name='use_dhcp']", data.use_dhcp);
+          setInputValue("[name='static_config[ip]']", data.static_config.ip);
+          setInputValue("[name='static_config[gateway]']", data.static_config.gateway);
+          setInputValue("[name='static_config[subnet]']", data.static_config.subnet);
+          setInputValue("[name='static_config[dns]']", data.static_config.dns);
           setBusy('#network-settings-busy', '#network-settings', false);
 
           setInputValue("[name='sta[ssid]']", data.sta.ssid);
@@ -214,7 +214,7 @@
           const result = await response.json();
           fillData(result);
 
-          setupForm('#network-settings', fillData, ['hostname']);
+          setupForm('#network-settings', fillData, ['hostname', 'static_config.ip', 'static_config.gateway', 'static_config.subnet', 'static_config.dns']);
           setupNetworkScanForm('#network-scan', '#networks');
           setupForm('#sta-settings', fillData, ['sta.ssid', 'sta.password']);
           setupForm('#ap-settings', fillData, ['ap.ssid', 'ap.password']);

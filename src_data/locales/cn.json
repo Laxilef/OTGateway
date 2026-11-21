@@ -66,10 +66,10 @@
           "freq": "频率"
         },
         "flash": {
-          "size": "闪存容量",
-          "realSize": "实际容量"
+          "size": "闪存容量"
         },
-        "lastResetReason": "上次重置原因"
+        "lastResetReason": "上次重置原因",
+        "coreDump": "内存转储"
       }
     },
     "dashboard": {

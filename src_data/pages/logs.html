@@ -107,18 +107,16 @@
           <p data-i18n>logs.desc</p>
         </hgroup>
 
-        <form action="/api/settings" method="post" id="log-level-form">
+        <form action="/api/settings/system" method="post" id="log-level-form">
           <label for="log-level" data-i18n>settings.system.logLevel</label>
           <div role="group">
-            <select name="system[logLevel]" id="log-level" disabled>
-              <option value="0">SILENT</option>
-              <option value="1">FATAL</option>
-              <option value="2">ERROR</option>
-              <option value="3">WARNING</option>
-              <option value="4">INFO</option>
-              <option value="5">NOTICE</option>
-              <option value="6">TRACE</option>
-              <option value="7">VERBOSE</option>
+            <select name="loglevel" id="log-level" disabled>
+              <option value="0">NONE</option>
+              <option value="1">ERROR</option>
+              <option value="2">WARN</option>
+              <option value="3">INFO</option>
+              <option value="4">DEBUG</option>
+              <option value="5">VERBOSE</option>
             </select>
             <button type="submit" disabled data-i18n>button.save</button>
           </div>
@@ -370,7 +368,7 @@
             return;
           }
           const level = Number(levelSelect.value);
-          if (save && (!Number.isInteger(level) || level < 0 || level > 7)) {
+          if (save && (!Number.isInteger(level) || level < 0 || level > 5)) {
             return;
           }
           levelBusy = true;
@@ -382,15 +380,15 @@
             if (save) {
               options.method = 'POST';
               options.headers = {'Content-Type': 'application/json'};
-              options.body = JSON.stringify({system: {logLevel: level}});
+              options.body = JSON.stringify({loglevel: level});
             }
             const response = await fetch(levelForm.action, options);
             if (!response.ok) {
               throw new Error('Response not valid');
             }
             const result = await response.json();
-            const value = result.system && result.system.logLevel;
-            if (!Number.isInteger(value) || value < 0 || value > 7) {
+            const value = result.loglevel;
+            if (!Number.isInteger(value) || value < 0 || value > 5) {
               throw new Error('Invalid log level');
             }
             confirmedLevel = value;

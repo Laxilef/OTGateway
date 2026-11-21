@@ -66,10 +66,10 @@
           "freq": "frequency"
         },
         "flash": {
-          "size": "Flash size",
-          "realSize": "real size"
+          "size": "Flash size"
         },
-        "lastResetReason": "Last reset reason"
+        "lastResetReason": "Last reset reason",
+        "coreDump": "Core dump"
       }
     },
     "dashboard": {
