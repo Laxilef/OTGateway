@@ -174,7 +174,7 @@
   
                   <label>
                     <span data-i18n>sensors.filtering.factor.title</span>
-                    <input type="number" inputmode="decimal" name="filteringFactor" min="0.01" max="1" step="0.01">
+                    <input type="number" inputmode="decimal" name="filtering_factor" min="0.01" max="1" step="0.01">
                     <small data-i18n>sensors.filtering.factor.note</small>
                   </label>
                 </div>
@@ -242,7 +242,7 @@
               setInputValue("[name='offset']", data.offset, {}, sensorForm);
               setInputValue("[name='factor']", data.factor, {}, sensorForm);
               setCheckboxValue("[name='filtering']", data.filtering, sensorForm);
-              setInputValue("[name='filteringFactor']", data.filteringFactor, {}, sensorForm);
+              setInputValue("[name='filtering_factor']", data.filtering_factor, {}, sensorForm);
 
               setTimeout(() => {
                 sensorForm.querySelector("[name='type']").dispatchEvent(new Event("change"));

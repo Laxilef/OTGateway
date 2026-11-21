@@ -1,4 +1,4 @@
-const { src, dest, series, parallel } = require('gulp');
+const { src, dest, parallel } = require('gulp');
 const concat = require('gulp-concat');
 const gzip = require('gulp-gzip');
 const postcss = require('gulp-postcss');
@@ -27,6 +27,9 @@ let paths = {
         'src_data/scripts/i18n.min.js',
         'src_data/scripts/lang.js',
         'src_data/scripts/utils.js'
+      ],
+      'settings-converter.js': [
+        'src_data/scripts/settings-converter.js'
       ],
       'chart.js': [
         'src_data/scripts/chart.js'
@@ -66,80 +69,56 @@ let paths = {
 
 
 // Tasks
-const styles = (cb) => {
-  for (let name in paths.styles.bundles) {
-    const items = paths.styles.bundles[name];
+const styles = parallel(...Object.entries(paths.styles.bundles).map(([name, items]) => {
+  return () => src(items)
+    .pipe(replace(
+      "{BUILD_TIME}",
+      Math.floor(Date.now() / 1000)
+    ))
+    .pipe(postcss([
+      cssnano({ preset: 'advanced' })
+    ]))
+    .pipe(concat(name))
+    .pipe(gzip({
+      append: true
+    }))
+    .pipe(dest(paths.styles.dest));
+}));
 
-    src(items)
-      .pipe(replace(
-        "{BUILD_TIME}",
-        Math.floor(Date.now() / 1000)
-      ))
-      .pipe(postcss([
-        cssnano({ preset: 'advanced' })
-      ]))
-      .pipe(concat(name))
-      .pipe(gzip({
-        append: true
-      }))
-      .pipe(dest(paths.styles.dest));
-  }
+const scripts = parallel(...Object.entries(paths.scripts.bundles).map(([name, items]) => {
+  return () => src(items)
+    .pipe(replace(
+      "{BUILD_TIME}",
+      Math.floor(Date.now() / 1000)
+    ))
+    .pipe(terser())
+    .pipe(concat(name))
+    .pipe(gzip({
+      append: true
+    }))
+    .pipe(dest(paths.scripts.dest));
+}));
 
-  cb();
-}
+const jsonFiles = parallel(...paths.json.map((item) => {
+  return () => src(item.src)
+    .pipe(replace(
+      "{BUILD_TIME}",
+      Math.floor(Date.now() / 1000)
+    ))
+    .pipe(jsonminify())
+    .pipe(gzip({
+      append: true
+    }))
+    .pipe(dest(item.dest));
+}));
 
-const scripts = (cb) => {
-  for (let name in paths.scripts.bundles) {
-    const items = paths.scripts.bundles[name];
-
-    src(items)
-      .pipe(replace(
-        "{BUILD_TIME}",
-        Math.floor(Date.now() / 1000)
-      ))
-      .pipe(terser().on('error', console.error))
-      .pipe(concat(name))
-      .pipe(gzip({
-        append: true
-      }))
-      .pipe(dest(paths.scripts.dest));
-  }
-
-  cb();
-}
-
-const jsonFiles = (cb) => {
-  for (let i in paths.json) {
-    const item = paths.json[i];
-
-    src(item.src)
-      .pipe(replace(
-        "{BUILD_TIME}",
-        Math.floor(Date.now() / 1000)
-      ))
-      .pipe(jsonminify())
-      .pipe(gzip({
-        append: true
-      }))
-      .pipe(dest(item.dest));
-  }
-
-  cb();
-}
-
-const staticFiles = (cb) => {
-  for (let i in paths.static) {
-    const item = paths.static[i];
-
-    src(item.src, { encoding: false })
-      .pipe(gzip({
-        append: true
-      }))
-      .pipe(dest(item.dest));
-  }
-
-  cb();
-}
+const staticFiles = parallel(...paths.static.map((item) => {
+  return () => src(item.src, { encoding: false })
+    .pipe(gzip({
+      append: true
+    }))
+    .pipe(dest(item.dest));
+}));
 
 const pages = () => {
   return src(paths.pages.src)

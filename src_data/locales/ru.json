@@ -66,10 +66,10 @@
           "freq": "частота"
         },
         "flash": {
-          "size": "Размер ПЗУ",
-          "realSize": "реальный размер"
+          "size": "Размер ПЗУ"
         },
-        "lastResetReason": "Причина перезагрузки"
+        "lastResetReason": "Причина перезагрузки",
+        "coreDump": "Дамп памяти"
       }
     },
     "dashboard": {

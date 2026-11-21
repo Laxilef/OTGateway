@@ -66,10 +66,10 @@
           "freq": "frequentie"
         },
         "flash": {
-          "size": "Flash-grootte",
-          "realSize": "werkelijke grootte"
+          "size": "Flash-grootte"
         },
-        "lastResetReason": "Reden laatste herstart"
+        "lastResetReason": "Reden laatste herstart",
+        "coreDump": "Geheugendump"
       }
     },
     "dashboard": {

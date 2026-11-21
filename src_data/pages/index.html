@@ -138,14 +138,14 @@
                 <td>
                   <span data-i18n>index.system.chip.model</span>: <b id="chip-model"></b> (rev. <span id="chip-rev"></span>)<br />
                   <span data-i18n>index.system.chip.cores</span>: <b id="chip-cores"></b>, <span data-i18n>index.system.chip.freq</span>: <b id="chip-freq"></b> <span data-i18n>units.mhz</span><br />
-                  <span data-i18n>index.system.flash.size</span>: <b id="flash-size"></b> <span data-i18n>units.mbyte</span> (<span data-i18n>index.system.flash.realSize</span>: <b id="flash-real-size"></b> <span data-i18n>units.mbyte</span>)
+                  <span data-i18n>index.system.flash.size</span>: <b id="flash-size"></b> <span data-i18n>units.mbyte</span>
                 </td>
               </tr>
               <tr>
                 <th scope="row" data-i18n>index.system.lastResetReason</th>
                 <td>
                   <b id="reset-reason"></b><br />
-                  <a href="/api/debug" target="_blank"><small>Save debug data</small></a>
+                  <a href="/api/coredump" target="_blank"><small data-i18n>index.system.coreDump</small></a>
                 </td>
               </tr>
             </tbody>
@@ -157,7 +157,7 @@
             <a href="/sensors.html" role="button" data-i18n>sensors.name</a>
             <a href="/logs.html" role="button" data-i18n>logs.name</a>
             <a href="/upgrade.html" role="button" data-i18n>upgrade.name</a>
-            <a href="/restart.html" role="button" class="secondary restart" data-i18n>button.restart</a>
+            <a href="#" role="button" class="secondary restart" data-i18n>button.restart</a>
           </div>
         </div>
       </article>
@@ -180,6 +180,44 @@
         const lang = new Lang(document.getElementById('lang'));
         await lang.build();
 
+        const restartButton = document.querySelector('.restart');
+        restartButton.addEventListener('click', async (event) => {
+          event.preventDefault();
+          if (restartButton.disabled) {
+            return;
+          }
+
+          restartButton.disabled = true;
+          restartButton.setAttribute('aria-busy', true);
+          restartButton.textContent = i18n('button.wait');
+
+          try {
+            const response = await fetch('/api/restart', {
+              method: 'POST',
+              cache: 'no-cache',
+              credentials: 'include'
+            });
+            if (response.status !== 202) {
+              throw new Error('Restart request failed');
+            }
+
+            restartButton.textContent = i18n('button.restart');
+            restartButton.classList.add('success');
+
+          } catch {
+            restartButton.textContent = i18n('button.error');
+            restartButton.classList.add('failed');
+            restartButton.removeAttribute('aria-busy');
+          }
+
+          setTimeout(() => {
+            restartButton.disabled = false;
+            restartButton.classList.remove('success', 'failed');
+            restartButton.removeAttribute('aria-busy');
+            restartButton.textContent = i18n('button.restart');
+          }, 15000);
+        });
+
         setTimeout(async function onLoadPage() {
           try {
             const response = await fetch("/api/info", {
@@ -192,7 +230,7 @@
             }
 
             const result = await response.json();
-            setTextValue('#reset-reason', result.system.resetReason);
+            setTextValue('#reset-reason', result.system.reset_reason);
             setValue('#uptime', result.system.uptime);
             setValue('#uptime-days', Math.floor(result.system.uptime / 86400));
             setValue('#uptime-hours', Math.floor(result.system.uptime % 86400 / 3600));
@@ -207,7 +245,7 @@
               result.network.connected ? "green" : "red"
             );
             setTextValue('#network-ssid', result.network.ssid);
-            setValue('#network-signal', result.network.signalQuality);
+            setValue('#network-signal', result.network.signal_quality);
             setTextValue('#network-ip', result.network.ip);
             setTextValue('#network-subnet', result.network.subnet);
             setTextValue('#network-gateway', result.network.gateway);
@@ -223,21 +261,20 @@
 
             setValue('#heap-total', result.heap.total);
             setValue('#heap-free', result.heap.free);
-            setValue('#heap-min-free', result.heap.minFree);
-            setValue('#heap-max-free-block', result.heap.maxFreeBlock);
-            setValue('#heap-min-max-free-block', result.heap.minMaxFreeBlock);
+            setValue('#heap-min-free', result.heap.min_free);
+            setValue('#heap-max-free-block', result.heap.max_free_block);
+            setValue('#heap-min-max-free-block', result.heap.min_max_free_block);
 
             setValue('#psram-total', result.psram.total);
             setValue('#psram-free', result.psram.free);
-            setValue('#psram-min-free', result.psram.minFree);
-            setValue('#psram-max-free-block', result.psram.maxFreeBlock);
+            setValue('#psram-min-free', result.psram.min_free);
+            setValue('#psram-max-free-block', result.psram.max_free_block);
 
             setTextValue('#chip-model', result.chip.model);
             setValue('#chip-rev', result.chip.rev);
             setValue('#chip-cores', result.chip.cores);
             setValue('#chip-freq', result.chip.freq);
             setValue('#flash-size', result.flash.size / 1024 / 1024);
-            setValue('#flash-real-size', result.flash.realSize / 1024 / 1024);
 
             setBusy('#system-busy', '#system-table', false);
 

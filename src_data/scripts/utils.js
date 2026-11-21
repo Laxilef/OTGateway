@@ -166,20 +166,20 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
 
         // signal quality
         let signalQualityIcon = document.createElement("i");
-        if (result[i].signalQuality > 80) {
+        if (result[i].signal_quality > 80) {
           signalQualityIcon.classList.add('icons-wifi-strength-4');
-        } else if (result[i].signalQuality > 60) {
+        } else if (result[i].signal_quality > 60) {
           signalQualityIcon.classList.add('icons-wifi-strength-3');
-        } else if (result[i].signalQuality > 40) {
+        } else if (result[i].signal_quality > 40) {
           signalQualityIcon.classList.add('icons-wifi-strength-2');
-        } else if (result[i].signalQuality > 20) {
+        } else if (result[i].signal_quality > 20) {
           signalQualityIcon.classList.add('icons-wifi-strength-1');
         } else {
           signalQualityIcon.classList.add('icons-wifi-strength-0');
         }
         
         let signalQualityContainer = document.createElement("span");
-        signalQualityContainer.dataset.tooltip = `${result[i].signalQuality}%`;
+        signalQualityContainer.dataset.tooltip = `${result[i].signal_quality}%`;
         signalQualityContainer.appendChild(signalQualityIcon);
         infoCell.appendChild(signalQualityContainer);
 
@@ -262,178 +262,6 @@ const setupNetworkScanForm = (formSelector, tableSelector) => {
 
   form.addEventListener('submit', onSubmitFn);
   onSubmitFn();
-}
-
-const setupRestoreBackupForm = (formSelector) => {
-  const form = document.querySelector(formSelector);
-  if (!form) {
-    return;
-  }
-
-  const url = form.action;
-  let button = form.querySelector('button[type="submit"]');
-  let defaultText;
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    if (button) {
-      defaultText = button.textContent;
-      button.textContent = i18n('button.wait');
-      button.setAttribute('disabled', true);
-      button.setAttribute('aria-busy', true);
-    }
-
-    const onSuccess = () => {
-      if (button) {
-        button.textContent = i18n('button.restored');
-        button.classList.add('success');
-        button.removeAttribute('aria-busy');
-
-        setTimeout(() => {
-          button.removeAttribute('disabled');
-          button.classList.remove('success', 'failed');
-          button.textContent = defaultText;
-        }, 5000);
-      }
-    };
-
-    const onFailed = () => {
-      if (button) {
-        button.textContent = i18n('button.error');
-        button.classList.add('failed');
-        button.removeAttribute('aria-busy');
-
-        setTimeout(() => {
-          button.removeAttribute('disabled');
-          button.classList.remove('success', 'failed');
-          button.textContent = defaultText;
-        }, 5000);
-      }
-    };
-
-    const files = form.querySelector('#restore-file').files;
-    if (files.length <= 0) {
-      onFailed(false);
-      return;
-    }
-
-    let reader = new FileReader();
-    reader.readAsText(files[0]);
-    reader.onload = async (event) => {
-      try {
-        const data = JSON.parse(event.target.result);
-        console.log("Backup: ", data);
-
-        if (data.settings != undefined) {
-          for (const key in data.settings) {
-            let response = await fetch(url, {
-              method: "POST",
-              cache: "no-cache",
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                "settings": {
-                  [key]: data.settings[key]
-                }
-              })
-            });
-
-            if (!response.ok) {
-              onFailed();
-              return;
-            }
-          }
-
-          let finalPayload = {};
-          if (data.settings.emergency?.target !== undefined) {
-            finalPayload.emergency ??= {};
-            finalPayload.emergency.target = data.settings.emergency.target;
-          }
-
-          if (data.settings.heating?.target !== undefined) {
-            finalPayload.heating ??= {};
-            finalPayload.heating.target = data.settings.heating.target;
-          }
-
-          if (data.settings.dhw?.target !== undefined) {
-            finalPayload.dhw ??= {};
-            finalPayload.dhw.target = data.settings.dhw.target;
-          }
-
-          if (Object.keys(finalPayload).length) {
-            let response = await fetch(url, {
-              method: "POST",
-              cache: "no-cache",
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                "settings": finalPayload
-              })
-            });
-
-            if (!response.ok) {
-              onFailed();
-              return;
-            }
-          }
-        }
-
-        if (data.sensors != undefined) {
-          for (const sensorId in data.sensors) {
-            const payload = {
-              "sensors": {}
-            };
-            payload["sensors"][sensorId] = data.sensors[sensorId];
-
-            const response = await fetch(url, {
-              method: "POST",
-              cache: "no-cache",
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-              onFailed();
-              return;
-            }
-          }
-        }
-
-        if (data.network != undefined) {
-          let response = await fetch(url, {
-            method: "POST",
-            cache: "no-cache",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({"network": data.network})
-          });
-
-          if (!response.ok) {
-            onFailed();
-            return;
-          }
-        }
-
-        onSuccess();
-
-      } catch (err) {
-        onFailed();
-      }
-    };
-    reader.onerror = () => {
-      console.log(reader.error);
-    };
-  });
 }
 
 const setupUpgradeForm = (formSelector) => {
