@@ -5,14 +5,12 @@ on:
   push:
     paths-ignore:
       - "assets/**"
-      - "tools/**"
       - "**/*.md"
       - "LICENSE"
 
   pull_request:
     paths-ignore:
       - "assets/**"
-      - "tools/**"
       - "**/*.md"
       - "LICENSE"
 

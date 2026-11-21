@@ -43,6 +43,11 @@ def esp32_create_combined_bin(source, target, env):
     new_file_name = env.subst("$BUILD_DIR/${PROGNAME}.factory.bin")
     sections = env.subst(env.get("FLASH_EXTRA_IMAGES"))
     firmware_name = env.subst("$BUILD_DIR/${PROGNAME}.bin")
+    firmware_size = os.path.getsize(firmware_name)
+    maximum_size = env.BoardConfig().get("upload.maximum_size")
+    if firmware_size > maximum_size:
+        print(f"Firmware image is too large: {firmware_size} > {maximum_size} bytes")
+        return 1
     chip = env.get("BOARD_MCU")
     flash_size = env.BoardConfig().get("upload.flash_size", "4MB")
     flash_mode = env["__get_board_flash_mode"](env)
@@ -77,6 +82,7 @@ def esp32_create_combined_bin(source, target, env):
     result = subprocess.run(cmdline, text=True, check=False, stdout=subprocess.DEVNULL)
     if result.returncode != 0:
         print(f"esptool create firmware failed with exit code: {result.returncode}")
+    return result.returncode
 
 
 env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", esp32_create_combined_bin)
