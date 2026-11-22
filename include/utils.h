@@ -40,45 +40,6 @@ inline std::string getChipId(const char* prefix = nullptr, const char* suffix = 
   return chipId;
 }
 
-inline bool isLeapYear(short year) {
-  if (year % 4 != 0) {
-    return false;
-  }
-
-  if (year % 100 != 0) {
-    return true;
-  }
-
-  return (year % 400) == 0;
-}
-
-// convert UTC tm time to time_t epoch time
-// source: https://github.com/cyberman54/ESP32-Paxcounter/blob/master/src/timekeeper.cpp
-inline time_t mkgmtime(const struct tm *ptm) {
-  const int SecondsPerMinute = 60;
-  const int SecondsPerHour = 3600;
-  const int SecondsPerDay = 86400;
-  const int DaysOfMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-  time_t secs = 0;
-  // tm_year is years since 1900
-  int year = ptm->tm_year + 1900;
-  for (int y = 1970; y < year; ++y) {
-    secs += (isLeapYear(y) ? 366 : 365) * SecondsPerDay;
-  }
-  // tm_mon is month from 0..11
-  for (int m = 0; m < ptm->tm_mon; ++m) {
-    secs += DaysOfMonth[m] * SecondsPerDay;
-    if (m == 1 && isLeapYear(year)) {
-      secs += SecondsPerDay;
-    }
-  }
-  secs += (ptm->tm_mday - 1) * SecondsPerDay;
-  secs += ptm->tm_hour * SecondsPerHour;
-  secs += ptm->tm_min * SecondsPerMinute;
-  secs += ptm->tm_sec;
-  return secs;
-}
-
 inline float liter2gallon(float value) {
   return value / 3.785411784f;
 }
@@ -155,22 +116,6 @@ inline float roundf(float value, uint8_t decimals = 2) {
   const float multiplier = pow10(decimals);
   const float scaled = value * multiplier;
   return std::isfinite(scaled) ? std::round(scaled) / multiplier : value;
-}
-
-template <class T>
-void arr2str(String& str, T arr[], size_t length) {
-  char buffer[12];
-  for (size_t i = 0; i < length; i++) {
-    auto addr = arr[i];
-    if (!addr) {
-      continue;
-    }
-
-    sprintf(buffer, "0x%08X ", addr);
-    str.concat(buffer);
-  }
-
-  str.trim();
 }
 
 inline uint8_t rssiToSignalQuality(int16_t rssi) {

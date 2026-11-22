@@ -8,7 +8,6 @@
 
 #define MQTT_RECONNECT_INTERVAL         15000
 #define MQTT_SENSOR_REPUBLISH_INTERVAL  300000u
-#define CONFIG_URL                      "http://%s/"
 #define SETTINGS_VALID_VALUE            "stvalid" // only 8 chars!
 #define GPIO_IS_NOT_CONFIGURED          0xff
 
