@@ -1,5 +1,4 @@
 import shutil
-import gzip
 import os
 Import("env")
 
@@ -19,26 +18,6 @@ def before_buildfs(source, target, env):
   if result:
     return result
   return env.Execute("npx gulp build_all --no-deprecation")
-"""
-  src = os.path.join(env["PROJECT_DIR"], "src_data")
-  dst = os.path.join(env["PROJECT_DIR"], "data")
-
-  for root, dirs, files in os.walk(src, topdown=False):
-    for name in files:
-      src_path = os.path.join(root, name)
-
-      with open(src_path, 'rb') as f_in:
-          dst_name = name + ".gz"
-          dst_path = os.path.join(dst, os.path.relpath(root, src), dst_name)
-
-          if os.path.exists(os.path.join(dst, os.path.relpath(root, src))) == False:
-            os.mkdir(os.path.join(dst, os.path.relpath(root, src)))
-
-          with gzip.open(dst_path, 'wb', 9) as f_out:
-            shutil.copyfileobj(f_in, f_out)
-          
-          print("Compressed '%s' to '%s'" % (src_path, dst_path))
-"""
 
 def after_buildfs(source, target, env):
   copy_to_build_dir({

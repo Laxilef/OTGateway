@@ -489,14 +489,6 @@ public:
     return updated;
   }
 
-  static bool getConnectionStatusById(const uint8_t sensorId) {
-    std::lock_guard<std::mutex> lock(mutex);
-    if (settings == nullptr || results == nullptr || !isValidSensorId(sensorId)) {
-      return false;
-    }
-    return results[sensorId].connected;
-  }
-
   static bool setConnectionStatusById(const uint8_t sensorId, const bool status, const bool updateActivityAt = true) {
     char name[sizeof(Settings::name)];
     bool changed;
@@ -726,34 +718,6 @@ public:
   static std::string makeSlug(std::string_view value, char separator = '_') {
     std::string result;
     makeSlug(result, value, separator);
-    return result;
-  }
-
-  static std::string makeSlugWithSuffix(std::string_view value, std::string_view suffix, char separator = '_') {
-    std::string result;
-    result.reserve(value.size() + 1 + suffix.size());
-    makeSlug(result, value, separator);
-    result += separator;
-    result.append(suffix);
-    return result;
-  }
-
-  static std::string& makeSlugWithSuffix(std::string& result, std::string_view value, std::string_view suffix, char separator = '_') {
-    result = makeSlugWithSuffix(value, suffix, separator);
-    return result;
-  }
-
-  static std::string makeSlugWithPrefix(std::string_view value, std::string_view prefix, char separator = '_') {
-    std::string result;
-    result.reserve(prefix.size() + 1 + value.size());
-    makeSlug(result, value, separator);
-    result.insert(0, 1, separator);
-    result.insert(0, prefix);
-    return result;
-  }
-
-  static std::string& makeSlugWithPrefix(std::string& result, std::string_view value, std::string_view prefix, char separator = '_') {
-    result = makeSlugWithPrefix(value, prefix, separator);
     return result;
   }
 
