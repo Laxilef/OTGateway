@@ -370,7 +370,7 @@
           "title": "目标温度",
           "note": "<b>重要提示：</b> 若启用OpenTherm选项 <i>«原生供暖控制»</i>，此处设定值为<u>目标室内温度</u>；<br />其他所有情况下，此处设定值为 <u>目标热媒出水温度</u>."
         },
-        "treshold": "阈值时间 <small>(秒)</small>"
+        "thresholdTime": "进入或退出应急模式的延时 <small>(秒)</small>"
       },
       "equitherm": {
         "slope": {

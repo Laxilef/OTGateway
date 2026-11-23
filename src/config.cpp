@@ -1266,7 +1266,7 @@ static SettingResult applySetting(EmergencySettings& dst, std::string_view path,
 JsonVariant toJson(const EmergencySettings& src, JsonVariant dst) {
   auto emergency = dst.to<JsonObject>();
   emergency[S_TARGET] = roundf(convertTemp(src.target, UnitSystem::METRIC, settings.system.unitSystem), 2);
-  emergency[S_TRESHOLD_TIME] = src.tresholdTime;
+  emergency[S_THRESHOLD_TIME] = src.thresholdTime;
 
   return dst;
 }
@@ -1274,13 +1274,13 @@ JsonVariant toJson(const EmergencySettings& src, JsonVariant dst) {
 SettingResult fromJson(JsonVariantConst src, EmergencySettings& dst) {
   SettingResult result;
 
-  if (src[S_TRESHOLD_TIME].is<unsigned short>()) {
-    const auto value = src[S_TRESHOLD_TIME].as<unsigned short>();
+  if (src[S_THRESHOLD_TIME].is<unsigned short>()) {
+    const auto value = src[S_THRESHOLD_TIME].as<unsigned short>();
 
     if (value >= 60 && value <= 1800) {
       result.accepted = true;
-      if (value != dst.tresholdTime) {
-        dst.tresholdTime = value;
+      if (value != dst.thresholdTime) {
+        dst.thresholdTime = value;
         result.changed = true;
       }
     }

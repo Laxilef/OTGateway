@@ -370,7 +370,7 @@
           "title": "Target temperature",
           "note": "<b>Important:</b> <u>Target indoor temperature</u> if OT option <i>«Native heating control»</i> is enabled.<br />In all other cases, the <u>target heat carrier temperature</u>."
         },
-        "treshold": "Treshold time <small>(sec)</small>"
+        "thresholdTime": "Delay before entering or leaving emergency mode <small>(sec)</small>"
       },
       "equitherm": {
         "slope": {

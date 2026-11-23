@@ -54,7 +54,7 @@ const convertLegacyBackup = (data) => {
     thresholdHigh: 'threshold_high',
     thresholdLow: 'threshold_low',
     thresholdTime: 'threshold_time',
-    tresholdTime: 'treshold_time',
+    tresholdTime: 'threshold_time',
     turboFactor: 'turbo_factor',
     unitSystem: 'unit_system',
     useDhcp: 'use_dhcp',

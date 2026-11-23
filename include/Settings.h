@@ -106,7 +106,7 @@ struct MqttSettings {
 
 struct EmergencySettings {
   float target = DEFAULT_HEATING_TARGET_TEMP;
-  unsigned short tresholdTime = 120;
+  unsigned short thresholdTime = 120;
 };
 
 struct HeatingSettings {
