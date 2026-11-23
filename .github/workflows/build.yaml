@@ -28,6 +28,10 @@ env:
 jobs:
   prepare:
     name: Prepare (get envs)
+    # A push already builds updates to PRs from this repository.
+    if: >-
+      github.event.action != 'synchronize' ||
+      github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     outputs:
       envs: ${{ steps.envs.outputs.envs }}
