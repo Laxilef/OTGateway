@@ -2,8 +2,9 @@
 
 #include <app.h>
 #include <metrics.h>
-#include <cstdlib>
 #include <esp_system.h>
+
+#include <cstdlib>
 
 #if ARDUINO_USB_CDC_ON_BOOT && !ARDUINO_USB_MODE
   #include <USB.h>

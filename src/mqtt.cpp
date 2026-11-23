@@ -21,7 +21,9 @@
 std::mutex mqttMutex;
 
 static MQTT* mqttClient = nullptr;
-static std::string mqttPrefix;
+
+// Keep the applied prefix separate from settings until MQTT is reconfigured.
+static std::string mqttPrefix;  // NOLINT(runtime/string)
 static std::atomic<unsigned long> mqttConnectedAt{0};
 static unsigned long mqttPublishedSensorAt[SENSORS_AMOUNT] = {};
 

@@ -1,17 +1,17 @@
 #include <app.h>
 
 #include <MycilaWebSerial.h>
+#include <esp_log_color.h>
+#include <esp_private/log_format.h>
+#include <esp_private/log_timestamp.h>
+#include <esp_rom_sys.h>
+#include <freertos/ringbuf.h>
 
 #include <algorithm>
 #include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <esp_log_color.h>
-#include <esp_private/log_format.h>
-#include <esp_private/log_timestamp.h>
-#include <esp_rom_sys.h>
-#include <freertos/ringbuf.h>
 
 static_assert(CONFIG_LOG_VERSION == 2, "OTGateway requires an SDK built with Log v2");
 static_assert(CONFIG_LOG_DYNAMIC_LEVEL_CONTROL, "Runtime log levels require dynamic level control");

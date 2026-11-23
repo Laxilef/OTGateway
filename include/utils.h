@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Arduino.h>
-#include <cmath>
 #include <stdio.h>
-#include <string>
 #include <string.h>
 #include <time.h>
+
+#include <cmath>
+#include <string>
 
 #include "types.h"
 

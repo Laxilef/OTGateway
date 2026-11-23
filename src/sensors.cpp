@@ -1,14 +1,15 @@
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
 #include <app.h>
-#include <atomic>
-#include <optional>
-#include <unordered_map>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <esp32DHT.h>
 #include <math.h>
 #include <string.h>
+
+#include <atomic>
+#include <optional>
+#include <unordered_map>
 
 #if USE_BLE
   #include <NimBLEDevice.h>
