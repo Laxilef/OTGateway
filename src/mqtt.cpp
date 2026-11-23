@@ -715,7 +715,7 @@ static void connect() {
     .keepAlive = static_cast<uint16_t>(settings.mqtt.interval * 10u),
     .username = settings.mqtt.user,
     .password = settings.mqtt.password,
-    .clientId = networkSettings.hostname,
+    .clientId = settings.mqtt.prefix,
     .willTopic = mqttTopic("status"),
   });
 }
