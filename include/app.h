@@ -144,6 +144,13 @@ void onNetworkEvent(NetworkEventCallback callback);
 void onNetworkStateChange(NetworkStateCallback callback);
 NetworkState getNetworkState(NetworkMode mode = NetworkMode::STA);
 NetworkMode getNetworkMode();
+const char* getNetworkConnectionType();
+IPAddress getNetworkIp();
+IPAddress getNetworkSubnet();
+IPAddress getNetworkGateway();
+IPAddress getNetworkDns();
+String getNetworkMac();
+bool isEthernetConfigured(const NetworkSettings& config = networkSettings);
 bool isNetworkInterfaceStarted(NetworkMode mode);
 // Last state published by the system worker, including during event callbacks.
 bool isNetworkConnected();

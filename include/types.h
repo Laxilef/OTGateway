@@ -14,6 +14,11 @@ enum class ChannelDisablingAction : uint8_t {
   OFF_AND_ZERO_SETPOINT = 2
 };
 
+enum class EthernetType : uint8_t {
+  NONE  = 0,
+  W5500 = 1
+};
+
 struct SettingResult {
   bool changed = false;
   bool accepted = false;
@@ -77,6 +82,13 @@ enum class NetworkEvent : uint8_t {
   STA_GOT_IP,
   STA_LOST_IP,
   STA_GOT_IP6,
+  ETH_STARTED,
+  ETH_STOPPED,
+  ETH_CONNECTED,
+  ETH_DISCONNECTED,
+  ETH_GOT_IP,
+  ETH_LOST_IP,
+  ETH_GOT_IP6,
   AP_STARTED,
   AP_STOPPED,
   AP_CLIENT_CONNECTED,

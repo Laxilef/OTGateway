@@ -51,14 +51,18 @@
                 <td><b id="network-mac"></b></td>
               </tr>
               <tr>
+                <th scope="row" data-i18n>network.params.connection</th>
+                <td><b id="network-connection"></b></td>
+              </tr>
+              <tr>
                 <th scope="row" data-i18n>network.wifi.connected</th>
                 <td><i id="network-connected"></i></td>
               </tr>
-              <tr>
+              <tr id="network-ssid-row">
                 <th scope="row" data-i18n>network.wifi.ssid</th>
                 <td><b id="network-ssid"></b></td>
               </tr>
-              <tr>
+              <tr id="network-signal-row">
                 <th scope="row" data-i18n>network.wifi.signal</th>
                 <td><b id="network-signal"></b> %</td>
               </tr>
@@ -239,6 +243,7 @@
 
             setTextValue('#network-hostname', result.network.hostname);
             setTextValue('#network-mac', result.network.mac);
+            setTextValue('#network-connection', i18n(`network.params.connectionType.${result.network.connection_type}`));
             setStatus(
               '#network-connected',
               result.network.connected ? "success" : "error",
@@ -246,6 +251,11 @@
             );
             setTextValue('#network-ssid', result.network.ssid);
             setValue('#network-signal', result.network.signal_quality);
+            // SSID and signal strength describe only the Wi-Fi uplink.
+            const wifiUplink = result.network.connection_type === "wifi";
+            document.getElementById("network-ssid-row")?.classList.toggle("hidden", !wifiUplink);
+            document.getElementById("network-signal-row")?.classList.toggle("hidden", !wifiUplink);
+
             setTextValue('#network-ip', result.network.ip);
             setTextValue('#network-subnet', result.network.subnet);
             setTextValue('#network-gateway', result.network.gateway);

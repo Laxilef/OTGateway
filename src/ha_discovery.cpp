@@ -532,6 +532,8 @@ void publishHaEntity(HaEntity entityId, bool remove) {
       auto gauge = std::make_unique<HA::Gauge>("rssi", "RSSI");
       if (!remove) {
         gauge->stateTopic = "~/state/master/network/rssi";
+        gauge->availabilityTopic = "~/state/master/network/connection_type";
+        gauge->availabilityTemplate = "{{ 'online' if value == 'wifi' else 'offline' }}";
         gauge->category = HA::Category::DIAGNOSTIC;
         gauge->deviceClass = "signal_strength";
         gauge->icon = "mdi:signal";
@@ -906,6 +908,12 @@ static const char* getDynamicSensorIcon(Sensors::Purpose purpose) {
 }
 
 void publishDynamicSensor(const Sensors::Settings& sensor, Sensors::ValueType valueType, bool enabledByDefault) {
+  #if !USE_BLE
+  if (sensor.type == Sensors::Type::BLUETOOTH) {
+    return;
+  }
+  #endif
+
   auto id = makeDynamicSensorId(sensor, valueType);
   if (id.empty()) {
     return;

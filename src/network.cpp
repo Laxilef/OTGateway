@@ -5,6 +5,9 @@
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <ESPAsyncWebServer.h>
+#if USE_ETHERNET
+  #include <ETH.h>
+#endif
 #include <Network.h>
 #include <WiFi.h>
 #include <esp_wifi.h>
@@ -19,6 +22,13 @@ static std::atomic<bool> staStarted{false};
 static std::atomic<bool> apStarted{false};
 static std::atomic<NetworkState> staState{NetworkState::NETWORK_DISABLED};
 static std::atomic<NetworkState> apState{NetworkState::NETWORK_DISABLED};
+#if USE_ETHERNET
+static std::atomic<bool> ethStarted{false};
+static std::atomic<NetworkState> ethState{NetworkState::NETWORK_DISABLED};
+static bool ethernetRunning = false;
+static bool ethernetInitFailed = false;
+static unsigned long lastEthernetDriverAttempt = 0;
+#endif
 
 // Subscriptions are fixed before the worker starts.
 static std::vector<NetworkEventCallback> networkCallbacks;
@@ -26,7 +36,7 @@ static std::vector<NetworkStateCallback> stateCallbacks;
 
 // Framework callbacks only copy events. Driver and service operations stay in this worker.
 struct PendingNetworkEvent {
-  uint32_t value; // IPv4 address for STA_GOT_IP and AP_STARTED.
+  uint32_t value; // IPv4 address for STA_GOT_IP, ETH_GOT_IP and AP_STARTED.
   NetworkEvent event;
   uint8_t reason; // STA disconnect reason.
 };
@@ -66,6 +76,7 @@ static bool mdnsStarted = false;
 static unsigned long lastDnsAttempt = 0;
 static unsigned long lastMdnsAttempt = 0;
 static char mdnsHostname[sizeof(networkSettings.hostname)] = {};
+static void stopMdns();
 
 // Event subscriptions
 void onNetworkEvent(NetworkEventCallback callback) {
@@ -98,26 +109,109 @@ NetworkState getNetworkState(NetworkMode mode) {
     return apState.load();
   }
 
-  // Ethernet initialization and routing will be implemented separately.
+  #if USE_ETHERNET
+  if (mode == NetworkMode::ETH) {
+    return ethState.load();
+  }
+  #endif
+
   return NetworkState::NETWORK_DISABLED;
 }
 
 bool isNetworkConnected() {
-  return getNetworkState(NetworkMode::STA) == NetworkState::NETWORK_CONNECTED;
+  return getNetworkState(NetworkMode::STA) == NetworkState::NETWORK_CONNECTED
+    || getNetworkState(NetworkMode::ETH) == NetworkState::NETWORK_CONNECTED;
 }
 
 NetworkMode getNetworkMode() {
-  if (isNetworkConnected()) {
+  if (getNetworkState(networkSettings.type) == NetworkState::NETWORK_CONNECTED) {
+    return networkSettings.type;
+  }
+
+  if (getNetworkState(NetworkMode::STA) == NetworkState::NETWORK_CONNECTED) {
     return NetworkMode::STA;
   }
 
+  if (getNetworkState(NetworkMode::ETH) == NetworkState::NETWORK_CONNECTED) {
+    return NetworkMode::ETH;
+  }
+
   return apStarted.load() ? NetworkMode::AP : NetworkMode::NONE;
+}
+
+const char* getNetworkConnectionType() {
+  switch (getNetworkMode()) {
+    case NetworkMode::ETH:
+      return S_ETHERNET;
+    case NetworkMode::STA:
+      return "wifi";
+    case NetworkMode::AP:
+      return "wifi-ap";
+    default:
+      return "none";
+  }
+}
+
+static NetworkInterface& getNetworkInterface() {
+  #if USE_ETHERNET
+  if (getNetworkMode() == NetworkMode::ETH) {
+    return ETH;
+  }
+  #endif
+
+  if (getNetworkMode() == NetworkMode::AP) {
+    return WiFi.AP;
+  }
+
+  return WiFi.STA;
+}
+
+IPAddress getNetworkIp() {
+  return getNetworkInterface().localIP();
+}
+
+IPAddress getNetworkSubnet() {
+  return getNetworkInterface().subnetMask();
+}
+
+IPAddress getNetworkGateway() {
+  return getNetworkInterface().gatewayIP();
+}
+
+IPAddress getNetworkDns() {
+  return getNetworkInterface().dnsIP();
+}
+
+String getNetworkMac() {
+  return getNetworkInterface().macAddress();
+}
+
+bool isEthernetConfigured(const NetworkSettings& config) {
+  #if USE_ETHERNET
+  const auto& gpios = config.ethernet.w5500;
+  return config.ethernet.type == EthernetType::W5500
+    && GPIO_IS_VALID_OUTPUT(gpios.clk)
+    && GPIO_IS_VALID_OUTPUT(gpios.mosi)
+    && GPIO_IS_VALID_INPUT(gpios.miso)
+    && GPIO_IS_VALID_OUTPUT(gpios.cs)
+    && GPIO_IS_VALID_INPUT(gpios.irq)
+    && GPIO_IS_VALID_OUTPUT(gpios.rst);
+  #else
+  (void)config;
+  return false;
+  #endif
 }
 
 bool isNetworkInterfaceStarted(NetworkMode mode) {
   if (mode == NetworkMode::STA) {
     return staStarted.load();
   }
+
+  #if USE_ETHERNET
+  if (mode == NetworkMode::ETH) {
+    return ethStarted.load();
+  }
+  #endif
 
   return mode == NetworkMode::AP && apStarted.load();
 }
@@ -135,15 +229,24 @@ static void notifyNetworkEvent(NetworkEvent event) {
 }
 
 static void setNetworkState(NetworkMode mode, NetworkState next) {
-  auto& state = mode == NetworkMode::STA ? staState : apState;
-  const NetworkState previous = state.load();
+  auto* state = mode == NetworkMode::STA ? &staState : &apState;
+  #if USE_ETHERNET
+  if (mode == NetworkMode::ETH) {
+    state = &ethState;
+  }
+  #endif
 
+  const NetworkState previous = state->load();
   if (previous == next) {
     return;
   }
 
-  if (mode == NetworkMode::STA) {
-    if (previous == NetworkState::NETWORK_CONNECTED) {
+  const bool uplink = mode == NetworkMode::STA || mode == NetworkMode::ETH;
+  const bool anotherConnected = getNetworkState(mode == NetworkMode::STA ? NetworkMode::ETH : NetworkMode::STA)
+    == NetworkState::NETWORK_CONNECTED;
+  if (uplink) {
+    // A late STOP from the previous interface must not erase the new connection.
+    if (previous == NetworkState::NETWORK_CONNECTED && !anotherConnected) {
       disconnectedTime = millis();
       connectedIp = 0;
       vars.network.rssi = 0;
@@ -157,16 +260,18 @@ static void setNetworkState(NetworkMode mode, NetworkState next) {
   }
 
   // Publish before callbacks so getters and JSON already reflect the new state.
-  state.store(next);
+  state->store(next);
   for (auto& callback : stateCallbacks) {
     callback(mode, previous, next);
   }
 
-  if (mode == NetworkMode::STA) {
+  if (uplink) {
     if (next == NetworkState::NETWORK_CONNECTED) {
+      stopMdns();
       notifyNetworkEvent(NetworkEvent::CONNECTED);
 
-    } else if (previous == NetworkState::NETWORK_CONNECTED) {
+    } else if (previous == NetworkState::NETWORK_CONNECTED && !anotherConnected) {
+      stopMdns();
       notifyNetworkEvent(NetworkEvent::DISCONNECTED);
     }
   }
@@ -182,7 +287,7 @@ static void queueNetworkEvent(NetworkEvent event, uint32_t value = 0, uint8_t re
   }
 }
 
-static void handleWifiEvent(arduino_event_id_t event, arduino_event_info_t info) {
+static void handleNetworkEvent(arduino_event_id_t event, arduino_event_info_t info) {
   // This callback runs in the Arduino event task; only copy the event data here.
   switch (event) {
     // Station
@@ -228,6 +333,30 @@ static void handleWifiEvent(arduino_event_id_t event, arduino_event_info_t info)
       queueNetworkEvent(NetworkEvent::AP_GOT_IP6);
       break;
 
+    #if USE_ETHERNET
+    case ARDUINO_EVENT_ETH_START:
+      queueNetworkEvent(NetworkEvent::ETH_STARTED);
+      break;
+    case ARDUINO_EVENT_ETH_STOP:
+      queueNetworkEvent(NetworkEvent::ETH_STOPPED);
+      break;
+    case ARDUINO_EVENT_ETH_CONNECTED:
+      queueNetworkEvent(NetworkEvent::ETH_CONNECTED);
+      break;
+    case ARDUINO_EVENT_ETH_DISCONNECTED:
+      queueNetworkEvent(NetworkEvent::ETH_DISCONNECTED);
+      break;
+    case ARDUINO_EVENT_ETH_GOT_IP:
+      queueNetworkEvent(NetworkEvent::ETH_GOT_IP, info.got_ip.ip_info.ip.addr);
+      break;
+    case ARDUINO_EVENT_ETH_LOST_IP:
+      queueNetworkEvent(NetworkEvent::ETH_LOST_IP);
+      break;
+    case ARDUINO_EVENT_ETH_GOT_IP6:
+      queueNetworkEvent(NetworkEvent::ETH_GOT_IP6);
+      break;
+    #endif
+
     default:
       break;
   }
@@ -245,6 +374,10 @@ static void postInterfaceStopped(arduino_event_id_t type) {
 }
 
 // WiFi interfaces
+static bool shouldEnableWifiRadio() {
+  return networkSettings.type == NetworkMode::STA;
+}
+
 static void configureWifiRadio() {
   // Apply the existing channel policy after the WiFi driver has started.
   const wifi_country_t country = {
@@ -271,6 +404,10 @@ static void stopAccessPoint() {
 }
 
 static void startAccessPoint() {
+  if (!shouldEnableWifiRadio()) {
+    return;
+  }
+
   lastApAttempt = millis();
   setNetworkState(NetworkMode::AP, NetworkState::AP_STARTING);
 
@@ -287,9 +424,9 @@ static void startAccessPoint() {
   configureWifiRadio();
   WiFi.AP.setHostname(networkSettings.hostname);
   if (!WiFi.AP.create(
-    networkSettings.ap.ssid,
-    networkSettings.ap.password[0] ? networkSettings.ap.password : nullptr,
-    networkSettings.ap.channel
+    networkSettings.wifi.ap.ssid,
+    networkSettings.wifi.ap.password[0] ? networkSettings.wifi.ap.password : nullptr,
+    networkSettings.wifi.ap.channel
   )) {
     stopAccessPoint();
     setNetworkState(NetworkMode::AP, NetworkState::NETWORK_DISABLED);
@@ -314,7 +451,7 @@ static bool resetWifi() {
   }
 
   lastConnectionAttempt = 0;
-  if (restoreAp) {
+  if (restoreAp && shouldEnableWifiRadio()) {
     startAccessPoint();
   }
 
@@ -322,6 +459,10 @@ static bool resetWifi() {
 }
 
 static bool startNetworkConnection() {
+  if (!shouldEnableWifiRadio()) {
+    return false;
+  }
+
   // Ordinary retries preserve AP. Escalate only if STA cannot be stopped.
   const bool wasStarted = WiFi.STA.started();
 
@@ -371,15 +512,100 @@ static bool startNetworkConnection() {
   );
 
   return WiFi.STA.connect(
-    networkSettings.sta.ssid,
-    networkSettings.sta.password[0] ? networkSettings.sta.password : nullptr,
-    networkSettings.sta.channel
+    networkSettings.wifi.sta.ssid,
+    networkSettings.wifi.sta.password[0] ? networkSettings.wifi.sta.password : nullptr,
+    networkSettings.wifi.sta.channel
   );
 }
 
+// The SPI driver stays installed across enable/disable; rewiring needs a restart.
+#if USE_ETHERNET
+static bool configureEthernet() {
+  ETH.setHostname(networkSettings.hostname);
+
+  // Prefer Ethernet while the previous interface finishes shutting down.
+  ETH.setRoutePrio(200);
+  if (networkSettings.useDhcp) {
+    return ETH.config();
+  }
+
+  IPAddress ip, gateway, subnet, dns;
+  ip.fromString(networkSettings.staticConfig.ip);
+  gateway.fromString(networkSettings.staticConfig.gateway);
+  subnet.fromString(networkSettings.staticConfig.subnet);
+  dns.fromString(networkSettings.staticConfig.dns);
+  return ETH.config(ip, gateway, subnet, dns);
+}
+
+static void updateEthernet() {
+  const bool enabled = networkSettings.type == NetworkMode::ETH && isEthernetConfigured();
+
+  if (!enabled) {
+    setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_DISABLED);
+
+    if (!ethernetRunning) {
+      return;
+    }
+
+    if (lastEthernetDriverAttempt && millis() - lastEthernetDriverAttempt < 15000) {
+      return;
+    }
+
+    lastEthernetDriverAttempt = millis();
+    const esp_err_t result = esp_eth_stop(ETH.handle());
+    if (result != ESP_OK) {
+      ESP_LOGE(L_NETWORK, "Failed stop Ethernet: %s", esp_err_to_name(result));
+      return;
+    }
+
+    ethernetRunning = false;
+    ethStarted.store(false);
+    lastEthernetDriverAttempt = 0;
+    return;
+  }
+
+  if (ethernetRunning || ethernetInitFailed) {
+    return;
+  }
+
+  if (lastEthernetDriverAttempt && millis() - lastEthernetDriverAttempt < 15000) {
+    return;
+  }
+
+  lastEthernetDriverAttempt = millis();
+  if (ETH.handle() == nullptr) {
+    const auto& gpios = networkSettings.ethernet.w5500;
+
+    ESP_LOGI(L_NETWORK, "Initialize W5500 Ethernet");
+    if (!ETH.begin(
+      ETH_PHY_W5500, 1, gpios.cs, gpios.irq, gpios.rst,
+      SPI2_HOST, gpios.clk, gpios.miso, gpios.mosi, 12
+    )) {
+      // begin() can leave the SPI bus allocated. Retrying would reuse partial initialization.
+      ethernetInitFailed = true;
+      ESP_LOGE(L_NETWORK, "W5500 initialization failed, check wiring and restart");
+      setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_TIMEOUT);
+      return;
+    }
+
+  } else {
+    const esp_err_t result = esp_eth_start(ETH.handle());
+    if (result != ESP_OK) {
+      ESP_LOGE(L_NETWORK, "Failed start Ethernet: %s", esp_err_to_name(result));
+      return;
+    }
+  }
+
+  ethernetRunning = true;
+  lastEthernetDriverAttempt = 0;
+  setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_CONNECTING);
+}
+
+#endif
+
 // Station connection and recovery timeouts
 static void updateConnection() {
-  if (!networkSettings.sta.ssid[0]) {
+  if (!networkSettings.wifi.sta.ssid[0]) {
     return;
   }
 
@@ -433,7 +659,7 @@ static void updateAccessPoint() {
     return;
   }
 
-  if (!apStarted.load() && (!networkSettings.sta.ssid[0] || millis() - disconnectedTime > 185000)) {
+  if (!apStarted.load() && (!networkSettings.wifi.sta.ssid[0] || millis() - disconnectedTime > 185000)) {
     if (!lastApAttempt || millis() - lastApAttempt > 15000) {
       ESP_LOGI(L_NETWORK, "Start fallback AP");
       startAccessPoint();
@@ -543,6 +769,10 @@ static void processNetworkEvent(const PendingNetworkEvent& pending) {
   switch (pending.event) {
     // Station
     case NetworkEvent::STA_STARTED:
+      if (!shouldEnableWifiRadio()) {
+        return;
+      }
+
       // Repeated START must not invalidate an active connection.
       if (staStarted.exchange(true)) {
         break;
@@ -570,24 +800,28 @@ static void processNetworkEvent(const PendingNetworkEvent& pending) {
     }
 
     case NetworkEvent::STA_CONNECTED:
+      if (!shouldEnableWifiRadio()) {
+        return;
+      }
+
       // Association alone does not confirm a usable IP address.
       staAssociated = true;
       break;
     case NetworkEvent::STA_GOT_IP:
-      if (!pending.value) {
+      if (!shouldEnableWifiRadio() || !pending.value) {
         return;
       }
 
       // GOT_IP confirms both DHCP and configured static IPv4 after association.
       // IP changes invalidate the previous client session, including A -> B -> A.
-      if (isNetworkConnected() && connectedIp != pending.value) {
+      if (getNetworkState(NetworkMode::STA) == NetworkState::NETWORK_CONNECTED && connectedIp != pending.value) {
         disconnectReason = 0;
         setNetworkState(NetworkMode::STA, NetworkState::NETWORK_DISCONNECTED);
       }
 
       staAssociated = true;
       connectedIp = pending.value;
-      if (!isNetworkConnected()) {
+      if (getNetworkState(NetworkMode::STA) != NetworkState::NETWORK_CONNECTED) {
         vars.network.rssi = WiFi.STA.RSSI();
         lastRssiUpdate = millis();
         setNetworkState(NetworkMode::STA, NetworkState::NETWORK_CONNECTED);
@@ -604,8 +838,72 @@ static void processNetworkEvent(const PendingNetworkEvent& pending) {
       setNetworkState(NetworkMode::STA, NetworkState::NETWORK_DISCONNECTED);
       break;
 
+    #if USE_ETHERNET
+    case NetworkEvent::ETH_STARTED:
+      if (!ethernetRunning || networkSettings.type != NetworkMode::ETH || !isEthernetConfigured()) {
+        return;
+      }
+
+      if (ethStarted.exchange(true)) {
+        break;
+      }
+
+      // Apply after native START so a preceding STOP cannot clear the static-IP state.
+      if (!configureEthernet()) {
+        ESP_LOGE(L_NETWORK, "Failed configure Ethernet IPv4");
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_TIMEOUT);
+        break;
+      }
+
+      if (getNetworkState(NetworkMode::ETH) == NetworkState::NETWORK_DISABLED) {
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_ENABLED);
+      }
+      break;
+    case NetworkEvent::ETH_STOPPED:
+      ethStarted.store(false);
+      setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_DISABLED);
+      break;
+    case NetworkEvent::ETH_CONNECTED:
+      if (!ethernetRunning || networkSettings.type != NetworkMode::ETH || !isEthernetConfigured()) {
+        return;
+      }
+
+      if (getNetworkState(NetworkMode::ETH) != NetworkState::NETWORK_CONNECTED) {
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_CONNECTING);
+      }
+      break;
+    case NetworkEvent::ETH_GOT_IP:
+      if (!ethernetRunning || networkSettings.type != NetworkMode::ETH || !isEthernetConfigured()
+        || !pending.value || !ETH.connected() || !ETH.hasIP()
+      ) {
+        return;
+      }
+
+      if (getNetworkState(NetworkMode::ETH) == NetworkState::NETWORK_CONNECTED && connectedIp != pending.value) {
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_DISCONNECTED);
+      }
+
+      connectedIp = pending.value;
+      if (getNetworkState(NetworkMode::ETH) != NetworkState::NETWORK_CONNECTED) {
+        vars.network.rssi = 0;
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_CONNECTED);
+      }
+      break;
+    case NetworkEvent::ETH_DISCONNECTED:
+    case NetworkEvent::ETH_LOST_IP:
+      setNetworkState(
+        NetworkMode::ETH,
+        ethernetRunning ? NetworkState::NETWORK_DISCONNECTED : NetworkState::NETWORK_DISABLED
+      );
+      break;
+    #endif
+
     // Access point
     case NetworkEvent::AP_STARTED:
+      if (!shouldEnableWifiRadio()) {
+        return;
+      }
+
       // Preserve clients and captive portal state on a repeated START.
       if (apStarted.exchange(true)) {
         break;
@@ -662,6 +960,10 @@ static void processNetworkEvents() {
     staAssociated = false;
     setNetworkState(NetworkMode::STA, NetworkState::NETWORK_DISABLED);
     setNetworkState(NetworkMode::AP, NetworkState::NETWORK_DISABLED);
+    #if USE_ETHERNET
+    ethStarted.store(false);
+    setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_DISABLED);
+    #endif
 
     if (overflowed) {
       ESP_LOGW(L_NETWORK, "Network event queue overflow, reset WiFi requested");
@@ -684,6 +986,21 @@ static void processNetworkEvents() {
       return;
     }
 
+    #if USE_ETHERNET
+    // Re-read native Ethernet state after the queue was reset; the driver remains installed.
+    if (ethernetRunning && networkSettings.type == NetworkMode::ETH && isEthernetConfigured()) {
+      ethStarted.store(ETH.started());
+      if (ETH.hasIP() && ETH.connected() && static_cast<uint32_t>(ETH.localIP())) {
+        connectedIp = static_cast<uint32_t>(ETH.localIP());
+        vars.network.rssi = 0;
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_CONNECTED);
+
+      } else {
+        setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_CONNECTING);
+      }
+    }
+    #endif
+
     recoveryPending = false;
   }
 
@@ -700,7 +1017,7 @@ static void processNetworkEvents() {
 
 // Connection services
 static void updateRssi() {
-  if (isNetworkConnected() && millis() - lastRssiUpdate >= 1000) {
+  if (getNetworkMode() == NetworkMode::STA && millis() - lastRssiUpdate >= 1000) {
     vars.network.rssi = WiFi.STA.RSSI();
     lastRssiUpdate = millis();
   }
@@ -716,7 +1033,7 @@ static void updateNtp() {
 }
 
 static void logNetworkState(NetworkMode mode, NetworkState previous, NetworkState state) {
-  if (mode != NetworkMode::STA) {
+  if (mode != networkSettings.type) {
     return;
   }
 
@@ -748,25 +1065,31 @@ static Task networkStartTask("Start network services", Task::Type::ONCE, [](void
   webServer->begin();
   webServerReady = true;
   configureLoggingTask.resume();
-  ESP_LOGD(L_PORTAL_WEBSERVER, "Started: AP up or STA connected");
+  ESP_LOGD(L_PORTAL_WEBSERVER, "Started: AP up or uplink connected");
 });
 
 static Task reconnectTask("Reconnect network", Task::Type::ONCE, [](void*) {
   ESP_LOGI(L_NETWORK, "Reconnecting...");
 
-  const bool wasStarted = WiFi.STA.started();
-  if (!WiFi.STA.end()) {
-    ESP_LOGW(L_NETWORK, "Failed stop STA, reset WiFi...");
-    resetWifi();
-    return;
-  }
+  #if USE_ETHERNET
+  if (ethernetRunning) {
+    // Keep the installed SPI device, but cycle the link to reapply hostname and IPv4.
+    const esp_err_t result = esp_eth_stop(ETH.handle());
+    if (result != ESP_OK) {
+      ESP_LOGE(L_NETWORK, "Failed restart Ethernet: %s", esp_err_to_name(result));
+      return;
 
-  if (wasStarted) {
-    postInterfaceStopped(ARDUINO_EVENT_WIFI_STA_STOP);
+    } else {
+      ethernetRunning = false;
+      ethStarted.store(false);
+      setNetworkState(NetworkMode::ETH, NetworkState::NETWORK_DISABLED);
+    }
   }
+  #endif
 
-  lastConnectionAttempt = 0;
-  connectionPending = false;
+  if (!resetWifi()) {
+    networkRecoveryRequested.store(true);
+  }
 });
 
 static Task networkTask("Network", [](void*) {
@@ -795,6 +1118,29 @@ static Task networkTask("Network", [](void*) {
   if (!reconnectTask.paused()) {
     return;
   }
+
+  if (!shouldEnableWifiRadio()) {
+    if (WiFi.getMode() != WIFI_OFF && !resetWifi()) {
+      networkRecoveryRequested.store(true);
+      return;
+    }
+
+    #if USE_ETHERNET
+    updateEthernet();
+    #endif
+    if (isNetworkConnected()) {
+      updateNtp();
+    }
+
+    return;
+  }
+
+  #if USE_ETHERNET
+  updateEthernet();
+  if (ethernetRunning) {
+    return;
+  }
+  #endif
 
   if (isNetworkConnected()) {
     if (connectionPending) {
@@ -836,7 +1182,7 @@ void initNetwork() {
   });
 
   Network.begin();
-  Network.onEvent(handleWifiEvent);
+  Network.onEvent(handleNetworkEvent);
   onNetworkStateChange(logNetworkState);
   WiFi.persistent(false);
   WiFi.STA.setAutoReconnect(false);

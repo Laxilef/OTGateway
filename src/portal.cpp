@@ -13,6 +13,9 @@
 #include <Update.h>
 #include <UpgradeHandler.h>
 #include <WiFi.h>
+#if USE_ETHERNET
+  #include <ETH.h>
+#endif
 #include <MycilaWebSerial.h>
 
 #include <esp_core_dump.h>
@@ -47,8 +50,16 @@ static RequestInterface getRequestInterface(AsyncWebServerRequest* request) {
 
   const IPAddress apIP = WiFi.AP.localIP();
   const IPAddress staIP = WiFi.STA.localIP();
-  if (localIP == apIP && localIP == staIP) {
-    // Matching AP/STA addresses cannot identify the interface.
+  const bool matchesAp = localIP == apIP;
+  const bool matchesSta = localIP == staIP;
+  #if USE_ETHERNET
+  const bool matchesEth = localIP == ETH.localIP();
+  #else
+  const bool matchesEth = false;
+  #endif
+
+  if (matchesAp + matchesSta + matchesEth > 1) {
+    // Matching interface addresses cannot identify the connection.
     return RequestInterface::UNKNOWN;
   }
 
@@ -58,6 +69,10 @@ static RequestInterface getRequestInterface(AsyncWebServerRequest* request) {
 
   if (localIP == staIP) {
     return RequestInterface::STA;
+  }
+
+  if (matchesEth) {
+    return RequestInterface::ETH;
   }
 
   return RequestInterface::UNKNOWN;
@@ -373,6 +388,9 @@ static void restApi() {
     auto *response = new AsyncJsonResponse();
     auto& doc = response->getRoot();
     toJson(networkSettings, doc);
+    #if USE_ETHERNET
+    doc[S_ETHERNET][S_CONFIGURED] = isEthernetConfigured();
+    #endif
 
     // send response
     response->setLength();
@@ -403,6 +421,9 @@ static void restApi() {
       auto *response = new AsyncJsonResponse();
       auto& responseDoc = response->getRoot();
       toJson(networkSettings, responseDoc);
+      #if USE_ETHERNET
+      responseDoc[S_ETHERNET][S_CONFIGURED] = isEthernetConfigured();
+      #endif
 
       // send response
       response->setLength();
@@ -415,10 +436,16 @@ static void restApi() {
       reconnectNetwork();
     }
   });
-  nsHandler.setMaxContentLength(512);
+  nsHandler.setMaxContentLength(1024);
   nsHandler.addMiddleware(&authMiddleware);
 
   webServer->on("/api/network/scan", HTTP_GET, [](AsyncWebServerRequest *request) {
+    // Ethernet mode must not start the Wi-Fi radio for a scan.
+    if (networkSettings.type != NetworkMode::STA) {
+      request->send(409);
+      return;
+    }
+
     auto apCount = WiFi.scanComplete();
 
     switch (apCount) {
@@ -879,22 +906,28 @@ static void restApi() {
     auto *response = new AsyncJsonResponse();
     auto& doc = response->getRoot();
 
+    #if USE_ETHERNET
+    doc[S_FEATURES][S_ETHERNET] = true;
+    #endif
+
     auto docSystem = doc[S_SYSTEM].to<JsonObject>();
     docSystem[S_RESET_REASON] = getResetReason();
     docSystem[S_UPTIME] = millis() / 1000;
 
-    bool isConnected = isNetworkConnected();
+    const bool isConnected = isNetworkConnected();
+    const bool wifiUplink = getNetworkMode() == NetworkMode::STA;
     auto docNetwork = doc[S_NETWORK].to<JsonObject>();
     docNetwork[S_HOSTNAME] = networkSettings.hostname;
-    docNetwork[S_MAC] = WiFi.STA.macAddress();
+    docNetwork[S_MAC] = getNetworkMac();
     docNetwork[S_CONNECTED] = isConnected;
-    docNetwork[S_SSID] = strlen(networkSettings.sta.ssid) ? networkSettings.sta.ssid : nullptr;
-    docNetwork[S_SIGNAL_QUALITY] = isConnected ? rssiToSignalQuality(WiFi.STA.RSSI()) : 0;
-    docNetwork[S_CHANNEL] = isConnected ? networkSettings.sta.channel : 0;
-    docNetwork[S_IP] = isConnected ? WiFi.STA.localIP().toString() : "";
-    docNetwork[S_SUBNET] = isConnected ? WiFi.STA.subnetMask().toString() : "";
-    docNetwork[S_GATEWAY] = isConnected ? WiFi.STA.gatewayIP().toString() : "";
-    docNetwork[S_DNS] = isConnected ? WiFi.STA.dnsIP().toString() : "";
+    docNetwork[S_CONNECTION_TYPE] = getNetworkConnectionType();
+    docNetwork[S_SSID] = wifiUplink ? WiFi.STA.SSID() : "";
+    docNetwork[S_SIGNAL_QUALITY] = wifiUplink ? rssiToSignalQuality(WiFi.STA.RSSI()) : 0;
+    docNetwork[S_CHANNEL] = wifiUplink ? WiFi.channel() : 0;
+    docNetwork[S_IP] = isConnected ? getNetworkIp().toString() : "";
+    docNetwork[S_SUBNET] = isConnected ? getNetworkSubnet().toString() : "";
+    docNetwork[S_GATEWAY] = isConnected ? getNetworkGateway().toString() : "";
+    docNetwork[S_DNS] = isConnected ? getNetworkDns().toString() : "";
 
     auto docBuild = doc[S_BUILD].to<JsonObject>();
     docBuild[S_VERSION] = BUILD_VERSION;

@@ -144,15 +144,34 @@
     "network": {
       "title": "Сеть - OpenTherm Gateway",
       "name": "Настройки сети",
+      "type": {
+        "title": "Способ подключения",
+        "wifi": "Wi-Fi",
+        "ethernet": "Ethernet"
+      },
       "section": {
         "static": "Статические параметры",
+        "ethernet": "Ethernet",
+        "wifi": "Wi-Fi",
         "availableNetworks": "Доступные сети",
         "staSettings": "Настройки подключения",
         "apSettings": "Настройки точки доступа"
       },
       "scan": {
         "pos": "#",
-        "info": "Инфо"
+        "info": "Инфо",
+        "unavailable": "Поиск сетей доступен только в режиме Wi-Fi."
+      },
+
+      "ethernet": {
+        "notConfigured": "Для подключения через Ethernet настройте все шесть GPIO.",
+        "clk": "GPIO тактирования SPI",
+        "mosi": "GPIO MOSI SPI",
+        "miso": "GPIO MISO SPI",
+        "cs": "GPIO CS SPI",
+        "irq": "GPIO прерывания",
+        "rst": "GPIO сброса",
+        "note": "Подключение W5500 по SPI"
       },
       "wifi": {
         "ssid": "Имя сети",
@@ -168,7 +187,14 @@
         "ip": "IP адрес",
         "subnet": "Адрес подсети",
         "gateway": "Адрес шлюза",
-        "dns": "DNS адрес"
+        "dns": "DNS адрес",
+        "connection": "Подключение",
+        "connectionType": {
+          "ethernet": "Ethernet",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi AP",
+          "none": "Нет"
+        }
       },
       "sta": {
         "channel": {

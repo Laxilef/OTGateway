@@ -3,7 +3,6 @@
 #include <app.h>
 
 #include <MycilaMQTT.h>
-#include <WiFi.h>
 #include <algorithm>
 #include <atomic>
 #include <bitset>
@@ -287,6 +286,7 @@ static void publishMasterState() {
   publishValue(mqttTopic("state/master/dhw/max_temp"), convertTemp(settings.dhw.maxTemp, UnitSystem::METRIC, settings.system.unitSystem), 2);
   publishValue(mqttTopic("state/master/network/connected"), isNetworkConnected());
   publishValue(mqttTopic("state/master/network/rssi"), std::to_string(vars.network.rssi));
+  publishValue(mqttTopic("state/master/network/connection_type"), getNetworkConnectionType());
   publishValue(mqttTopic("state/master/emergency/state"), vars.emergency.state);
   publishValue(mqttTopic("state/master/ext_pump/state"), vars.externalPump.state);
   publishValue(mqttTopic("state/master/cascade_control/input"), vars.cascadeControl.input);
@@ -704,7 +704,7 @@ static void connect() {
       .version = BUILD_VERSION,
       .model = PROJECT_NAME,
       .manufacturer = PROJECT_REPO,
-      .url = std::string("http://") + WiFi.localIP().toString().c_str() + "/",
+      .url = std::string("http://") + getNetworkIp().toString().c_str() + "/",
     },
     mqttPrefix,
     [](const char* topic, const std::string& payload) {

@@ -97,6 +97,44 @@ const convertLegacyBackup = (data) => {
 
   const result = convert(data);
 
+  const network = result?.network;
+  if (network !== null && typeof network === 'object' && !Array.isArray(network)) {
+    const hasLegacyAp = Object.prototype.hasOwnProperty.call(network, 'ap');
+    const hasLegacySta = Object.prototype.hasOwnProperty.call(network, 'sta');
+    if (hasLegacyAp || hasLegacySta) {
+      const wifi = network.wifi !== null && typeof network.wifi === 'object' && !Array.isArray(network.wifi)
+        ? network.wifi : Object.create(null);
+
+      if (hasLegacyAp && !Object.prototype.hasOwnProperty.call(wifi, 'ap')) {
+        wifi.ap = network.ap;
+      }
+      if (hasLegacySta && !Object.prototype.hasOwnProperty.call(wifi, 'sta')) {
+        wifi.sta = network.sta;
+      }
+      network.wifi = wifi;
+      delete network.ap;
+      delete network.sta;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(network, 'type')) {
+      if (typeof network.ethernet?.enabled === 'boolean') {
+        network.type = network.ethernet.enabled ? 3 : 2;
+
+      } else if (hasLegacyAp || hasLegacySta) {
+        network.type = 2;
+      }
+    }
+
+    if (network.ethernet !== null && typeof network.ethernet === 'object' && !Array.isArray(network.ethernet)) {
+      if (Object.prototype.hasOwnProperty.call(network.ethernet, 'pins')
+          && !Object.prototype.hasOwnProperty.call(network.ethernet, 'gpio')) {
+        network.ethernet.gpio = network.ethernet.pins;
+      }
+      delete network.ethernet.pins;
+      delete network.ethernet.enabled;
+    }
+  }
+
   const opentherm = result?.settings?.opentherm;
   if (opentherm !== null && typeof opentherm === 'object') {
     delete opentherm.unit_system;

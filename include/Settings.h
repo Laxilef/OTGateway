@@ -7,6 +7,7 @@
 #include "types.h"
 #include "Sensors.h"
 
+// Keep the existing WiFi settings at the start of the persisted structure.
 struct NetworkSettings {
   char hostname[25] = DEFAULT_HOSTNAME;
   bool useDhcp = true;
@@ -19,16 +20,33 @@ struct NetworkSettings {
   } staticConfig;
 
   struct {
-    char ssid[33] = DEFAULT_AP_SSID;
-    char password[65] = DEFAULT_AP_PASSWORD;
-    uint8_t channel = 6;
-  } ap;
+    struct {
+      char ssid[33] = DEFAULT_AP_SSID;
+      char password[65] = DEFAULT_AP_PASSWORD;
+      uint8_t channel = 6;
+    } ap;
+
+    struct {
+      char ssid[33] = DEFAULT_STA_SSID;
+      char password[65] = DEFAULT_STA_PASSWORD;
+      uint8_t channel = 0;
+    } sta;
+  } wifi;
 
   struct {
-    char ssid[33] = DEFAULT_STA_SSID;
-    char password[65] = DEFAULT_STA_PASSWORD;
-    uint8_t channel = 0;
-  } sta;
+    EthernetType type = EthernetType::W5500;
+
+    struct {
+      uint8_t clk = DEFAULT_ETH_CLK_GPIO;
+      uint8_t mosi = DEFAULT_ETH_MOSI_GPIO;
+      uint8_t miso = DEFAULT_ETH_MISO_GPIO;
+      uint8_t cs = DEFAULT_ETH_CS_GPIO;
+      uint8_t irq = DEFAULT_ETH_IRQ_GPIO;
+      uint8_t rst = DEFAULT_ETH_RST_GPIO;
+    } w5500;
+  } ethernet;
+
+  NetworkMode type = NetworkMode::STA;
 };
 
 struct SystemSettings {

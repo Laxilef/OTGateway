@@ -63,6 +63,11 @@
   #define USE_BLE false
 #endif
 
+// W5500 support is enabled by the dedicated C6 Ethernet build.
+#ifndef USE_ETHERNET
+  #define USE_ETHERNET false
+#endif
+
 #ifndef DEFAULT_HOSTNAME
   #define DEFAULT_HOSTNAME ""
 #endif
@@ -89,6 +94,30 @@
 
 #ifndef DEFAULT_STATUS_LED_GPIO
   #define DEFAULT_STATUS_LED_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_CLK_GPIO
+  #define DEFAULT_ETH_CLK_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_MOSI_GPIO
+  #define DEFAULT_ETH_MOSI_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_MISO_GPIO
+  #define DEFAULT_ETH_MISO_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_CS_GPIO
+  #define DEFAULT_ETH_CS_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_IRQ_GPIO
+  #define DEFAULT_ETH_IRQ_GPIO GPIO_IS_NOT_CONFIGURED
+#endif
+
+#ifndef DEFAULT_ETH_RST_GPIO
+  #define DEFAULT_ETH_RST_GPIO GPIO_IS_NOT_CONFIGURED
 #endif
 
 #ifndef DEFAULT_PORTAL_LOGIN

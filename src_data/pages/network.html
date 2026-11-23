@@ -47,6 +47,14 @@
             </label>
 
             <label>
+              <span data-i18n>network.type.title</span>
+              <select name="type">
+                <option value="2" data-i18n>network.type.wifi</option>
+                <option value="3" hidden disabled data-i18n>network.type.ethernet</option>
+              </select>
+            </label>
+
+            <label>
               <input type="checkbox" name="use_dhcp" value="true">
               <span data-i18n>network.params.dhcp</span>
             </label>
@@ -56,7 +64,7 @@
 
             <label>
               <span data-i18n>network.params.ip</span>
-              <input type="text" name="static_config[ip]" value="true" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
+              <input type="text" name="static_config[ip]" maxlength="16" pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}" required>
             </label>
 
             <label>
@@ -79,34 +87,43 @@
         </div>
       </article>
 
-      <article>
+
+      <article id="wifi-section">
         <div>
+          <hgroup>
+            <h2 data-i18n>network.section.wifi</h2>
+            <p></p>
+          </hgroup>
+
           <hgroup>
             <h3 data-i18n>network.section.availableNetworks</h3>
             <p></p>
           </hgroup>
 
           <form action="/api/network/scan" id="network-scan">
-            <div style="max-height: 25rem;" class="overflow-auto">
-              <table id="networks" role="grid">
-                <thead>
-                  <tr>
-                    <th scope="col" data-i18n>network.scan.pos</th>
-                    <th scope="col" data-i18n>network.wifi.ssid</th>
-                    <th scope="col" data-i18n>network.scan.info</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
+            <fieldset id="wifi-scan-controls" disabled>
+              <div style="max-height: 25rem;" class="overflow-auto">
+                <table id="networks" role="grid">
+                  <thead>
+                    <tr>
+                      <th scope="col" data-i18n>network.scan.pos</th>
+                      <th scope="col" data-i18n>network.wifi.ssid</th>
+                      <th scope="col" data-i18n>network.scan.info</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
 
-            <button type="submit" data-i18n>button.refresh</button>
+              <p id="scan-unavailable" class="hidden" data-i18n>network.scan.unavailable</p>
+              <button type="submit" data-i18n>button.refresh</button>
+            </fieldset>
           </form>
 
           <hr />
           <div>
             <hgroup>
-              <h2 data-i18n>network.section.staSettings</h2>
+              <h3 data-i18n>network.section.staSettings</h3>
               <p></p>
             </hgroup>
 
@@ -114,18 +131,46 @@
             <form action="/api/network/settings" id="sta-settings" class="hidden">
               <label>
                 <span data-i18n>network.wifi.ssid</span>
-                <input type="text" name="sta[ssid]" maxlength="32" required>
+                <input type="text" name="wifi[sta][ssid]" maxlength="32" required>
               </label>
 
               <label>
                 <span data-i18n>network.wifi.password</span>
-                <input type="password" name="sta[password]" maxlength="64" required>
+                <input type="password" name="wifi[sta][password]" maxlength="64" required>
               </label>
 
               <label>
                 <span data-i18n>network.wifi.channel</span>
-                <input type="number" inputmode="numeric" name="sta[channel]" min="0" max="12" step="1" required>
+                <input type="number" inputmode="numeric" name="wifi[sta][channel]" min="0" max="12" step="1" required>
                 <small data-i18n>network.sta.channel.note</small>
+              </label>
+
+              <button type="submit" data-i18n>button.save</button>
+            </form>
+          </div>
+
+          <hr />
+          <div>
+            <hgroup>
+              <h3 data-i18n>network.section.apSettings</h3>
+              <p></p>
+            </hgroup>
+
+            <div id="ap-settings-busy" aria-busy="true"></div>
+            <form action="/api/network/settings" id="ap-settings" class="hidden">
+              <label>
+                <span data-i18n>network.wifi.ssid</span>
+                <input type="text" name="wifi[ap][ssid]" maxlength="32" required>
+              </label>
+
+              <label>
+                <span data-i18n>network.wifi.password</span>
+                <input type="text" name="wifi[ap][password]" maxlength="64" required>
+              </label>
+
+              <label>
+                <span data-i18n>network.wifi.channel</span>
+                <input type="number" inputmode="numeric" name="wifi[ap][channel]" min="1" max="12" step="1" required>
               </label>
 
               <button type="submit" data-i18n>button.save</button>
@@ -134,29 +179,52 @@
         </div>
       </article>
 
-      <article>
+      <article id="ethernet-section" class="hidden">
         <div>
           <hgroup>
-            <h2 data-i18n>network.section.apSettings</h2>
+            <h3 data-i18n>network.section.ethernet</h3>
             <p></p>
           </hgroup>
 
-          <div id="ap-settings-busy" aria-busy="true"></div>
-          <form action="/api/network/settings" id="ap-settings" class="hidden">
-            <label>
-              <span data-i18n>network.wifi.ssid</span>
-              <input type="text" name="ap[ssid]" maxlength="32" required>
-            </label>
+          <div id="ethernet-settings-busy" aria-busy="true"></div>
+          <form action="/api/network/settings" id="ethernet-settings" class="hidden">
+            <small id="ethernet-not-configured" class="hidden" data-i18n>network.ethernet.notConfigured</small>
 
-            <label>
-              <span data-i18n>network.wifi.password</span>
-              <input type="text" name="ap[password]" maxlength="64" required>
-            </label>
+            <div class="grid">
+              <label>
+                <span data-i18n>network.ethernet.clk</span>
+                <input type="number" inputmode="numeric" name="ethernet[gpio][clk]" min="0" max="254" step="1">
+              </label>
 
-            <label>
-              <span data-i18n>network.wifi.channel</span>
-              <input type="number" inputmode="numeric" name="ap[channel]" min="1" max="12" step="1" required>
-            </label>
+              <label>
+                <span data-i18n>network.ethernet.mosi</span>
+                <input type="number" inputmode="numeric" name="ethernet[gpio][mosi]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.miso</span>
+                <input type="number" inputmode="numeric" name="ethernet[gpio][miso]" min="0" max="254" step="1">
+              </label>
+            </div>
+
+            <div class="grid">
+              <label>
+                <span data-i18n>network.ethernet.cs</span>
+                <input type="number" inputmode="numeric" name="ethernet[gpio][cs]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.irq</span>
+                <input type="number" inputmode="numeric" name="ethernet[gpio][irq]" min="0" max="254" step="1">
+              </label>
+
+              <label>
+                <span data-i18n>network.ethernet.rst</span>
+                <input type="number" inputmode="numeric" name="ethernet[gpio][rst]" min="0" max="254" step="1">
+              </label>
+            </div>
+
+            <small data-i18n>network.ethernet.note</small>
 
             <button type="submit" data-i18n>button.save</button>
           </form>
@@ -181,7 +249,16 @@
         const lang = new Lang(document.getElementById('lang'));
         await lang.build();
 
+        let networkType = 2;
+
         const fillData = (data) => {
+          networkType = data.type;
+          setSelectValue("[name='type']", networkType);
+
+          const canScan = networkType === 2;
+          document.getElementById('wifi-scan-controls').disabled = !canScan;
+          document.querySelector('#scan-unavailable').classList.toggle('hidden', canScan);
+
           setInputValue("[name='hostname']", data.hostname);
           setCheckboxValue("[name='use_dhcp']", data.use_dhcp);
           setInputValue("[name='static_config[ip]']", data.static_config.ip);
@@ -190,34 +267,78 @@
           setInputValue("[name='static_config[dns]']", data.static_config.dns);
           setBusy('#network-settings-busy', '#network-settings', false);
 
-          setInputValue("[name='sta[ssid]']", data.sta.ssid);
-          setInputValue("[name='sta[password]']", data.sta.password);
-          setInputValue("[name='sta[channel]']", data.sta.channel);
+          const ethernet = data.ethernet || {};
+          const ethernetConfigured = !!ethernet.configured;
+          const ethernetGpio = ethernet.gpio || {};
+          const gpioValue = (value) => (value ?? 255) < 255 ? value : '';
+
+          setInputValue("[name='ethernet[gpio][clk]']", gpioValue(ethernetGpio.clk));
+          setInputValue("[name='ethernet[gpio][mosi]']", gpioValue(ethernetGpio.mosi));
+          setInputValue("[name='ethernet[gpio][miso]']", gpioValue(ethernetGpio.miso));
+          setInputValue("[name='ethernet[gpio][cs]']", gpioValue(ethernetGpio.cs));
+          setInputValue("[name='ethernet[gpio][irq]']", gpioValue(ethernetGpio.irq));
+          setInputValue("[name='ethernet[gpio][rst]']", gpioValue(ethernetGpio.rst));
+
+          document.getElementById('ethernet-not-configured')?.classList.toggle('hidden', ethernetConfigured);
+
+          setBusy('#ethernet-settings-busy', '#ethernet-settings', false);
+
+          setInputValue("[name='wifi[sta][ssid]']", data.wifi.sta.ssid);
+          setInputValue("[name='wifi[sta][password]']", data.wifi.sta.password);
+          setInputValue("[name='wifi[sta][channel]']", data.wifi.sta.channel);
           setBusy('#sta-settings-busy', '#sta-settings', false);
 
-          setInputValue("[name='ap[ssid]']", data.ap.ssid);
-          setInputValue("[name='ap[password]']", data.ap.password);
-          setInputValue("[name='ap[channel]']", data.ap.channel);
+          setInputValue("[name='wifi[ap][ssid]']", data.wifi.ap.ssid);
+          setInputValue("[name='wifi[ap][password]']", data.wifi.ap.password);
+          setInputValue("[name='wifi[ap][channel]']", data.wifi.ap.channel);
           setBusy('#ap-settings-busy', '#ap-settings', false);
         };
 
+        const applyCapabilities = (info) => {
+          // pages and firmware ship together: the section stays hidden unless the build says it can do ethernet
+          const supported = info?.features?.ethernet === true;
+
+          document.getElementById('ethernet-section')?.classList.toggle('hidden', !supported);
+          const ethernetOption = document.querySelector("[name='type'] option[value='3']");
+          ethernetOption.hidden = !supported;
+          ethernetOption.disabled = !supported;
+
+          return supported;
+        };
+
         try {
-          const response = await fetch("/api/network/settings", {
-            cache: "no-cache",
-            credentials: "include"
-          });
-          
+          const [response, infoResponse] = await Promise.all([
+            fetch("/api/network/settings", {
+              cache: "no-cache",
+              credentials: "include"
+            }),
+            fetch("/api/info", {
+              cache: "no-cache",
+              credentials: "include"
+            })
+          ]);
+
           if (!response.ok) {
             throw new Error('Response not valid');
           }
+
+          const info = infoResponse.ok ? await infoResponse.json() : null;
+          const ethernetSupported = applyCapabilities(info);
 
           const result = await response.json();
           fillData(result);
 
           setupForm('#network-settings', fillData, ['hostname', 'static_config.ip', 'static_config.gateway', 'static_config.subnet', 'static_config.dns']);
-          setupNetworkScanForm('#network-scan', '#networks');
-          setupForm('#sta-settings', fillData, ['sta.ssid', 'sta.password']);
-          setupForm('#ap-settings', fillData, ['ap.ssid', 'ap.password']);
+
+          // Keep scans disabled if an earlier request finishes after the connection method changes.
+          setupNetworkScanForm('#network-scan', '#networks', networkType === 2);
+
+          if (ethernetSupported) {
+            setupForm('#ethernet-settings', fillData);
+          }
+
+          setupForm('#sta-settings', fillData, ['wifi.sta.ssid', 'wifi.sta.password']);
+          setupForm('#ap-settings', fillData, ['wifi.ap.ssid', 'wifi.ap.password']);
 
         } catch (error) {
           console.log(error);

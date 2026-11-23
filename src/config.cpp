@@ -164,6 +164,7 @@ void saveSettingsNow() {
 // Initialization
 static bool loadNetworkSettings() {
   bool loaded = false;
+  fsNetworkSettings.addWithoutWipe(true);
 
   switch (fsNetworkSettings.read()) {
     case FD_FS_ERR:
@@ -341,13 +342,26 @@ JsonVariant toJson(const NetworkSettings& src, JsonVariant dst) {
   dst[S_STATIC_CONFIG][S_SUBNET] = src.staticConfig.subnet;
   dst[S_STATIC_CONFIG][S_DNS] = src.staticConfig.dns;
 
-  dst[S_AP][S_SSID] = src.ap.ssid;
-  dst[S_AP][S_PASSWORD] = src.ap.password;
-  dst[S_AP][S_CHANNEL] = src.ap.channel;
+  auto wifi = dst[S_WIFI].to<JsonObject>();
+  wifi[S_AP][S_SSID] = src.wifi.ap.ssid;
+  wifi[S_AP][S_PASSWORD] = src.wifi.ap.password;
+  wifi[S_AP][S_CHANNEL] = src.wifi.ap.channel;
 
-  dst[S_STA][S_SSID] = src.sta.ssid;
-  dst[S_STA][S_PASSWORD] = src.sta.password;
-  dst[S_STA][S_CHANNEL] = src.sta.channel;
+  wifi[S_STA][S_SSID] = src.wifi.sta.ssid;
+  wifi[S_STA][S_PASSWORD] = src.wifi.sta.password;
+  wifi[S_STA][S_CHANNEL] = src.wifi.sta.channel;
+
+  #if USE_ETHERNET
+    auto gpio = dst[S_ETHERNET][S_GPIO].to<JsonObject>();
+    gpio[S_CLK] = src.ethernet.w5500.clk;
+    gpio[S_MOSI] = src.ethernet.w5500.mosi;
+    gpio[S_MISO] = src.ethernet.w5500.miso;
+    gpio[S_CS] = src.ethernet.w5500.cs;
+    gpio[S_IRQ] = src.ethernet.w5500.irq;
+    gpio[S_RST] = src.ethernet.w5500.rst;
+  #endif
+
+  dst[S_TYPE] = static_cast<uint8_t>(src.type);
 
   return dst;
 }
@@ -430,39 +444,43 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   }
 
 
+  const auto wifi = src[S_WIFI];
+  const auto ap = wifi[S_AP];
+  const auto sta = wifi[S_STA];
+
   // ap
-  if (src[S_AP][S_SSID].is<JsonString>()) {
-    const JsonString value = src[S_AP][S_SSID].as<JsonString>();
+  if (ap[S_SSID].is<JsonString>()) {
+    const JsonString value = ap[S_SSID].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.ap.ssid)) {
+    if (value.size() && value.size() < sizeof(dst.wifi.ap.ssid)) {
       result.accepted = true;
-      if (strcmp(value.c_str(), dst.ap.ssid) != 0) {
-        strcpy(dst.ap.ssid, value.c_str());
+      if (strcmp(value.c_str(), dst.wifi.ap.ssid) != 0) {
+        strcpy(dst.wifi.ap.ssid, value.c_str());
         result.changed = true;
       }
     }
   }
 
-  if (src[S_AP][S_PASSWORD].is<JsonString>()) {
-    const JsonString value = src[S_AP][S_PASSWORD].as<JsonString>();
+  if (ap[S_PASSWORD].is<JsonString>()) {
+    const JsonString value = ap[S_PASSWORD].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.ap.password)) {
+    if (value.size() && value.size() < sizeof(dst.wifi.ap.password)) {
       result.accepted = true;
-      if (strcmp(value.c_str(), dst.ap.password) != 0) {
-        strcpy(dst.ap.password, value.c_str());
+      if (strcmp(value.c_str(), dst.wifi.ap.password) != 0) {
+        strcpy(dst.wifi.ap.password, value.c_str());
         result.changed = true;
       }
     }
   }
 
-  if (src[S_AP][S_CHANNEL].is<uint8_t>()) {
-    const auto value = src[S_AP][S_CHANNEL].as<uint8_t>();
+  if (ap[S_CHANNEL].is<uint8_t>()) {
+    const auto value = ap[S_CHANNEL].as<uint8_t>();
 
     if (value < 12) {
       result.accepted = true;
 
-      if (value != dst.ap.channel) {
-        dst.ap.channel = value;
+      if (value != dst.wifi.ap.channel) {
+        dst.wifi.ap.channel = value;
         result.changed = true;
       }
     }
@@ -470,38 +488,88 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
 
 
   // sta
-  if (src[S_STA][S_SSID].is<JsonString>()) {
-    const JsonString value = src[S_STA][S_SSID].as<JsonString>();
+  if (sta[S_SSID].is<JsonString>()) {
+    const JsonString value = sta[S_SSID].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.sta.ssid)) {
+    if (value.size() && value.size() < sizeof(dst.wifi.sta.ssid)) {
       result.accepted = true;
-      if (strcmp(value.c_str(), dst.sta.ssid) != 0) {
-        strcpy(dst.sta.ssid, value.c_str());
+      if (strcmp(value.c_str(), dst.wifi.sta.ssid) != 0) {
+        strcpy(dst.wifi.sta.ssid, value.c_str());
         result.changed = true;
       }
     }
   }
 
-  if (src[S_STA][S_PASSWORD].is<JsonString>()) {
-    const JsonString value = src[S_STA][S_PASSWORD].as<JsonString>();
+  if (sta[S_PASSWORD].is<JsonString>()) {
+    const JsonString value = sta[S_PASSWORD].as<JsonString>();
 
-    if (value.size() < sizeof(dst.sta.password)) {
+    if (value.size() < sizeof(dst.wifi.sta.password)) {
       result.accepted = true;
-      if (strcmp(value.c_str(), dst.sta.password) != 0) {
-        strcpy(dst.sta.password, value.c_str());
+      if (strcmp(value.c_str(), dst.wifi.sta.password) != 0) {
+        strcpy(dst.wifi.sta.password, value.c_str());
         result.changed = true;
       }
     }
   }
 
-  if (src[S_STA][S_CHANNEL].is<uint8_t>()) {
-    const auto value = src[S_STA][S_CHANNEL].as<uint8_t>();
+  if (sta[S_CHANNEL].is<uint8_t>()) {
+    const auto value = sta[S_CHANNEL].as<uint8_t>();
 
     if (value < 12) {
       result.accepted = true;
 
-      if (value != dst.sta.channel) {
-        dst.sta.channel = value;
+      if (value != dst.wifi.sta.channel) {
+        dst.wifi.sta.channel = value;
+        result.changed = true;
+      }
+    }
+  }
+
+  #if USE_ETHERNET
+    // Ethernet GPIOs use the same strict numeric contract as the other GPIO settings.
+    const auto ethernet = src[S_ETHERNET];
+    const auto parseGpio = [&result](JsonVariantConst gpio, uint8_t& target, bool output) {
+      uint8_t value;
+      if (gpio.is<JsonString>() && gpio.as<JsonString>().size() == 0) {
+        value = GPIO_IS_NOT_CONFIGURED;
+
+      } else if (gpio.is<uint8_t>()) {
+        value = gpio.as<uint8_t>();
+
+      } else {
+        return;
+      }
+
+      if (value != GPIO_IS_NOT_CONFIGURED && !(output ? GPIO_IS_VALID_OUTPUT(value) : GPIO_IS_VALID_INPUT(value))) {
+        return;
+      }
+
+      result.accepted = true;
+      if (value != target) {
+        target = value;
+        result.changed = true;
+      }
+    };
+
+    const auto gpio = ethernet[S_GPIO];
+    parseGpio(gpio[S_CLK], dst.ethernet.w5500.clk, true);
+    parseGpio(gpio[S_MOSI], dst.ethernet.w5500.mosi, true);
+    parseGpio(gpio[S_MISO], dst.ethernet.w5500.miso, false);
+    parseGpio(gpio[S_CS], dst.ethernet.w5500.cs, true);
+    parseGpio(gpio[S_IRQ], dst.ethernet.w5500.irq, false);
+    parseGpio(gpio[S_RST], dst.ethernet.w5500.rst, true);
+  #endif
+
+  if (src[S_TYPE].is<uint8_t>()) {
+    const auto value = static_cast<NetworkMode>(src[S_TYPE].as<uint8_t>());
+    if (value == NetworkMode::STA
+      #if USE_ETHERNET
+        || value == NetworkMode::ETH
+      #endif
+    ) {
+      result.accepted = true;
+      if (value != dst.type) {
+        dst.type = value;
         result.changed = true;
       }
     }
@@ -3167,7 +3235,9 @@ SettingResult fromJson(const JsonVariantConst src, Sensors::Settings& dst) {
 
       case static_cast<uint8_t>(Sensors::Type::NTC_10K_TEMP):
       case static_cast<uint8_t>(Sensors::Type::DALLAS_TEMP):
+      #if USE_BLE
       case static_cast<uint8_t>(Sensors::Type::BLUETOOTH):
+      #endif
       case static_cast<uint8_t>(Sensors::Type::DHT11):
       case static_cast<uint8_t>(Sensors::Type::DHT22):
       case static_cast<uint8_t>(Sensors::Type::HEATING_SETPOINT_TEMP):
@@ -3428,6 +3498,7 @@ JsonVariant toJson(const Variables& src, JsonVariant dst) {
 
   master[S_NETWORK][S_CONNECTED] = isNetworkConnected();
   master[S_NETWORK][S_RSSI] = src.network.rssi;
+  master[S_NETWORK][S_CONNECTION_TYPE] = getNetworkConnectionType();
   master[S_MQTT][S_CONNECTED] = isMqttConnected();
   master[S_EMERGENCY][S_STATE] = src.emergency.state;
   master[S_EXTERNAL_PUMP][S_STATE] = src.externalPump.state;

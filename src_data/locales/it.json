@@ -144,15 +144,34 @@
     "network": {
       "title": "Rete - OpenTherm Gateway",
       "name": "Impostazioni rete",
+      "type": {
+        "title": "Metodo di connessione",
+        "wifi": "Wi-Fi",
+        "ethernet": "Ethernet"
+      },
       "section": {
         "static": "Impostazioni statico",
+        "ethernet": "Ethernet",
+        "wifi": "Wi-Fi",
         "availableNetworks": "Reti disponibili",
         "staSettings": "Impostazioni WiFi",
         "apSettings": "Impostazioni AP"
       },
       "scan": {
         "pos": "#",
-        "info": "Info"
+        "info": "Info",
+        "unavailable": "La ricerca delle reti è disponibile solo in modalità Wi-Fi."
+      },
+
+      "ethernet": {
+        "notConfigured": "Configura tutti e sei i GPIO per utilizzare Ethernet.",
+        "clk": "GPIO clock SPI",
+        "mosi": "GPIO MOSI SPI",
+        "miso": "GPIO MISO SPI",
+        "cs": "GPIO CS SPI",
+        "irq": "GPIO interrupt",
+        "rst": "GPIO reset",
+        "note": "Cablaggio SPI del W5500"
       },
       "wifi": {
         "ssid": "SSID",
@@ -168,7 +187,14 @@
         "ip": "IP",
         "subnet": "Subnet",
         "gateway": "Gateway",
-        "dns": "DNS"
+        "dns": "DNS",
+        "connection": "Connessione",
+        "connectionType": {
+          "ethernet": "Ethernet",
+          "wifi": "WiFi",
+          "wifi-ap": "WiFi AP",
+          "none": "Nessuno"
+        }
       },
       "sta": {
         "channel": {
