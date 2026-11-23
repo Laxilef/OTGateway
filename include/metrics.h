@@ -4,8 +4,9 @@
 #include <esp_arduino_version.h>
 #include <esp_heap_caps.h>
 #include <esp_timer.h>
-#include <mutex>
 #include <stdint.h>
+
+#include <mutex>
 
 struct HeapMetrics : multi_heap_info_t {
   size_t total;

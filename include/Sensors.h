@@ -1,17 +1,18 @@
 #pragma once
 
 #include <Arduino.h>
-#include <esp_log.h>
 #include <errno.h>
+#include <esp_log.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <cmath>
 #include <functional>
-#include <math.h>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <stdlib.h>
-#include <string.h>
 
 #include "macros.h"
 #include "utils.h"
