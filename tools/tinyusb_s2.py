@@ -4,7 +4,12 @@ from pathlib import Path
 import shutil
 import subprocess
 
+from SCons.Script import Return
+
 Import("env")
+
+if env.IsCleanTarget():
+  Return()
 
 
 def checkout(repository, revision, directory):
