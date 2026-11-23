@@ -3,6 +3,7 @@
 from pathlib import Path
 import shutil
 import subprocess
+from urllib.request import Request, urlopen
 
 from SCons.Script import Return
 
@@ -16,10 +17,27 @@ def checkout(repository, revision, directory):
   if not (directory / ".git").is_dir():
     subprocess.run(["git", "clone", "--filter=blob:none", "--no-checkout",
                     repository, str(directory)], check=True)
-  current = subprocess.run(["git", "-C", str(directory), "rev-parse", "HEAD"],
-                           check=True, capture_output=True, text=True).stdout.strip()
-  if not current.startswith(revision):
-    subprocess.run(["git", "-C", str(directory), "checkout", "--detach", revision], check=True)
+  result = subprocess.run(["git", "-C", str(directory), "rev-parse", "--verify", revision + "^{commit}"],
+                          capture_output=True, text=True)
+  if result.returncode:
+    # SDK metadata can reference commits no longer reachable from upstream branches.
+    api = repository.removesuffix(".git").replace("https://github.com/", "https://api.github.com/repos/", 1)
+    request = Request(api + "/commits/" + revision, headers={
+      "Accept": "application/vnd.github.sha",
+      "User-Agent": "OTGateway"
+    })
+    with urlopen(request, timeout=30) as response:
+      commit = response.read().decode("ascii").strip()
+    if (len(commit) != 40 or not commit.startswith(revision)
+        or any(char not in "0123456789abcdef" for char in commit)):
+      raise RuntimeError("Unexpected GitHub commit for SDK revision " + revision)
+    subprocess.run(["git", "-C", str(directory), "fetch", "--depth=1", "origin", commit], check=True)
+
+  else:
+    commit = result.stdout.strip()
+
+  # A fresh --no-checkout clone can have the correct HEAD and still lack its files.
+  subprocess.run(["git", "-C", str(directory), "checkout", "--detach", commit], check=True)
 
 
 platform = env.PioPlatform()
