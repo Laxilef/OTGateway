@@ -893,7 +893,7 @@ static Task readNtcSensorsTask("Read NTC sensors", [](void*) {
     }
 
     const auto value = analogReadMilliVolts(sSensor->gpio);
-    if (value < DEFAULT_NTC_VLOW_TRESHOLD || value > DEFAULT_NTC_VHIGH_TRESHOLD) {
+    if (value < DEFAULT_NTC_VLOW_THRESHOLD || value > DEFAULT_NTC_VHIGH_THRESHOLD) {
       Sensors::setConnectionStatusById(sensorId, false, false);
 
       ESP_LOGW(

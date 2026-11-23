@@ -113,7 +113,7 @@ static Task emergencyTask("Emergency mode", [](void*) {
 
     } else if (emergencyDetected && !vars.emergency.state) {
       // enable emergency
-      if (millis() - emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
+      if (millis() - emergencyFlipTime > (settings.emergency.thresholdTime * 1000)) {
         vars.emergency.state = true;
         ESP_LOGI(L_MAIN, "Emergency mode enabled (%hhu)", emergencyFlags);
       }
@@ -127,7 +127,7 @@ static Task emergencyTask("Emergency mode", [](void*) {
 
     } else if (!emergencyDetected && vars.emergency.state) {
       // disable emergency
-      if (millis() - emergencyFlipTime > (settings.emergency.tresholdTime * 1000)) {
+      if (millis() - emergencyFlipTime > (settings.emergency.thresholdTime * 1000)) {
         vars.emergency.state = false;
         ESP_LOGI(L_MAIN, "Emergency mode disabled");
       }

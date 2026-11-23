@@ -366,8 +366,8 @@
                 </label>
 
                 <label>
-                  <span data-i18n>settings.emergency.treshold</span>
-                  <input type="number" inputmode="numeric" name="treshold_time" min="60" max="1800" step="1" required>
+                  <span data-i18n>settings.emergency.thresholdTime</span>
+                  <input type="number" inputmode="numeric" name="threshold_time" min="60" max="1800" step="1" required>
                 </label>
               </div>
 
@@ -1302,7 +1302,7 @@
                 "max": data.heating.max_temp,
               }, form);
             }
-            setInputValue("[name='treshold_time']", data.emergency.treshold_time, {}, form);
+            setInputValue("[name='threshold_time']", data.emergency.threshold_time, {}, form);
 
           } else if (section === 'equitherm') {
             setCheckboxValue("[name='enabled']", data.equitherm.enabled, form);

@@ -206,7 +206,6 @@ inline const char S_THRESHOLD_LOW[]                        = "threshold_low";
 inline const char S_THRESHOLD_TIME[]                       = "threshold_time";
 inline const char S_TIMEZONE[]                             = "timezone";
 inline const char S_TOTAL[]                                = "total";
-inline const char S_TRESHOLD_TIME[]                        = "treshold_time";
 inline const char S_TRUE[]                                 = "true";
 inline const char S_TURBO[]                                = "turbo";
 inline const char S_TURBO_FACTOR[]                         = "turbo_factor";

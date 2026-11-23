@@ -370,7 +370,7 @@
           "title": "Doeltemperatuur",
           "note": "<b>Belangrijk:</b> <u>Doel binnentemperatuur</u> als OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld.<br />In alle andere gevallen, de <u>doel warmtedragertemperatuur</u>."
         },
-        "treshold": "Drempeltijd <small>(sec)</small>"
+        "thresholdTime": "Vertraging bij in- en uitschakelen van de noodmodus <small>(sec)</small>"
       },
       "equitherm": {
         "slope": {
