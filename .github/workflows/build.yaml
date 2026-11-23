@@ -124,7 +124,7 @@ jobs:
     needs: build
     permissions:
       contents: write
-    if: ${{ github.repository_owner == 'Laxilef' && github.ref == 'refs/heads/async' }}
+    if: ${{ github.repository_owner == 'Laxilef' && github.ref == 'refs/heads/dev' }}
 
     steps:
       - name: Checkout
@@ -165,7 +165,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: dev
-          target_commitish: async
+          target_commitish: ${{ github.sha }}
           name: Dev (unstable)
           prerelease: true
           make_latest: false
