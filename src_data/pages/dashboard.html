@@ -598,7 +598,7 @@
             const result = await response.json();
 
             // Graph
-            setValue('#tHeatCurrentTemp', result.master.heating.indoor_temp_control
+            setValue('#tHeatCurrentTemp', result.master.heating.smart_control
               ? result.master.heating.indoor_temp
               : result.master.heating.current_temp
             );
@@ -683,7 +683,7 @@
               result.master.heating.blocking ? "success" : "error",
               result.master.heating.blocking ? "red" : "green"
             );
-            setState('.mHeatIndoorTempControl', result.master.heating.indoor_temp_control);
+            setState('.mHeatSmartControl', result.master.heating.smart_control);
             setStatus(
               '.mHeatOverheat',
               result.master.heating.overheat ? "success" : "error",

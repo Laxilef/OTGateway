@@ -1336,11 +1336,11 @@ static bool normalizeHeatingFreezeBounds(HeatingSettings& dst) {
 static SettingResult setHeatingTarget(HeatingSettings& dst, float value) {
   bool changed = false;
 
-  bool indoorTempControl = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeOTC;
-  float minTemp = indoorTempControl
+  bool smartControl = settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeOTC;
+  float minTemp = smartControl
     ? THERMOSTAT_INDOOR_MIN_TEMP
     : dst.minTemp;
-  float maxTemp = indoorTempControl
+  float maxTemp = smartControl
     ? THERMOSTAT_INDOOR_MAX_TEMP
     : dst.maxTemp;
 
@@ -1353,7 +1353,7 @@ static SettingResult setHeatingTarget(HeatingSettings& dst, float value) {
   );
 
   if (!valid) {
-    value = indoorTempControl ? THERMOSTAT_INDOOR_DEFAULT_TEMP : DEFAULT_HEATING_TARGET_TEMP;
+    value = smartControl ? THERMOSTAT_INDOOR_DEFAULT_TEMP : DEFAULT_HEATING_TARGET_TEMP;
   }
 
   value = constrain(value, minTemp, maxTemp);
@@ -3405,7 +3405,7 @@ JsonVariant toJson(const Variables& src, JsonVariant dst) {
   auto mHeating = master[S_HEATING].to<JsonObject>();
   mHeating[S_ENABLED] = src.master.heating.enabled;
   mHeating[S_BLOCKING] = src.master.heating.blocking;
-  mHeating[S_INDOOR_TEMP_CONTROL] = src.master.heating.indoorTempControl;
+  mHeating[S_SMART_CONTROL] = src.master.heating.smartControl;
   mHeating[S_OVERHEAT] = src.master.heating.overheat;
   mHeating[S_FREEZING] = src.master.heating.freezing;
   mHeating[S_SETPOINT_TEMP] = roundf((src.master.heating.setpointTemp == 0 ? 0 : convertTemp(src.master.heating.setpointTemp, UnitSystem::METRIC, settings.system.unitSystem)), 2);

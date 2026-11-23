@@ -608,7 +608,7 @@ void publishHaEntity(HaEntity entityId, bool remove) {
       if (!remove) {
         climate->icon = "mdi:radiator";
         climate->enabledByDefault = true;
-        climate->currentTemperatureTopic = vars.master.heating.indoorTempControl
+        climate->currentTemperatureTopic = vars.master.heating.smartControl
           ? "~/state/master/heating/indoor_temp"
           : "~/state/master/heating/current_temp";
         climate->temperatureCommandTopic = "~/settings/heating/target/set";

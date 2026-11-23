@@ -188,12 +188,12 @@ static Task regulatorTask("Regulator", [](void*) {
   }
 
   if (settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeOTC) {
-    vars.master.heating.indoorTempControl = true;
+    vars.master.heating.smartControl = true;
     vars.master.heating.minTemp = THERMOSTAT_INDOOR_MIN_TEMP;
     vars.master.heating.maxTemp = THERMOSTAT_INDOOR_MAX_TEMP;
 
   } else {
-    vars.master.heating.indoorTempControl = false;
+    vars.master.heating.smartControl = false;
     vars.master.heating.minTemp = settings.heating.minTemp;
     vars.master.heating.maxTemp = settings.heating.maxTemp;
   }
