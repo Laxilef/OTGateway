@@ -5,6 +5,10 @@ import re
 
 Import("env")
 
+# HybridCompile generates app_main when the SDK source directory is empty.
+dummy = Path(env.subst("$PROJECT_DIR")) / ".dummy"
+dummy.mkdir(exist_ok=True)
+
 build_frameworks = env.BuildFrameworks
 
 
