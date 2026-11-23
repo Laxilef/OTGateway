@@ -247,6 +247,7 @@ static void publishSlaveState() {
 static void publishMasterState() {
   publishValue(mqttTopic("state/master/heating/enabled"), vars.master.heating.enabled);
   publishValue(mqttTopic("state/master/heating/blocking"), vars.master.heating.blocking);
+  publishValue(mqttTopic("state/master/heating/smart_control"), vars.master.heating.smartControl);
   publishValue(mqttTopic("state/master/heating/overheat"), vars.master.heating.overheat);
   publishValue(mqttTopic("state/master/heating/freezing"), vars.master.heating.freezing);
   publishValue(
@@ -284,7 +285,6 @@ static void publishMasterState() {
   publishValue(mqttTopic("state/master/dhw/max_temp"), convertTemp(settings.dhw.maxTemp, UnitSystem::METRIC, settings.system.unitSystem), 2);
   publishValue(mqttTopic("state/master/network/connected"), isNetworkConnected());
   publishValue(mqttTopic("state/master/network/rssi"), std::to_string(vars.network.rssi));
-  publishValue(mqttTopic("state/master/mqtt/connected"), isMqttConnected());
   publishValue(mqttTopic("state/master/emergency/state"), vars.emergency.state);
   publishValue(mqttTopic("state/master/ext_pump/state"), vars.externalPump.state);
   publishValue(mqttTopic("state/master/cascade_control/input"), vars.cascadeControl.input);
@@ -762,7 +762,7 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
       static uint8_t heatingMinTemp = vars.slave.heating.minTemp;
       static uint8_t heatingMaxTemp = vars.slave.heating.maxTemp;
       static bool dhwSupport = settings.opentherm.options.dhwSupport;
-      static bool indoorTempControl = vars.master.heating.indoorTempControl;
+      static bool smartControl = vars.master.heating.smartControl;
       static float heatingMinSetpointTemp = vars.master.heating.minTemp;
       static float heatingMaxSetpointTemp = vars.master.heating.maxTemp;
       static uint8_t dhwMinTemp = settings.dhw.minTemp;
@@ -827,8 +827,8 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
           .set(HA_ENTITY_DHW_OVERHEAT);
       }
 
-      if (indoorTempControl != vars.master.heating.indoorTempControl) {
-        indoorTempControl = vars.master.heating.indoorTempControl;
+      if (smartControl != vars.master.heating.smartControl) {
+        smartControl = vars.master.heating.smartControl;
         mqttHaPendingEntities.set(HA_ENTITY_HEATING_CLIMATE);
       }
 

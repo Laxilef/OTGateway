@@ -249,7 +249,7 @@ struct Variables {
     struct {
       bool blocking = false;
       bool enabled = false;
-      bool indoorTempControl = false;
+      bool smartControl = false;
       bool overheat = false;
       bool freezing = false;
       float setpointTemp = 0.0f;
