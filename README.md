@@ -44,7 +44,7 @@
 
 All available information and instructions can be found in the wiki: [English](https://github.com/Laxilef/OTGateway/wiki) · [Русский](https://github.com/Laxilef/OTGateway/wiki/Home.RU).
 
-* Installation
+* **Installation**
    * [First installation](https://github.com/Laxilef/OTGateway/wiki/Installation-and-upgrade#first-installation)
       * [Web Flasher](https://github.com/Laxilef/OTGateway/wiki/Installation-and-upgrade#web-flasher)
       * [ESP Flash Download Tool](https://github.com/Laxilef/OTGateway/wiki/Installation-and-upgrade#esp-flash-download-tool)
@@ -53,7 +53,7 @@ All available information and instructions can be found in the wiki: [English](h
       * [Save the settings](https://github.com/Laxilef/OTGateway/wiki/Installation-and-upgrade#save-the-settings)
       * [Update firmware and filesystem](https://github.com/Laxilef/OTGateway/wiki/Installation-and-upgrade#update-firmware-and-filesystem)
       * [Restore the settings](https://github.com/Laxilef/OTGateway/wiki/Installation-and-upgrade#restore-the-settings)
-* Hardware
+* **Hardware**
    * [Boilers](https://github.com/Laxilef/OTGateway/wiki/Boilers)
    * [ESP32 boards](https://github.com/Laxilef/OTGateway/wiki/Boards)
    * [Temperature sensors](https://github.com/Laxilef/OTGateway/wiki/Sensors#temperature-sensors)
@@ -63,7 +63,7 @@ All available information and instructions can be found in the wiki: [English](h
          * [Files for production](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#files-for-production)
          * [Connection](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#connection)
          * [LEDs on board](https://github.com/Laxilef/OTGateway/wiki/OT-adapters#leds-on-board)
-* Configuration
+* **Configuration**
    * [Heating and OpenTherm](https://github.com/Laxilef/OTGateway/wiki/Heating-and-OpenTherm)
       * [Heating hysteresis](https://github.com/Laxilef/OTGateway/wiki/Heating-and-OpenTherm#heating-hysteresis)
       * [Equitherm](https://github.com/Laxilef/OTGateway/wiki/Heating-and-OpenTherm#equitherm)
@@ -79,7 +79,7 @@ All available information and instructions can be found in the wiki: [English](h
    * [Sensor setup](https://github.com/Laxilef/OTGateway/wiki/Sensors#connect-a-temperature-sensor)
       * [Choose a purpose](https://github.com/Laxilef/OTGateway/wiki/Sensors#choose-a-purpose)
       * [Supply a reading from another system](https://github.com/Laxilef/OTGateway/wiki/Sensors#supply-a-reading-from-another-system)
-* Integrations
+* **Integrations**
    * [MQTT](https://github.com/Laxilef/OTGateway/wiki/MQTT)
       * [Topic structure and access](https://github.com/Laxilef/OTGateway/wiki/MQTT#topic-structure-and-access)
       * [State topics](https://github.com/Laxilef/OTGateway/wiki/MQTT#state-topics)
@@ -104,7 +104,7 @@ All available information and instructions can be found in the wiki: [English](h
          * [Supply a temperature to OTGateway](https://github.com/Laxilef/OTGateway/wiki/HOMEd#supply-a-temperature-from-homed-to-otgateway)
       * [Diagnostics](https://github.com/Laxilef/OTGateway/wiki/HOMEd#diagnostics)
       * [Migrate an existing integration](https://github.com/Laxilef/OTGateway/wiki/HOMEd#migrate-an-existing-integration)
-* Other
+* **Other**
    * [FAQ and troubleshooting](https://github.com/Laxilef/OTGateway/wiki/FAQ-%26-Troubleshooting)
       * [Installation and connection](https://github.com/Laxilef/OTGateway/wiki/FAQ-%26-Troubleshooting#installation-and-connection)
       * [Heating and hot water](https://github.com/Laxilef/OTGateway/wiki/FAQ-%26-Troubleshooting#heating-and-hot-water)
