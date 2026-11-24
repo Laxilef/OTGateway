@@ -1,6 +1,6 @@
 <div align="center">
 
-   [![GitHub version](https://img.shields.io/github/release/Laxilef/OTGateway.svg?include_prereleases)](https://github.com/Laxilef/OTGateway/releases)
+   [![GitHub version](https://img.shields.io/github/release/Laxilef/OTGateway.svg)](https://github.com/Laxilef/OTGateway/releases)
    [![GitHub download](https://img.shields.io/github/downloads/Laxilef/OTGateway/total.svg)](https://github.com/Laxilef/OTGateway/releases/latest)
    [![Translations](https://hosted.weblate.org/widget/otgateway/svg-badge.svg)](https://hosted.weblate.org/engage/otgateway/)
    [![License](https://img.shields.io/github/license/Laxilef/OTGateway.svg)](LICENSE.txt)
