@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 
-def generate_manifest(artifacts, environments):
+def generate_manifest(artifacts, environments, titles):
   firmware_files = {}
   # Match specific environments before their prefixes, e.g. esp32_c6_ethernet.
   prefixes = sorted(environments, key=len, reverse=True)
@@ -19,6 +19,9 @@ def generate_manifest(artifacts, environments):
 
   manifest = []
   for environment in environments:
+    title = titles.get(environment)
+    if not isinstance(title, str) or not title.strip():
+      raise ValueError(f"Title missing for {environment}")
     firmware = firmware_files.get(environment)
     if firmware is None:
       raise ValueError(f"Factory image missing for {environment}")
@@ -28,7 +31,7 @@ def generate_manifest(artifacts, environments):
       raise ValueError(f"Filesystem image missing: {filesystem.name}")
 
     manifest.append({
-      "name": environment,
+      "name": title,
       "files": [
         {"address": "0x0", "name": firmware.name},
         {"address": "0x370000", "name": filesystem.name},
@@ -40,13 +43,16 @@ def generate_manifest(artifacts, environments):
 def main():
   parser = argparse.ArgumentParser(description="Generate the release Web Flasher manifest")
   parser.add_argument("--envs", required=True, type=json.loads)
+  parser.add_argument("--titles", required=True, type=json.loads)
   parser.add_argument("--artifacts", type=Path, default=Path("artifacts"))
   args = parser.parse_args()
   if not isinstance(args.envs, list) or not args.envs:
     parser.error("--envs must be a nonempty JSON array")
+  if not isinstance(args.titles, dict):
+    parser.error("--titles must be a JSON object")
 
   try:
-    manifest = generate_manifest(args.artifacts, args.envs)
+    manifest = generate_manifest(args.artifacts, args.envs, args.titles)
   except ValueError as error:
     parser.error(str(error))
   output = args.artifacts / "webflasher.json"

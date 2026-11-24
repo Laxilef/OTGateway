@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       envs: ${{ steps.envs.outputs.envs }}
+      env_titles: ${{ steps.envs.outputs.env_titles }}
 
     steps:
       - name: Checkout
@@ -55,19 +56,24 @@ jobs:
         id: envs
         shell: bash
         run: |
-          ENVS=$(
-            pio project config --json-output \
-              | jq -c '
+          pio project config --json-output \
+            | jq -r '
+                [
                   .[]
                   | select(type == "array")
-                  | .[0]
-                  | select(startswith("env:"))
-                  | sub("^env:"; "")
-                ' | jq -s -c '.'
-          )
-
-          echo "envs=$ENVS" >> "$GITHUB_OUTPUT"
-          echo "$ENVS"
+                  | select(.[0] | startswith("env:"))
+                  | {
+                      name: (.[0] | sub("^env:"; "")),
+                      title: ([.[1][] | select(.[0] == "custom_title") | .[1]][0])
+                    }
+                ] as $envs
+                | {
+                    envs: ($envs | map(.name)),
+                    env_titles: ($envs | map({key: .name, value: .title}) | from_entries)
+                  }
+                | to_entries[]
+                | "\(.key)=\(.value | tojson)"
+              ' | tee -a "$GITHUB_OUTPUT"
 
   build:
     name: Build ${{ matrix.env }}
@@ -147,7 +153,8 @@ jobs:
       - name: Generate Web Flasher manifest
         env:
           ENVS: ${{ needs.prepare.outputs.envs }}
-        run: python3 tools/generate_webflasher.py --envs "$ENVS"
+          ENV_TITLES: ${{ needs.prepare.outputs.env_titles }}
+        run: python3 tools/generate_webflasher.py --envs "$ENVS" --titles "$ENV_TITLES"
 
       - name: Delete old release assets
         uses: mknejp/delete-release-assets@v1
