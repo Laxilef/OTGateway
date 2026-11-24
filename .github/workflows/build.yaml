@@ -121,7 +121,7 @@ jobs:
   release:
     name: Release Dev
     runs-on: ubuntu-latest
-    needs: build
+    needs: [prepare, build]
     permissions:
       contents: write
     if: ${{ github.repository_owner == 'Laxilef' && github.ref == 'refs/heads/dev' }}
@@ -144,6 +144,11 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      - name: Generate Web Flasher manifest
+        env:
+          ENVS: ${{ needs.prepare.outputs.envs }}
+        run: python3 tools/generate_webflasher.py --envs "$ENVS"
+
       - name: Delete old release assets
         uses: mknejp/delete-release-assets@v1
         with:
@@ -154,6 +159,7 @@ jobs:
           assets: |
             *.bin
             *.elf
+            webflasher.json
 
       - name: Clear release body
         env:
@@ -173,3 +179,4 @@ jobs:
           files: |
             artifacts/*.bin
             artifacts/*.elf
+            artifacts/webflasher.json
