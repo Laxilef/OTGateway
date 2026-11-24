@@ -7,7 +7,6 @@
 #include "types.h"
 #include "Sensors.h"
 
-// Keep the existing WiFi settings at the start of the persisted structure.
 struct NetworkSettings {
   char hostname[25] = DEFAULT_HOSTNAME;
   bool useDhcp = true;

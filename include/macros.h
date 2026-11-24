@@ -63,7 +63,6 @@
   #define USE_BLE false
 #endif
 
-// W5500 support is enabled by the dedicated C6 Ethernet build.
 #ifndef USE_ETHERNET
   #define USE_ETHERNET false
 #endif

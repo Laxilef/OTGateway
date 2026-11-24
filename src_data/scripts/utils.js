@@ -151,7 +151,7 @@ const setupNetworkScanForm = (formSelector, tableSelector, autorun = true) => {
         }
 
         nameCell.onclick = (event) => {
-          const input = document.querySelector("[name='sta[ssid]']");
+          const input = document.querySelector("[name='wifi[sta][ssid]']");
           const ssid = row.dataset.ssid;
           if (!input || !ssid) {
             return;

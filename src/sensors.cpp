@@ -13,6 +13,7 @@
 
 #if USE_BLE
   #include <NimBLEDevice.h>
+  #include <WiFi.h>
 #endif
 
 #if USE_BLE
@@ -743,6 +744,21 @@ static void scanBleSensors() {
     ESP_LOGI(L_SENSORS_BLE, "Scanning initialized");
   }
 
+  // BLE and WiFi share the radio. Pause scanning while AP clients are connected
+  // to keep the portal responsive and avoid disconnects.
+  if (isNetworkInterfaceStarted(NetworkMode::AP) && WiFi.AP.stationCount() > 0) {
+    if (pBLEScan->isScanning()) {
+      if (!pBLEScan->stop()) {
+        ESP_LOGW(L_SENSORS_BLE, "Unable to stop scanning for WiFi AP");
+        return;
+      }
+
+      ESP_LOGI(L_SENSORS_BLE, "Scanning paused for AP clients");
+    }
+
+    return;
+  }
+
   if (!pBLEScan->isScanning()) {
     activeScanBle = !activeScanBle;
     pBLEScan->setActiveScan(activeScanBle);
@@ -980,6 +996,11 @@ void initSensors() {
         NimBLEDevice::isInitialized() ||
         Sensors::getAmountByType(Sensors::Type::BLUETOOTH, true)
       );
+    })
+    .onDone([](const Task&, uint32_t) {
+      if (scanBleSensorsTask.interval() != 1000) {
+        scanBleSensorsTask.setInterval(1000);
+      }
     })
     .resume(15000);
   sensorsTaskManager.addTask(scanBleSensorsTask);
