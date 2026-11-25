@@ -849,7 +849,7 @@ static Task pollDhtSensorsTask("Poll DHT sensors", [](void*) {
 
         ESP_LOGW(
           L_SENSORS_DHT, "GPIO %hhu, sensor #%hhu '%s': failed receiving data (err: %s)",
-          sSensor->gpio, sensorId, sSensor->name, DHT::statusToString(instance.getStatus())
+          sSensor->gpio, sensorId, sSensor->name, DHT::statusToString(status)
         );
 
         Sensors::adjustSignalQuality(sensorId, -1);
