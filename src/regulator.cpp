@@ -207,9 +207,10 @@ static Task regulatorTask("Regulator", [](void*) {
   turbo();
   hysteresis();
 
-  vars.master.heating.targetTemp = settings.heating.target;
-
   const float setpointTemp = getHeatingSetpointTemp();
+  vars.master.heating.targetTemp = settings.opentherm.options.nativeOTC
+    ? setpointTemp
+    : settings.heating.target;
   vars.master.heating.setpointTemp = roundf(constrain(
     setpointTemp,
     getHeatingMinSetpointTemp(),

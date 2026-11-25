@@ -349,20 +349,6 @@ static NimBLEScan* pBLEScan = nullptr;
 static bool activeScanBle = false;
 #endif
 
-static bool isEqualAddress(const uint8_t *addr1, const uint8_t *addr2, const uint8_t length = 8) {
-  return memcmp(addr1, addr2, length) == 0;
-  /*bool result = true;
-
-  for (uint8_t i = 0; i < length; i++) {
-    if (addr1[i] != addr2[i]) {
-      result = false;
-      break;
-    }
-  }
-
-  return result;*/
-}
-
 static bool isEmptyAddress(const uint8_t *addr, const uint8_t length = 8) {
   bool result = true;
 
@@ -437,7 +423,7 @@ static void makeDallasInstances() {
       continue;
     }
 
-    if (!sSensor->enabled || sSensor->type != Sensors::Type::DALLAS_TEMP || sSensor->purpose == Sensors::Purpose::NOT_CONFIGURED) {
+    if (!sSensor->enabled || sSensor->type != Sensors::Type::DALLAS_TEMP || sSensor->purpose == Sensors::Purpose::NOT_CONFIGURED || !GPIO_IS_VALID_OUTPUT(sSensor->gpio)) {
       continue;
 
     } else if (dallasInstances.count(sSensor->gpio)) {
@@ -571,7 +557,7 @@ static void fillingAddressesDallasSensors() {
           continue;
         }
 
-        if (isEqualAddress(sCheckingSensor->address, devAddr)) {
+        if (Sensors::isEqualAddress(sCheckingSensor->address, devAddr)) {
           freeAddress = false;
           break;
         }

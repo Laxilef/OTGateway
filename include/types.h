@@ -14,6 +14,12 @@ enum class ChannelDisablingAction : uint8_t {
   OFF_AND_ZERO_SETPOINT = 2
 };
 
+enum class PumpStartReason {
+  NONE,
+  HEATING,
+  ANTISTUCK
+};
+
 enum class EthernetType : uint8_t {
   NONE  = 0,
   W5500 = 1

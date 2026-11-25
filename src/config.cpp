@@ -5,6 +5,7 @@
 #include <FileData.h>
 #include <LittleFS.h>
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <string_view>
 
@@ -373,11 +374,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (src[S_HOSTNAME].is<JsonString>()) {
     const JsonString value = src[S_HOSTNAME].as<JsonString>();
 
-    if (value.size() < sizeof(dst.hostname) && isHostnameValid(value.c_str())) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.hostname) != 0) {
-        strcpy(dst.hostname, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.hostname) && isHostnameValid(value.c_str())) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.hostname) != 0) {
+          strcpy(dst.hostname, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -398,11 +401,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (src[S_STATIC_CONFIG][S_IP].is<JsonString>()) {
     const JsonString value = src[S_STATIC_CONFIG][S_IP].as<JsonString>();
 
-    if (value.size() < sizeof(dst.staticConfig.ip)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.staticConfig.ip) != 0) {
-        strcpy(dst.staticConfig.ip, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.staticConfig.ip)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.staticConfig.ip) != 0) {
+          strcpy(dst.staticConfig.ip, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -410,11 +415,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (src[S_STATIC_CONFIG][S_GATEWAY].is<JsonString>()) {
     const JsonString value = src[S_STATIC_CONFIG][S_GATEWAY].as<JsonString>();
 
-    if (value.size() < sizeof(dst.staticConfig.gateway)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.staticConfig.gateway) != 0) {
-        strcpy(dst.staticConfig.gateway, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.staticConfig.gateway)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.staticConfig.gateway) != 0) {
+          strcpy(dst.staticConfig.gateway, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -422,11 +429,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (src[S_STATIC_CONFIG][S_SUBNET].is<JsonString>()) {
     const JsonString value = src[S_STATIC_CONFIG][S_SUBNET].as<JsonString>();
 
-    if (value.size() < sizeof(dst.staticConfig.subnet)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.staticConfig.subnet) != 0) {
-        strcpy(dst.staticConfig.subnet, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.staticConfig.subnet)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.staticConfig.subnet) != 0) {
+          strcpy(dst.staticConfig.subnet, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -434,11 +443,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (src[S_STATIC_CONFIG][S_DNS].is<JsonString>()) {
     const JsonString value = src[S_STATIC_CONFIG][S_DNS].as<JsonString>();
 
-    if (value.size() < sizeof(dst.staticConfig.dns)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.staticConfig.dns) != 0) {
-        strcpy(dst.staticConfig.dns, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.staticConfig.dns)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.staticConfig.dns) != 0) {
+          strcpy(dst.staticConfig.dns, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -452,11 +463,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (ap[S_SSID].is<JsonString>()) {
     const JsonString value = ap[S_SSID].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.wifi.ap.ssid)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.wifi.ap.ssid) != 0) {
-        strcpy(dst.wifi.ap.ssid, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.wifi.ap.ssid)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.wifi.ap.ssid) != 0) {
+          strcpy(dst.wifi.ap.ssid, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -464,11 +477,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (ap[S_PASSWORD].is<JsonString>()) {
     const JsonString value = ap[S_PASSWORD].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.wifi.ap.password)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.wifi.ap.password) != 0) {
-        strcpy(dst.wifi.ap.password, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.wifi.ap.password)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.wifi.ap.password) != 0) {
+          strcpy(dst.wifi.ap.password, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -491,11 +506,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (sta[S_SSID].is<JsonString>()) {
     const JsonString value = sta[S_SSID].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.wifi.sta.ssid)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.wifi.sta.ssid) != 0) {
-        strcpy(dst.wifi.sta.ssid, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.wifi.sta.ssid)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.wifi.sta.ssid) != 0) {
+          strcpy(dst.wifi.sta.ssid, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -503,11 +520,13 @@ SettingResult fromJson(JsonVariantConst src, NetworkSettings& dst) {
   if (sta[S_PASSWORD].is<JsonString>()) {
     const JsonString value = sta[S_PASSWORD].as<JsonString>();
 
-    if (value.size() < sizeof(dst.wifi.sta.password)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.wifi.sta.password) != 0) {
-        strcpy(dst.wifi.sta.password, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.wifi.sta.password)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.wifi.sta.password) != 0) {
+          strcpy(dst.wifi.sta.password, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -651,11 +670,13 @@ SettingResult fromJson(JsonVariantConst src, SystemSettings& dst) {
   if (src[S_NTP][S_SERVER].is<JsonString>()) {
     const JsonString value = src[S_NTP][S_SERVER].as<JsonString>();
 
-    if (value.size() < sizeof(dst.ntp.server)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.ntp.server) != 0) {
-        strcpy(dst.ntp.server, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.ntp.server)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.ntp.server) != 0) {
+          strcpy(dst.ntp.server, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -663,11 +684,13 @@ SettingResult fromJson(JsonVariantConst src, SystemSettings& dst) {
   if (src[S_NTP][S_TIMEZONE].is<JsonString>()) {
     const JsonString value = src[S_NTP][S_TIMEZONE].as<JsonString>();
 
-    if (value.size() < sizeof(dst.ntp.timezone)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.ntp.timezone) != 0) {
-        strcpy(dst.ntp.timezone, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.ntp.timezone)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.ntp.timezone) != 0) {
+          strcpy(dst.ntp.timezone, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -750,11 +773,13 @@ SettingResult fromJson(JsonVariantConst src, PortalSettings& dst) {
   if (src[S_LOGIN].is<JsonString>()) {
     const JsonString value = src[S_LOGIN].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.login)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.login) != 0) {
-        strcpy(dst.login, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.login)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.login) != 0) {
+          strcpy(dst.login, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -762,11 +787,13 @@ SettingResult fromJson(JsonVariantConst src, PortalSettings& dst) {
   if (src[S_PASSWORD].is<JsonString>()) {
     const JsonString value = src[S_PASSWORD].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.password)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.password) != 0) {
-        strcpy(dst.password, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.password)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.password) != 0) {
+          strcpy(dst.password, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -1206,11 +1233,13 @@ SettingResult fromJson(JsonVariantConst src, MqttSettings& dst) {
   if (src[S_SERVER].is<JsonString>()) {
     const JsonString value = src[S_SERVER].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.server)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.server) != 0) {
-        strcpy(dst.server, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.server)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.server) != 0) {
+          strcpy(dst.server, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -1230,11 +1259,13 @@ SettingResult fromJson(JsonVariantConst src, MqttSettings& dst) {
   if (src[S_USER].is<JsonString>()) {
     const JsonString value = src[S_USER].as<JsonString>();
 
-    if (value.size() < sizeof(dst.user)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.user) != 0) {
-        strcpy(dst.user, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.user)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.user) != 0) {
+          strcpy(dst.user, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -1242,11 +1273,13 @@ SettingResult fromJson(JsonVariantConst src, MqttSettings& dst) {
   if (src[S_PASSWORD].is<JsonString>()) {
     const JsonString value = src[S_PASSWORD].as<JsonString>();
 
-    if (value.size() < sizeof(dst.password)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.password) != 0) {
-        strcpy(dst.password, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() < sizeof(dst.password)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.password) != 0) {
+          strcpy(dst.password, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -1254,11 +1287,13 @@ SettingResult fromJson(JsonVariantConst src, MqttSettings& dst) {
   if (src[S_PREFIX].is<JsonString>()) {
     const JsonString value = src[S_PREFIX].as<JsonString>();
 
-    if (value.size() && value.size() < sizeof(dst.prefix)) {
-      result.accepted = true;
-      if (strcmp(value.c_str(), dst.prefix) != 0) {
-        strcpy(dst.prefix, value.c_str());
-        result.changed = true;
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.prefix)) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.prefix) != 0) {
+          strcpy(dst.prefix, value.c_str());
+          result.changed = true;
+        }
       }
     }
   }
@@ -3129,31 +3164,34 @@ SettingResult fromJson(const JsonVariantConst src, Sensors::Settings& dst) {
 
   // name
   if (src[S_NAME].is<JsonString>()) {
-    const auto raw = src[S_NAME].as<JsonString>();
-    const auto value = Sensors::cleanName(std::string_view(raw.c_str(), raw.size()));
+    const JsonString raw = src[S_NAME].as<JsonString>();
 
-    if (value.size() < sizeof(dst.name) && value != dst.name) {
-      const auto slug = Sensors::makeSlug(value);
-      bool unique = true;
-      if (Sensors::settings != nullptr && !slug.empty()) {
-        // The caller holds Sensors::mutex while checking configured sensor slugs.
-        for (uint8_t id = 0; id <= Sensors::getMaxSensorId(); id++) {
-          if (&Sensors::settings[id] != &dst && slug == Sensors::settings[id].slug) {
-            unique = false;
-            break;
+    if (strlen(raw.c_str()) == raw.size()) {
+      const auto value = Sensors::cleanName(std::string_view(raw.c_str(), raw.size()));
+
+      if (value.size() < sizeof(dst.name) && value != dst.name) {
+        const auto slug = Sensors::makeSlug(value);
+        bool unique = true;
+        if (Sensors::settings != nullptr && !slug.empty()) {
+          // The caller holds Sensors::mutex while checking configured sensor slugs.
+          for (uint8_t id = 0; id <= Sensors::getMaxSensorId(); id++) {
+            if (&Sensors::settings[id] != &dst && slug == Sensors::settings[id].slug) {
+              unique = false;
+              break;
+            }
           }
         }
-      }
 
-      if (unique) {
+        if (unique) {
+          result.accepted = true;
+          strcpy(dst.name, value.c_str());
+          strcpy(dst.slug, slug.c_str());
+          result.changed = true;
+        }
+
+      } else if (value.size() < sizeof(dst.name)) {
         result.accepted = true;
-        strcpy(dst.name, value.c_str());
-        strcpy(dst.slug, slug.c_str());
-        result.changed = true;
       }
-
-    } else if (value.size() < sizeof(dst.name)) {
-      result.accepted = true;
     }
   }
 
@@ -3290,58 +3328,60 @@ SettingResult fromJson(const JsonVariantConst src, Sensors::Settings& dst) {
   if (src[S_ADDRESS].is<JsonString>()) {
     const JsonString value = src[S_ADDRESS].as<JsonString>();
 
-    if (dst.type == Sensors::Type::DALLAS_TEMP) {
-      uint8_t tmp[8];
-      int parsed = sscanf(
-        value.c_str(),
-        "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
-        &tmp[0], &tmp[1], &tmp[2], &tmp[3],
-        &tmp[4], &tmp[5], &tmp[6], &tmp[7]
-      );
+    if (strlen(value.c_str()) == value.size()) {
+      if (dst.type == Sensors::Type::DALLAS_TEMP) {
+        uint8_t tmp[8];
+        int parsed = sscanf(
+          value.c_str(),
+          "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
+          &tmp[0], &tmp[1], &tmp[2], &tmp[3],
+          &tmp[4], &tmp[5], &tmp[6], &tmp[7]
+        );
 
-      if (parsed == 8) {
-        result.accepted = true;
-        for (uint8_t i = 0; i < parsed; i++) {
-          if (dst.address[i] != tmp[i]) {
-            dst.address[i] = tmp[i];
-            result.changed = true;
+        if (parsed == 8) {
+          result.accepted = true;
+          for (uint8_t i = 0; i < parsed; i++) {
+            if (dst.address[i] != tmp[i]) {
+              dst.address[i] = tmp[i];
+              result.changed = true;
+            }
           }
-        }
 
-      } else {
-        // reset
-        for (uint8_t i = 0; i < sizeof(dst.address); i++) {
-          dst.address[i] = 0x00;
-        }
-
-        result.changed = true;
-      }
-
-    } else if (dst.type == Sensors::Type::BLUETOOTH) {
-      uint8_t tmp[6];
-      int parsed = sscanf(
-        value.c_str(),
-        "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
-        &tmp[0], &tmp[1], &tmp[2],
-        &tmp[3], &tmp[4], &tmp[5]
-      );
-
-      if (parsed == 6) {
-        result.accepted = true;
-        for (uint8_t i = 0; i < parsed; i++) {
-          if (dst.address[i] != tmp[i]) {
-            dst.address[i] = tmp[i];
-            result.changed = true;
+        } else {
+          // reset
+          for (uint8_t i = 0; i < sizeof(dst.address); i++) {
+            dst.address[i] = 0x00;
           }
+
+          result.changed = true;
         }
 
-      } else {
-        // reset
-        for (uint8_t i = 0; i < sizeof(dst.address); i++) {
-          dst.address[i] = 0x00;
-        }
+      } else if (dst.type == Sensors::Type::BLUETOOTH) {
+        uint8_t tmp[6];
+        int parsed = sscanf(
+          value.c_str(),
+          "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
+          &tmp[0], &tmp[1], &tmp[2],
+          &tmp[3], &tmp[4], &tmp[5]
+        );
 
-        result.changed = true;
+        if (parsed == 6) {
+          result.accepted = true;
+          for (uint8_t i = 0; i < parsed; i++) {
+            if (dst.address[i] != tmp[i]) {
+              dst.address[i] = tmp[i];
+              result.changed = true;
+            }
+          }
+
+        } else {
+          // reset
+          for (uint8_t i = 0; i < sizeof(dst.address); i++) {
+            dst.address[i] = 0x00;
+          }
+
+          result.changed = true;
+        }
       }
     }
   }

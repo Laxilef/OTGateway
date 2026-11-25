@@ -243,6 +243,64 @@ static Task initializeSlaveTask("Initialize slave", [](void*) {
   initializedTime = millis();
 });
 
+static void onDisconnectSlave() {
+  if (vars.slave.connected) {
+    ESP_LOGW(
+      L_OT,
+      "Disconnected, uptime: %lu s.",
+      (millis() - connectedTime) / 1000
+    );
+
+    // Mark sensors as disconnected
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_OUTDOOR_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_RETURN_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_TEMP2, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_FLOW_RATE, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_CH2_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEAT_EXCHANGER_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_PRESSURE, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_MODULATION_LEVEL, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_CURRENT_POWER, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_CO2, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_FAN_SPEED, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_SUPPLY_FAN_SPEED, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_CURRENT, false);
+
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_STARTS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_STARTS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_STARTS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_STARTS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_HOURS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_HOURS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_HOURS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_HOURS, false);
+    Sensors::setConnectionStatusByType(Sensors::Type::OT_COOLING_HOURS, false);
+
+    initializeSlaveTask.resume();
+    disconnectedTime = millis();
+    vars.slave.connected = false;
+  }
+
+  vars.slave.heating.enabled = false;
+  vars.slave.heating.active = false;
+  vars.slave.dhw.enabled = false;
+  vars.slave.dhw.active = false;
+  vars.slave.ch2.active = false;
+  vars.slave.flame = false;
+  vars.slave.cooling.active = false;
+  vars.slave.cooling.setpoint = 0;
+  vars.slave.fault.active = false;
+  vars.slave.fault.code = 0;
+  vars.slave.diag.active = false;
+  vars.slave.diag.code = 0;
+}
+
 static bool isSlaveReady() {
   return canUseBus() && vars.slave.connected && !initializeSlaveTask.scheduled();
 }
@@ -299,6 +357,8 @@ static Task configureDriverTask("Configure OpenTherm driver", Task::Type::ONCE, 
     ESP_LOGW(L_OT, "Failed stop");
     return;
   }
+
+  onDisconnectSlave();
 
   if (!GPIO_IS_VALID_INPUT(settings.opentherm.inGpio) || !GPIO_IS_VALID_OUTPUT(settings.opentherm.outGpio)) {
     ESP_LOGW(
@@ -383,6 +443,9 @@ static Task maintainOpenThermTask("Maintain OpenTherm", [](void*) {
     initializeSlaveTask.resume();
   }
 
+  // Apply channel settings even while the bus is unavailable.
+  updateMasterState();
+
   if (slave.getConfig().rxGpio != settings.opentherm.inGpio ||
       slave.getConfig().txGpio != settings.opentherm.outGpio) {
     maintainOpenThermTask.setInterval(5000);
@@ -390,6 +453,8 @@ static Task maintainOpenThermTask("Maintain OpenTherm", [](void*) {
 
   } else if (!slave.isInitialized()) {
     // A fatal error can leave the RMT worker alive until end() succeeds.
+    onDisconnectSlave();
+
     if (!slave.end() || !slave.begin()) {
       ESP_LOGW(L_OT, "Failed begin");
 
@@ -415,8 +480,6 @@ static Task maintainOpenThermTask("Maintain OpenTherm", [](void*) {
       configuredRxLedGpio.store(settings.opentherm.rxLedGpio);
     }
   }
-
-  updateMasterState();
 });
 
 static Task readStatusTask("Read boiler status", [](void*) {
@@ -503,11 +566,6 @@ static Task readStatusTask("Read boiler status", [](void*) {
     );
   }
 
-  // 5 request retries
-  // 1000ms maximum response waiting time
-  // 100ms delay between requests
-  // +15%
-  // 5 * (1000 + 100) * 1.15 = 6325 ms
   if (!vars.slave.connected && validStatus) {
     ESP_LOGI(
       L_OT,
@@ -517,64 +575,19 @@ static Task readStatusTask("Read boiler status", [](void*) {
 
     connectedTime = millis();
     vars.slave.connected = true;
+  }
 
-  } else if (vars.slave.connected && !validStatus && millis() - lastSuccessStatusResponse > 6325) {
-    ESP_LOGW(
-      L_OT,
-      "Disconnected, uptime: %lu s.",
-      (millis() - connectedTime) / 1000
-    );
-
-    // Mark sensors as disconnected
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_OUTDOOR_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_RETURN_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_TEMP2, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_FLOW_RATE, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_CH2_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEAT_EXCHANGER_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_PRESSURE, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_MODULATION_LEVEL, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_CURRENT_POWER, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_CO2, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_EXHAUST_FAN_SPEED, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_SUPPLY_FAN_SPEED, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_STORAGE_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_SOLAR_COLLECTOR_TEMP, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_FAN_SPEED_CURRENT, false);
-
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_STARTS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_STARTS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_STARTS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_STARTS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_BURNER_HOURS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_BURNER_HOURS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_HEATING_PUMP_HOURS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_DHW_PUMP_HOURS, false);
-    Sensors::setConnectionStatusByType(Sensors::Type::OT_COOLING_HOURS, false);
-
-    initializeSlaveTask.resume();
-    disconnectedTime = millis();
-    vars.slave.connected = false;
+  // 5 request retries
+  // 1000ms maximum response waiting time
+  // 100ms delay between requests
+  // +15%
+  // 5 * (1000 + 100) * 1.15 = 6325 ms
+  if (vars.slave.connected && !validStatus && millis() - lastSuccessStatusResponse > 6325) {
+    onDisconnectSlave();
   }
 
   // If boiler is disconnected, no need try setting other OT stuff
   if (!vars.slave.connected) {
-    vars.slave.heating.enabled = false;
-    vars.slave.heating.active = false;
-    vars.slave.dhw.enabled = false;
-    vars.slave.dhw.active = false;
-    vars.slave.flame = false;
-    vars.slave.cooling.active = false;
-    vars.slave.cooling.setpoint = 0;
-    vars.slave.fault.active = false;
-    vars.slave.fault.code = 0;
-    vars.slave.diag.active = false;
-    vars.slave.diag.code = 0;
-
     // reset bus
     if (millis() - disconnectedTime > resetBusInterval) {
       if (millis() - resetBusTime > resetBusInterval) {

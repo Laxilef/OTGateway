@@ -402,7 +402,7 @@ static void restApi() {
       return request->send(503);
     }
 
-    if (requestDoc.isNull() || !requestDoc.size()) {
+    if (!requestDoc.is<JsonObjectConst>() || !requestDoc.size()) {
       return request->send(400);
     }
 
@@ -715,7 +715,7 @@ static void restApi() {
       return request->send(503);
     }
 
-    if (requestDoc.isNull() || !requestDoc.size()) {
+    if (!requestDoc.is<JsonObjectConst>() || !requestDoc.size()) {
       return request->send(400);
     }
 
@@ -729,30 +729,42 @@ static void restApi() {
       return request->send(404);
     }
 
-    const auto previousSettings = Sensors::getSettings(*sensorId);
-    if (!previousSettings) {
-      return request->send(404);
-    }
-
+    Sensors::Settings previousSettings;
     bool isDifferent = false;
     SettingResult result;
     {
       std::lock_guard<std::mutex> lock(Sensors::mutex);
+      if (Sensors::settings == nullptr || Sensors::results == nullptr) {
+        return request->send(404);
+      }
+
       auto& sensor = Sensors::settings[*sensorId];
+      previousSettings = sensor;
 
       result = fromJson(requestDoc, sensor);
       if (result.changed) {
-        isDifferent |= previousSettings->enabled != sensor.enabled;
-        isDifferent |= strcmp(previousSettings->name, sensor.name) != 0;
-        isDifferent |= strcmp(previousSettings->slug, sensor.slug) != 0;
-        isDifferent |= previousSettings->purpose != sensor.purpose;
-        isDifferent |= previousSettings->type != sensor.type;
+        isDifferent |= previousSettings.enabled != sensor.enabled;
+        isDifferent |= strcmp(previousSettings.name, sensor.name) != 0;
+        isDifferent |= strcmp(previousSettings.slug, sensor.slug) != 0;
+        isDifferent |= previousSettings.purpose != sensor.purpose;
+        isDifferent |= previousSettings.type != sensor.type;
+
+        bool resetResult = previousSettings.enabled != sensor.enabled;
+        resetResult |= previousSettings.type != sensor.type;
+        resetResult |= previousSettings.gpio != sensor.gpio;
+        resetResult |= !Sensors::isEqualAddress(previousSettings.address, sensor.address);
+
+        // A different source must provide its own readings and filter baseline.
+        if (resetResult) {
+          Sensors::results[*sensorId] = {};
+          Sensors::results[*sensorId].updatedAt = millis();
+        }
       }
     }
 
     if (result.changed) {
       if (isDifferent) {
-        requestReconfigureMqttSensor(*sensorId, *previousSettings);
+        requestReconfigureMqttSensor(*sensorId, previousSettings);
       }
 
       requestSaveSensorsSettings();
@@ -872,7 +884,7 @@ static void restApi() {
       return request->send(503);
     }
 
-    if (requestDoc.isNull() || !requestDoc.size()) {
+    if (!requestDoc.is<JsonObjectConst>() || !requestDoc.size()) {
       return request->send(400);
     }
 

@@ -83,29 +83,28 @@ std::string mqttTopic(std::initializer_list<std::string_view> parts) {
   return topic;
 }
 
-static void publishValue(const std::string& topic, std::string_view value) {
-  mqttClient->publish(topic.c_str(), value, true);
+static bool publishValue(const std::string& topic, std::string_view value) {
+  return mqttClient->publish(topic.c_str(), value, true);
 }
 
-static void publishValue(const std::string& topic, const char* value) {
-  publishValue(topic, std::string_view(value));
+static bool publishValue(const std::string& topic, const char* value) {
+  return publishValue(topic, std::string_view(value));
 }
 
-static void publishValue(const std::string& topic, bool value) {
-  publishValue(topic, value ? S_TRUE : S_FALSE);
+static bool publishValue(const std::string& topic, bool value) {
+  return publishValue(topic, value ? S_TRUE : S_FALSE);
 }
 
-static void publishValue(const std::string& topic, float value, uint8_t decimals = 2) {
+static bool publishValue(const std::string& topic, float value, uint8_t decimals = 2) {
   if (!std::isfinite(value)) {
     // Remove an obsolete retained reading instead of publishing nan/inf.
-    publishValue(topic, "");
-    return;
+    return publishValue(topic, "");
   }
 
   char payload[64];
   const int length = snprintf(payload, sizeof(payload), "%.*f", decimals, value);
   if (length < 0 || static_cast<size_t>(length) >= sizeof(payload)) {
-    return;
+    return false;
   }
 
   if (decimals) {
@@ -117,7 +116,8 @@ static void publishValue(const std::string& topic, float value, uint8_t decimals
       *end = '\0';
     }
   }
-  publishValue(topic, payload);
+
+  return publishValue(topic, payload);
 }
 
 static void publishHeatingSettings() {
@@ -354,19 +354,24 @@ static bool isCommandValid(const std::string& topic, std::string_view payload) {
   return true;
 }
 
-static void publishSensor(const Sensors::Settings& sensor, const Sensors::Result& result) {
+static bool publishSensor(const Sensors::Settings& sensor, const Sensors::Result& result) {
   if (!sensor.slug[0]) {
-    return;
+    return false;
   }
 
-  publishValue(mqttTopic(S_SENSORS, sensor.slug, S_CONNECTED), result.connected);
+  if (!publishValue(mqttTopic(S_SENSORS, sensor.slug, S_CONNECTED), result.connected)) {
+    return false;
+  }
+
   if (sensor.type == Sensors::Type::BLUETOOTH || sensor.type == Sensors::Type::DALLAS_TEMP
       || sensor.type == Sensors::Type::DHT11 || sensor.type == Sensors::Type::DHT22) {
-    publishValue(mqttTopic(S_SENSORS, sensor.slug, S_SIGNAL_QUALITY), std::to_string(result.signalQuality));
+    if (!publishValue(mqttTopic(S_SENSORS, sensor.slug, S_SIGNAL_QUALITY), std::to_string(result.signalQuality))) {
+      return false;
+    }
   }
 
   if (sensor.type == Sensors::Type::BLUETOOTH || sensor.type == Sensors::Type::DHT11 || sensor.type == Sensors::Type::DHT22) {
-    publishValue(
+    const bool published = publishValue(
       mqttTopic(S_SENSORS, sensor.slug, S_TEMPERATURE),
       convertTemp(
         result.values[static_cast<uint8_t>(Sensors::ValueType::TEMPERATURE)],
@@ -374,15 +379,27 @@ static void publishSensor(const Sensors::Settings& sensor, const Sensors::Result
       ),
       3
     );
-    publishValue(mqttTopic(S_SENSORS, sensor.slug, S_HUMIDITY), result.values[static_cast<uint8_t>(Sensors::ValueType::HUMIDITY)], 3);
+
+    if (!published) {
+      return false;
+    }
+
+    if (!publishValue(mqttTopic(S_SENSORS, sensor.slug, S_HUMIDITY), result.values[static_cast<uint8_t>(Sensors::ValueType::HUMIDITY)], 3)) {
+      return false;
+    }
 
     if (sensor.type == Sensors::Type::BLUETOOTH) {
-      publishValue(mqttTopic(S_SENSORS, sensor.slug, S_BATTERY), result.values[static_cast<uint8_t>(Sensors::ValueType::BATTERY)], 1);
-      publishValue(mqttTopic(S_SENSORS, sensor.slug, S_RSSI), result.values[static_cast<uint8_t>(Sensors::ValueType::RSSI)], 0);
+      if (!publishValue(mqttTopic(S_SENSORS, sensor.slug, S_BATTERY), result.values[static_cast<uint8_t>(Sensors::ValueType::BATTERY)], 1)) {
+        return false;
+      }
+
+      if (!publishValue(mqttTopic(S_SENSORS, sensor.slug, S_RSSI), result.values[static_cast<uint8_t>(Sensors::ValueType::RSSI)], 0)) {
+        return false;
+      }
     }
 
   } else {
-    publishValue(
+    const bool published = publishValue(
       mqttTopic(S_SENSORS, sensor.slug, S_VALUE),
       Sensors::convertValue(
         sensor, Sensors::ValueType::PRIMARY,
@@ -391,7 +408,13 @@ static void publishSensor(const Sensors::Settings& sensor, const Sensors::Result
       ),
       3
     );
+
+    if (!published) {
+      return false;
+    }
   }
+
+  return true;
 }
 
 static bool purgeSensor(const char* slug) {
@@ -1047,7 +1070,13 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
           mqttPublishedSensorAt[sensorId] = snapshotAt;
         }
 
-        publishSensor(snapshot->settings, snapshot->result);
+        if (!publishSensor(snapshot->settings, snapshot->result)) {
+          {
+            std::lock_guard<std::mutex> lock(mqttSensorsMutex);
+            mqttPublishedSensorAt[sensorId] = 0;
+          }
+          ESP_LOGD(L_MQTT, "Sensor publication deferred");
+        }
       }
     });
 

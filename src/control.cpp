@@ -1,12 +1,11 @@
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
 #include <app.h>
+#include <esp_timer.h>
 
 #include <algorithm>
 
 Variables vars;
-
-enum class PumpStartReason {NONE, HEATING, ANTISTUCK};
 
 static bool heatingEnabled = false;
 static unsigned long heatingDisabledTime = 0;
@@ -352,6 +351,7 @@ static Task cascadeTask("Cascade", [](void*) {
 
 static Task externalPumpTask("External pump", [](void*) {
   static uint8_t configuredGpio = GPIO_IS_NOT_CONFIGURED;
+  const uint32_t now = esp_timer_get_time() / 1000000;
 
   if (settings.externalPump.gpio != configuredGpio) {
     if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
@@ -371,7 +371,7 @@ static Task externalPumpTask("External pump", [](void*) {
   if (configuredGpio == GPIO_IS_NOT_CONFIGURED) {
     if (vars.externalPump.state) {
       vars.externalPump.state = false;
-      vars.externalPump.lastEnabledTime = millis();
+      vars.externalPump.lastEnabledTime = now;
 
       ESP_LOGI(L_EXTPUMP, "Disabled: use = off");
     }
@@ -390,7 +390,7 @@ static Task externalPumpTask("External pump", [](void*) {
   if (!settings.externalPump.use) {
     if (vars.externalPump.state) {
       vars.externalPump.state = false;
-      vars.externalPump.lastEnabledTime = millis();
+      vars.externalPump.lastEnabledTime = now;
 
       ESP_LOGI(L_EXTPUMP, "Disabled: use = off");
     }
@@ -398,13 +398,13 @@ static Task externalPumpTask("External pump", [](void*) {
   } else if (vars.externalPump.state && !heatingEnabled) {
     if (extPumpStartReason == PumpStartReason::HEATING && millis() - heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
       vars.externalPump.state = false;
-      vars.externalPump.lastEnabledTime = millis();
+      vars.externalPump.lastEnabledTime = now;
 
       ESP_LOGI(L_EXTPUMP, "Disabled: expired post circulation time");
 
     } else if (extPumpStartReason == PumpStartReason::ANTISTUCK && millis() - externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
       vars.externalPump.state = false;
-      vars.externalPump.lastEnabledTime = millis();
+      vars.externalPump.lastEnabledTime = now;
 
       ESP_LOGI(L_EXTPUMP, "Disabled: expired anti stuck time");
     }
@@ -419,7 +419,7 @@ static Task externalPumpTask("External pump", [](void*) {
 
     ESP_LOGI(L_EXTPUMP, "Enabled: heating on");
 
-  } else if (!vars.externalPump.state && (vars.externalPump.lastEnabledTime == 0 || millis() - vars.externalPump.lastEnabledTime >= (settings.externalPump.antiStuckInterval * 1000lu))) {
+  } else if (!vars.externalPump.state && (vars.externalPump.lastEnabledTime == 0 || now - vars.externalPump.lastEnabledTime >= settings.externalPump.antiStuckInterval)) {
     vars.externalPump.state = true;
     externalPumpStartTime = millis();
     extPumpStartReason = PumpStartReason::ANTISTUCK;

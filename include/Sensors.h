@@ -188,6 +188,10 @@ public:
     return id >= (uint8_t) ValueType::TEMPERATURE && id <= (uint8_t) ValueType::RSSI;
   }
 
+  static bool isEqualAddress(const uint8_t* addr1, const uint8_t* addr2, const uint8_t length = 8) {
+    return memcmp(addr1, addr2, length) == 0;
+  }
+
   static bool isDifferent(const Settings& previous, const Settings& current) {
     return previous.enabled != current.enabled
       || strcmp(previous.name, current.name) != 0
@@ -195,7 +199,7 @@ public:
       || previous.purpose != current.purpose
       || previous.type != current.type
       || previous.gpio != current.gpio
-      || memcmp(previous.address, current.address, sizeof(previous.address)) != 0
+      || !isEqualAddress(previous.address, current.address)
       || isFloatDifferent(previous.offset, current.offset, 0.0001f)
       || isFloatDifferent(previous.factor, current.factor, 0.0001f)
       || previous.filtering != current.filtering
@@ -553,7 +557,7 @@ public:
         return false;
       }
 
-      if (memcmp(settings[sensorId].address, address, sizeof(Settings::address)) == 0) {
+      if (isEqualAddress(settings[sensorId].address, address)) {
         return true;
       }
 
@@ -609,18 +613,24 @@ public:
     uint8_t amount = 0;
 
     if (avgType == AverageType::MEAN) {
-      float sum = 0.0f;
       for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
         auto& sSensor = settings[id];
         auto& rSensor = results[id];
 
         if (sSensor.purpose == purpose && (!onlyConnected || rSensor.connected)) {
-          sum += rSensor.values[valueId];
+          const float reading = rSensor.values[valueId];
           amount++;
+
+          // Opposite-sign readings can overflow when subtracted.
+          if ((value < 0.0f) != (reading < 0.0f)) {
+            value -= value / amount;
+            value += reading / amount;
+
+          } else {
+            value += (reading - value) / amount;
+          }
         }
       }
-
-      value = amount == 1 ? sum : (sum / amount);
 
     } else if (avgType == AverageType::MINIMUM) {
       for (uint8_t id = 0; id <= getMaxSensorId(); id++) {
