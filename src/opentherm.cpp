@@ -1937,10 +1937,20 @@ void initOpenTherm() {
   // Write the CH2 water temperature setpoint.
   writeCh2SetpointTask.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady() &&
-             (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2 ||
-              (!vars.master.ch2.enabled && settings.opentherm.ch2DisablingAction != ChannelDisablingAction::OFF)) &&
-             needWriteCh2Setpoint(getCh2ChannelSetpoint());
+      if (!isSlaveReady()) {
+        return false;
+      }
+
+      if (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2) {
+        return needWriteCh2Setpoint(getCh2ChannelSetpoint());
+      }
+
+      // Without mirroring, only write the setpoint to disable CH2.
+      if (!vars.master.ch2.enabled && settings.opentherm.ch2DisablingAction != ChannelDisablingAction::OFF) {
+        return needWriteCh2Setpoint(getCh2ChannelSetpoint());
+      }
+
+      return false;
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(writeCh2SetpointTask);
@@ -1959,7 +1969,8 @@ void initOpenTherm() {
   writeRoomSetpointCh2Task.setInterval(750)
     .setEnabledWhen([] {
       return isSlaveReady() &&
-             settings.opentherm.options.nativeOTC && settings.opentherm.options.heatingToCh2 &&
+             settings.opentherm.options.nativeOTC &&
+             settings.opentherm.options.heatingToCh2 &&
              needWriteRoomSetpointCh2(vars.master.heating.targetTemp);
     })
     .onDone(onOperationDone);
