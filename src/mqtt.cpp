@@ -20,7 +20,7 @@
 
 std::mutex mqttMutex;
 
-static MQTT* mqttClient = nullptr;
+static std::unique_ptr<MQTT> mqttClient;
 
 // Keep the applied prefix separate from settings until MQTT is reconfigured.
 static std::string mqttPrefix;  // NOLINT(runtime/string)
@@ -534,8 +534,7 @@ void stopMqtt(bool destroy = false) {
   }
 
   haDiscovery.reset();
-  delete mqttClient;
-  mqttClient = nullptr;
+  mqttClient.reset();
 
   std::string().swap(mqttPrefix);
 }
@@ -682,7 +681,7 @@ static void connect() {
   if (!mqttClient) {
     std::lock_guard<std::mutex> lock(mqttMutex);
 
-    mqttClient = new MQTT();
+    mqttClient = std::make_unique<MQTT>();
     mqttClient->setAsync(true);
     mqttClient->setConfigHook([](esp_mqtt_client_config_t& config) {
       config.session.last_will.qos = 1;
