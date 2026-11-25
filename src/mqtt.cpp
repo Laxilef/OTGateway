@@ -13,6 +13,7 @@
 #include <cstring>
 #include <initializer_list>
 #include <list>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -493,8 +494,8 @@ void stopMqtt(bool destroy = false) {
   if (mqttClient) {
     mqttClient->end();
   }
+
   mqttConnectedAt.store(0);
-  haDiscovery.end();
   mqttHaPendingEntities.reset();
   mqttHaPendingSensors.reset();
 
@@ -532,6 +533,7 @@ void stopMqtt(bool destroy = false) {
     mqttPublishHaTask = nullptr;
   }
 
+  haDiscovery.reset();
   delete mqttClient;
   mqttClient = nullptr;
 
@@ -709,7 +711,12 @@ static void connect() {
     });
   }
 
-  if (mqttPrefix != settings.mqtt.prefix || haDiscovery.getDiscoveryTopic() != settings.mqtt.homeAssistantDiscoveryPrefix) {
+  // Compare the applied prefixes before recreating discovery.
+  const bool resubscribe = mqttPrefix != settings.mqtt.prefix || !haDiscovery ||
+                           haDiscovery->getDiscoveryTopic() != settings.mqtt.homeAssistantDiscoveryPrefix;
+
+  // Update the local subscriptions; MQTT applies them when connected.
+  if (resubscribe) {
     for (const auto& topic : mqttClient->getSubscribedTopics()) {
       mqttClient->unsubscribe(topic.c_str());
     }
@@ -718,10 +725,9 @@ static void connect() {
     subscribe();
   }
 
-  haDiscovery.setDiscoveryTopic(settings.mqtt.homeAssistantDiscoveryPrefix);
-  haDiscovery.setWillTopic("~/status");
-  haDiscovery.begin(
-    {
+  // Recreate discovery to apply the current device metadata and MQTT prefix.
+  haDiscovery = std::make_unique<HA::Discovery>(
+    HA::Device{
       .id = mqttPrefix,
       .name = PROJECT_NAME,
       .version = BUILD_VERSION,
@@ -731,9 +737,15 @@ static void connect() {
     },
     mqttPrefix,
     [](const char* topic, const std::string& payload) {
-      return mqttClient->publish(topic, payload, true);
+      return mqttClient->publish(topic, payload, true)
+        ? HA::Error::SUCCESS
+        : HA::Error::ERR_MQTT_PUBLISHER;
     }
   );
+  haDiscovery->setDiscoveryTopic(settings.mqtt.homeAssistantDiscoveryPrefix);
+  haDiscovery->setWillTopic("~/status");
+
+  // Start the connection after configuring discovery and subscriptions.
   mqttClient->begin({
     .server = settings.mqtt.server,
     .port = settings.mqtt.port,
@@ -1101,7 +1113,10 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
     mqttPublishSensorsTask = task;
   }
 
+  // Refresh settings every ten configured intervals to reduce repeated configuration traffic.
   mqttPublishSettingsTask->setInterval(settings.mqtt.interval * 10000u);
+
+  // Publish state at the configured interval (seconds converted to milliseconds).
   mqttPublishStateTask->setInterval(settings.mqtt.interval * 1000u);
 
   // Call end() to reset the connection

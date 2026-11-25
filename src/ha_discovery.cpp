@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-HA::Discovery haDiscovery;
+std::unique_ptr<HA::Discovery> haDiscovery;
 
 bool publishHaEntity(HaEntity entityId, bool remove) {
   std::unique_ptr<HA::Component> entity;
@@ -842,10 +842,10 @@ bool publishHaEntity(HaEntity entityId, bool remove) {
   }
 
   if (remove) {
-    return haDiscovery.unpublish(std::move(entity));
+    return haDiscovery->unpublish(std::move(entity)) == HA::Error::SUCCESS;
 
   } else {
-    return haDiscovery.publish(std::move(entity));
+    return haDiscovery->publish(std::move(entity)) == HA::Error::SUCCESS;
   }
 }
 
@@ -1044,7 +1044,7 @@ void publishDynamicSensor(const Sensors::Settings& sensor, Sensors::ValueType va
     entity->stateTopic = mqttTopic(S_SENSORS, sensor.slug, S_VALUE);
   }
 
-  haDiscovery.publish(std::move(entity));
+  haDiscovery->publish(std::move(entity));
 }
 
 void publishDynamicManualSensor(const Sensors::Settings& sensor, bool enabledByDefault) {
@@ -1136,7 +1136,7 @@ void publishDynamicManualSensor(const Sensors::Settings& sensor, bool enabledByD
       break;
   }
 
-  haDiscovery.publish(std::move(entity));
+  haDiscovery->publish(std::move(entity));
 }
 
 void deleteDynamicSensor(const Sensors::Settings& sensor, Sensors::ValueType valueType) {
@@ -1146,11 +1146,11 @@ void deleteDynamicSensor(const Sensors::Settings& sensor, Sensors::ValueType val
   }
 
   if (sensor.type == Sensors::Type::MANUAL) {
-    haDiscovery.unpublish<HA::Number>(std::move(id), "");
+    haDiscovery->unpublish<HA::Number>(std::move(id), "");
     return;
   }
 
-  haDiscovery.unpublish<HA::Gauge>(std::move(id), "");
+  haDiscovery->unpublish<HA::Gauge>(std::move(id), "");
 }
 
 void publishConnectionDynamicSensor(const Sensors::Settings& sensor, bool enabledByDefault) {
@@ -1164,11 +1164,11 @@ void publishConnectionDynamicSensor(const Sensors::Settings& sensor, bool enable
   entity->payloadOff = S_FALSE;
   entity->enabledByDefault = enabledByDefault;
   entity->expireAfter = 2u * MQTT_SENSOR_REPUBLISH_INTERVAL / 1000u;
-  haDiscovery.publish(std::move(entity));
+  haDiscovery->publish(std::move(entity));
 }
 
 void deleteConnectionDynamicSensor(const Sensors::Settings& sensor) {
-  haDiscovery.unpublish<HA::State>(std::string(sensor.slug) + "_connected", "");
+  haDiscovery->unpublish<HA::State>(std::string(sensor.slug) + "_connected", "");
 }
 
 void publishSignalQualityDynamicSensor(const Sensors::Settings& sensor, bool enabledByDefault) {
@@ -1181,9 +1181,9 @@ void publishSignalQualityDynamicSensor(const Sensors::Settings& sensor, bool ena
   entity->icon = "mdi:signal";
   entity->enabledByDefault = enabledByDefault;
   entity->expireAfter = 2u * MQTT_SENSOR_REPUBLISH_INTERVAL / 1000u;
-  haDiscovery.publish(std::move(entity));
+  haDiscovery->publish(std::move(entity));
 }
 
 void deleteSignalQualityDynamicSensor(const Sensors::Settings& sensor) {
-  haDiscovery.unpublish<HA::Gauge>(std::string(sensor.slug) + "_signal_quality", "");
+  haDiscovery->unpublish<HA::Gauge>(std::string(sensor.slug) + "_signal_quality", "");
 }

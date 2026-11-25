@@ -7,6 +7,7 @@
 #include <esp_log.h>
 #include <functional>
 #include <initializer_list>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -123,7 +124,7 @@ std::string mqttTopic(const Parts&... parts) {
 }
 
 // Home Assistant discovery
-extern HA::Discovery haDiscovery;
+extern std::unique_ptr<HA::Discovery> haDiscovery;
 bool publishHaEntity(HaEntity entityId, bool remove);
 void publishDynamicSensor(
   const Sensors::Settings& sensor,
