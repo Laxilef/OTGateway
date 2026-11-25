@@ -492,7 +492,8 @@
         }
       },
       "mqtt": {
-        "homeAssistantDiscovery": "Home Assistant Discovery",
+        "homeAssistantDiscovery": "Home AssistantDiscovery",
+        "homeAssistantDiscoveryPrefix": "HomeAssistant Discovery префикс",
         "server": "Адрес сервера",
         "port": "Порт",
         "user": "Имя пользователя",

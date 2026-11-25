@@ -151,6 +151,14 @@
   #define DEFAULT_MQTT_PREFIX ""
 #endif
 
+#ifndef DEFAULT_HA_DISCOVERY_ENABLED
+  #define DEFAULT_HA_DISCOVERY_ENABLED false
+#endif
+
+#ifndef DEFAULT_HA_DISCOVERY_PREFIX
+  #define DEFAULT_HA_DISCOVERY_PREFIX "homeassistant"
+#endif
+
 #ifndef DEFAULT_OT_IN_GPIO
   #define DEFAULT_OT_IN_GPIO GPIO_IS_NOT_CONFIGURED
 #endif

@@ -1213,6 +1213,7 @@ JsonVariant toJson(const MqttSettings& src, JsonVariant dst) {
   mqtt[S_PREFIX] = src.prefix;
   mqtt[S_INTERVAL] = src.interval;
   mqtt[S_HOME_ASSISTANT_DISCOVERY] = src.homeAssistantDiscovery;
+  mqtt[S_HOME_ASSISTANT_DISCOVERY_PREFIX] = src.homeAssistantDiscoveryPrefix;
 
   return dst;
 }
@@ -1317,6 +1318,20 @@ SettingResult fromJson(JsonVariantConst src, MqttSettings& dst) {
     if (value != dst.homeAssistantDiscovery) {
       dst.homeAssistantDiscovery = value;
       result.changed = true;
+    }
+  }
+
+  if (src[S_HOME_ASSISTANT_DISCOVERY_PREFIX].is<JsonString>()) {
+    const JsonString value = src[S_HOME_ASSISTANT_DISCOVERY_PREFIX].as<JsonString>();
+
+    if (strlen(value.c_str()) == value.size()) {
+      if (value.size() && value.size() < sizeof(dst.homeAssistantDiscoveryPrefix) && strpbrk(value.c_str(), "+#") == nullptr) {
+        result.accepted = true;
+        if (strcmp(value.c_str(), dst.homeAssistantDiscoveryPrefix) != 0) {
+          strcpy(dst.homeAssistantDiscoveryPrefix, value.c_str());
+          result.changed = true;
+        }
+      }
     }
   }
 

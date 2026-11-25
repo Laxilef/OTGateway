@@ -803,6 +803,11 @@
                 </label>
               </fieldset>
 
+              <label>
+                <span data-i18n>settings.mqtt.homeAssistantDiscoveryPrefix</span>
+                <input type="text" name="ha_discovery_prefix" maxlength="32" pattern="[^+#]+" required>
+              </label>
+
               <div class="grid">
                 <label>
                   <span data-i18n>settings.mqtt.server</span>
@@ -1209,6 +1214,7 @@
           } else if (section === 'mqtt') {
             setCheckboxValue("[name='enabled']", data.mqtt.enabled, form);
             setCheckboxValue("[name='ha_discovery']", data.mqtt.ha_discovery, form);
+            setInputValue("[name='ha_discovery_prefix']", data.mqtt.ha_discovery_prefix, {}, form);
             setInputValue("[name='server']", data.mqtt.server, {}, form);
             setInputValue("[name='port']", data.mqtt.port, {}, form);
             setInputValue("[name='user']", data.mqtt.user, {}, form);
@@ -1503,7 +1509,7 @@
         setupSettingsForm('#equitherm-settings');
         setupSettingsForm('#pid-settings');
         setupSettingsForm('#ot-settings');
-        setupSettingsForm('#mqtt-settings', ['server', 'user', 'password', 'prefix']);
+        setupSettingsForm('#mqtt-settings', ['server', 'user', 'password', 'prefix', 'ha_discovery_prefix']);
         setupSettingsForm('#extpump-settings');
         setupSettingsForm('#cc-settings');
 

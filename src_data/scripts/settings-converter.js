@@ -23,6 +23,7 @@ const convertLegacyBackup = (data) => {
     heatingToCh2: 'heating_to_ch2',
     highTemp: 'high_temp',
     homeAssistantDiscovery: 'ha_discovery',
+    homeAssistantDiscoveryPrefix: 'ha_discovery_prefix',
     ignoreDiagState: 'ignore_diag_state',
     immergasFix: 'immergas_fix',
     indoorTempAvgType: 'indoor_temp_avg_type',

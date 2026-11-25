@@ -4,7 +4,7 @@
 
 HA::Discovery haDiscovery;
 
-void publishHaEntity(HaEntity entityId, bool remove) {
+bool publishHaEntity(HaEntity entityId, bool remove) {
   std::unique_ptr<HA::Component> entity;
   const UnitSystem unit = settings.system.unitSystem;
   const uint32_t stateExpiration = std::max<uint32_t>(60u, 2u * settings.mqtt.interval);
@@ -837,15 +837,15 @@ void publishHaEntity(HaEntity entityId, bool remove) {
     }
 
     default: {
-      return;
+      return false;
     }
   }
 
   if (remove) {
-    haDiscovery.unpublish(std::move(entity));
+    return haDiscovery.unpublish(std::move(entity));
 
   } else {
-    haDiscovery.publish(std::move(entity));
+    return haDiscovery.publish(std::move(entity));
   }
 }
 

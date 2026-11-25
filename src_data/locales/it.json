@@ -492,7 +492,8 @@
         }
       },
       "mqtt": {
-        "homeAssistantDiscovery": "Home Assistant Discovery",
+        "homeAssistantDiscovery": "HomeAssistant Discovery",
+        "homeAssistantDiscoveryPrefix": "Prefisso discovery di HomeAssistant",
         "server": "Server",
         "port": "Porta",
         "user": "Utente",

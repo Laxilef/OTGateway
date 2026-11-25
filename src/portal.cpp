@@ -566,7 +566,8 @@ static void restApi() {
         || strcmp(previousMqtt.server, settings.mqtt.server) != 0
         || strcmp(previousMqtt.user, settings.mqtt.user) != 0
         || strcmp(previousMqtt.password, settings.mqtt.password) != 0
-        || strcmp(previousMqtt.prefix, settings.mqtt.prefix) != 0;
+        || strcmp(previousMqtt.prefix, settings.mqtt.prefix) != 0
+        || strcmp(previousMqtt.homeAssistantDiscoveryPrefix, settings.mqtt.homeAssistantDiscoveryPrefix) != 0;
 
     } else if (section == S_EMERGENCY) {
       result = fromJson(requestDoc, settings.emergency);

@@ -558,11 +558,14 @@ static float mqttValueToMetric(std::string_view path, float value) {
 }
 
 static void subscribe() {
-  mqttClient->subscribe("homeassistant/status", [](const std::string&, const std::string_view& message) {
-    if (message == "online") {
-      mqttHaRefreshRequested.store(true);
+  mqttClient->subscribe(
+    std::string(settings.mqtt.homeAssistantDiscoveryPrefix) + "/status",
+    [](const std::string&, const std::string_view& message) {
+      if (message == "online") {
+        mqttHaRefreshRequested.store(true);
+      }
     }
-  });
+  );
 
   const auto onSettingCommand = [](const std::string& topic, const std::string_view& message) {
     if (isMqttBlocked() || !settings.mqtt.enabled || mqttConfigureTask.scheduled() || mqttConfigureTask.active()) {
@@ -706,11 +709,9 @@ static void connect() {
       mqttReconfigureSensorsTask->requestEarlyRun();
       ESP_LOGI(L_MQTT, "Connected");
     });
+  }
 
-    mqttPrefix = settings.mqtt.prefix;
-    subscribe();
-
-  } else if (mqttPrefix != settings.mqtt.prefix) {
+  if (mqttPrefix != settings.mqtt.prefix || haDiscovery.getDiscoveryTopic() != settings.mqtt.homeAssistantDiscoveryPrefix) {
     for (const auto& topic : mqttClient->getSubscribedTopics()) {
       mqttClient->unsubscribe(topic.c_str());
     }
@@ -719,6 +720,7 @@ static void connect() {
     subscribe();
   }
 
+  haDiscovery.setDiscoveryTopic(settings.mqtt.homeAssistantDiscoveryPrefix);
   haDiscovery.setWillTopic("~/status");
   haDiscovery.begin(
     {
@@ -731,7 +733,7 @@ static void connect() {
     },
     mqttPrefix,
     [](const char* topic, const std::string& payload) {
-      mqttClient->publish(topic, payload, true);
+      return mqttClient->publish(topic, payload, true);
     }
   );
   mqttClient->begin({
@@ -899,9 +901,15 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
           continue;
         }
 
-        mqttHaPendingEntities.reset(index);
-        publishHaEntity(static_cast<HaEntity>(index), !settings.mqtt.homeAssistantDiscovery);
-        return;
+        const bool published = publishHaEntity(static_cast<HaEntity>(index), !settings.mqtt.homeAssistantDiscovery);
+        if (published) {
+          mqttHaPendingEntities.reset(index);
+
+        } else {
+          ESP_LOGD(L_MQTT, "HA publication deferred");
+        }
+
+        break;
       }
 
       for (uint8_t sensorId = 0; sensorId < SENSORS_AMOUNT; sensorId++) {
@@ -919,6 +927,7 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
             requestReconfigureMqttSensor(sensorId, std::move(sensor));
           }
         }
+
         break;
       }
     });

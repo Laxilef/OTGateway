@@ -492,7 +492,8 @@
         }
       },
       "mqtt": {
-        "homeAssistantDiscovery": "Home Assistant 自动发现",
+        "homeAssistantDiscovery": "HomeAssistant 自动发现",
+        "homeAssistantDiscoveryPrefix": "HomeAssistant 自动发现前缀",
         "server": "服务器地址",
         "port": "端口",
         "user": "用户名",

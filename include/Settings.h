@@ -118,7 +118,8 @@ struct MqttSettings {
   char password[33] = DEFAULT_MQTT_PASSWORD;
   char prefix[33] = DEFAULT_MQTT_PREFIX;
   unsigned short interval = 5;
-  bool homeAssistantDiscovery = true;
+  bool homeAssistantDiscovery = DEFAULT_HA_DISCOVERY_ENABLED;
+  char homeAssistantDiscoveryPrefix[33] = DEFAULT_HA_DISCOVERY_PREFIX;
 };
 
 struct EmergencySettings {

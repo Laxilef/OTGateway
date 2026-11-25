@@ -124,7 +124,7 @@ std::string mqttTopic(const Parts&... parts) {
 
 // Home Assistant discovery
 extern HA::Discovery haDiscovery;
-void publishHaEntity(HaEntity entityId, bool remove);
+bool publishHaEntity(HaEntity entityId, bool remove);
 void publishDynamicSensor(
   const Sensors::Settings& sensor,
   Sensors::ValueType valueType = Sensors::ValueType::PRIMARY, bool enabledByDefault = true

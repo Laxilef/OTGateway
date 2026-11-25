@@ -107,6 +107,7 @@ inline const char S_HEATING_STATE_TO_SUMMER_WINTER_MODE[]  = "heating_state_to_s
 inline const char S_HIDDEN[]                               = "hidden";
 inline const char S_HIGH_TEMP[]                            = "high_temp";
 inline const char S_HOME_ASSISTANT_DISCOVERY[]             = "ha_discovery";
+inline const char S_HOME_ASSISTANT_DISCOVERY_PREFIX[]      = "ha_discovery_prefix";
 inline const char S_HOSTNAME[]                             = "hostname";
 inline const char S_HUMIDITY[]                             = "humidity";
 inline const char S_HYSTERESIS[]                           = "hysteresis";
