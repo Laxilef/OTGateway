@@ -396,7 +396,7 @@
           "title": "目标温度",
           "note": "<b>重要提示：</b> 若启用OpenTherm选项 <i>«原生供暖控制»</i>，此处设定值为<u>目标室内温度</u>；<br />其他所有情况下，此处设定值为 <u>目标热媒出水温度</u>."
         },
-        "thresholdTime": "进入或退出应急模式的延时 <small>(秒)</small>"
+        "thresholdTime": "状态变化延时 <small>(秒)</small>"
       },
       "equitherm": {
         "slope": {
@@ -515,14 +515,14 @@
           "enable": "启用 input",
           "gpio": "GPIO",
           "invertState": "切换 GPIO 状态",
-          "thresholdTime": "状态变化阈值时间<small>(秒)</small>"
+          "thresholdTime": "状态变化延时 <small>(秒)</small>"
         },
         "output": {
           "desc": "可通过<u>继电器</u>控制另一台锅炉的启停。",
           "enable": "启用 output",
           "gpio": "GPIO",
           "invertState": "切换 GPIO 状态",
-          "thresholdTime": "状态变化阈值时间 <small>(秒)</small>",
+          "thresholdTime": "状态变化延时 <small>(秒)</small>",
           "events": {
             "desc": "事件",
             "onFault": "当故障状态激活时",

@@ -396,7 +396,7 @@
           "title": "Target temperature",
           "note": "<b>Important:</b> <u>Target indoor temperature</u> if OT option <i>«Native heating control»</i> is enabled.<br />In all other cases, the <u>target heat carrier temperature</u>."
         },
-        "thresholdTime": "Delay before entering or leaving emergency mode <small>(sec)</small>"
+        "thresholdTime": "State change delay <small>(sec)</small>"
       },
       "equitherm": {
         "slope": {
@@ -515,14 +515,14 @@
           "enable": "Enabled input",
           "gpio": "GPIO",
           "invertState": "Invert GPIO state",
-          "thresholdTime": "State change threshold time <small>(sec)</small>"
+          "thresholdTime": "State change delay <small>(sec)</small>"
         },
         "output": {
           "desc": "Can be used to switch on another boiler <u>via relay</u>.",
           "enable": "Enabled output",
           "gpio": "GPIO",
           "invertState": "Invert GPIO state",
-          "thresholdTime": "State change threshold time <small>(sec)</small>",
+          "thresholdTime": "State change delay <small>(sec)</small>",
           "events": {
             "desc": "Events",
             "onFault": "If the fault state is active",

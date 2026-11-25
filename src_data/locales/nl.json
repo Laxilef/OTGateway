@@ -396,7 +396,7 @@
           "title": "Doeltemperatuur",
           "note": "<b>Belangrijk:</b> <u>Doel binnentemperatuur</u> als OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld.<br />In alle andere gevallen, de <u>doel warmtedragertemperatuur</u>."
         },
-        "thresholdTime": "Vertraging bij in- en uitschakelen van de noodmodus <small>(sec)</small>"
+        "thresholdTime": "Vertraging bij statuswijziging <small>(sec)</small>"
       },
       "equitherm": {
         "slope": {
@@ -515,14 +515,14 @@
           "enable": "Ingang ingeschakeld",
           "gpio": "GPIO",
           "invertState": "Inverteer GPIO-status",
-          "thresholdTime": "Drempeltijd statuswijziging <small>(sec)</small>"
+          "thresholdTime": "Vertraging bij statuswijziging <small>(sec)</small>"
         },
         "output": {
           "desc": "Kan worden gebruikt om een andere ketel in te schakelen <u>via een relais</u>.",
           "enable": "Uitgang ingeschakeld",
           "gpio": "GPIO",
           "invertState": "Inverteer GPIO-status",
-          "thresholdTime": "Drempeltijd statuswijziging <small>(sec)</small>",
+          "thresholdTime": "Vertraging bij statuswijziging <small>(sec)</small>",
           "events": {
             "desc": "Gebeurtenissen",
             "onFault": "Als de storingsstatus actief is",

@@ -396,7 +396,7 @@
           "title": "Temperatura impostata",
           "note": "<b>Importante:</b> <u>Temperatura interna impostata</u> se l'opzione OT <i>«Controllo riscaldamento interno»</i> è attivato.<br />In tutti gli altri casi, la <u>target heat carrier temperature</u>."
         },
-        "thresholdTime": "Ritardo di entrata e uscita dalla modalità di emergenza <small>(sec)</small>"
+        "thresholdTime": "Ritardo del cambio di stato <small>(sec)</small>"
       },
       "equitherm": {
         "slope": {
@@ -515,14 +515,14 @@
           "enable": "Ingresso abilitato",
           "gpio": "GPIO",
           "invertState": "Inverti stato GPIO",
-          "thresholdTime": "Tempo soglia di modifica dello stato <small>(sec)</small>"
+          "thresholdTime": "Ritardo del cambio di stato <small>(sec)</small>"
         },
         "output": {
           "desc": "Può essere usato per passare ad un'altra caldaia tramite <u>relè</u>.",
           "enable": "Uscita abilitata",
           "gpio": "GPIO",
           "invertState": "Invert GPIO state",
-          "thresholdTime": "Tempo soglia di modifica dello stato <small>(sec)</small>",
+          "thresholdTime": "Ritardo del cambio di stato <small>(sec)</small>",
           "events": {
             "desc": "Eventi",
             "onFault": "Se lo stato di errore è attivo",
