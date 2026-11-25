@@ -64,9 +64,9 @@ static Task pidTask("PID", Task::Type::FOREVER, [](void*) {
   pidRegulator.setpoint = settings.heating.target;
 
   float error = pidRegulator.setpoint - pidRegulator.input;
-  bool hasDeadband = settings.pid.deadband.enabled
-    && (error > -(settings.pid.deadband.thresholdHigh))
-    && (error < settings.pid.deadband.thresholdLow);
+  bool hasDeadband = settings.pid.deadband.enabled &&
+                     (error > -(settings.pid.deadband.thresholdHigh)) &&
+                     (error < settings.pid.deadband.thresholdLow);
 
   if (hasDeadband) {
     pidRegulator.Kp *= settings.pid.deadband.p_multiplier;
@@ -102,8 +102,9 @@ static void turbo() {
 
 static void hysteresis() {
   // Hysteresis also clears blocking when it is no longer applicable.
-  const bool useHysteresis = settings.heating.hysteresis.enabled && indoorSensorsConnected
-    && (settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeOTC);
+  const bool useHysteresis =
+      settings.heating.hysteresis.enabled && indoorSensorsConnected &&
+      (settings.equitherm.enabled || settings.pid.enabled || settings.opentherm.options.nativeOTC);
 
   if (useHysteresis) {
     if (!vars.master.heating.blocking && vars.master.heating.indoorTemp - settings.heating.target + 0.0001f >= settings.heating.hysteresis.value) {
@@ -228,9 +229,9 @@ void initRegulator() {
 
   // Sensor availability is refreshed by the regulator before checking PID eligibility.
   pidTask.setEnabledWhen([] {
-    return settings.pid.enabled && settings.heating.enabled
-      && !vars.emergency.state && !settings.opentherm.options.nativeOTC
-      && indoorSensorsConnected;
+    return settings.pid.enabled && settings.heating.enabled &&
+           !vars.emergency.state && !settings.opentherm.options.nativeOTC &&
+           indoorSensorsConnected;
   });
   pidTask.setInterval(10000);
   pidTask.resume(pidTask.interval());

@@ -560,14 +560,14 @@ static void restApi() {
     } else if (section == S_MQTT) {
       const auto previousMqtt = settings.mqtt;
       result = fromJson(requestDoc, settings.mqtt);
-      mqttChanged = previousMqtt.enabled != settings.mqtt.enabled
-        || previousMqtt.port != settings.mqtt.port
-        || previousMqtt.interval != settings.mqtt.interval
-        || strcmp(previousMqtt.server, settings.mqtt.server) != 0
-        || strcmp(previousMqtt.user, settings.mqtt.user) != 0
-        || strcmp(previousMqtt.password, settings.mqtt.password) != 0
-        || strcmp(previousMqtt.prefix, settings.mqtt.prefix) != 0
-        || strcmp(previousMqtt.homeAssistantDiscoveryPrefix, settings.mqtt.homeAssistantDiscoveryPrefix) != 0;
+      mqttChanged = previousMqtt.enabled != settings.mqtt.enabled ||
+                    previousMqtt.port != settings.mqtt.port ||
+                    previousMqtt.interval != settings.mqtt.interval ||
+                    strcmp(previousMqtt.server, settings.mqtt.server) != 0 ||
+                    strcmp(previousMqtt.user, settings.mqtt.user) != 0 ||
+                    strcmp(previousMqtt.password, settings.mqtt.password) != 0 ||
+                    strcmp(previousMqtt.prefix, settings.mqtt.prefix) != 0 ||
+                    strcmp(previousMqtt.homeAssistantDiscoveryPrefix, settings.mqtt.homeAssistantDiscoveryPrefix) != 0;
 
     } else if (section == S_EMERGENCY) {
       result = fromJson(requestDoc, settings.emergency);

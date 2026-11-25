@@ -58,8 +58,8 @@ static bool isMqttBlocked() {
 }
 
 static bool isMqttReady() {
-  return settings.mqtt.enabled && isNetworkConnected() && !isMqttBlocked()
-    && !mqttConfigureTask.scheduled() && isMqttConnected();
+  return settings.mqtt.enabled && isNetworkConnected() && !isMqttBlocked() &&
+         !mqttConfigureTask.scheduled() && isMqttConnected();
 }
 
 static bool isMqttReadyForPublish() {
@@ -241,7 +241,6 @@ static void publishSlaveState() {
   publishValue(mqttTopic("state/slave/fault/available"), vars.slave.connected && vars.slave.fault.active);
   publishValue(mqttTopic("state/slave/diag/active"), vars.slave.diag.active);
   publishValue(mqttTopic("state/slave/diag/code"), std::to_string(vars.slave.diag.code));
-  // Preserve the diagnostic-code availability condition from async.
   publishValue(mqttTopic("state/slave/diag/available"), (vars.slave.connected && vars.slave.fault.active) || vars.slave.diag.active);
 }
 
@@ -549,8 +548,7 @@ static float mqttValueToMetric(std::string_view path, float value) {
   }
 
   const auto name = path.substr(path.find_last_of('/') + 1);
-  if (name == S_TARGET || name == S_MIN_TEMP || name == S_MAX_TEMP
-      || name == S_HIGH_TEMP || name == S_LOW_TEMP) {
+  if (name == S_TARGET || name == S_MIN_TEMP || name == S_MAX_TEMP || name == S_HIGH_TEMP || name == S_LOW_TEMP) {
     return convertTemp(value, settings.system.unitSystem, UnitSystem::METRIC);
   }
 
@@ -954,14 +952,14 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
       lock.unlock();
 
       const auto& [sensorId, prevSettings] = change;
-      const bool metadataChanged = prevSettings && (
-        !sensor
-        || prevSettings->enabled != sensor->enabled
-        || strcmp(prevSettings->name, sensor->name) != 0
-        || strcmp(prevSettings->slug, sensor->slug) != 0
-        || prevSettings->purpose != sensor->purpose
-        || prevSettings->type != sensor->type
-      );
+      const bool metadataChanged =
+          prevSettings &&
+          (!sensor ||
+           prevSettings->enabled != sensor->enabled ||
+           strcmp(prevSettings->name, sensor->name) != 0 ||
+           strcmp(prevSettings->slug, sensor->slug) != 0 ||
+           prevSettings->purpose != sensor->purpose ||
+           prevSettings->type != sensor->type);
 
       // Metadata changes replace entities; disabling discovery removes them.
       if (prevSettings && Sensors::hasEnabledAndValid(*prevSettings)
@@ -995,8 +993,8 @@ Task mqttConfigureTask("Configure MQTT", Task::Type::ONCE, [](void*) {
       }
 
       if (settings.mqtt.homeAssistantDiscovery && sensor && Sensors::hasEnabledAndValid(*sensor)) {
-        if (sensor->type == Sensors::Type::BLUETOOTH || sensor->type == Sensors::Type::DALLAS_TEMP ||
-            sensor->type == Sensors::Type::DHT11 || sensor->type == Sensors::Type::DHT22) {
+        if (sensor->type == Sensors::Type::BLUETOOTH || sensor->type == Sensors::Type::DALLAS_TEMP
+            || sensor->type == Sensors::Type::DHT11 || sensor->type == Sensors::Type::DHT22) {
           publishConnectionDynamicSensor(*sensor);
           publishSignalQualityDynamicSensor(*sensor);
 

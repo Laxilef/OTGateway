@@ -954,18 +954,16 @@ void initSensors() {
 
   pollDhtSensorsTask.setInterval(1000)
     .setEnabledWhen([] {
-      return canRunSensors() && (
-        Sensors::getAmountByType(Sensors::Type::DHT11, true) ||
-        Sensors::getAmountByType(Sensors::Type::DHT22, true)
-      );
+      return canRunSensors() &&
+             (Sensors::getAmountByType(Sensors::Type::DHT11, true) ||
+              Sensors::getAmountByType(Sensors::Type::DHT22, true));
     });
   sensorsTaskManager.addTask(pollDhtSensorsTask);
 
   maintainDallasSensorsTask.setEnabledWhen([] {
-      return canRunSensors() && (
-        !dallasInstances.empty() ||
-        Sensors::getAmountByType(Sensors::Type::DALLAS_TEMP, true)
-      );
+      return canRunSensors() &&
+             (!dallasInstances.empty() ||
+              Sensors::getAmountByType(Sensors::Type::DALLAS_TEMP, true));
     })
     .resume(15000);
   sensorsTaskManager.addTask(maintainDallasSensorsTask);
@@ -978,10 +976,9 @@ void initSensors() {
 
   #if USE_BLE
   scanBleSensorsTask.setEnabledWhen([] {
-      return canRunSensors() && (
-        NimBLEDevice::isInitialized() ||
-        Sensors::getAmountByType(Sensors::Type::BLUETOOTH, true)
-      );
+      return canRunSensors() &&
+             (NimBLEDevice::isInitialized() ||
+              Sensors::getAmountByType(Sensors::Type::BLUETOOTH, true));
     })
     .onDone([](const Task&, uint32_t) {
       if (scanBleSensorsTask.interval() != 1000) {

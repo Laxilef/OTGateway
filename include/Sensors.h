@@ -193,24 +193,24 @@ public:
   }
 
   static bool isDifferent(const Settings& previous, const Settings& current) {
-    return previous.enabled != current.enabled
-      || strcmp(previous.name, current.name) != 0
-      || strcmp(previous.slug, current.slug) != 0
-      || previous.purpose != current.purpose
-      || previous.type != current.type
-      || previous.gpio != current.gpio
-      || !isEqualAddress(previous.address, current.address)
-      || isFloatDifferent(previous.offset, current.offset, 0.0001f)
-      || isFloatDifferent(previous.factor, current.factor, 0.0001f)
-      || previous.filtering != current.filtering
-      || isFloatDifferent(previous.filteringFactor, current.filteringFactor, 0.0001f);
+    return previous.enabled != current.enabled ||
+           strcmp(previous.name, current.name) != 0 ||
+           strcmp(previous.slug, current.slug) != 0 ||
+           previous.purpose != current.purpose ||
+           previous.type != current.type ||
+           previous.gpio != current.gpio ||
+           !isEqualAddress(previous.address, current.address) ||
+           isFloatDifferent(previous.offset, current.offset, 0.0001f) ||
+           isFloatDifferent(previous.factor, current.factor, 0.0001f) ||
+           previous.filtering != current.filtering ||
+           isFloatDifferent(previous.filteringFactor, current.filteringFactor, 0.0001f);
   }
 
   static bool hasEnabledAndValid(const Settings& sensor) {
-    return sensor.enabled
-        && sensor.slug[0] != '\0'
-        && sensor.type != Type::NOT_CONFIGURED
-        && sensor.purpose != Purpose::NOT_CONFIGURED;
+    return sensor.enabled &&
+           sensor.slug[0] != '\0' &&
+           sensor.type != Type::NOT_CONFIGURED &&
+           sensor.purpose != Purpose::NOT_CONFIGURED;
   }
 
   static bool hasEnabledAndValid(const uint8_t id) {

@@ -33,10 +33,9 @@ static std::atomic<uint8_t> configuredRxLedGpio{GPIO_IS_NOT_CONFIGURED};
 
 
 static bool canUseBus() {
-  return !restartTask.scheduled()
-    && slave.isInitialized()
-    && slave.getConfig().rxGpio == settings.opentherm.inGpio
-    && slave.getConfig().txGpio == settings.opentherm.outGpio;
+  return !restartTask.scheduled() && slave.isInitialized() &&
+         slave.getConfig().rxGpio == settings.opentherm.inGpio &&
+         slave.getConfig().txGpio == settings.opentherm.outGpio;
 }
 
 static bool isMasterReady() {
@@ -86,33 +85,33 @@ static float getCh2ChannelSetpoint() {
 }
 
 static bool needWriteRoomSetpoint(const float target) {
-  return !roomSetpointWriteTime
-    || millis() - roomSetpointWriteTime > roomSetpointWriteInterval
-    || isFloatDifferent(target, vars.slave.heating.roomTargetTemp, 0.05f);
+  return !roomSetpointWriteTime ||
+         millis() - roomSetpointWriteTime > roomSetpointWriteInterval ||
+         isFloatDifferent(target, vars.slave.heating.roomTargetTemp, 0.05f);
 }
 
 static bool needWriteRoomSetpointCh2(const float target) {
-  return !ch2RoomSetpointWriteTime
-    || millis() - ch2RoomSetpointWriteTime > roomSetpointWriteInterval
-    || isFloatDifferent(target, vars.slave.ch2.roomTargetTemp, 0.05f);
+  return !ch2RoomSetpointWriteTime ||
+         millis() - ch2RoomSetpointWriteTime > roomSetpointWriteInterval ||
+         isFloatDifferent(target, vars.slave.ch2.roomTargetTemp, 0.05f);
 }
 
 static bool needWriteDhwSetpoint(const float target) {
-  return !dhwSetpointWriteTime
-    || millis() - dhwSetpointWriteTime > dhwSetpointWriteInterval
-    || isFloatDifferent(target, vars.slave.dhw.targetTemp, 0.05f);
+  return !dhwSetpointWriteTime ||
+         millis() - dhwSetpointWriteTime > dhwSetpointWriteInterval ||
+         isFloatDifferent(target, vars.slave.dhw.targetTemp, 0.05f);
 }
 
 static bool needWriteHeatingSetpoint(const float target) {
-  return !heatingSetpointWriteTime
-    || millis() - heatingSetpointWriteTime > heatingSetpointWriteInterval
-    || isFloatDifferent(target, vars.slave.heating.targetTemp, 0.05f);
+  return !heatingSetpointWriteTime ||
+         millis() - heatingSetpointWriteTime > heatingSetpointWriteInterval ||
+         isFloatDifferent(target, vars.slave.heating.targetTemp, 0.05f);
 }
 
 static bool needWriteCh2Setpoint(const float target) {
-  return !ch2SetpointWriteTime
-    || millis() - ch2SetpointWriteTime > ch2SetpointWriteInterval
-    || isFloatDifferent(target, vars.slave.ch2.targetTemp, 0.05f);
+  return !ch2SetpointWriteTime ||
+         millis() - ch2SetpointWriteTime > ch2SetpointWriteInterval ||
+         isFloatDifferent(target, vars.slave.ch2.targetTemp, 0.05f);
 }
 
 // ONCE identification steps keep their own callbacks and completion handling.
@@ -143,9 +142,7 @@ static Task writeMasterVersionTask("Write master version", Task::Type::ONCE, [](
   );
   const auto response = slave.sendRequest(request);
 
-  if (!response.isSuccess() ||
-    response.getVersion() != request.getVersion() ||
-    response.getProductType() != request.getProductType()) {
+  if (!response.isSuccess() || response.getVersion() != request.getVersion() || response.getProductType() != request.getProductType()) {
     ESP_LOGW(L_OT, "Failed set master version");
     return;
   }
@@ -312,22 +309,25 @@ static bool isInitializingSlave() {
 
 static void updateMasterState() {
   // Heating settings
-  vars.master.heating.enabled = isMasterReady()
-    && settings.heating.enabled
-    && (vars.master.heating.freezing || (vars.cascadeControl.input && !vars.master.heating.blocking))
-    && !vars.master.heating.overheat;
+  vars.master.heating.enabled =
+      isMasterReady() &&
+      settings.heating.enabled &&
+      (vars.master.heating.freezing || (vars.cascadeControl.input && !vars.master.heating.blocking)) &&
+      !vars.master.heating.overheat;
 
   // DHW settings
-  vars.master.dhw.enabled = isMasterReady()
-    && settings.opentherm.options.dhwSupport
-    && settings.dhw.enabled
-    && !vars.master.dhw.overheat;
+  vars.master.dhw.enabled =
+      isMasterReady() &&
+      settings.opentherm.options.dhwSupport &&
+      settings.dhw.enabled &&
+      !vars.master.dhw.overheat;
   vars.master.dhw.targetTemp = settings.dhw.target;
 
   // CH2 settings
-  vars.master.ch2.enabled = settings.opentherm.options.ch2AlwaysEnabled
-    || (settings.opentherm.options.heatingToCh2 && vars.master.heating.enabled)
-    || (settings.opentherm.options.dhwToCh2 && vars.master.dhw.enabled);
+  vars.master.ch2.enabled =
+      settings.opentherm.options.ch2AlwaysEnabled ||
+      (settings.opentherm.options.heatingToCh2 && vars.master.heating.enabled) ||
+      (settings.opentherm.options.dhwToCh2 && vars.master.dhw.enabled);
 
   if (settings.opentherm.options.heatingToCh2) {
     vars.master.ch2.targetTemp = !settings.opentherm.options.nativeOTC
@@ -429,8 +429,7 @@ static Task configureDriverTask("Configure OpenTherm driver", Task::Type::ONCE, 
 });
 
 static Task maintainOpenThermTask("Maintain OpenTherm", [](void*) {
-  if (slave.getConfig().rxGpio != settings.opentherm.inGpio ||
-      slave.getConfig().txGpio != settings.opentherm.outGpio) {
+  if (slave.getConfig().rxGpio != settings.opentherm.inGpio || slave.getConfig().txGpio != settings.opentherm.outGpio) {
     // Apply changed GPIO before any bus exchange in this manager pass.
     configureDriverTask.resume().tryRun();
 
@@ -446,8 +445,7 @@ static Task maintainOpenThermTask("Maintain OpenTherm", [](void*) {
   // Apply channel settings even while the bus is unavailable.
   updateMasterState();
 
-  if (slave.getConfig().rxGpio != settings.opentherm.inGpio ||
-      slave.getConfig().txGpio != settings.opentherm.outGpio) {
+  if (slave.getConfig().rxGpio != settings.opentherm.inGpio || slave.getConfig().txGpio != settings.opentherm.outGpio) {
     maintainOpenThermTask.setInterval(5000);
     return;
 
@@ -515,8 +513,8 @@ static Task readStatusTask("Read boiler status", [](void*) {
       vars.master.heating.enabled, settings.opentherm.heatingDisablingAction
     ))
     .setHotWaterEnabled(
-      settings.opentherm.options.dhwSupport &&
-      getSlaveChannelEnabled(vars.master.dhw.enabled, settings.opentherm.dhwDisablingAction)
+      settings.opentherm.options.dhwSupport
+      && getSlaveChannelEnabled(vars.master.dhw.enabled, settings.opentherm.dhwDisablingAction)
     )
     .setCoolingEnabled(settings.opentherm.options.coolingSupport)
     .setOutsideTemperatureCompensationEnabled(settings.opentherm.options.nativeOTC)
@@ -898,9 +896,7 @@ static Task writeFaultResetTask("Write fault reset", [](void*) {
 // Diag reset action
 static Task writeDiagnosticResetTask("Write diagnostic reset", [](void*) {
   const auto response = slave.sendRequest(ESP32OT::Messages::RemoteRequest(10));
-  if (!response.isSuccess() ||
-    response.getRequestCode() != 10 ||
-    response.getResponseCode() < 128) {
+  if (!response.isSuccess() || response.getRequestCode() != 10 || response.getResponseCode() < 128) {
     ESP_LOGE(L_OT, "Boiler diagnostic reset failed");
     return;
   }
@@ -1931,9 +1927,9 @@ void initOpenTherm() {
   // Write the DHW temperature setpoint.
   writeDhwSetpointTask.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && settings.opentherm.options.dhwSupport
-        && needWriteDhwSetpoint(getDhwChannelSetpoint());
+      return isSlaveReady() &&
+             settings.opentherm.options.dhwSupport &&
+             needWriteDhwSetpoint(getDhwChannelSetpoint());
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(writeDhwSetpointTask);
@@ -1941,10 +1937,10 @@ void initOpenTherm() {
   // Write the CH2 water temperature setpoint.
   writeCh2SetpointTask.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2
-          || (!vars.master.ch2.enabled && settings.opentherm.ch2DisablingAction != ChannelDisablingAction::OFF))
-        && needWriteCh2Setpoint(getCh2ChannelSetpoint());
+      return isSlaveReady() &&
+             (settings.opentherm.options.heatingToCh2 || settings.opentherm.options.dhwToCh2 ||
+              (!vars.master.ch2.enabled && settings.opentherm.ch2DisablingAction != ChannelDisablingAction::OFF)) &&
+             needWriteCh2Setpoint(getCh2ChannelSetpoint());
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(writeCh2SetpointTask);
@@ -1952,9 +1948,9 @@ void initOpenTherm() {
   // Write the heating room setpoint for native OTC.
   writeRoomSetpointTask.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && settings.opentherm.options.nativeOTC
-        && needWriteRoomSetpoint(vars.master.heating.targetTemp);
+      return isSlaveReady() &&
+             settings.opentherm.options.nativeOTC &&
+             needWriteRoomSetpoint(vars.master.heating.targetTemp);
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(writeRoomSetpointTask);
@@ -1962,9 +1958,9 @@ void initOpenTherm() {
   // Write the mirrored CH2 room setpoint for native OTC.
   writeRoomSetpointCh2Task.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && settings.opentherm.options.nativeOTC && settings.opentherm.options.heatingToCh2
-        && needWriteRoomSetpointCh2(vars.master.heating.targetTemp);
+      return isSlaveReady() &&
+             settings.opentherm.options.nativeOTC && settings.opentherm.options.heatingToCh2 &&
+             needWriteRoomSetpointCh2(vars.master.heating.targetTemp);
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(writeRoomSetpointCh2Task);
@@ -1986,9 +1982,8 @@ void initOpenTherm() {
   // Execute pending boiler fault reset requests.
   writeFaultResetTask.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady() && vars.slave.fault.active && (
-        vars.actions.resetFault || settings.opentherm.options.autoFaultReset
-      );
+      return isSlaveReady() && vars.slave.fault.active &&
+             (vars.actions.resetFault || settings.opentherm.options.autoFaultReset);
     })
     .onDone([](const Task& task, uint32_t elapsed) {
       vars.actions.resetFault = false;
@@ -1999,9 +1994,8 @@ void initOpenTherm() {
   // Execute pending service reset requests.
   writeDiagnosticResetTask.setInterval(750)
     .setEnabledWhen([] {
-      return isSlaveReady() && vars.slave.diag.active && (
-        vars.actions.resetDiagnostic || settings.opentherm.options.autoDiagReset
-      );
+      return isSlaveReady() && vars.slave.diag.active &&
+             (vars.actions.resetDiagnostic || settings.opentherm.options.autoDiagReset);
     })
     .onDone([](const Task& task, uint32_t elapsed) {
       vars.actions.resetDiagnostic = false;
@@ -2012,9 +2006,8 @@ void initOpenTherm() {
   // Send the current indoor temperature.
   writeRoomTemperatureTask.setInterval(60000)
     .setEnabledWhen([] {
-      return isSlaveReady() && (
-        settings.opentherm.options.nativeOTC || settings.opentherm.options.alwaysSendIndoorTemp
-      );
+      return isSlaveReady() &&
+             (settings.opentherm.options.nativeOTC || settings.opentherm.options.alwaysSendIndoorTemp);
     })
     .onDone([](const Task& task, uint32_t elapsed) {
       writeRoomTemperatureTask.setInterval(60000);
@@ -2025,9 +2018,9 @@ void initOpenTherm() {
   // Send the current indoor temperature to CH2.
   writeRoomTemperatureCh2Task.setInterval(60000)
     .setEnabledWhen([] {
-      return isSlaveReady() && (
-        settings.opentherm.options.nativeOTC || settings.opentherm.options.alwaysSendIndoorTemp
-      ) && settings.opentherm.options.heatingToCh2;
+      return isSlaveReady() &&
+             (settings.opentherm.options.nativeOTC || settings.opentherm.options.alwaysSendIndoorTemp) &&
+             settings.opentherm.options.heatingToCh2;
     })
     .onDone([](const Task& task, uint32_t elapsed) {
       writeRoomTemperatureCh2Task.setInterval(60000);
@@ -2038,10 +2031,9 @@ void initOpenTherm() {
   // Read relative modulation and calculate current power.
   readModulationTask.setInterval(15000)
     .setEnabledWhen([] {
-      return isSlaveReady() && (
-        Sensors::getAmountByType(Sensors::Type::OT_MODULATION_LEVEL, true) ||
-        Sensors::getAmountByType(Sensors::Type::OT_CURRENT_POWER, true)
-      );
+      return isSlaveReady() &&
+             (Sensors::getAmountByType(Sensors::Type::OT_MODULATION_LEVEL, true) ||
+              Sensors::getAmountByType(Sensors::Type::OT_CURRENT_POWER, true));
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readModulationTask);
@@ -2049,9 +2041,9 @@ void initOpenTherm() {
   // Read the primary DHW temperature.
   readDhwTemperatureTask.setInterval(5000)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && settings.opentherm.options.dhwSupport
-        && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP, true);
+      return isSlaveReady() &&
+             settings.opentherm.options.dhwSupport &&
+             Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP, true);
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readDhwTemperatureTask);
@@ -2059,9 +2051,9 @@ void initOpenTherm() {
   // Read the second DHW temperature.
   readDhwTemperature2Task.setInterval(5000)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && settings.opentherm.options.dhwSupport
-        && Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2, true);
+      return isSlaveReady() &&
+             settings.opentherm.options.dhwSupport &&
+             Sensors::getAmountByType(Sensors::Type::OT_DHW_TEMP2, true);
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readDhwTemperature2Task);
@@ -2069,9 +2061,9 @@ void initOpenTherm() {
   // Read the DHW flow rate.
   readDhwFlowTask.setInterval(5000)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && settings.opentherm.options.dhwSupport
-        && Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE, true);
+      return isSlaveReady() &&
+             settings.opentherm.options.dhwSupport &&
+             Sensors::getAmountByType(Sensors::Type::OT_DHW_FLOW_RATE, true);
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readDhwFlowTask);
@@ -2095,9 +2087,9 @@ void initOpenTherm() {
   // Read the CH2 water temperature.
   readCh2TemperatureTask.setInterval(5000)
     .setEnabledWhen([] {
-      return isSlaveReady()
-        && Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP, true)
-        && vars.master.ch2.enabled && !settings.opentherm.options.nativeOTC;
+      return isSlaveReady() &&
+             Sensors::getAmountByType(Sensors::Type::OT_CH2_TEMP, true) &&
+             vars.master.ch2.enabled && !settings.opentherm.options.nativeOTC;
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readCh2TemperatureTask);
@@ -2145,10 +2137,9 @@ void initOpenTherm() {
   // Read the requested and actual relative fan speeds.
   readFanSpeedTask.setInterval(5000)
     .setEnabledWhen([] {
-      return isSlaveReady() && (
-        Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, true) ||
-        Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_CURRENT, true)
-      );
+      return isSlaveReady() &&
+             (Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_SETPOINT, true) ||
+              Sensors::getAmountByType(Sensors::Type::OT_FAN_SPEED_CURRENT, true));
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readFanSpeedTask);
@@ -2238,9 +2229,7 @@ void initOpenTherm() {
   // Read or clear the diagnostic code.
   readDiagnosticTask.setInterval(60000)
     .setEnabledWhen([] {
-      return isSlaveReady() && (
-        vars.slave.diag.active || vars.slave.fault.active
-      );
+      return isSlaveReady() && (vars.slave.diag.active || vars.slave.fault.active);
     })
     .onDone(onOperationDone);
   openthermTaskManager.addTask(readDiagnosticTask);

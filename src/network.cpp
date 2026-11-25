@@ -118,8 +118,8 @@ NetworkState getNetworkState(NetworkMode mode) {
 }
 
 bool isNetworkConnected() {
-  return getNetworkState(NetworkMode::STA) == NetworkState::NETWORK_CONNECTED
-      || getNetworkState(NetworkMode::ETH) == NetworkState::NETWORK_CONNECTED;
+  return getNetworkState(NetworkMode::STA) == NetworkState::NETWORK_CONNECTED ||
+         getNetworkState(NetworkMode::ETH) == NetworkState::NETWORK_CONNECTED;
 }
 
 NetworkMode getNetworkMode() {
@@ -186,13 +186,14 @@ String getNetworkMac() {
 bool isEthernetConfigured(const NetworkSettings& config) {
   #if USE_ETHERNET
   const auto& gpios = config.ethernet.w5500;
-  return config.ethernet.type == EthernetType::W5500
-    && GPIO_IS_VALID_OUTPUT(gpios.clk)
-    && GPIO_IS_VALID_OUTPUT(gpios.mosi)
-    && GPIO_IS_VALID_INPUT(gpios.miso)
-    && GPIO_IS_VALID_OUTPUT(gpios.cs)
-    && GPIO_IS_VALID_INPUT(gpios.irq)
-    && GPIO_IS_VALID_OUTPUT(gpios.rst);
+
+  return config.ethernet.type == EthernetType::W5500 &&
+         GPIO_IS_VALID_OUTPUT(gpios.clk) &&
+         GPIO_IS_VALID_OUTPUT(gpios.mosi) &&
+         GPIO_IS_VALID_INPUT(gpios.miso) &&
+         GPIO_IS_VALID_OUTPUT(gpios.cs) &&
+         GPIO_IS_VALID_INPUT(gpios.irq) &&
+         GPIO_IS_VALID_OUTPUT(gpios.rst);
   #else
   (void)config;
   return false;
@@ -706,13 +707,8 @@ static void stopMdns() {
 }
 
 static void updateNetworkServices() {
-  const bool ready = webServerReady;
-
   // Serve captive DNS only while HTTP is ready and no upstream connection exists.
-  const bool captive = ready
-    && apStarted.load()
-    && apIp
-    && !isNetworkConnected();
+  const bool captive = webServerReady && apStarted.load() && apIp && !isNetworkConnected();
 
   if (!captive) {
     stopCaptiveDns(isNetworkConnected());
@@ -735,7 +731,7 @@ static void updateNetworkServices() {
   }
 
   // mDNS tracks native interface/IP events without restarting the responder.
-  const bool enableMdns = ready && settings.portal.mdns;
+  const bool enableMdns = webServerReady && settings.portal.mdns;
 
   if (!enableMdns) {
     stopMdns();
@@ -879,9 +875,11 @@ static void processNetworkEvent(const PendingNetworkEvent& pending) {
       break;
 
     case NetworkEvent::ETH_GOT_IP:
-      if (!ethStarted.load() || networkSettings.type != NetworkMode::ETH
-        || !pending.value || !ETH.connected() || !ETH.hasIP()
-      ) {
+      if (!ethStarted.load() || networkSettings.type != NetworkMode::ETH) {
+        return;
+      }
+
+      if (!pending.value || !ETH.connected() || !ETH.hasIP()) {
         return;
       }
 

@@ -1571,9 +1571,7 @@ static SettingResult applySetting(HeatingSettings& dst, std::string_view path, f
 
     unsigned char value = static_cast<unsigned char>(input);
 
-    if (value < vars.slave.heating.minTemp
-        || value >= vars.slave.heating.maxTemp
-        || value == dst.maxTemp) {
+    if (value < vars.slave.heating.minTemp || value >= vars.slave.heating.maxTemp || value == dst.maxTemp) {
       return {};
     }
 
@@ -1594,9 +1592,7 @@ static SettingResult applySetting(HeatingSettings& dst, std::string_view path, f
 
     unsigned char value = static_cast<unsigned char>(input);
 
-    if (value <= vars.slave.heating.minTemp
-        || value > vars.slave.heating.maxTemp
-        || value == dst.minTemp) {
+    if (value <= vars.slave.heating.minTemp || value > vars.slave.heating.maxTemp || value == dst.minTemp) {
       return {};
     }
 
@@ -1999,8 +1995,7 @@ static SettingResult applySetting(DhwSettings& dst, std::string_view path, float
 
     unsigned char value = static_cast<unsigned char>(input);
 
-    if (value < vars.slave.dhw.minTemp
-        || value >= vars.slave.dhw.maxTemp) {
+    if (value < vars.slave.dhw.minTemp || value >= vars.slave.dhw.maxTemp) {
       return {};
     }
 
@@ -2021,8 +2016,7 @@ static SettingResult applySetting(DhwSettings& dst, std::string_view path, float
 
     unsigned char value = static_cast<unsigned char>(input);
 
-    if (value <= vars.slave.dhw.minTemp
-        || value > vars.slave.dhw.maxTemp) {
+    if (value <= vars.slave.dhw.minTemp || value > vars.slave.dhw.maxTemp) {
       return {};
     }
 
@@ -3310,8 +3304,8 @@ SettingResult fromJson(const JsonVariantConst src, Sensors::Settings& dst) {
 
   // gpio
   if (!src[S_GPIO].isNull()) {
-    if (dst.type != Sensors::Type::DALLAS_TEMP && dst.type != Sensors::Type::NTC_10K_TEMP &&
-        dst.type != Sensors::Type::DHT11 && dst.type != Sensors::Type::DHT22) {
+    if (dst.type != Sensors::Type::DALLAS_TEMP && dst.type != Sensors::Type::NTC_10K_TEMP
+        && dst.type != Sensors::Type::DHT11 && dst.type != Sensors::Type::DHT22) {
       if (dst.gpio != GPIO_IS_NOT_CONFIGURED) {
         dst.gpio = GPIO_IS_NOT_CONFIGURED;
         result.changed = true;
@@ -3327,9 +3321,18 @@ SettingResult fromJson(const JsonVariantConst src, Sensors::Settings& dst) {
     } else if (src[S_GPIO].is<uint8_t>()) {
       const auto value = src[S_GPIO].as<uint8_t>();
 
-      if (value == GPIO_IS_NOT_CONFIGURED
-          || (GPIO_IS_VALID_INPUT(value)
-              && (dst.type == Sensors::Type::NTC_10K_TEMP || GPIO_IS_VALID_OUTPUT(value)))) {
+      bool valid = false;
+      if (value == GPIO_IS_NOT_CONFIGURED) {
+        valid = true;
+
+      } else if (dst.type == Sensors::Type::NTC_10K_TEMP) {
+        valid = GPIO_IS_VALID_INPUT(value);
+
+      } else {
+        valid = GPIO_IS_VALID_INPUT(value) && GPIO_IS_VALID_OUTPUT(value);
+      }
+
+      if (valid) {
         result.accepted = true;
         if (value != dst.gpio) {
           dst.gpio = value;

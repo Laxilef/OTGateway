@@ -111,17 +111,56 @@ request
     vars.master.heating.enabled, settings.opentherm.heatingDisablingAction
   ))
   .setHotWaterEnabled(
-    settings.opentherm.options.dhwSupport &&
-    getSlaveChannelEnabled(vars.master.dhw.enabled, settings.opentherm.dhwDisablingAction)
+    settings.opentherm.options.dhwSupport
+    && getSlaveChannelEnabled(vars.master.dhw.enabled, settings.opentherm.dhwDisablingAction)
   )
   .setCoolingEnabled(settings.opentherm.options.coolingSupport)
   .setDhwBlocking(dhwBlocking);
 ```
 
 Не считай это общим требованием переносить имя объекта перед любой цепочкой.
-В многострочных условиях сохраняй принятую рядом расстановку `&&` и `||`:
-в проекте встречаются оба варианта переноса. Группируй связанные условия
-скобками и не меняй их порядок или приоритет ради выравнивания.
+В многострочных логических условиях ставь `&&` и `||` в начале строки
+продолжения. Для `if`/`else if` отступ продолжения — четыре пробела
+от начала исходной строки. Если первый операнд уже вынесен на отдельную строку
+внутри аргумента вызова или группы в скобках, следующие строки с `&&`/`||`
+выравнивай по нему без дополнительных
+двух пробелов. Группируй связанные условия скобками и не меняй их порядок
+или приоритет ради выравнивания.
+
+В многострочных `return` ставь `&&` и `||` в конце предыдущей строки,
+а продолжение выравнивай под началом выражения после `return`.
+Во вложенных группах также выравнивай операнды по первому выражению группы.
+
+В многострочных логических присваиваниях также оставляй `&&` и `||` в конце
+предыдущей строки, а продолжение выравнивай под началом правой части.
+При длинном типе или имени переменной переноси правую часть целиком после `=`:
+её базовый отступ — четыре пробела от начала объявления.
+
+Простые условия из нескольких коротких проверок оставляй на одной строке.
+Несколько `&&`/`||` сами по себе не требуют переноса; разбивай выражение,
+когда это помогает читать длинные или сложные условия.
+
+```cpp
+if (!response.isSuccess() || response.getRequestCode() != 10 || response.getResponseCode() < 128) {
+  ESP_LOGE(L_OT, "Boiler diagnostic reset failed");
+  return;
+}
+
+return settings.mqtt.enabled && isNetworkConnected() && !isMqttBlocked() &&
+       !mqttConfigureTask.scheduled() && isMqttConnected();
+
+const bool hasOutput = activeSerial.load(std::memory_order_relaxed) ||
+                       activeWebSerial.load(std::memory_order_relaxed);
+
+const bool hasOutput =
+    activeSerial.load(std::memory_order_relaxed) ||
+    activeWebSerial.load(std::memory_order_relaxed);
+
+if (prevSettings && Sensors::hasEnabledAndValid(*prevSettings)
+    && (metadataChanged || !settings.mqtt.homeAssistantDiscovery)) {
+  deleteConnectionDynamicSensor(*prevSettings);
+}
+```
 
 ## Имена и структура файлов
 
