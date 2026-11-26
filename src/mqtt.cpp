@@ -85,7 +85,17 @@ std::string mqttTopic(std::initializer_list<std::string_view> parts) {
 }
 
 static bool publishValue(const std::string& topic, std::string_view value) {
-  return mqttClient->publish(topic.c_str(), value, true);
+  const bool published = mqttClient->publish(topic.c_str(), value, true);
+
+  ESP_LOGD(
+    L_MQTT, "%s publish topic: %s, value: %.*s",
+    published ? "Successfully" : "Failed",
+    topic.c_str(),
+    static_cast<int>(value.size()),
+    value.empty() ? "" : value.data()
+  );
+
+  return published;
 }
 
 static bool publishValue(const std::string& topic, const char* value) {
