@@ -227,7 +227,7 @@ Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
     false,
     "Indoor temp",
     Sensors::Purpose::INDOOR_TEMP,
-    Sensors::Type::DALLAS_TEMP,
+    DEFAULT_SENSOR_INDOOR_TYPE,
     DEFAULT_SENSOR_INDOOR_GPIO
   },
   {
