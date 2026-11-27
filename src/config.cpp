@@ -11,6 +11,7 @@
 
 NetworkSettings networkSettings;
 Settings settings;
+
 Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
   {
     false,
@@ -25,7 +26,7 @@ Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
     "Indoor temp",
     "indoor_temp",
     Sensors::Purpose::INDOOR_TEMP,
-    Sensors::Type::DALLAS_TEMP,
+    DEFAULT_SENSOR_INDOOR_TYPE,
     DEFAULT_SENSOR_INDOOR_GPIO
   },
   {
