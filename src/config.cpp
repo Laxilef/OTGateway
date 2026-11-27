@@ -12,10 +12,6 @@
 NetworkSettings networkSettings;
 Settings settings;
 
-#ifndef DEFAULT_SENSOR_INDOOR_TYPE
-  #define DEFAULT_SENSOR_INDOOR_TYPE Sensors::Type::DALLAS_TEMP
-#endif
-
 Sensors::Settings sensorsSettings[SENSORS_AMOUNT] = {
   {
     false,
